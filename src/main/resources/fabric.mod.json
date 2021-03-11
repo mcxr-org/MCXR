@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "minexraft",
+  "version": "${version}",
+
+  "name": "MineXRaft",
+  "description": "This is an example description! Tell everyone what your mod is about!",
+  "authors": [
+    "Me!"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/minexraft/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.sorenon.minexraft.MineXRaft"
+    ],
+    "client": [
+      "net.sorenon.minexraft.MineXRaftClient"
+    ]
+  },
+  "mixins": [
+    "minexraft.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

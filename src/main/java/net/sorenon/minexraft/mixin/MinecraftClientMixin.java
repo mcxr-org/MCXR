@@ -289,7 +289,9 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
                     framebuffer = leftEyeFramebuffer;
                     MineXRaftClient.viewportRect = xrCompositionLayerProjectionView.subImage().imageRect();
                     MineXRaftClient.fov = xrCompositionLayerProjectionView.fov();
+                    MineXRaftClient.pose = xrCompositionLayerProjectionView.pose();
                     renderXR(tick);
+                    MineXRaftClient.pose = null;
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
                     framebuffer = vanFramebuffer;

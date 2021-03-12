@@ -1,7 +1,9 @@
 package net.sorenon.minexraft.mixin;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.HelloOpenXR;
@@ -23,6 +25,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -30,7 +33,9 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 @Mixin(Window.class)
 public class WindowMixin {
 
-    @Shadow @Final private long handle;
+    @Shadow
+    @Final
+    private long handle;
 
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
     private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
@@ -86,6 +91,22 @@ public class WindowMixin {
         helloOpenXR.createXRSwapchains();
         helloOpenXR.createOpenGLResourses();
     }
+
+//    @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
+//    void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
+//        Framebuffer fb = MinecraftClient.getInstance().getFramebuffer();
+//        if (fb != null) {
+//            cir.setReturnValue(fb.viewportWidth);
+//        }
+//    }
+//
+//    @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
+//    void frameBufferHeight(CallbackInfoReturnable<Integer> cir) {
+//        Framebuffer fb = MinecraftClient.getInstance().getFramebuffer();
+//        if (fb != null) {
+//            cir.setReturnValue(fb.viewportHeight);
+//        }
+//    }
 
 //    @Inject(method = "swapBuffers", at = @At("HEAD"), cancellable = true)
 //    private void swapBuffers(CallbackInfo ci){

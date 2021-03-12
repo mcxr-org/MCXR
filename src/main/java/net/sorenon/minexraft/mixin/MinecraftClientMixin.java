@@ -13,6 +13,7 @@ import net.minecraft.client.options.Option;
 import net.minecraft.client.render.BackgroundRenderer;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.client.util.Window;
@@ -26,14 +27,17 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
+import net.sorenon.minexraft.accessor.FBAccessor;
 import net.sorenon.minexraft.HelloOpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.openxr.XR10;
-import org.lwjgl.openxr.XrEventDataBuffer;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.openxr.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -42,6 +46,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+
+import static net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> {
@@ -179,6 +185,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Final
     public GameRenderer gameRenderer;
 
+    @Mutable
     @Shadow
     @Final
     private Framebuffer framebuffer;
@@ -244,11 +251,17 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Nullable
     private IntegratedServer server;
 
+    int colorTexture;
+    Framebuffer leftEyeFramebuffer;
+
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
         HelloOpenXR helloOpenXR = MineXRaftClient.helloOpenXR;
         helloOpenXR.eventDataBuffer = XrEventDataBuffer.calloc();
         helloOpenXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
+
+        HelloOpenXR.Swapchain swapchain = helloOpenXR.swapchains[0];
+        leftEyeFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
     }
 
 
@@ -259,25 +272,42 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
     void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
-//        HelloOpenXR helloOpenXR = MineXRaftClient.helloOpenXR;
-//        if (helloOpenXR.pollEvents()) {
-//            running = false;
-//            return;
-//        }
-//
-//        if (helloOpenXR.sessionRunning) {
-//            helloOpenXR.renderFrameOpenXR();
-//        } else {
-//            // Throttle loop since xrWaitFrame won't be called.
-//            Thread.sleep(250);
-//        }
-        renderXR(tick);
+        HelloOpenXR helloOpenXR = MineXRaftClient.helloOpenXR;
+        if (helloOpenXR.pollEvents()) {
+            running = false;
+            return;
+        }
+
+        if (helloOpenXR.sessionRunning) {
+            helloOpenXR.renderFrameOpenXR((xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer) -> {
+                if (integer == 1) {
+//                    helloOpenXR.OpenGLRenderView(xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer);
+                } else {
+                    colorTexture = xrSwapchainImageOpenGLKHR.image();
+                    ((FBAccessor) leftEyeFramebuffer).setColorTexture(xrSwapchainImageOpenGLKHR.image());
+                    Framebuffer vanFramebuffer = framebuffer;
+                    framebuffer = leftEyeFramebuffer;
+                    MineXRaftClient.viewportRect = xrCompositionLayerProjectionView.subImage().imageRect();
+                    MineXRaftClient.fov = xrCompositionLayerProjectionView.fov();
+                    renderXR(tick);
+                    MineXRaftClient.fov = null;
+                    MineXRaftClient.viewportRect = null;
+                    framebuffer = vanFramebuffer;
+                }
+                return null;
+            });
+        } else {
+            // Throttle loop since xrWaitFrame won't be called.
+            Thread.sleep(250);
+        }
+
+//        renderXR(tick);
     }
 
     //renderLayerOpenXR
     void renderXR(boolean tick) {
         this.window.setPhase("Pre render");
-        long l = Util.getMeasuringTimeNano();
+        long time = Util.getMeasuringTimeNano();
         if (this.window.shouldClose()) {
             this.scheduleStop();
         }
@@ -322,32 +352,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         //int fbColOrg = framebuffer.color
         //framebuffer.color = layer.color
         //viewport
-        this.profiler.push("render");
-        RenderSystem.pushMatrix();
-        RenderSystem.clear(16640, MinecraftClient.IS_SYSTEM_MAC);
-        this.framebuffer.beginWrite(true);
-        BackgroundRenderer.method_23792();
-        this.profiler.push("display");
-        RenderSystem.enableTexture();
-        RenderSystem.enableCull();
-        this.profiler.pop();
-        if (!this.skipGameRender) {
-            this.profiler.swap("gameRenderer");
-            this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, l, tick);
-            this.profiler.swap("toasts");
-            this.toastManager.draw(new MatrixStack());
-            this.profiler.pop();
-        }
-
-        if (this.tickProfilerResult != null) {
-            this.profiler.push("fpsPie");
-            this.drawProfilerResults(new MatrixStack(), this.tickProfilerResult);
-            this.profiler.pop();
-        }
-
-        this.profiler.push("blit");
-        this.framebuffer.endWrite();
-        RenderSystem.popMatrix();
+        doRender(time, tick);
         //RENDER END
         //SCRAP START
 //        RenderSystem.pushMatrix();
@@ -359,10 +364,15 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 //        if ((double) k < Option.FRAMERATE_LIMIT.getMax()) {
 //            RenderSystem.limitDisplayFPS(k);
 //        }
+
+        GLFW.glfwPollEvents();
+        RenderSystem.replayQueue();
+        Tessellator.getInstance().getBuffer().clear();
+
         //SCRAP END
 
         this.profiler.swap("yield");
-        Thread.yield();
+//        Thread.yield();
         this.profiler.pop();
         this.window.setPhase("Post render");
         ++this.fpsCounter;
@@ -394,5 +404,39 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         }
 
         this.profiler.pop();
+    }
+
+    private void doRender(long time, boolean tick) {
+//        int colAttachOrg = ((FBAccessor)framebuffer).getColorTexture();
+//        ((FBAccessor)framebuffer).setColorTexture(colorTexture);
+
+        this.profiler.push("render");
+        RenderSystem.pushMatrix();
+        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, IS_SYSTEM_MAC);
+        this.framebuffer.beginWrite(true);
+        BackgroundRenderer.method_23792();
+        this.profiler.push("display");
+        RenderSystem.enableTexture();
+        RenderSystem.enableCull();
+        this.profiler.pop();
+        if (!this.skipGameRender) {
+            this.profiler.swap("gameRenderer");
+            this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, time, tick);
+            this.profiler.swap("toasts");
+            this.toastManager.draw(new MatrixStack());
+            this.profiler.pop();
+        }
+
+        if (this.tickProfilerResult != null) {
+            this.profiler.push("fpsPie");
+            this.drawProfilerResults(new MatrixStack(), this.tickProfilerResult);
+            this.profiler.pop();
+        }
+
+        this.profiler.push("blit");
+        this.framebuffer.endWrite();
+        RenderSystem.popMatrix();
+
+//        ((FBAccessor)framebuffer).setColorTexture(colAttachOrg);
     }
 }

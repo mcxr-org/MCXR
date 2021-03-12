@@ -1,37 +1,18 @@
 package net.sorenon.minexraft;
 
 import net.fabricmc.api.ModInitializer;
-import org.lwjgl.system.SharedLibrary;
-
-import java.nio.file.Paths;
-
-import static org.lwjgl.system.APIUtil.apiCreateLibrary;
-import static org.lwjgl.system.APIUtil.apiLog;
+import net.sorenon.minexraft.accessor.MatAccessor;
+import org.lwjgl.openxr.XrFovf;
 
 public class MineXRaft implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-//		SharedLibrary defaultOpenXRLoader = loadNative(XR.class, "C:\\Users\\soren\\Documents\\Programming\\openxr_loader_windows\\x64\\bin\\openxr_loader.dll", "openxr_loader");
-//		XR.create(defaultOpenXRLoader);
-//		try {
-//			HelloOpenXR.main(null);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//		System.out.println("Hello Fabric world!");
-	}
-
-	private static SharedLibrary loadNative(Class<?> context, String path, String libName) {
-		apiLog("Loading library: " + path);
-
-		// METHOD 1: absolute path
-		if (Paths.get(path).isAbsolute()) {
-			SharedLibrary lib = apiCreateLibrary(path);
-			apiLog("\tSuccess");
-			return lib;
-		}
-
-		throw new UnsatisfiedLinkError("Failed to locate library: " + libName);
+//		MineXRaftClient.fov = XrFovf.create().set((float) Math.toRadians(-45), (float) Math.toRadians(45), (float) Math.toRadians(45), (float) Math.toRadians(-45));
+//		MineXRaftClient.fov = XrFovf.create().set(-0.9665739f, 0.9987973f, 0.98279375f, -1.0455683f);
+//		net.minecraft.util.math.Matrix4f matrix4f = new net.minecraft.util.math.Matrix4f();
+//		((MatAccessor)(Object)matrix4f).proj();
+//
+//		throw new IllegalStateException();
 	}
 }

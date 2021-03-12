@@ -2,6 +2,8 @@ package net.sorenon.minexraft;
 
 import net.fabricmc.api.ClientModInitializer;
 import org.lwjgl.openxr.XR;
+import org.lwjgl.openxr.XrFovf;
+import org.lwjgl.openxr.XrRect2Di;
 import org.lwjgl.system.SharedLibrary;
 
 import java.nio.file.Paths;
@@ -12,7 +14,8 @@ import static org.lwjgl.system.APIUtil.apiLog;
 public class MineXRaftClient implements ClientModInitializer {
 
     public static final HelloOpenXR helloOpenXR = new HelloOpenXR();
-
+    public static XrRect2Di viewportRect = null;
+    public static XrFovf fov = null;
 
     @Override
     public void onInitializeClient() {

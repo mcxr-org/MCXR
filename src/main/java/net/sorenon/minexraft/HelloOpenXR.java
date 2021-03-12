@@ -1,5 +1,7 @@
 package net.sorenon.minexraft;
 
+import com.mojang.datafixers.util.Function3;
+import net.sorenon.minexraft.accessor.MatAccessor;
 import org.joml.Math;
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
@@ -51,7 +53,7 @@ public class HelloOpenXR {
     XrSpace                        xrAppSpace;  //The real world space in which the program runs
     long                           glColorFormat;
     XrView.Buffer                  views;       //Each view represents an eye in the headset with views[0] being left and views[1] being right
-    Swapchain[]                    swapchains;  //One swapchain per view
+    public Swapchain[]                    swapchains;  //One swapchain per view
     XrViewConfigurationView.Buffer viewConfigs;
     int                            viewConfigType = XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 
@@ -73,14 +75,17 @@ public class HelloOpenXR {
     int textureShader;
     int colorShader;
 
-    static class Swapchain {
+    public static class Swapchain {
         XrSwapchain                      handle;
-        int                              width;
-        int                              height;
+        public int                              width;
+        public int                              height;
         XrSwapchainImageOpenGLKHR.Buffer images;
     }
 
     public static void main(String[] args) throws InterruptedException {
+
+
+        if (true) return;
 //            XR.create("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\bin\\win64\\openxr_loader.dll");
 //        XR.create();
 
@@ -567,7 +572,7 @@ public class HelloOpenXR {
     }
 
 
-    public void renderFrameOpenXR() {
+    public void renderFrameOpenXR(Function3<XrCompositionLayerProjectionView, XrSwapchainImageOpenGLKHR, Integer, Void> renderFunc) {
         try (MemoryStack stack = stackPush()) {
             XrFrameWaitInfo frameWaitInfo = XrFrameWaitInfo.callocStack(); //TODO wait until max(nextFrame, nextTick)
             frameWaitInfo.type(XR10.XR_TYPE_FRAME_WAIT_INFO);
@@ -584,7 +589,7 @@ public class HelloOpenXR {
             PointerBuffer layers = stack.callocPointer(1);
 
             if (frameState.shouldRender()) {
-                if (renderLayerOpenXR(frameState.predictedDisplayTime(), layerProjection)) {
+                if (renderLayerOpenXR(frameState.predictedDisplayTime(), layerProjection, renderFunc)) {
                     layers.put(layerProjection.address());
                 }
             }
@@ -608,7 +613,7 @@ public class HelloOpenXR {
         }
     }
 
-    private boolean renderLayerOpenXR(long predictedDisplayTime, XrCompositionLayerProjection layer) {
+    private boolean renderLayerOpenXR(long predictedDisplayTime, XrCompositionLayerProjection layer, Function3<XrCompositionLayerProjectionView, XrSwapchainImageOpenGLKHR, Integer, Void> renderFunc) {
         try (MemoryStack stack = stackPush()) {
             XrCompositionLayerProjectionView.Buffer projectionLayerViews;
 
@@ -638,7 +643,8 @@ public class HelloOpenXR {
             projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferUnsafe(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
 
             // Render view to the appropriate part of the swapchain image.
-            for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
+//            for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
+            for (int viewIndex = 0; viewIndex < 2; viewIndex++) {
                 // Each view has a separate swapchain which is acquired, rendered to, and released.
                 Swapchain viewSwapchain = swapchains[viewIndex];
 
@@ -660,7 +666,8 @@ public class HelloOpenXR {
                 projectionLayerView.subImage().imageRect().offset().set(0, 0);
                 projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
 
-                OpenGLRenderView(projectionLayerView, viewSwapchain.images.get(swapchainImageIndex), viewIndex);
+//                OpenGLRenderView(projectionLayerView, viewSwapchain.images.get(swapchainImageIndex), viewIndex);
+                renderFunc.apply(projectionLayerView, viewSwapchain.images.get(swapchainImageIndex), viewIndex);
 
                 XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
                 releaseInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO);
@@ -676,7 +683,7 @@ public class HelloOpenXR {
     private static Matrix4f    projectionMatrix = new Matrix4f();
     private static Matrix4f    viewMatrix       = new Matrix4f();
     private static FloatBuffer mvpMatrix        = BufferUtils.createFloatBuffer(16);
-    private void OpenGLRenderView(XrCompositionLayerProjectionView layerView, XrSwapchainImageOpenGLKHR swapchainImage, int viewIndex) {
+    public void OpenGLRenderView(XrCompositionLayerProjectionView layerView, XrSwapchainImageOpenGLKHR swapchainImage, int viewIndex) {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, swapchainFramebuffer);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, swapchainImage.image(), 0);
@@ -757,7 +764,7 @@ public class HelloOpenXR {
 //        }
     }
 
-    private static Matrix4f createProjectionFov(Matrix4f dest, XrFovf fov, float nearZ, float farZ) {
+    public static Matrix4f createProjectionFov(Matrix4f dest, XrFovf fov, float nearZ, float farZ) {
         try (MemoryStack stack = stackPush()) {
             float tanLeft        = (float) Math.tan(fov.angleLeft());
             float tanRight       = (float) Math.tan(fov.angleRight());
@@ -785,6 +792,25 @@ public class HelloOpenXR {
             m.put(3, 0.0f);
             m.put(7, 0.0f);
             m.put(11, -1.0f);
+            m.put(15, 0.0f);
+
+            //###
+
+            m.put(0, 2.0f / tanAngleWidth);
+            m.put(1, 0.0f);
+            m.put(2, 0.0f);
+            m.put(3, 0.0f);
+            m.put(4, 0.0f);
+            m.put(5, 2.0f / tanAngleHeight);
+            m.put(6, 0.0f);
+            m.put(7, 0.0f);
+            m.put(8, (tanRight + tanLeft) / tanAngleWidth);
+            m.put(9, (tanUp + tanDown) / tanAngleHeight);
+            m.put(10, -(farZ + nearZ) / (farZ - nearZ));
+            m.put(11, -1.0f);
+            m.put(12, 0.0f);
+            m.put(13, 0.0f);
+            m.put(14, -(farZ * (nearZ + nearZ)) / (farZ - nearZ));
             m.put(15, 0.0f);
             return dest.set(m);
         }

@@ -4,6 +4,10 @@
   "package": "net.sorenon.minexraft.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "FramebufferMixin",
+    "GameRendererMixin",
+    "GlStateManagerMixin",
+    "MatMixin",
     "MinecraftClientMixin"
   ],
   "client": [

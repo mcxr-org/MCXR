@@ -5,20 +5,19 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.screen.Overlay;
+import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SplashScreen;
 import net.minecraft.client.options.CloudRenderMode;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.Option;
-import net.minecraft.client.render.BackgroundRenderer;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.*;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.MetricsData;
 import net.minecraft.util.TickDurationMonitor;
 import net.minecraft.util.Util;
@@ -27,6 +26,7 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
+import net.sorenon.minexraft.XrCamera;
 import net.sorenon.minexraft.accessor.FBAccessor;
 import net.sorenon.minexraft.HelloOpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
@@ -251,8 +251,13 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Nullable
     private IntegratedServer server;
 
+    @Shadow public abstract void method_29970(Screen screen);
+
+    @Shadow public abstract void startIntegratedServer(String worldName);
+
     int colorTexture;
     Framebuffer leftEyeFramebuffer;
+    XrCamera xrCamera;
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
@@ -262,6 +267,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
         HelloOpenXR.Swapchain swapchain = helloOpenXR.swapchains[0];
         leftEyeFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
+        xrCamera = new XrCamera();
     }
 
 

@@ -3,18 +3,22 @@ package net.sorenon.minexraft.mixin;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3d;
 import net.sorenon.minexraft.MineXRaftClient;
+import net.sorenon.minexraft.accessor.CameraExt;
+import org.lwjgl.openxr.XrPosef;
 import org.lwjgl.openxr.XrQuaternionf;
+import org.lwjgl.openxr.XrVector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-//TODO extend Camera
 @Mixin(Camera.class)
-public class CameraMixin {
+public class CameraMixin implements CameraExt {
 
     @Shadow
     @Final
@@ -31,6 +35,10 @@ public class CameraMixin {
     @Shadow
     @Final
     private Vector3f diagonalPlane;
+
+    @Shadow private float pitch;
+
+    @Shadow private float yaw;
 
     @Inject(method = "setRotation", at = @At("HEAD"), cancellable = true)
     void setRot(float yaw, float pitch, CallbackInfo ci) {
@@ -52,5 +60,29 @@ public class CameraMixin {
             this.diagonalPlane.rotate(this.rotation);
             ci.cancel();
         }
+    }
+
+    @Inject(method = "getPos", at = @At("RETURN"), cancellable = true)
+    void pos(CallbackInfoReturnable<Vec3d> cir){
+        if (MineXRaftClient.pose != null) {
+            XrVector3f pos = MineXRaftClient.pose.position$();
+
+            cir.setReturnValue(cir.getReturnValue().add(pos.x(), pos.y(), pos.z()));
+        }
+    }
+
+    @Override
+    public void setPitch(float pitch) {
+        this.pitch = pitch;
+    }
+
+    @Override
+    public void setYaw(float yaw) {
+        this.yaw = yaw;
+    }
+
+    @Override
+    public Vector3f getDiagonalPlane() {
+        return diagonalPlane;
     }
 }

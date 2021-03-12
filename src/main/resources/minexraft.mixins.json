@@ -9,7 +9,8 @@
     "GameRendererMixin",
     "GlStateManagerMixin",
     "MatMixin",
-    "MinecraftClientMixin"
+    "MinecraftClientMixin",
+    "TitleMixin"
   ],
   "client": [
     "WindowMixin"

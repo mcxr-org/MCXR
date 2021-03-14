@@ -5,19 +5,20 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.screen.Overlay;
-import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SplashScreen;
 import net.minecraft.client.options.CloudRenderMode;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.Option;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.BackgroundRenderer;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.MetricsData;
 import net.minecraft.util.TickDurationMonitor;
 import net.minecraft.util.Util;
@@ -26,16 +27,17 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.sorenon.minexraft.XrCamera;
-import net.sorenon.minexraft.accessor.FBAccessor;
 import net.sorenon.minexraft.HelloOpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
+import net.sorenon.minexraft.XrCamera;
+import net.sorenon.minexraft.accessor.FBAccessor;
+import net.sorenon.minexraft.accessor.MinecraftClientEXT;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.openxr.*;
+import org.lwjgl.openxr.XR10;
+import org.lwjgl.openxr.XrEventDataBuffer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -50,11 +52,10 @@ import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC;
 import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_SRGB;
 
 @Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> {
+public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> implements MinecraftClientEXT {
 
     @Shadow
     private Thread thread;
@@ -259,6 +260,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Shadow public abstract void startIntegratedServer(String worldName);
 
+    @Shadow private int trackingTick;
     int colorTexture;
     Framebuffer leftEyeFramebuffer;
     XrCamera xrCamera;
@@ -289,20 +291,25 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         }
 
         if (helloOpenXR.sessionRunning) {
+
             helloOpenXR.renderFrameOpenXR((xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer) -> {
-                    colorTexture = xrSwapchainImageOpenGLKHR.image();
-                    ((FBAccessor) leftEyeFramebuffer).setColorTexture(xrSwapchainImageOpenGLKHR.image());
-                    Framebuffer vanFramebuffer = framebuffer;
-                    framebuffer = leftEyeFramebuffer;
-                    MineXRaftClient.viewportRect = xrCompositionLayerProjectionView.subImage().imageRect();
-                    MineXRaftClient.fov = xrCompositionLayerProjectionView.fov();
-                    MineXRaftClient.pose = xrCompositionLayerProjectionView.pose();
-                    MineXRaftClient.viewIndex = integer;
-                    renderXR(tick);
-                    MineXRaftClient.pose = null;
-                    MineXRaftClient.fov = null;
-                    MineXRaftClient.viewportRect = null;
-                    framebuffer = vanFramebuffer;
+//                long time = Util.getMeasuringTimeNano();
+//                colorTexture = xrSwapchainImageOpenGLKHR.image();
+//                ((FBAccessor) leftEyeFramebuffer).setColorTexture(xrSwapchainImageOpenGLKHR.image());
+//                Framebuffer vanFramebuffer = framebuffer;
+//                framebuffer = leftEyeFramebuffer;
+//                MineXRaftClient.viewportRect = xrCompositionLayerProjectionView.subImage().imageRect();
+//                MineXRaftClient.fov = xrCompositionLayerProjectionView.fov();
+//                MineXRaftClient.pose = xrCompositionLayerProjectionView.pose();
+//                MineXRaftClient.viewIndex = integer;
+////                    renderXR(tick);
+//                preRenderXR(tick, time);
+//                doRenderXR(tick, time);
+//                MineXRaftClient.pose = null;
+//                MineXRaftClient.fov = null;
+//                MineXRaftClient.viewportRect = null;
+//                framebuffer = vanFramebuffer;
+//                postRenderXR(tick, time);
                 return null;
             });
         } else {
@@ -315,8 +322,33 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     //renderLayerOpenXR
     void renderXR(boolean tick) {
-        this.window.setPhase("Pre render");
         long time = Util.getMeasuringTimeNano();
+        preRenderXR(tick, time);
+        //RENDER START
+        //renderLayerOpenXR
+        //foreach layer:
+        //int fbColOrg = framebuffer.color
+        //framebuffer.color = layer.color
+        //viewport
+        doRenderXR(tick, time);
+        //RENDER END
+        //SCRAP START
+//        RenderSystem.pushMatrix();
+//        this.framebuffer.draw(this.window.getFramebufferWidth(), this.window.getFramebufferHeight());
+//        RenderSystem.popMatrix();
+//        this.profiler.swap("updateDisplay");
+//        this.window.swapBuffers();
+//        k = this.getFramerateLimit();
+//        if ((double) k < Option.FRAMERATE_LIMIT.getMax()) {
+//            RenderSystem.limitDisplayFPS(k);
+//        }
+
+        postRenderXR(tick, time);
+    }
+
+    @Override
+    public void preRenderXR(boolean tick, long time) {
+        this.window.setPhase("Pre render");
         if (this.window.shouldClose()) {
             this.scheduleStop();
         }
@@ -355,34 +387,46 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.profiler.push("sound");
         this.soundManager.updateListenerPosition(this.gameRenderer.getCamera());
         this.profiler.pop();
-        //RENDER START
-        //renderLayerOpenXR
-        //foreach layer:
-        //int fbColOrg = framebuffer.color
-        //framebuffer.color = layer.color
-        //viewport
-        doRender(time, tick);
-        //RENDER END
-        //SCRAP START
-//        RenderSystem.pushMatrix();
-//        this.framebuffer.draw(this.window.getFramebufferWidth(), this.window.getFramebufferHeight());
-//        RenderSystem.popMatrix();
-//        this.profiler.swap("updateDisplay");
-//        this.window.swapBuffers();
-//        k = this.getFramerateLimit();
-//        if ((double) k < Option.FRAMERATE_LIMIT.getMax()) {
-//            RenderSystem.limitDisplayFPS(k);
-//        }
+    }
 
-        GLFW.glfwPollEvents();
+    @Override
+    public void doRenderXR(boolean tick, long frameStartTime) {
+        this.profiler.push("render");
+        RenderSystem.pushMatrix();
+        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, IS_SYSTEM_MAC);
+        this.framebuffer.beginWrite(true);
+        BackgroundRenderer.method_23792();
+        this.profiler.push("display");
+        RenderSystem.enableTexture();
+        RenderSystem.enableCull();
+        this.profiler.pop();
+        if (!this.skipGameRender) {
+            this.profiler.swap("gameRenderer");
+            this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, frameStartTime, tick);
+            glDisable(GL_FRAMEBUFFER_SRGB);
+            this.profiler.swap("toasts");
+            this.toastManager.draw(new MatrixStack());
+            this.profiler.pop();
+        }
+
+        if (this.tickProfilerResult != null) {
+            this.profiler.push("fpsPie");
+            this.drawProfilerResults(new MatrixStack(), this.tickProfilerResult);
+            this.profiler.pop();
+        }
+
+        this.profiler.push("blit");
+        this.framebuffer.endWrite();
+        RenderSystem.popMatrix();
+
         RenderSystem.replayQueue();
         Tessellator.getInstance().getBuffer().clear();
+    }
 
-        //SCRAP END
+    @Override
+    public void postRenderXR(boolean tick, long frameStartTime) {
+        GLFW.glfwPollEvents();
 
-        this.profiler.swap("yield");
-//        Thread.yield();
-        this.profiler.pop();
         this.window.setPhase("Post render");
         ++this.fpsCounter;
         boolean bl = this.isIntegratedServerRunning() && (this.currentScreen != null && this.currentScreen.isPauseScreen() || this.overlay != null && this.overlay.pausesGame()) && !this.server.isRemote();
@@ -415,41 +459,13 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.profiler.pop();
     }
 
-    private void doRender(long time, boolean tick) {
-//        int colAttachOrg = ((FBAccessor)framebuffer).getColorTexture();
-//        ((FBAccessor)framebuffer).setColorTexture(colorTexture);
+    @Override
+    public Framebuffer swapchainFramebuffer() {
+        return leftEyeFramebuffer;
+    }
 
-        this.profiler.push("render");
-        RenderSystem.pushMatrix();
-        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT, IS_SYSTEM_MAC);
-        this.framebuffer.beginWrite(true);
-        BackgroundRenderer.method_23792();
-        this.profiler.push("display");
-        RenderSystem.enableTexture();
-        RenderSystem.enableCull();
-        this.profiler.pop();
-        if (!this.skipGameRender) {
-            this.profiler.swap("gameRenderer");
-//            if (viewIndex == 0) {
-//                glEnable(GL_FRAMEBUFFER_SRGB);
-//            }
-            this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, time, tick);
-            glDisable(GL_FRAMEBUFFER_SRGB);
-            this.profiler.swap("toasts");
-            this.toastManager.draw(new MatrixStack());
-            this.profiler.pop();
-        }
-
-        if (this.tickProfilerResult != null) {
-            this.profiler.push("fpsPie");
-            this.drawProfilerResults(new MatrixStack(), this.tickProfilerResult);
-            this.profiler.pop();
-        }
-
-        this.profiler.push("blit");
-        this.framebuffer.endWrite();
-        RenderSystem.popMatrix();
-
-//        ((FBAccessor)framebuffer).setColorTexture(colAttachOrg);
+    @Override
+    public void setFramebuffer(Framebuffer framebuffer) {
+        this.framebuffer = framebuffer;
     }
 }

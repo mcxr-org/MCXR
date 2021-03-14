@@ -50,7 +50,6 @@ public class CameraMixin implements CameraExt {
             float z = -quat.z() * invNorm;
             float w = quat.w() * invNorm;
 
-//            this.rotation.set(quat.x(), quat.y(), quat.z(), quat.w());
             this.rotation.set(x, y, z, w);
             this.horizontalPlane.set(0.0F, 0.0F, 1.0F);
             this.horizontalPlane.rotate(this.rotation);

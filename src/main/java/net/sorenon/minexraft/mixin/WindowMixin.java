@@ -1,9 +1,7 @@
 package net.sorenon.minexraft.mixin;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
-import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.HelloOpenXR;
@@ -25,12 +23,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL11.glEnable;
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_SRGB;
-import static org.lwjgl.openxr.FBColorSpace.XR_COLOR_SPACE_UNMANAGED_FB;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -43,20 +36,19 @@ public class WindowMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
     private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
-//        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE); //Disable vsync
+        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE); //Disable vsync
 
         return GLFW.glfwCreateWindow(width, height, title, monitor, share);
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void postInit(WindowEventHandler eventHandler, MonitorTracker monitorTracker, WindowSettings settings, String videoMode, String title, CallbackInfo ci) throws InterruptedException {
-//        MineXRaftClient.helloOpenXR.initializeAndBindOpenGL();
+    private void postInit(WindowEventHandler eventHandler, MonitorTracker monitorTracker, WindowSettings settings, String videoMode, String title, CallbackInfo ci) {
         HelloOpenXR helloOpenXR = MineXRaftClient.helloOpenXR;
         try (MemoryStack stack = stackPush()) {
             //Initialize OpenXR's OpenGL compatability
             XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.mallocStack();
             graphicsRequirements.set(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR, 0, 0, 0);
-            KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(helloOpenXR.xrInstance, helloOpenXR.systemID, graphicsRequirements);
+            helloOpenXR.xrCheck(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(helloOpenXR.xrInstance, helloOpenXR.systemID, graphicsRequirements));
 
             //Check if OpenGL ver is supported by OpenXR ver
             if (graphicsRequirements.minApiVersionSupported() > XR10.XR_MAKE_VERSION(GL11.glGetInteger(GL30.GL_MAJOR_VERSION), GL11.glGetInteger(GL30.GL_MINOR_VERSION), 0)) {
@@ -86,7 +78,7 @@ public class WindowMixin {
             );
 
             PointerBuffer pp = stack.mallocPointer(1);
-            XR10.xrCreateSession(helloOpenXR.xrInstance, sessionCreateInfo, pp);
+            helloOpenXR.xrCheck(XR10.xrCreateSession(helloOpenXR.xrInstance, sessionCreateInfo, pp));
             System.out.println(pp.get(0));
             helloOpenXR.xrSession = new XrSession(pp.get(0), helloOpenXR.xrInstance);
         }
@@ -94,7 +86,6 @@ public class WindowMixin {
         helloOpenXR.createXRReferenceSpace();
         helloOpenXR.createXRSwapchains();
         helloOpenXR.createOpenGLResourses();
-//        glEnable(GL_FRAMEBUFFER_SRGB); When this is on its too bright, when this is off its too dark :/
     }
 
 //    @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)

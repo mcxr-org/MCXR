@@ -5,12 +5,8 @@ import net.minecraft.util.math.Matrix4f;
 import net.sorenon.minexraft.HelloOpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
 import net.sorenon.minexraft.accessor.MatAccessor;
-import org.joml.Math;
-import org.lwjgl.BufferUtils;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
-import java.nio.FloatBuffer;
 
 @Mixin(Matrix4f.class)
 public abstract class MatMixin implements MatAccessor {
@@ -63,11 +59,6 @@ public abstract class MatMixin implements MatAccessor {
     @Shadow
     protected float a33;
 
-    @Shadow public abstract void writeToBuffer(FloatBuffer floatBuffer);
-
-    //??????
-    //major minor order seams to be wrong
-    //TODO fix this on yarn? not sure if this is intentional
     @Override
     public void proj() {
         org.joml.Matrix4f proj = new org.joml.Matrix4f();
@@ -89,7 +80,7 @@ public abstract class MatMixin implements MatAccessor {
         a13 = proj.m31();
         a23 = proj.m32();
         a33 = proj.m33();
-//        {
+//        { //This code has the same effect as above but i'll keep using the top one for now
 //            float tanLeft        = (float) Math.tan(MineXRaftClient.fov.angleLeft());
 //            float tanRight       = (float) Math.tan(MineXRaftClient.fov.angleRight());
 //            float tanDown        = (float) Math.tan(MineXRaftClient.fov.angleDown());

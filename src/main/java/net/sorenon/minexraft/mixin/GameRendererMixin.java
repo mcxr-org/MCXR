@@ -48,13 +48,4 @@ public class GameRendererMixin {
     void multiplyYaw(MatrixStack matrixStack, Quaternion yawQuat){
         matrixStack.multiply(camera.getRotation());
     }
-
-
-    //DEBUG
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0))
-    void inject(float tickDelta, long startTime, boolean tick, CallbackInfo ci){
-//        if (viewIndex == 0) {
-//            glEnable(GL_FRAMEBUFFER_SRGB);
-//        }
-    }
 }

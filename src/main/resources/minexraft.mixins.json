@@ -4,17 +4,17 @@
   "package": "net.sorenon.minexraft.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+
+  ],
+  "client": [
+    "WindowMixin",
     "CameraMixin",
     "FramebufferMixin",
     "GameRendererMixin",
     "GlStateManagerMixin",
     "MatMixin",
     "MinecraftClientMixin",
-    "TextureUtilMixin",
     "TitleMixin"
-  ],
-  "client": [
-    "WindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

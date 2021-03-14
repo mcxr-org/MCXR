@@ -28,6 +28,7 @@ import java.util.Map;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.openxr.FBColorSpace.XR_COLOR_SPACE_UNMANAGED_FB;
 import static org.lwjgl.system.MemoryStack.stackMalloc;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -357,6 +358,7 @@ public class HelloOpenXR {
                 XR10.xrEnumerateSwapchainFormats(xrSession, intBuf, swapchainFormats);
 
                 long[] desiredSwapchainFormats = {
+                        GL_SRGB8_ALPHA8,
                         GL11.GL_RGB10_A2,
                         GL30.GL_RGBA16F,
                         // The two below should only be used as a fallback, as they are linear color formats without enough bits for color

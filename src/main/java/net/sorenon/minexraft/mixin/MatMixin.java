@@ -1,5 +1,6 @@
 package net.sorenon.minexraft.mixin;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Matrix4f;
 import net.sorenon.minexraft.HelloOpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
@@ -70,7 +71,7 @@ public abstract class MatMixin implements MatAccessor {
     @Override
     public void proj() {
         org.joml.Matrix4f proj = new org.joml.Matrix4f();
-        HelloOpenXR.createProjectionFov(proj, MineXRaftClient.fov, 0.1f, 100f);
+        HelloOpenXR.createProjectionFov(proj, MineXRaftClient.fov, 0.1f, MinecraftClient.getInstance().gameRenderer.getViewDistance() * 2);
 
         a00 = proj.m00();
         a10 = proj.m01();

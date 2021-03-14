@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.openxr.*;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -48,6 +49,9 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_SRGB;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> {
@@ -286,9 +290,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
         if (helloOpenXR.sessionRunning) {
             helloOpenXR.renderFrameOpenXR((xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer) -> {
-                if (integer == 1) {
-//                    helloOpenXR.OpenGLRenderView(xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer);
-                } else {
                     colorTexture = xrSwapchainImageOpenGLKHR.image();
                     ((FBAccessor) leftEyeFramebuffer).setColorTexture(xrSwapchainImageOpenGLKHR.image());
                     Framebuffer vanFramebuffer = framebuffer;
@@ -296,12 +297,12 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
                     MineXRaftClient.viewportRect = xrCompositionLayerProjectionView.subImage().imageRect();
                     MineXRaftClient.fov = xrCompositionLayerProjectionView.fov();
                     MineXRaftClient.pose = xrCompositionLayerProjectionView.pose();
+                    MineXRaftClient.viewIndex = integer;
                     renderXR(tick);
                     MineXRaftClient.pose = null;
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
                     framebuffer = vanFramebuffer;
-                }
                 return null;
             });
         } else {
@@ -429,7 +430,11 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.profiler.pop();
         if (!this.skipGameRender) {
             this.profiler.swap("gameRenderer");
+//            if (viewIndex == 0) {
+//                glEnable(GL_FRAMEBUFFER_SRGB);
+//            }
             this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, time, tick);
+            glDisable(GL_FRAMEBUFFER_SRGB);
             this.profiler.swap("toasts");
             this.toastManager.draw(new MatrixStack());
             this.profiler.pop();

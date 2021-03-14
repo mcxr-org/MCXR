@@ -10,6 +10,7 @@
     "GlStateManagerMixin",
     "MatMixin",
     "MinecraftClientMixin",
+    "TextureUtilMixin",
     "TitleMixin"
   ],
   "client": [

@@ -16,15 +16,16 @@ public class MineXRaftClient implements ClientModInitializer {
     public static XrRect2Di viewportRect = null;
     public static XrFovf fov = null;
     public static XrPosef pose = null;
+    public static int viewIndex = 0;
 
     @Override
     public void onInitializeClient() {
-		SharedLibrary defaultOpenXRLoader = loadNative(XR.class, "C:\\Users\\soren\\Documents\\Programming\\openxr_loader_windows\\x64\\bin\\openxr_loader.dll", "openxr_loader");
-		XR.create(defaultOpenXRLoader);
+        SharedLibrary defaultOpenXRLoader = loadNative(XR.class, "C:\\Users\\soren\\Documents\\Programming\\openxr_loader_windows\\x64\\bin\\openxr_loader.dll", "openxr_loader");
+        XR.create(defaultOpenXRLoader);
         helloOpenXR.createOpenXRInstance();
         helloOpenXR.initializeOpenXRSystem();
 
-		System.out.println("Hello Fabric world!");
+        System.out.println("Hello Fabric world!");
     }
 
     private static SharedLibrary loadNative(Class<?> context, String path, String libName) {

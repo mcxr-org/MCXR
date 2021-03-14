@@ -13,7 +13,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static net.sorenon.minexraft.MineXRaftClient.viewIndex;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_SRGB;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
@@ -42,5 +47,14 @@ public class GameRendererMixin {
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 3) , method = "renderWorld")
     void multiplyYaw(MatrixStack matrixStack, Quaternion yawQuat){
         matrixStack.multiply(camera.getRotation());
+    }
+
+
+    //DEBUG
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0))
+    void inject(float tickDelta, long startTime, boolean tick, CallbackInfo ci){
+//        if (viewIndex == 0) {
+//            glEnable(GL_FRAMEBUFFER_SRGB);
+//        }
     }
 }

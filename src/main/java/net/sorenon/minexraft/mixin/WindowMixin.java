@@ -27,6 +27,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_SRGB;
+import static org.lwjgl.openxr.FBColorSpace.XR_COLOR_SPACE_UNMANAGED_FB;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -90,6 +94,7 @@ public class WindowMixin {
         helloOpenXR.createXRReferenceSpace();
         helloOpenXR.createXRSwapchains();
         helloOpenXR.createOpenGLResourses();
+//        glEnable(GL_FRAMEBUFFER_SRGB); When this is on its too bright, when this is off its too dark :/
     }
 
 //    @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)

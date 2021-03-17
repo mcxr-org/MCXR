@@ -4,7 +4,7 @@ import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
-import net.sorenon.minexraft.HelloOpenXR;
+import net.sorenon.minexraft.OpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -43,12 +43,13 @@ public class WindowMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void postInit(WindowEventHandler eventHandler, MonitorTracker monitorTracker, WindowSettings settings, String videoMode, String title, CallbackInfo ci) {
-        HelloOpenXR helloOpenXR = MineXRaftClient.helloOpenXR;
+        //TODO initialize session only on user command
+        OpenXR openXR = MineXRaftClient.OPEN_XR;
         try (MemoryStack stack = stackPush()) {
             //Initialize OpenXR's OpenGL compatability
             XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.mallocStack();
             graphicsRequirements.set(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR, 0, 0, 0);
-            helloOpenXR.xrCheck(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(helloOpenXR.xrInstance, helloOpenXR.systemID, graphicsRequirements));
+            openXR.xrCheck(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(openXR.xrInstance, openXR.systemID, graphicsRequirements));
 
             //Check if OpenGL ver is supported by OpenXR ver
             if (graphicsRequirements.minApiVersionSupported() > XR10.XR_MAKE_VERSION(GL11.glGetInteger(GL30.GL_MAJOR_VERSION), GL11.glGetInteger(GL30.GL_MINOR_VERSION), 0)) {
@@ -64,7 +65,7 @@ public class WindowMixin {
                         User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(handle)),
                         GLFWNativeWGL.glfwGetWGLContext(handle)
                 );
-                helloOpenXR.graphicsBinding = graphicsBinding;
+                openXR.graphicsBinding = graphicsBinding;
             } else {
                 throw new IllegalStateException();
             }
@@ -72,20 +73,21 @@ public class WindowMixin {
             XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.mallocStack();
             sessionCreateInfo.set(
                     XR10.XR_TYPE_SESSION_CREATE_INFO,
-                    helloOpenXR.graphicsBinding.address(),
+                    openXR.graphicsBinding.address(),
                     0,
-                    helloOpenXR.systemID
+                    openXR.systemID
             );
 
             PointerBuffer pp = stack.mallocPointer(1);
-            helloOpenXR.xrCheck(XR10.xrCreateSession(helloOpenXR.xrInstance, sessionCreateInfo, pp));
+            openXR.xrCheck(XR10.xrCreateSession(openXR.xrInstance, sessionCreateInfo, pp));
             System.out.println(pp.get(0));
-            helloOpenXR.xrSession = new XrSession(pp.get(0), helloOpenXR.xrInstance);
+            openXR.xrSession = new XrSession(pp.get(0), openXR.xrInstance);
         }
 
-        helloOpenXR.createXRReferenceSpace();
-        helloOpenXR.createXRSwapchains();
-        helloOpenXR.createOpenGLResourses();
+        openXR.createXRReferenceSpace();
+        openXR.createXRSwapchains();
+        openXR.createOpenGLResourses();
+        openXR.makeActions();
     }
 
 //    @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
@@ -108,4 +110,9 @@ public class WindowMixin {
 //    private void swapBuffers(CallbackInfo ci){
 //        ci.cancel();
 //    }
+
+    @Inject(method = "onWindowFocusChanged", at = @At("HEAD"), cancellable = true)
+    void foc(long window, boolean focused, CallbackInfo ci){
+        ci.cancel();
+    }
 }

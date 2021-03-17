@@ -5,23 +5,16 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.util.Util;
 import net.sorenon.minexraft.accessor.FBAccessor;
-import net.sorenon.minexraft.accessor.MatAccessor;
 import net.sorenon.minexraft.accessor.MinecraftClientEXT;
 import org.joml.Math;
 import org.joml.Matrix4f;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFWNativeWGL;
-import org.lwjgl.glfw.GLFWNativeWin32;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.openxr.*;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.Platform;
-import org.lwjgl.system.Struct;
-import org.lwjgl.system.windows.User32;
+import org.lwjgl.system.*;
+import org.lwjgl.system.dyncall.DynCall;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -33,9 +26,8 @@ import java.util.Map;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.openxr.FBColorSpace.XR_COLOR_SPACE_UNMANAGED_FB;
-import static org.lwjgl.system.MemoryStack.stackMalloc;
-import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryStack.stackMallocLong;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -43,33 +35,44 @@ import static org.lwjgl.system.MemoryUtil.*;
  * https://github.com/maluoi/OpenXRSamples/blob/master/SingleFileExample
  * and
  * https://github.com/ReliaSolve/OpenXR-OpenGL-Example
- * Currently missing actions, XrResult failure catching, and can only run on windows
+ * Can only run on windows until glfw is updated
  * Requires a stero headset and an install of the OpenXR runtime to run
+ * <p>
+ * {
+ * for (int hand = 0; hand < 2; hand++) {
+ * if (inputState.renderHand[hand]) {
+ * XrVector3f    handPos = inputState.handPose[hand].position$();
+ * XrQuaternionf handRot = inputState.handPose[hand].orientation();
+ * modelviewMatrix.translationRotateScale(handPos.x(), handPos.y(), handPos.z(), handRot.x(), handRot.y(), handRot.z(), handRot.w(), 0.1f);
+ * glUniformMatrix4fv(glGetUniformLocation(colorShader, "model"), false, modelviewMatrix.get(mvpMatrix));
+ * glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
+ * }
+ * }
+ * }
  */
-public class HelloOpenXR {
-
-//    long window;
+public class OpenXR {
 
     //XR globals
     //Init
-    public XrInstance                     xrInstance;
-    public long                           systemID;
-    public Struct                         graphicsBinding;
-    public XrSession                      xrSession;
-    XrSpace                        xrAppSpace;  //The real world space in which the program runs
-    long                           glColorFormat;
-    XrView.Buffer                  views;       //Each view represents an eye in the headset with views[0] being left and views[1] being right
-    public Swapchain[]                    swapchains;  //One swapchain per view
+    public XrInstance xrInstance;
+    public long systemID;
+    public Struct graphicsBinding;
+    public XrSession xrSession;
+    XrSpace xrAppSpace;  //The base world space in which the program runs
+    long glColorFormat;
+    XrView.Buffer views;       //Each view represents an eye in the headset with views[0] being left and views[1] being right
+    public Swapchain[] swapchains;  //One swapchain per view
     XrViewConfigurationView.Buffer viewConfigs;
-    int                            viewConfigType = XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+    int viewConfigType = XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
+    public InputState inputState;
 
     //Runtime
     public XrEventDataBuffer eventDataBuffer;
-    int               sessionState;
-    public boolean           sessionRunning;
+    int sessionState;
+    public boolean sessionRunning;
 
     //GL globals
-    Map<XrSwapchainImageOpenGLKHR, Integer> depthTextures; //Swapchain images only provide a color texture so we have to create depth textures seperatley
+    Map<XrSwapchainImageOpenGLKHR, Integer> depthTextures; //Swapchain images only provide a color texture so we have to create depth textures separately
 
     int swapchainFramebuffer;
     int cubeVertexBuffer;
@@ -81,11 +84,35 @@ public class HelloOpenXR {
     int textureShader;
     int colorShader;
 
+    public static final XrPosef identityPose = XrPosef.malloc().set(
+            XrQuaternionf.mallocStack().set(0, 0, 0, 1),
+            XrVector3f.callocStack()
+    );
+
     public static class Swapchain {
-        XrSwapchain                      handle;
-        public int                              width;
-        public int                              height;
+        XrSwapchain handle;
+        public int width;
+        public int height;
         XrSwapchainImageOpenGLKHR.Buffer images;
+    }
+
+    static class InputState implements NativeResource {
+        XrActionSet actionSet;
+        XrAction poseAction;
+        XrAction selectAction;
+        LongBuffer handSubactionPath = memAllocLong(2);
+        XrSpace[] handSpace = new XrSpace[2];
+        boolean[] renderHand = new boolean[2];
+        boolean[] handSelect = new boolean[2];
+        XrPosef[] handPose = {XrPosef.malloc().set(identityPose), XrPosef.malloc().set(identityPose)};
+
+        @Override
+        public void free() {
+            memFree(handSubactionPath);
+            for (XrPosef xrPosef : handPose) {
+                xrPosef.free();
+            }
+        }
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -95,7 +122,7 @@ public class HelloOpenXR {
 //            XR.create("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\bin\\win64\\openxr_loader.dll");
 //        XR.create();
 
-        HelloOpenXR helloOpenXR = new HelloOpenXR();
+        OpenXR openXR = new OpenXR();
 //        helloOpenXR.createOpenXRInstance();
 //        helloOpenXR.initializeOpenXRSystem();
 //        helloOpenXR.initializeAndBindOpenGL();
@@ -103,8 +130,8 @@ public class HelloOpenXR {
 //        helloOpenXR.createXRSwapchains();
 //        helloOpenXR.createOpenGLResourses();
 
-        helloOpenXR.eventDataBuffer = XrEventDataBuffer.calloc();
-        helloOpenXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
+        openXR.eventDataBuffer = XrEventDataBuffer.calloc();
+        openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
 //        while (!helloOpenXR.pollEvents() && !glfwWindowShouldClose(helloOpenXR.window)) {
 //            if (helloOpenXR.sessionRunning) {
 //                helloOpenXR.renderFrameOpenXR();
@@ -115,27 +142,27 @@ public class HelloOpenXR {
 //        }
 
         //Destroy OpenXR
-        helloOpenXR.eventDataBuffer.free();
-        helloOpenXR.graphicsBinding.free();
-        helloOpenXR.views.free();
-        helloOpenXR.viewConfigs.free();
-        for (Swapchain swapchain : helloOpenXR.swapchains) {
+        openXR.eventDataBuffer.free();
+        openXR.graphicsBinding.free();
+        openXR.views.free();
+        openXR.viewConfigs.free();
+        for (Swapchain swapchain : openXR.swapchains) {
             swapchain.images.free();
         }
 
         //Destroy OpenGL
-        for (int texture : helloOpenXR.depthTextures.values()) {
+        for (int texture : openXR.depthTextures.values()) {
             glDeleteTextures(texture);
         }
-        glDeleteFramebuffers(helloOpenXR.swapchainFramebuffer);
-        glDeleteBuffers(helloOpenXR.cubeVertexBuffer);
-        glDeleteBuffers(helloOpenXR.cubeIndexBuffer);
-        glDeleteBuffers(helloOpenXR.quadVertexBuffer);
-        glDeleteVertexArrays(helloOpenXR.cubeVAO);
-        glDeleteVertexArrays(helloOpenXR.quadVAO);
-        glDeleteProgram(helloOpenXR.screenShader);
-        glDeleteProgram(helloOpenXR.textureShader);
-        glDeleteProgram(helloOpenXR.colorShader);
+        glDeleteFramebuffers(openXR.swapchainFramebuffer);
+        glDeleteBuffers(openXR.cubeVertexBuffer);
+        glDeleteBuffers(openXR.cubeIndexBuffer);
+        glDeleteBuffers(openXR.quadVertexBuffer);
+        glDeleteVertexArrays(openXR.cubeVAO);
+        glDeleteVertexArrays(openXR.quadVAO);
+        glDeleteProgram(openXR.screenShader);
+        glDeleteProgram(openXR.textureShader);
+        glDeleteProgram(openXR.colorShader);
         glfwTerminate();
     }
 
@@ -153,7 +180,7 @@ public class HelloOpenXR {
         return b;
     }
 
-    private static ByteBuffer mallocAndFillBufferUnsafe(int capacity, int sizeof, int type) {
+    private static ByteBuffer mallocAndFillBufferHeap(int capacity, int sizeof, int type) {
         ByteBuffer b = memAlloc(capacity * sizeof);
 
         for (int i = 0; i < capacity; i++) {
@@ -167,21 +194,21 @@ public class HelloOpenXR {
     public void createOpenXRInstance() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer numExtensions = stack.mallocInt(1);
-            xrCheck(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer)null, numExtensions, null));
+            xrCheck(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
 
             XrExtensionProperties.Buffer properties = new XrExtensionProperties.Buffer(
                     mallocAndFillBufferStack(numExtensions.get(0), XrExtensionProperties.SIZEOF, XR10.XR_TYPE_EXTENSION_PROPERTIES)
             );
 
-            xrCheck(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer)null, numExtensions, properties));
+            xrCheck(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             System.out.printf("OpenXR loaded with %d extensions:%n", numExtensions.get(0));
             System.out.println("~~~~~~~~~~~~~~~~~~");
-            PointerBuffer extensions    = stack.mallocPointer(numExtensions.get(0));
-            boolean       missingOpenGL = true;
+            PointerBuffer extensions = stack.mallocPointer(numExtensions.get(0));
+            boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
-                XrExtensionProperties prop          = properties.get();
-                String                extensionName = prop.extensionNameString();
+                XrExtensionProperties prop = properties.get();
+                String extensionName = prop.extensionNameString();
                 System.out.println(extensionName);
                 extensions.put(memASCII(extensionName));
                 if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
@@ -231,85 +258,6 @@ public class HelloOpenXR {
         }
     }
 
-    public void initializeAndBindOpenGL() {
-        try (MemoryStack stack = stackPush()) {
-            //Initialize OpenXR's OpenGL compatability
-            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.mallocStack();
-            graphicsRequirements.set(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR, 0, 0, 0);
-            KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(xrInstance, systemID, graphicsRequirements);
-
-            //Init glfw
-            if (!glfwInit()) {
-                throw new IllegalStateException("Failed to initialize GLFW.");
-            }
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-//            window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-//            glfwMakeContextCurrent(window);
-            GL.createCapabilities();
-
-            //Check if OpenGL ver is supported by OpenXR ver
-            if (graphicsRequirements.minApiVersionSupported() > XR10.XR_MAKE_VERSION(GL11.glGetInteger(GL30.GL_MAJOR_VERSION), GL11.glGetInteger(GL30.GL_MINOR_VERSION), 0)) {
-                throw new IllegalStateException("Runtime does not support desired Graphics API and/or version");
-            }
-
-            //Bind the OpenGL context to the OpenXR instance and create the session
-            switch (Platform.get()) {
-                case LINUX:
-//                    if (xlib) { TODO
-//                        XrGraphicsBindingOpenGLXlibKHR graphicsBinding = XrGraphicsBindingOpenGLXlibKHR.malloc();
-//                        graphicsBinding.set(
-//                            KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
-//                            NULL,
-//                            GLFWNativeX11.glfwGetX11Display(),
-//                            ,
-//                            ,
-//                            GLX.glXGetCurrentDrawable(),
-//                            GLFWNativeGLX.glfwGetGLXContext(window)
-//                        );
-//                        this.graphicsBinding = graphicsBinding;
-//                    } else if (wayland) {
-//                        XrGraphicsBindingOpenGLWaylandKHR graphicsBinding = XrGraphicsBindingOpenGLWaylandKHR.malloc();
-//                        graphicsBinding.set(
-//                            KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WAYLAND_KHR,
-//                            NULL,
-//                            GLFWNativeWayland.glfwGetWaylandDisplay()
-//                        );
-//                        this.graphicsBinding = graphicsBinding;
-//                    } else {
-//                        throw new IllegalStateException();
-//                    }
-                    throw new IllegalStateException();
-                case WINDOWS:
-//                    XrGraphicsBindingOpenGLWin32KHR graphicsBinding = XrGraphicsBindingOpenGLWin32KHR.malloc();
-//                    graphicsBinding.set(
-//                            KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
-//                            NULL,
-//                            User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(window)),
-//                            GLFWNativeWGL.glfwGetWGLContext(window)
-//                    );
-                    this.graphicsBinding = graphicsBinding;
-                    break;
-                default:
-                    throw new IllegalStateException();
-            }
-
-            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.mallocStack();
-            sessionCreateInfo.set(
-                    XR10.XR_TYPE_SESSION_CREATE_INFO,
-                    graphicsBinding.address(),
-                    0,
-                    systemID
-            );
-
-            PointerBuffer pp = stack.mallocPointer(1);
-            XR10.xrCreateSession(xrInstance, sessionCreateInfo, pp);
-            xrSession = new XrSession(pp.get(0), xrInstance);
-        }
-    }
-
     public void createXRReferenceSpace() {
         try (MemoryStack stack = stackPush()) {
             XrPosef identityPose = XrPosef.mallocStack();
@@ -322,7 +270,7 @@ public class HelloOpenXR {
             referenceSpaceCreateInfo.set(
                     XR10.XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
                     NULL,
-                    XR10.XR_REFERENCE_SPACE_TYPE_LOCAL,
+                    XR10.XR_REFERENCE_SPACE_TYPE_STAGE, //TODO make this local
                     identityPose
             );
             PointerBuffer pp = stack.mallocPointer(1);
@@ -348,13 +296,13 @@ public class HelloOpenXR {
             IntBuffer intBuf = stack.mallocInt(1);
             xrCheck(XR10.xrEnumerateViewConfigurationViews(xrInstance, systemID, viewConfigType, intBuf, null));
             viewConfigs = new XrViewConfigurationView.Buffer(
-                    mallocAndFillBufferUnsafe(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
+                    mallocAndFillBufferHeap(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
             );
             xrCheck(XR10.xrEnumerateViewConfigurationViews(xrInstance, systemID, viewConfigType, intBuf, viewConfigs));
             int viewCountNumber = intBuf.get(0);
 
             views = new XrView.Buffer(
-                    mallocAndFillBufferUnsafe(viewCountNumber, XrView.SIZEOF, XR10.XR_TYPE_VIEW)
+                    mallocAndFillBufferHeap(viewCountNumber, XrView.SIZEOF, XR10.XR_TYPE_VIEW)
             );
 
             if (viewCountNumber > 0) {
@@ -389,9 +337,9 @@ public class HelloOpenXR {
 
                 swapchains = new Swapchain[viewCountNumber];
                 for (int i = 0; i < viewCountNumber; i++) {
-                    XrViewConfigurationView viewConfig          = viewConfigs.get(i);
-                    XrSwapchainCreateInfo   swapchainCreateInfo = XrSwapchainCreateInfo.mallocStack();
-                    Swapchain               swapchainWrapper    = new Swapchain();
+                    XrViewConfigurationView viewConfig = viewConfigs.get(i);
+                    XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.mallocStack();
+                    Swapchain swapchainWrapper = new Swapchain();
 
                     swapchainCreateInfo.set(
                             XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
@@ -414,7 +362,7 @@ public class HelloOpenXR {
                     swapchainWrapper.height = swapchainCreateInfo.height();
 
                     xrCheck(XR10.xrEnumerateSwapchainImages(swapchainWrapper.handle, intBuf, null));
-                    int                              imageCount           = intBuf.get(0);
+                    int imageCount = intBuf.get(0);
                     XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.create(imageCount);
                     for (XrSwapchainImageOpenGLKHR image : swapchainImageBuffer) {
                         image.type(KHROpenglEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
@@ -439,7 +387,7 @@ public class HelloOpenXR {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, swapchain.width, swapchain.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer)null);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, swapchain.width, swapchain.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer) null);
                 depthTextures.put(swapchainImage, texture);
             }
         }
@@ -649,11 +597,22 @@ public class HelloOpenXR {
             assert (viewCountOutput == swapchains.length);
             assert (viewCountOutput == 2);
 
-            projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferUnsafe(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
+            projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
 
             MinecraftClientEXT mc = ((MinecraftClientEXT) MinecraftClient.getInstance());
-            long time = Util.getMeasuringTimeNano();
-            mc.preRenderXR(true, time);
+            long frameStartTime = Util.getMeasuringTimeNano();
+            mc.preRenderXR(true, frameStartTime);
+
+            // Update hand position based on the predicted time of when the frame will be rendered! This
+            // should result in a more accurate location, and reduce perceived lag.
+            if (sessionState == XR10.XR_SESSION_STATE_FOCUSED) {
+                for (int i = 0; i < 2; i++) {
+                    if (!inputState.renderHand[i]) {
+                        continue;
+                    }
+                    setPoseFromSpace(inputState.handSpace[i], predictedDisplayTime, inputState.handPose[i]);
+                }
+            }
 
             // Render view to the appropriate part of the swapchain image.
             for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
@@ -688,10 +647,10 @@ public class HelloOpenXR {
                     mc.setFramebuffer(mc.swapchainFramebuffer());
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
                     MineXRaftClient.fov = projectionLayerView.fov();
-                    MineXRaftClient.pose = projectionLayerView.pose();
+                    MineXRaftClient.eyePose = projectionLayerView.pose();
                     MineXRaftClient.viewIndex = viewIndex;
-                    mc.doRenderXR(true, time);
-                    MineXRaftClient.pose = null;
+                    mc.doRenderXR(true, frameStartTime);
+                    MineXRaftClient.eyePose = null;
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
 
@@ -702,7 +661,7 @@ public class HelloOpenXR {
                 releaseInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO);
                 xrCheck(XR10.xrReleaseSwapchainImage(viewSwapchain.handle, releaseInfo));
             }
-            mc.postRenderXR(true, time);
+            mc.postRenderXR(true, frameStartTime);
 
             layer.space(xrAppSpace);
             layer.views(projectionLayerViews);
@@ -712,11 +671,11 @@ public class HelloOpenXR {
 
     public static Matrix4f createProjectionFov(Matrix4f dest, XrFovf fov, float nearZ, float farZ) {
         try (MemoryStack stack = stackPush()) {
-            float tanLeft        = (float) Math.tan(fov.angleLeft());
-            float tanRight       = (float) Math.tan(fov.angleRight());
-            float tanDown        = (float) Math.tan(fov.angleDown());
-            float tanUp          = (float) Math.tan(fov.angleUp());
-            float tanAngleWidth  = tanRight - tanLeft;
+            float tanLeft = (float) Math.tan(fov.angleLeft());
+            float tanRight = (float) Math.tan(fov.angleRight());
+            float tanDown = (float) Math.tan(fov.angleDown());
+            float tanUp = (float) Math.tan(fov.angleUp());
+            float tanAngleWidth = tanRight - tanLeft;
             float tanAngleHeight = tanUp - tanDown;
 
             FloatBuffer m = stack.mallocFloat(16);
@@ -812,5 +771,185 @@ public class HelloOpenXR {
         public XrResultException(String s) {
             super(s);
         }
+    }
+
+    //This is probably just a temporary ease of access feature while i get used to the OpenXR api
+    public HashMap<String, Long> paths = new HashMap<>();
+
+    public long xrPath(String pathIn) {
+        return paths.computeIfAbsent(pathIn, s -> {
+            try (MemoryStack stack = stackPush()) {
+                LongBuffer buf = stack.mallocLong(1);
+                xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/grip/pose", buf));
+                return buf.get(0);
+            }
+        });
+    }
+
+    public void makeActions() {
+        try (MemoryStack stack = stackPush()) {
+            inputState = new InputState();
+
+            XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.mallocStack().set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
+                    NULL,
+                    memASCII("gameplay"),
+                    memASCII("Gameplay"),
+                    0
+            );
+            PointerBuffer pp = stackMallocPointer(1);
+            xrCheck(XR10.xrCreateActionSet(xrInstance, actionSetCreateInfo, pp));
+            inputState.actionSet = new XrActionSet(pp.get(0), xrSession.getCapabilities());
+
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left", (LongBuffer) inputState.handSubactionPath.position(0)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right", (LongBuffer) inputState.handSubactionPath.position(1)));
+            inputState.handSubactionPath.rewind();
+
+            // Create an action to track the position and orientation of the hands! This is
+            // the controller location, or the center of the palms for actual hands.
+            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
+                    XR10.XR_TYPE_ACTION_CREATE_INFO,
+                    NULL,
+                    memASCII("hand_pose"),
+                    XR10.XR_ACTION_TYPE_POSE_INPUT,
+                    inputState.handSubactionPath.capacity(),
+                    inputState.handSubactionPath,
+                    memASCII("Hand Pose")
+            );
+            xrCheck(XR10.xrCreateAction(inputState.actionSet, actionCreateInfo, pp));
+            inputState.poseAction = new XrAction(pp.get(0), xrSession.getCapabilities());
+
+            // Create an action for listening to the select action! This is primary trigger
+            // on controllers, and an airtap on HoloLens
+            actionCreateInfo.actionType(XR10.XR_ACTION_TYPE_BOOLEAN_INPUT);
+            actionCreateInfo.actionName(memASCII("select"));
+            actionCreateInfo.localizedActionName(memASCII("Select"));
+            xrCheck(XR10.xrCreateAction(inputState.actionSet, actionCreateInfo, pp));
+            inputState.selectAction = new XrAction(pp.get(0), xrSession.getCapabilities());
+
+            // Bind the actions we just created to specific locations on the Khronos simple_controller
+            // definition! These are labeled as 'suggested' because they may be overridden by the runtime
+            // preferences. For example, if the runtime allows you to remap buttons, or provides input
+            // accessibility settings.
+            LongBuffer profile_path = stackMallocLong(1);
+            LongBuffer pose_path = stackMallocLong(2);
+            LongBuffer select_path = stackMallocLong(2);
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/grip/pose", (LongBuffer) pose_path.position(0)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/grip/pose", (LongBuffer) pose_path.position(1)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/select/click", (LongBuffer) select_path.position(0)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/select/click", (LongBuffer) select_path.position(1)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/interaction_profiles/khr/simple_controller", (LongBuffer) profile_path));
+            pose_path.rewind();
+            select_path.rewind();
+
+            XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(4);
+            bindings.get(0).set(inputState.poseAction, pose_path.get(0));
+            bindings.get(1).set(inputState.poseAction, pose_path.get(1));
+            bindings.get(2).set(inputState.selectAction, select_path.get(0));
+            bindings.get(3).set(inputState.selectAction, select_path.get(1));
+
+            XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
+                    XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
+                    NULL,
+                    profile_path.get(0),
+                    bindings
+            );
+
+            xrCheck(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
+
+            // Create frames of reference for the pose actions
+            for (int i = 0; i < 2; i++) {
+                XrActionSpaceCreateInfo action_space_info = XrActionSpaceCreateInfo.mallocStack().set(
+                        XR10.XR_TYPE_ACTION_SPACE_CREATE_INFO,
+                        NULL,
+                        inputState.poseAction,
+                        inputState.handSubactionPath.get(i),
+                        identityPose
+                );
+                xrCheck(XR10.xrCreateActionSpace(xrSession, action_space_info, pp));
+                inputState.handSpace[i] = new XrSpace(pp.get(0), xrSession);
+            }
+
+            // Attach the action set we just made to the session
+            XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
+                    XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
+                    NULL,
+                    stack.pointers(inputState.actionSet.address())
+            );
+            xrCheck(XR10.xrAttachSessionActionSets(xrSession, attach_info));
+        }
+    }
+
+    public void pollActions() {
+        if (sessionState != XR10.XR_SESSION_STATE_FOCUSED) {
+            return;
+        }
+
+        try (MemoryStack stack = stackPush()) {
+            // Update our action set with up-to-date input data!
+            XrActiveActionSet.Buffer action_set = XrActiveActionSet.callocStack(1).actionSet(inputState.actionSet);
+
+            XrActionsSyncInfo sync_info = XrActionsSyncInfo.mallocStack().set(
+                    XR10.XR_TYPE_ACTIONS_SYNC_INFO,
+                    NULL,
+                    1,
+                    action_set
+            );
+
+            xrCheck(XR10.xrSyncActions(xrSession, sync_info));
+
+            // Now we'll get the current states of our actions, and store them for later use
+            for (int hand = 0; hand < 2; hand++) {
+                XrActionStateGetInfo get_info = XrActionStateGetInfo.mallocStack().set(
+                        XR10.XR_TYPE_ACTION_STATE_GET_INFO,
+                        NULL,
+                        inputState.poseAction,
+                        inputState.handSubactionPath.get(hand)
+                );
+
+                XrActionStatePose pose_state = XrActionStatePose.callocStack().type(XR10.XR_TYPE_ACTION_STATE_POSE);
+                xrCheck(XR10.xrGetActionStatePose(xrSession, get_info, pose_state));
+                inputState.renderHand[hand] = pose_state.isActive();
+
+                // Events come with a timestamp
+                XrActionStateBoolean select_state = XrActionStateBoolean.callocStack().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
+                get_info.action(inputState.selectAction);
+                xrCheck(XR10.xrGetActionStateBoolean(xrSession, get_info, select_state));
+                inputState.handSelect[hand] = select_state.currentState() && select_state.changedSinceLastSync();
+
+                // If we have a select event, update the hand pose to match the event's timestamp
+                if (inputState.handSelect[hand]) {
+                    setPoseFromSpace(inputState.handSpace[hand], select_state.lastChangeTime(), inputState.handPose[hand]);
+                }
+            }
+        }
+    }
+
+
+    public void setPoseFromSpace(XrSpace handSpace, long time, XrPosef result) {
+        try (MemoryStack stack = stackPush()) {
+            XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
+//            int res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+            int res = fuck(handSpace, xrAppSpace, time, space_location);
+            if (res == XR10.XR_SUCCESS &&
+                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
+                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
+
+                result.set(space_location.pose());
+            }
+        }
+    }
+
+    private static final long vm = DynCall.dcNewCallVM(4096);
+
+    private int fuck(XrSpace space, XrSpace baseSpace, @NativeType("XrTime") long time, @NativeType("XrSpaceLocation *") XrSpaceLocation location) {
+        long __functionAddress = space.getCapabilities().xrLocateSpace;
+//        return JNI.callPPJPI(space.address(), baseSpace.address(), time, location, __functionAddress);
+        DynCall.dcMode(vm, DynCall.DC_CALL_C_DEFAULT);
+        DynCall.dcReset(vm);
+        DynCall.dcArgPointer(vm, space.address());
+        DynCall.dcArgPointer(vm, baseSpace.address());
+        DynCall.dcArgLongLong(vm, time);
+        DynCall.dcArgPointer(vm, location.address());
+        return DynCall.dcCallInt(vm, __functionAddress);
     }
 }

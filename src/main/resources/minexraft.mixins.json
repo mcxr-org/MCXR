@@ -7,14 +7,14 @@
 
   ],
   "client": [
-    "WindowMixin",
     "CameraMixin",
     "FramebufferMixin",
     "GameRendererMixin",
     "GlStateManagerMixin",
     "MatMixin",
     "MinecraftClientMixin",
-    "TitleMixin"
+    "TitleMixin",
+    "WindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

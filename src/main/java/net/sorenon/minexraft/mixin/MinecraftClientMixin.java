@@ -27,10 +27,9 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.sorenon.minexraft.HelloOpenXR;
+import net.sorenon.minexraft.OpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
 import net.sorenon.minexraft.XrCamera;
-import net.sorenon.minexraft.accessor.FBAccessor;
 import net.sorenon.minexraft.accessor.MinecraftClientEXT;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -267,11 +266,11 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
-        HelloOpenXR helloOpenXR = MineXRaftClient.helloOpenXR;
-        helloOpenXR.eventDataBuffer = XrEventDataBuffer.calloc();
-        helloOpenXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
+        OpenXR openXR = MineXRaftClient.OPEN_XR;
+        openXR.eventDataBuffer = XrEventDataBuffer.calloc();
+        openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
 
-        HelloOpenXR.Swapchain swapchain = helloOpenXR.swapchains[0];
+        OpenXR.Swapchain swapchain = openXR.swapchains[0];
         leftEyeFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
         xrCamera = new XrCamera();
     }
@@ -284,66 +283,21 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
     void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
-        HelloOpenXR helloOpenXR = MineXRaftClient.helloOpenXR;
-        if (helloOpenXR.pollEvents()) {
+        OpenXR openXR = MineXRaftClient.OPEN_XR;
+        if (openXR.pollEvents()) {
             running = false;
             return;
         }
 
-        if (helloOpenXR.sessionRunning) {
-
-            helloOpenXR.renderFrameOpenXR((xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer) -> {
-//                long time = Util.getMeasuringTimeNano();
-//                colorTexture = xrSwapchainImageOpenGLKHR.image();
-//                ((FBAccessor) leftEyeFramebuffer).setColorTexture(xrSwapchainImageOpenGLKHR.image());
-//                Framebuffer vanFramebuffer = framebuffer;
-//                framebuffer = leftEyeFramebuffer;
-//                MineXRaftClient.viewportRect = xrCompositionLayerProjectionView.subImage().imageRect();
-//                MineXRaftClient.fov = xrCompositionLayerProjectionView.fov();
-//                MineXRaftClient.pose = xrCompositionLayerProjectionView.pose();
-//                MineXRaftClient.viewIndex = integer;
-////                    renderXR(tick);
-//                preRenderXR(tick, time);
-//                doRenderXR(tick, time);
-//                MineXRaftClient.pose = null;
-//                MineXRaftClient.fov = null;
-//                MineXRaftClient.viewportRect = null;
-//                framebuffer = vanFramebuffer;
-//                postRenderXR(tick, time);
-                return null;
-            });
+        if (openXR.sessionRunning) {
+            openXR.pollActions();
+            openXR.renderFrameOpenXR((xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer) -> null);
         } else {
             // Throttle loop since xrWaitFrame won't be called.
             Thread.sleep(250);
         }
 
-//        renderXR(tick);
-    }
-
-    //renderLayerOpenXR
-    void renderXR(boolean tick) {
-        long time = Util.getMeasuringTimeNano();
-        preRenderXR(tick, time);
-        //RENDER START
-        //renderLayerOpenXR
-        //foreach layer:
-        //int fbColOrg = framebuffer.color
-        //framebuffer.color = layer.color
-        //viewport
-        doRenderXR(tick, time);
-        //RENDER END
-        //SCRAP START
-//        RenderSystem.pushMatrix();
-//        this.framebuffer.draw(this.window.getFramebufferWidth(), this.window.getFramebufferHeight());
-//        RenderSystem.popMatrix();
-//        this.profiler.swap("updateDisplay");
-//        this.window.swapBuffers();
-//        k = this.getFramerateLimit();
-//        if ((double) k < Option.FRAMERATE_LIMIT.getMax()) {
-//            RenderSystem.limitDisplayFPS(k);
-//        }
-
-        postRenderXR(tick, time);
+//        render(tick);
     }
 
     @Override

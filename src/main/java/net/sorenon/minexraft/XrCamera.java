@@ -17,8 +17,8 @@ public class XrCamera extends Camera {
 
     @Override
     protected void setRotation(float _f, float _f2) {
-        if (MineXRaftClient.pose != null) {
-            XrQuaternionf quat = MineXRaftClient.pose.orientation();
+        if (MineXRaftClient.eyePose != null) {
+            XrQuaternionf quat = MineXRaftClient.eyePose.orientation();
             float invNorm = 1.0F / (quat.x() * quat.x() + quat.y() * quat.y() + quat.z() * quat.z() + quat.w() * quat.w());
             float x = -quat.x() * invNorm;
             float y = -quat.y() * invNorm;

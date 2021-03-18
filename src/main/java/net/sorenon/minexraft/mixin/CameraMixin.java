@@ -8,6 +8,7 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.sorenon.minexraft.MineXRaftClient;
 import net.sorenon.minexraft.accessor.CameraExt;
+import org.joml.Math;
 import org.lwjgl.openxr.XrQuaternionf;
 import org.lwjgl.openxr.XrVector3f;
 import org.lwjgl.system.CallbackI;
@@ -65,6 +66,12 @@ public abstract class CameraMixin implements CameraExt {
             this.verticalPlane.rotate(this.rotation);
             this.diagonalPlane.set(1.0F, 0.0F, 0.0F);
             this.diagonalPlane.rotate(this.rotation);
+
+            float yaw1 = (float) Math.atan2(2.0D * (double)(x * w - y * z), 1.0D - 2.0D * (double)(x * x + y * y));
+            float pitch2 = (float)Math.asin(2.0D * (double)(x * z + y * w));
+            float roll = (float)Math.atan2(2.0D * (double)(z * w - x * y), 1.0D - 2.0D * (double)(y * y + z * z));
+            setYaw(yaw1);
+            setPitch(-pitch2);
             ci.cancel();
         }
     }
@@ -73,10 +80,9 @@ public abstract class CameraMixin implements CameraExt {
     void pos(CallbackInfoReturnable<Vec3d> cir){
         if (MineXRaftClient.eyePose != null) {
             XrVector3f pos = MineXRaftClient.eyePose.position$();
-            MineXRaftClient.xrOrigin = cir.getReturnValue().subtract(0, focusedEntity.getStandingEyeHeight(), 0);
+//            MineXRaftClient.xrOrigin = cir.getReturnValue().subtract(0, focusedEntity.getStandingEyeHeight(), 0);
 
-//            cir.setReturnValue(cir.getReturnValue().add(pos.x(), pos.y() - focusedEntity.getStandingEyeHeight(), pos.z()));
-            cir.setReturnValue(new Vec3d(pos.x(), pos.y(), pos.z()).add(MineXRaftClient.xrOrigin));
+            cir.setReturnValue(new Vec3d(pos.x(), pos.y(), pos.z()).add(MineXRaftClient.xrOrigin).add(cir.getReturnValue().subtract(0, focusedEntity.getStandingEyeHeight(), 0)));
         }
     }
 

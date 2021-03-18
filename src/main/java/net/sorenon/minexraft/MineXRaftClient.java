@@ -33,7 +33,7 @@ public class MineXRaftClient implements ClientModInitializer {
     public static XrPosef headPose = null;
     public static int viewIndex = 0;
 
-    public static Vec3d xrOrigin = new Vec3d(1, 80, -10);
+    public static Vec3d xrOrigin = new Vec3d(0, 0, 0); //The center of player's playspace set at the same height of the PlayerEntity's feet
 
     @Override
     public void onInitializeClient() {
@@ -58,11 +58,17 @@ public class MineXRaftClient implements ClientModInitializer {
 
                 XrPosef pose = OPEN_XR.inputState.handPose[i];
                 XrVector3f pos = pose.position$();
+                XrVector2f thumbstick = OPEN_XR.inputState.handThumbstick[i];
                 XrQuaternionf quat = pose.orientation();
                 RenderSystem.pushMatrix();
-                XrVector3f pos2 = MineXRaftClient.eyePose.position$();
-                Vec3d pos1 = new Vec3d(pos.x(), pos.y(), pos.z());
-                RenderSystem.translated(pos1.x - pos2.x(), pos1.y - pos2.y(), pos1.z - pos2.z());
+                XrVector3f eyePos = MineXRaftClient.eyePose.position$();
+                Vec3d gripPos = new Vec3d(pos.x(), pos.y(), pos.z());
+                RenderSystem.translated(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
+
+                RenderSystem.pushMatrix();
+                RenderSystem.multMatrix(new Matrix4f(new Quaternion(quat.x(), quat.y(), quat.z(), quat.w())));
+                RenderSystem.translated(thumbstick.x() * 0.05f, 0, thumbstick.y() * -0.05f);
+                RenderSystem.scalef(0.01F, 0.01F, 0.01F);
 
                 GL11.glPointSize(100.0f);
                 BufferBuilder buffer = Tessellator.getInstance().getBuffer();
@@ -70,9 +76,6 @@ public class MineXRaftClient implements ClientModInitializer {
                 buffer.vertex(0, 0, 0).color(1f, 0f, 0f, 1f).next();
                 Tessellator.getInstance().draw();
 
-                RenderSystem.pushMatrix();
-                RenderSystem.multMatrix(new Matrix4f(new Quaternion(quat.x(), quat.y(), quat.z(), quat.w())));
-                RenderSystem.scalef(0.01F, 0.01F, 0.01F);
                 RenderSystem.renderCrosshair(10);
                 RenderSystem.popMatrix();
 

@@ -4,10 +4,11 @@ import com.mojang.datafixers.util.Function3;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.Vec2f;
 import net.sorenon.minexraft.accessor.FBAccessor;
 import net.sorenon.minexraft.accessor.MinecraftClientEXT;
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Matrix4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -100,11 +101,13 @@ public class OpenXR {
         XrActionSet actionSet;
         XrAction poseAction;
         XrAction selectAction;
+        XrAction thumbstickAction;
         LongBuffer handSubactionPath = memAllocLong(2);
         XrSpace[] handSpace = new XrSpace[2];
         boolean[] renderHand = new boolean[2];
         boolean[] handSelect = new boolean[2];
         XrPosef[] handPose = {XrPosef.malloc().set(identityPose), XrPosef.malloc().set(identityPose)};
+        XrVector2f[] handThumbstick = {XrVector2f.calloc(), XrVector2f.calloc()};
 
         @Override
         public void free() {
@@ -530,7 +533,7 @@ public class OpenXR {
 
     public void renderFrameOpenXR(Function3<XrCompositionLayerProjectionView, XrSwapchainImageOpenGLKHR, Integer, Void> renderFunc) {
         try (MemoryStack stack = stackPush()) {
-            XrFrameWaitInfo frameWaitInfo = XrFrameWaitInfo.callocStack(); //TODO wait until max(nextFrame, nextTick)
+            XrFrameWaitInfo frameWaitInfo = XrFrameWaitInfo.callocStack(); //TODO wait until max(nextFrame, nextTick) this will need multithreading and most likely wont be a real issue for a while anyway
             frameWaitInfo.type(XR10.XR_TYPE_FRAME_WAIT_INFO);
             XrFrameState frameState = XrFrameState.callocStack();
             frameState.type(XR10.XR_TYPE_FRAME_STATE);
@@ -826,35 +829,70 @@ public class OpenXR {
             xrCheck(XR10.xrCreateAction(inputState.actionSet, actionCreateInfo, pp));
             inputState.selectAction = new XrAction(pp.get(0), xrSession.getCapabilities());
 
+            actionCreateInfo.actionType(XR10.XR_ACTION_TYPE_VECTOR2F_INPUT);
+            actionCreateInfo.actionName(memASCII("thumbstick"));
+            actionCreateInfo.localizedActionName(memASCII("Thumbstick"));
+            xrCheck(XR10.xrCreateAction(inputState.actionSet, actionCreateInfo, pp));
+            inputState.thumbstickAction = new XrAction(pp.get(0), xrSession.getCapabilities());
+
             // Bind the actions we just created to specific locations on the Khronos simple_controller
             // definition! These are labeled as 'suggested' because they may be overridden by the runtime
             // preferences. For example, if the runtime allows you to remap buttons, or provides input
             // accessibility settings.
             LongBuffer profile_path = stackMallocLong(1);
             LongBuffer pose_path = stackMallocLong(2);
-            LongBuffer select_path = stackMallocLong(2);
+            LongBuffer triggerValue_path = stackMallocLong(2);
+            LongBuffer selectClick_path = stackMallocLong(2);
+            LongBuffer thumbstick_path = stackMallocLong(2);
             xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/grip/pose", (LongBuffer) pose_path.position(0)));
             xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/grip/pose", (LongBuffer) pose_path.position(1)));
-            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/select/click", (LongBuffer) select_path.position(0)));
-            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/select/click", (LongBuffer) select_path.position(1)));
-            xrCheck(XR10.xrStringToPath(xrInstance, "/interaction_profiles/khr/simple_controller", (LongBuffer) profile_path));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/select/click", (LongBuffer) selectClick_path.position(0)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/select/click", (LongBuffer) selectClick_path.position(1)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/trigger/value", (LongBuffer) triggerValue_path.position(0)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/trigger/value", (LongBuffer) triggerValue_path.position(1)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/thumbstick", (LongBuffer) thumbstick_path.position(0)));
+            xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/right/input/thumbstick", (LongBuffer) thumbstick_path.position(1)));
             pose_path.rewind();
-            select_path.rewind();
+            selectClick_path.rewind();
+            thumbstick_path.rewind();
 
-            XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(4);
-            bindings.get(0).set(inputState.poseAction, pose_path.get(0));
-            bindings.get(1).set(inputState.poseAction, pose_path.get(1));
-            bindings.get(2).set(inputState.selectAction, select_path.get(0));
-            bindings.get(3).set(inputState.selectAction, select_path.get(1));
+//            {
+//                xrCheck(XR10.xrStringToPath(xrInstance, "/interaction_profiles/khr/simple_controller", (LongBuffer) profile_path));
+//                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(4);
+//                bindings.get(0).set(inputState.poseAction, pose_path.get(0));
+//                bindings.get(1).set(inputState.poseAction, pose_path.get(1));
+//                bindings.get(2).set(inputState.selectAction, selectClick_path.get(0));
+//                bindings.get(3).set(inputState.selectAction, selectClick_path.get(1));
+//
+//                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
+//                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
+//                        NULL,
+//                        profile_path.get(0),
+//                        bindings
+//                );
+//
+//                xrCheck(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
+//            }
 
-            XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
-                    XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
-                    NULL,
-                    profile_path.get(0),
-                    bindings
-            );
+            {
+                xrCheck(XR10.xrStringToPath(xrInstance, "/interaction_profiles/oculus/touch_controller", (LongBuffer) profile_path));
+                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(6);
+                bindings.get(0).set(inputState.poseAction, pose_path.get(0));
+                bindings.get(1).set(inputState.poseAction, pose_path.get(1));
+                bindings.get(2).set(inputState.selectAction, triggerValue_path.get(0));
+                bindings.get(3).set(inputState.selectAction, triggerValue_path.get(1));
+                bindings.get(4).set(inputState.thumbstickAction, thumbstick_path.get(0));
+                bindings.get(5).set(inputState.thumbstickAction, thumbstick_path.get(1));
 
-            xrCheck(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
+                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
+                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
+                        NULL,
+                        profile_path.get(0),
+                        bindings
+                );
+
+                xrCheck(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
+            }
 
             // Create frames of reference for the pose actions
             for (int i = 0; i < 2; i++) {
@@ -919,6 +957,26 @@ public class OpenXR {
                 // If we have a select event, update the hand pose to match the event's timestamp
                 if (inputState.handSelect[hand]) {
                     setPoseFromSpace(inputState.handSpace[hand], select_state.lastChangeTime(), inputState.handPose[hand]);
+                }
+
+                XrActionStateVector2f thumbstick_state = XrActionStateVector2f.callocStack().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
+                get_info.action(inputState.thumbstickAction);
+                xrCheck(XR10.xrGetActionStateVector2f(xrSession, get_info, thumbstick_state));
+                if (thumbstick_state.changedSinceLastSync()) {
+                    inputState.handThumbstick[hand].set(thumbstick_state.currentState());
+                    System.out.printf("X:%f Y:%f\n", thumbstick_state.currentState().x(), thumbstick_state.currentState().y());
+                }
+                XrQuaternionf rot = inputState.handPose[hand].orientation();
+
+                Quaternionf quat = new Quaternionf(rot.x(), rot.y(), rot.z(), rot.w());
+
+                Vector3f velocity = new Vector3f(thumbstick_state.currentState().x(), 0, -thumbstick_state.currentState().y());
+                float speed = velocity.length() / 10;
+                if (speed != 0) {
+                    quat.transform(velocity);
+                    velocity.y = 0;
+                    velocity.normalize();
+                    MineXRaftClient.xrOrigin = MineXRaftClient.xrOrigin.add(velocity.x * speed, 0, velocity.z * speed);
                 }
             }
         }

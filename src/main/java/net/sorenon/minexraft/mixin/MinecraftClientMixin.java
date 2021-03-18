@@ -273,6 +273,8 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         OpenXR.Swapchain swapchain = openXR.swapchains[0];
         leftEyeFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
         xrCamera = new XrCamera();
+
+        options.hudHidden = true;
     }
 
 

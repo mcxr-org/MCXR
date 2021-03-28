@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = GameRenderer.class, priority = 10_000)
@@ -55,6 +56,19 @@ public abstract class GameRendererMixin {
     void multiplyYaw(MatrixStack matrixStack, Quaternion yawQuat) {
 //        matrixStack.multiply(camera.getRotation());
 
-        matrixStack.multiply(((XrCamera)camera).getRawRotationInverted());
+        matrixStack.multiply(((XrCamera) camera).getRawRotationInverted());
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;ortho(DDDDDD)V"), method = "render")
+    public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
+//        MineXRaftClient.framebufferWidth = 1920;
+//        MineXRaftClient.framebufferHeight = 1080;
+        MineXRaftClient.framebufferWidth = 854;
+        MineXRaftClient.framebufferHeight = 480;
+    }
+
+    @Inject(method = "render", at = @At("TAIL"))
+    public void guiRenderEnd(float tickDelta, long startTime, boolean tick, CallbackInfo ci){
+        MineXRaftClient.tmpResetSize();
     }
 }

@@ -54,96 +54,14 @@ import static net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC;
 public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> implements MinecraftClientEXT {
 
     @Shadow
-    private Thread thread;
-
-    @Shadow
     private volatile boolean running;
-
-    @Shadow
-    @Nullable
-    private CrashReport crashReport;
 
     public MinecraftClientMixin(String string) {
         super(string);
     }
 
     @Shadow
-    protected abstract boolean shouldMonitorTickDuration();
-
-    @Shadow
-    protected abstract void startMonitor(boolean active, @Nullable TickDurationMonitor monitor);
-
-    @Shadow
-    protected abstract void endMonitor(boolean active, @Nullable TickDurationMonitor monitor);
-
-    @Shadow
     private Profiler profiler;
-
-    @Shadow
-    protected abstract void render(boolean tick);
-
-    @Shadow
-    public abstract void cleanUpAfterCrash();
-
-    @Shadow
-    public abstract void openScreen(@Nullable Screen screen);
-
-    @Shadow
-    @Final
-    private static Logger LOGGER;
-
-    @Shadow
-    public abstract CrashReport addDetailsToCrashReport(CrashReport report);
-
-//    /**
-//     * @author sorenon
-//     */
-//    @Overwrite
-//    public void run() {
-//        this.thread = Thread.currentThread();
-//
-//        try {
-//            boolean bl = false;
-//
-//            while(this.running) {
-//                if (this.crashReport != null) {
-//                    printCrashReport(this.crashReport);
-//                    return;
-//                }
-//
-//                try {
-//                    TickDurationMonitor tickDurationMonitor = TickDurationMonitor.create("Renderer");
-//                    boolean bl2 = this.shouldMonitorTickDuration();
-//                    this.startMonitor(bl2, tickDurationMonitor);
-//                    this.profiler.startTick();
-//                    this.render(!bl);
-//                    this.profiler.endTick();
-//                    this.endMonitor(bl2, tickDurationMonitor);
-//                } catch (OutOfMemoryError var4) {
-//                    if (bl) {
-//                        throw var4;
-//                    }
-//
-//                    this.cleanUpAfterCrash();
-//                    this.openScreen(new OutOfMemoryScreen());
-//                    System.gc();
-//                    LOGGER.fatal((String)"Out of memory", (Throwable)var4);
-//                    bl = true;
-//                }
-//            }
-//        } catch (CrashException var5) {
-//            this.addDetailsToCrashReport(var5.getReport());
-//            this.cleanUpAfterCrash();
-//            LOGGER.fatal((String)"Reported exception thrown!", (Throwable)var5);
-//            printCrashReport(var5.getReport());
-//        } catch (Throwable var6) {
-//            CrashReport crashReport = this.addDetailsToCrashReport(new CrashReport("Unexpected error", var6));
-//            LOGGER.fatal("Unreported exception thrown!", var6);
-//            this.cleanUpAfterCrash();
-//            printCrashReport(crashReport);
-//        }
-//
-//    }
 
     @Shadow
     @Final
@@ -212,9 +130,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     protected abstract void drawProfilerResults(MatrixStack matrices, ProfileResult profileResult);
 
     @Shadow
-    protected abstract int getFramerateLimit();
-
-    @Shadow
     private int fpsCounter;
 
     @Shadow
@@ -252,11 +167,9 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Nullable
     private IntegratedServer server;
 
-    @Shadow public abstract void method_29970(Screen screen);
+//    Framebuffer xrFramebuffer;
 
-    @Shadow public abstract void startIntegratedServer(String worldName);
-
-    Framebuffer xrFramebuffer;
+    @Shadow public abstract void onResolutionChanged();
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
@@ -265,16 +178,11 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
 
         OpenXR.Swapchain swapchain = openXR.swapchains[0];
-        xrFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
+//        xrFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
+        framebuffer.resize(swapchain.width, swapchain.height, true);
 
         options.hudHidden = true;
     }
-
-
-    //    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/Framebuffer;draw(II)V"), method = "render")
-//    void frameBufferDraw(Framebuffer framebuffer, int width, int height) {
-//
-//    }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
     void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
@@ -415,13 +323,14 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.profiler.pop();
     }
 
-    @Override
-    public Framebuffer swapchainFramebuffer() {
-        return xrFramebuffer;
-    }
+//    @Override
+//    public Framebuffer swapchainFramebuffer() {
+////        return xrFramebuffer;
+//        return framebuffer;
+//    }
 
-    @Override
-    public void setFramebuffer(Framebuffer framebuffer) {
-        this.framebuffer = framebuffer;
-    }
+//    @Override
+//    public void setFramebuffer(Framebuffer framebuffer) {
+////        this.framebuffer = framebuffer;
+//    }
 }

@@ -20,17 +20,23 @@ import static org.lwjgl.opengl.GL11.glViewport;
 public class GlStateManagerMixin {
 
     //It works *shrug*
-    @Inject(method = "viewport", at = @At("HEAD"), cancellable = true)
+//    @Inject(method = "viewport", at = @At("HEAD"), cancellable = true)
     private static void viewport(int x, int y, int width, int height, CallbackInfo ci) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
-        if (rect != null) {
-            glViewport(
-                    rect.offset().x(),
-                    rect.offset().y(),
-                    rect.extent().width(),
-                    rect.extent().height()
-            );
-            ci.cancel();
-        }
+//        if (rect != null) {
+////            glViewport( TODO
+////                    rect.offset().x(),
+////                    rect.offset().y(),
+////                    rect.extent().width(),
+////                    rect.extent().height()
+////            );
+//            glViewport(
+//                    0,
+//                    0,
+//                    rect.extent().width(),
+//                    rect.extent().height()
+//            );
+//            ci.cancel();
+//        }
     }
 }

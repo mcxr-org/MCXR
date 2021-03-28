@@ -663,10 +663,11 @@ public class OpenXR {
 
                 {
                     XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                    ((FBAccessor) clientExt.swapchainFramebuffer()).setColorTexture(xrSwapchainImageOpenGLKHR.image());
-                    Framebuffer vanFramebuffer = MinecraftClient.getInstance().getFramebuffer();
-                    clientExt.setFramebuffer(clientExt.swapchainFramebuffer());
+                    ((FBAccessor) client.getFramebuffer()).setColorTexture(xrSwapchainImageOpenGLKHR.image());
+//                    Framebuffer vanFramebuffer = MinecraftClient.getInstance().getFramebuffer();
+//                    clientExt.setFramebuffer(clientExt.swapchainFramebuffer());
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
+                    MineXRaftClient.tmpResetSize();
                     MineXRaftClient.fov = projectionLayerView.fov();
                     MineXRaftClient.eyePose = projectionLayerView.pose();
                     MineXRaftClient.viewIndex = viewIndex;
@@ -681,7 +682,7 @@ public class OpenXR {
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
 
-                    clientExt.setFramebuffer(vanFramebuffer);
+//                    clientExt.setFramebuffer(vanFramebuffer);
                 }
 
                 XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
@@ -694,38 +695,6 @@ public class OpenXR {
             layer.views(projectionLayerViews);
             return true;
         }
-    }
-
-    public static Vector2f quatToMcPitchYaw(Quaternionf quat){
-        Vector3f normal = quat.transform(new Vector3f(0, 0, -1));
-
-        float yaw = getYawFromNormal(normal);
-        float pitch = (float) Math.asin(MathHelper.clamp(normal.y, -0.999999999, 0.999999999));
-        float yawMc = (float) -Math.toDegrees(yaw) + 180;
-        float pitchMc = (float) -Math.toDegrees(pitch);
-        return new Vector2f(pitchMc, yawMc);
-    }
-
-    private static float getYawFromNormal(Vector3f normalIn) {
-        Vector3f normal = new Vector3f(normalIn);
-        if (normal.y != 0) {
-            if (Math.abs(normal.y) > 0.999999) {
-                return 0;
-            }
-            normal.y = 0;
-            normal.normalize();
-        }
-
-        if (normal.z < 0) {
-            return (float) java.lang.Math.atan(normal.x / normal.z);
-        }
-        if (normal.z == 0) {
-            return (float) (Math.PI / 2 * -MathHelper.sign(normal.x));
-        }
-        if (normal.z > 0) {
-            return (float) (java.lang.Math.atan(normal.x / normal.z) + Math.PI);
-        }
-        return 0;
     }
 
     public static Matrix4f createProjectionFov(Matrix4f dest, XrFovf fov, float nearZ, float farZ) {

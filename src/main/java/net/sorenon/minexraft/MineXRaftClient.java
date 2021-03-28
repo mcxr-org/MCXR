@@ -28,9 +28,18 @@ public class MineXRaftClient implements ClientModInitializer {
     public static final OpenXR OPEN_XR = new OpenXR();
 
     public static XrRect2Di viewportRect = null;
+    public static int framebufferWidth = 0;
+    public static int framebufferHeight = 0;
     public static XrFovf fov = null;
     public static XrPosef eyePose = null;
     public static int viewIndex = 0;
+
+    public static void tmpResetSize(){
+        if (viewportRect != null) {
+            framebufferWidth = viewportRect.extent().width();
+            framebufferHeight = viewportRect.extent().height();
+        }
+    }
 
     public static final Pose headPose = new Pose();
 

@@ -23,7 +23,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -33,6 +35,9 @@ public class WindowMixin {
     @Shadow
     @Final
     private long handle;
+
+    @Shadow
+    private double scaleFactor;
 
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
     private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
@@ -90,21 +95,46 @@ public class WindowMixin {
         openXR.makeActions();
     }
 
-//    @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
-//    void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
-//        Framebuffer fb = MinecraftClient.getInstance().getFramebuffer();
-//        if (fb != null) {
-//            cir.setReturnValue(fb.viewportWidth);
-//        }
-//    }
-//
-//    @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
-//    void frameBufferHeight(CallbackInfoReturnable<Integer> cir) {
-//        Framebuffer fb = MinecraftClient.getInstance().getFramebuffer();
-//        if (fb != null) {
-//            cir.setReturnValue(fb.viewportHeight);
-//        }
-//    }
+    @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
+    void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
+        XrRect2Di rect = MineXRaftClient.viewportRect;
+        if (rect != null) {
+//            cir.setReturnValue(rect.extent().width());
+            cir.setReturnValue(MineXRaftClient.framebufferWidth);
+        }
+    }
+
+    @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
+    void frameBufferHeight(CallbackInfoReturnable<Integer> cir) {
+        XrRect2Di rect = MineXRaftClient.viewportRect;
+        if (rect != null) {
+//            cir.setReturnValue(rect.extent().height());
+            cir.setReturnValue(MineXRaftClient.framebufferHeight);
+        }
+    }
+
+    @Inject(method = "getScaledHeight", at = @At("HEAD"), cancellable = true)
+    void scframeBufferHeight(CallbackInfoReturnable<Integer> cir) {
+        XrRect2Di rect = MineXRaftClient.viewportRect;
+        if (rect != null) {
+//            int j = (int) (rect.extent().height() / scaleFactor);
+//            cir.setReturnValue(rect.extent().height() / scaleFactor > (double) j ? j + 1 : j);
+            int j = (int) (MineXRaftClient.framebufferHeight / scaleFactor);
+            cir.setReturnValue(MineXRaftClient.framebufferHeight / scaleFactor > (double) j ? j + 1 : j);
+        }
+    }
+
+    @Inject(method = "getScaledWidth", at = @At("HEAD"), cancellable = true)
+    void scframeBufferWidth(CallbackInfoReturnable<Integer> cir) {
+        XrRect2Di rect = MineXRaftClient.viewportRect;
+        if (rect != null) {
+//            int j = (int) (rect.extent().width() / scaleFactor);
+//            cir.setReturnValue(rect.extent().width() / scaleFactor > (double) j ? j + 1 : j);
+            int j = (int) (MineXRaftClient.framebufferWidth / scaleFactor);
+            cir.setReturnValue(MineXRaftClient.framebufferWidth / scaleFactor > (double) j ? j + 1 : j);
+        }
+    }
+
 
 //    @Inject(method = "swapBuffers", at = @At("HEAD"), cancellable = true)
 //    private void swapBuffers(CallbackInfo ci){
@@ -112,7 +142,7 @@ public class WindowMixin {
 //    }
 
     @Inject(method = "onWindowFocusChanged", at = @At("HEAD"), cancellable = true)
-    void foc(long window, boolean focused, CallbackInfo ci){
+    void foc(long window, boolean focused, CallbackInfo ci) {
         ci.cancel();
     }
 }

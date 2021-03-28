@@ -171,6 +171,8 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Shadow public abstract void onResolutionChanged();
 
+    @Shadow protected abstract void render(boolean tick);
+
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
         OpenXR openXR = MineXRaftClient.OPEN_XR;
@@ -199,8 +201,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             // Throttle loop since xrWaitFrame won't be called.
             Thread.sleep(250);
         }
-
-//        render(tick);
     }
 
     @Override

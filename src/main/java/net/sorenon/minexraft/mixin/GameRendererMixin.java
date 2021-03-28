@@ -59,12 +59,10 @@ public abstract class GameRendererMixin {
         matrixStack.multiply(((XrCamera) camera).getRawRotationInverted());
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;ortho(DDDDDD)V"), method = "render")
+    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;ortho(DDDDDD)V", shift = At.Shift.BEFORE), method = "render")
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-//        MineXRaftClient.framebufferWidth = 1920;
-//        MineXRaftClient.framebufferHeight = 1080;
-        MineXRaftClient.framebufferWidth = 854;
-        MineXRaftClient.framebufferHeight = 480;
+        MineXRaftClient.framebufferWidth = 1920;
+        MineXRaftClient.framebufferHeight = 1080;
     }
 
     @Inject(method = "render", at = @At("TAIL"))

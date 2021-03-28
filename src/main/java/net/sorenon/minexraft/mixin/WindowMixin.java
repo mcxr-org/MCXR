@@ -95,6 +95,22 @@ public class WindowMixin {
         openXR.makeActions();
     }
 
+    private double sca2 = 1;
+    @Inject(method = "calculateScaleFactor", at = @At("HEAD"))
+    void sca(int guiScale, boolean forceUnicodeFont, CallbackInfoReturnable<Integer> cir){
+        int framebufferWidth = 1920;
+        int framebufferHeight = 1080;
+        
+        int i;
+        for(i = 1; i != guiScale && i < framebufferWidth && i < framebufferHeight && framebufferWidth / (i + 1) >= 320 && framebufferHeight / (i + 1) >= 240; ++i) {
+        }
+
+        if (forceUnicodeFont && i % 2 != 0) {
+            ++i;
+        }
+        sca2 = i;
+    } 
+    
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
     void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
@@ -119,8 +135,10 @@ public class WindowMixin {
         if (rect != null) {
 //            int j = (int) (rect.extent().height() / scaleFactor);
 //            cir.setReturnValue(rect.extent().height() / scaleFactor > (double) j ? j + 1 : j);
-            int j = (int) (MineXRaftClient.framebufferHeight / scaleFactor);
-            cir.setReturnValue(MineXRaftClient.framebufferHeight / scaleFactor > (double) j ? j + 1 : j);
+//            int j = (int) (MineXRaftClient.framebufferHeight / scaleFactor);
+//            cir.setReturnValue(MineXRaftClient.framebufferHeight / scaleFactor > (double) j ? j + 1 : j);
+            int j = (int) (MineXRaftClient.framebufferHeight / sca2);
+            cir.setReturnValue(MineXRaftClient.framebufferHeight / sca2 > (double) j ? j + 1 : j);
         }
     }
 
@@ -130,8 +148,18 @@ public class WindowMixin {
         if (rect != null) {
 //            int j = (int) (rect.extent().width() / scaleFactor);
 //            cir.setReturnValue(rect.extent().width() / scaleFactor > (double) j ? j + 1 : j);
-            int j = (int) (MineXRaftClient.framebufferWidth / scaleFactor);
-            cir.setReturnValue(MineXRaftClient.framebufferWidth / scaleFactor > (double) j ? j + 1 : j);
+//            int j = (int) (MineXRaftClient.framebufferWidth / scaleFactor);
+//            cir.setReturnValue(MineXRaftClient.framebufferWidth / scaleFactor > (double) j ? j + 1 : j);
+            int j = (int) (MineXRaftClient.framebufferWidth / sca2);
+            cir.setReturnValue(MineXRaftClient.framebufferWidth / sca2 > (double) j ? j + 1 : j);
+        }
+    }
+
+    @Inject(method = "getScaleFactor", at = @At("HEAD"), cancellable = true)
+    void f(CallbackInfoReturnable<Double> cir) {
+        XrRect2Di rect = MineXRaftClient.viewportRect;
+        if (rect != null) {
+            cir.setReturnValue(sca2);
         }
     }
 

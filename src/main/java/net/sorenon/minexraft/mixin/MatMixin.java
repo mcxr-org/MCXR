@@ -7,7 +7,11 @@ import net.sorenon.minexraft.MineXRaftClient;
 import net.sorenon.minexraft.accessor.MatAccessor;
 import org.lwjgl.openxr.XrFovf;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Matrix4f.class)
 public abstract class MatMixin implements MatAccessor {
@@ -109,5 +113,13 @@ public abstract class MatMixin implements MatAccessor {
 //        for (int i = 0; i < 16; i++){
 //            System.out.println(out1.get(i) + " " + out2.get(i));
 //        }
+    }
+
+    @Inject(method = "viewboxMatrix", cancellable = true, at = @At("HEAD"))
+    private static void masta(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
+        Matrix4f mat = new Matrix4f();
+        mat.loadIdentity();
+        ((MatAccessor)(Object)mat).createProjectionFov(MineXRaftClient.fov, cameraDepth, viewDistance);
+        cir.setReturnValue(mat);
     }
 }

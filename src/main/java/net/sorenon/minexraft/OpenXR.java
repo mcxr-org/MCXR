@@ -1,10 +1,11 @@
 package net.sorenon.minexraft;
 
-import com.mojang.datafixers.util.Function3;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.MathHelper;
+import net.sorenon.minexraft.mixin.accessor.EntityExt;
 import net.sorenon.minexraft.accessor.FBAccessor;
 import net.sorenon.minexraft.accessor.MinecraftClientEXT;
 import org.joml.*;
@@ -38,18 +39,6 @@ import static org.lwjgl.system.MemoryUtil.*;
  * https://github.com/ReliaSolve/OpenXR-OpenGL-Example
  * Can only run on windows until glfw is updated
  * Requires a stero headset and an install of the OpenXR runtime to run
- * <p>
- * {
- * for (int hand = 0; hand < 2; hand++) {
- * if (inputState.renderHand[hand]) {
- * XrVector3f    handPos = inputState.handPose[hand].position$();
- * XrQuaternionf handRot = inputState.handPose[hand].orientation();
- * modelviewMatrix.translationRotateScale(handPos.x(), handPos.y(), handPos.z(), handRot.x(), handRot.y(), handRot.z(), handRot.w(), 0.1f);
- * glUniformMatrix4fv(glGetUniformLocation(colorShader, "model"), false, modelviewMatrix.get(mvpMatrix));
- * glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, 0);
- * }
- * }
- * }
  */
 public class OpenXR {
 
@@ -60,6 +49,7 @@ public class OpenXR {
     public Struct graphicsBinding;
     public XrSession xrSession;
     XrSpace xrAppSpace;  //The base world space in which the program runs
+    XrSpace xrViewSpace;
     long glColorFormat;
     XrView.Buffer views;       //Each view represents an eye in the headset with views[0] being left and views[1] being right
     public Swapchain[] swapchains;  //One swapchain per view
@@ -84,6 +74,9 @@ public class OpenXR {
     int screenShader;
     int textureShader;
     int colorShader;
+
+    MinecraftClient client = MinecraftClient.getInstance();
+    MinecraftClientEXT clientExt = ((MinecraftClientEXT) MinecraftClient.getInstance());
 
     public static final XrPosef identityPose = XrPosef.malloc().set(
             XrQuaternionf.mallocStack().set(0, 0, 0, 1),
@@ -261,7 +254,7 @@ public class OpenXR {
         }
     }
 
-    public void createXRReferenceSpace() {
+    public void createXRReferenceSpaces() {
         try (MemoryStack stack = stackPush()) {
             XrPosef identityPose = XrPosef.mallocStack();
             identityPose.set(
@@ -279,6 +272,10 @@ public class OpenXR {
             PointerBuffer pp = stack.mallocPointer(1);
             xrCheck(XR10.xrCreateReferenceSpace(xrSession, referenceSpaceCreateInfo, pp));
             xrAppSpace = new XrSpace(pp.get(0), xrSession);
+
+            referenceSpaceCreateInfo.referenceSpaceType(XR10.XR_REFERENCE_SPACE_TYPE_VIEW);
+            xrCheck(XR10.xrCreateReferenceSpace(xrSession, referenceSpaceCreateInfo, pp));
+            xrViewSpace = new XrSpace(pp.get(0), xrSession);
         }
     }
 
@@ -531,7 +528,7 @@ public class OpenXR {
     }
 
 
-    public void renderFrameOpenXR(Function3<XrCompositionLayerProjectionView, XrSwapchainImageOpenGLKHR, Integer, Void> renderFunc) {
+    public void renderFrameOpenXR() {
         try (MemoryStack stack = stackPush()) {
             XrFrameWaitInfo frameWaitInfo = XrFrameWaitInfo.callocStack(); //TODO wait until max(nextFrame, nextTick) this will need multithreading and most likely wont be a real issue for a while anyway
             frameWaitInfo.type(XR10.XR_TYPE_FRAME_WAIT_INFO);
@@ -548,7 +545,7 @@ public class OpenXR {
             PointerBuffer layers = stack.callocPointer(1);
 
             if (frameState.shouldRender()) {
-                if (renderLayerOpenXR(frameState.predictedDisplayTime(), layerProjection, renderFunc)) {
+                if (renderLayerOpenXR(frameState.predictedDisplayTime(), layerProjection)) {
                     layers.put(layerProjection.address());
                 }
             }
@@ -572,7 +569,7 @@ public class OpenXR {
         }
     }
 
-    private boolean renderLayerOpenXR(long predictedDisplayTime, XrCompositionLayerProjection layer, Function3<XrCompositionLayerProjectionView, XrSwapchainImageOpenGLKHR, Integer, Void> renderFunc) {
+    private boolean renderLayerOpenXR(long predictedDisplayTime, XrCompositionLayerProjection layer) {
         try (MemoryStack stack = stackPush()) {
             XrCompositionLayerProjectionView.Buffer projectionLayerViews;
 
@@ -602,10 +599,6 @@ public class OpenXR {
 
             projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
 
-            MinecraftClientEXT mc = ((MinecraftClientEXT) MinecraftClient.getInstance());
-            long frameStartTime = Util.getMeasuringTimeNano();
-            mc.preRenderXR(true, frameStartTime);
-
             // Update hand position based on the predicted time of when the frame will be rendered! This
             // should result in a more accurate location, and reduce perceived lag.
             if (sessionState == XR10.XR_SESSION_STATE_FOCUSED) {
@@ -616,6 +609,34 @@ public class OpenXR {
                     setPoseFromSpace(inputState.handSpace[i], predictedDisplayTime, inputState.handPose[i]);
                 }
             }
+
+            XrPosef viewPose = XrPosef.mallocStack().set(identityPose);
+            setPoseFromSpace(xrViewSpace, predictedDisplayTime, viewPose);
+            MineXRaftClient.headPose.set(viewPose);
+
+            XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
+            if (this.client.getCameraEntity() != null || this.client.player != null) {
+                camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.headPose);
+            }
+            if (MinecraftClient.getInstance().player != null) {
+                Entity player = MinecraftClient.getInstance().player;
+                EntityExt ext = (EntityExt) player;
+
+                float yawMc = MineXRaftClient.headPose.getYaw();
+                float pitchMc = MineXRaftClient.headPose.getPitch();
+                float dYaw = yawMc - ext.yaw();
+                float dPitch = pitchMc - ext.pitch();
+                ext.yaw(yawMc);
+                ext.pitch(pitchMc);
+                ext.prevYaw(ext.prevYaw() + dYaw);
+                ext.prevPitch(MathHelper.clamp(ext.prevPitch() + dPitch, -90, 90));
+                if (player.getVehicle() != null) {
+                    player.getVehicle().onPassengerLookAround(player);
+                }
+            }
+
+            long frameStartTime = Util.getMeasuringTimeNano();
+            clientExt.preRenderXR(true, frameStartTime);
 
             // Render view to the appropriate part of the swapchain image.
             for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
@@ -640,36 +661,71 @@ public class OpenXR {
                 projectionLayerView.subImage().imageRect().offset().set(0, 0);
                 projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
 
-//                OpenGLRenderView(projectionLayerView, viewSwapchain.images.get(swapchainImageIndex), viewIndex);
-//                renderFunc.apply(projectionLayerView, viewSwapchain.images.get(swapchainImageIndex), viewIndex);
                 {
-
                     XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                    ((FBAccessor) mc.swapchainFramebuffer()).setColorTexture(xrSwapchainImageOpenGLKHR.image());
+                    ((FBAccessor) clientExt.swapchainFramebuffer()).setColorTexture(xrSwapchainImageOpenGLKHR.image());
                     Framebuffer vanFramebuffer = MinecraftClient.getInstance().getFramebuffer();
-                    mc.setFramebuffer(mc.swapchainFramebuffer());
+                    clientExt.setFramebuffer(clientExt.swapchainFramebuffer());
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
                     MineXRaftClient.fov = projectionLayerView.fov();
                     MineXRaftClient.eyePose = projectionLayerView.pose();
                     MineXRaftClient.viewIndex = viewIndex;
-                    mc.doRenderXR(true, frameStartTime);
+                    if (camera.isReady()) {
+                        camera.setEyePose(projectionLayerView.pose(), client.getTickDelta());
+                    }
+                    clientExt.doRenderXR(true, frameStartTime);
+                    if (camera.isReady()) {
+                        camera.popEyePose();
+                    }
                     MineXRaftClient.eyePose = null;
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
 
-                    mc.setFramebuffer(vanFramebuffer);
+                    clientExt.setFramebuffer(vanFramebuffer);
                 }
 
                 XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
                 releaseInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO);
                 xrCheck(XR10.xrReleaseSwapchainImage(viewSwapchain.handle, releaseInfo));
             }
-            mc.postRenderXR(true, frameStartTime);
+            clientExt.postRenderXR(true, frameStartTime);
 
             layer.space(xrAppSpace);
             layer.views(projectionLayerViews);
             return true;
         }
+    }
+
+    public static Vector2f quatToMcPitchYaw(Quaternionf quat){
+        Vector3f normal = quat.transform(new Vector3f(0, 0, -1));
+
+        float yaw = getYawFromNormal(normal);
+        float pitch = (float) Math.asin(MathHelper.clamp(normal.y, -0.999999999, 0.999999999));
+        float yawMc = (float) -Math.toDegrees(yaw) + 180;
+        float pitchMc = (float) -Math.toDegrees(pitch);
+        return new Vector2f(pitchMc, yawMc);
+    }
+
+    private static float getYawFromNormal(Vector3f normalIn) {
+        Vector3f normal = new Vector3f(normalIn);
+        if (normal.y != 0) {
+            if (Math.abs(normal.y) > 0.999999) {
+                return 0;
+            }
+            normal.y = 0;
+            normal.normalize();
+        }
+
+        if (normal.z < 0) {
+            return (float) java.lang.Math.atan(normal.x / normal.z);
+        }
+        if (normal.z == 0) {
+            return (float) (Math.PI / 2 * -MathHelper.sign(normal.x));
+        }
+        if (normal.z > 0) {
+            return (float) (java.lang.Math.atan(normal.x / normal.z) + Math.PI);
+        }
+        return 0;
     }
 
     public static Matrix4f createProjectionFov(Matrix4f dest, XrFovf fov, float nearZ, float farZ) {
@@ -789,6 +845,7 @@ public class OpenXR {
         });
     }
 
+    @SuppressWarnings("RedundantCast")
     public void makeActions() {
         try (MemoryStack stack = stackPush()) {
             inputState = new InputState();
@@ -984,10 +1041,10 @@ public class OpenXR {
 
 
     public void setPoseFromSpace(XrSpace handSpace, long time, XrPosef result) {
-        try (MemoryStack stack = stackPush()) {
+        try (MemoryStack ignored = stackPush()) {
             XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
 //            int res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
-            int res = fuck(handSpace, xrAppSpace, time, space_location);
+            int res = xrLocateSpace(handSpace, xrAppSpace, time, space_location);
             if (res == XR10.XR_SUCCESS &&
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
@@ -999,7 +1056,10 @@ public class OpenXR {
 
     private static final long vm = DynCall.dcNewCallVM(4096);
 
-    private int fuck(XrSpace space, XrSpace baseSpace, @NativeType("XrTime") long time, @NativeType("XrSpaceLocation *") XrSpaceLocation location) {
+    /**
+     * Minecraft uses an old version of lwjgl so we have to create custom methods to call certain native functions until it is updated
+     */
+    private int xrLocateSpace(XrSpace space, XrSpace baseSpace, @NativeType("XrTime") long time, @NativeType("XrSpaceLocation *") XrSpaceLocation location) {
         long __functionAddress = space.getCapabilities().xrLocateSpace;
 //        return JNI.callPPJPI(space.address(), baseSpace.address(), time, location, __functionAddress);
         DynCall.dcMode(vm, DynCall.DC_CALL_C_DEFAULT);

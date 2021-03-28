@@ -3,17 +3,17 @@ package net.sorenon.minexraft;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
+import net.sorenon.minexraft.mixin.accessor.ERDExt;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWNativeGLX;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.SharedLibrary;
@@ -30,13 +30,22 @@ public class MineXRaftClient implements ClientModInitializer {
     public static XrRect2Di viewportRect = null;
     public static XrFovf fov = null;
     public static XrPosef eyePose = null;
-    public static XrPosef headPose = null;
     public static int viewIndex = 0;
+
+    public static final Pose headPose = new Pose();
 
     public static Vec3d xrOrigin = new Vec3d(0, 0, 0); //The center of player's playspace set at the same height of the PlayerEntity's feet
 
     @Override
     public void onInitializeClient() {
+//        fov = XrFovf.create();
+//        fov.angleLeft(-0.80285144f);
+//        fov.angleRight(0.80285144f);
+//        fov.angleUp(0.8552113f);
+//        fov.angleDown(-0.8552113f);
+//        if (true) return;
+
+
         SharedLibrary defaultOpenXRLoader = loadNative(XR.class, "C:\\Users\\soren\\Documents\\Programming\\openxr_loader_windows\\x64\\bin\\openxr_loader.dll", "openxr_loader");
         XR.create(defaultOpenXRLoader);
         OPEN_XR.createOpenXRInstance();
@@ -97,18 +106,33 @@ public class MineXRaftClient implements ClientModInitializer {
             RenderSystem.disableBlend();
             RenderSystem.enableCull();
             RenderSystem.enableTexture();
-
-            /*
-                           RenderSystem.pushMatrix();
-               RenderSystem.translatef((float)(this.scaledWidth / 2), (float)(this.scaledHeight / 2), (float)this.getZOffset());
-               Camera camera = this.client.gameRenderer.getCamera();
-               RenderSystem.rotatef(camera.getPitch(), -1.0F, 0.0F, 0.0F);
-               RenderSystem.rotatef(camera.getYaw(), 0.0F, 1.0F, 0.0F);
-               RenderSystem.scalef(-1.0F, -1.0F, -1.0F);
-               RenderSystem.renderCrosshair(10);
-               RenderSystem.popMatrix();
-             */
         });
+
+//        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+//            Entity entity = context.camera().getFocusedEntity();
+//
+//            if (entity != null) {
+//                MatrixStack matrices = context.matrixStack();
+//                Vec3d camPos = context.camera().getPos();
+//                matrices.push();
+//                double x = MathHelper.lerp(context.tickDelta(), entity.lastRenderX, entity.getX());
+//                double y = MathHelper.lerp(context.tickDelta(), entity.lastRenderY, entity.getY());
+//                double z = MathHelper.lerp(context.tickDelta(), entity.lastRenderZ, entity.getZ());
+//                matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
+//
+//                ERDExt.renderShadow(
+//                        context.matrixStack(),
+//                        context.consumers(),
+//                        entity,
+//                        1.0f,
+//                        context.tickDelta(),
+//                        context.world(),
+//                        0.1f
+//                );
+//
+//                matrices.pop();
+//            }
+//        });
     }
 
     private static SharedLibrary loadNative(Class<?> context, String path, String libName) {

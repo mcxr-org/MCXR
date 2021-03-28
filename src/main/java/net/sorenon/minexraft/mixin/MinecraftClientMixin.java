@@ -27,9 +27,8 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.sorenon.minexraft.OpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
-import net.sorenon.minexraft.XrCamera;
+import net.sorenon.minexraft.OpenXR;
 import net.sorenon.minexraft.accessor.MinecraftClientEXT;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -50,8 +49,6 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC;
-import static org.lwjgl.opengl.GL11.glDisable;
-import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_SRGB;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> implements MinecraftClientEXT {
@@ -259,10 +256,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Shadow public abstract void startIntegratedServer(String worldName);
 
-    @Shadow private int trackingTick;
-    int colorTexture;
-    Framebuffer leftEyeFramebuffer;
-    XrCamera xrCamera;
+    Framebuffer xrFramebuffer;
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
@@ -271,8 +265,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
 
         OpenXR.Swapchain swapchain = openXR.swapchains[0];
-        leftEyeFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
-        xrCamera = new XrCamera();
+        xrFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
 
         options.hudHidden = true;
     }
@@ -293,7 +286,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
         if (openXR.sessionRunning) {
             openXR.pollActions();
-            openXR.renderFrameOpenXR((xrCompositionLayerProjectionView, xrSwapchainImageOpenGLKHR, integer) -> null);
+            openXR.renderFrameOpenXR();
         } else {
             // Throttle loop since xrWaitFrame won't be called.
             Thread.sleep(250);
@@ -359,7 +352,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         if (!this.skipGameRender) {
             this.profiler.swap("gameRenderer");
             this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, frameStartTime, tick);
-            glDisable(GL_FRAMEBUFFER_SRGB);
             this.profiler.swap("toasts");
             this.toastManager.draw(new MatrixStack());
             this.profiler.pop();
@@ -377,6 +369,14 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
         RenderSystem.replayQueue();
         Tessellator.getInstance().getBuffer().clear();
+
+        /*d
+        RenderSystem.pushMatrix();
+        this.framebuffer.draw(this.window.getFramebufferWidth(), this.window.getFramebufferHeight());
+        RenderSystem.popMatrix();
+        this.profiler.swap("updateDisplay");
+        this.window.swapBuffers();
+         */
     }
 
     @Override
@@ -417,7 +417,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Override
     public Framebuffer swapchainFramebuffer() {
-        return leftEyeFramebuffer;
+        return xrFramebuffer;
     }
 
     @Override

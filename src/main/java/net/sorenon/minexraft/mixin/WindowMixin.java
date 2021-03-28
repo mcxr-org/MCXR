@@ -84,7 +84,7 @@ public class WindowMixin {
             openXR.xrSession = new XrSession(pp.get(0), openXR.xrInstance);
         }
 
-        openXR.createXRReferenceSpace();
+        openXR.createXRReferenceSpaces();
         openXR.createXRSwapchains();
         openXR.createOpenGLResourses();
         openXR.makeActions();

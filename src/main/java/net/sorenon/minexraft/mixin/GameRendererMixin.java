@@ -6,6 +6,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
 import net.sorenon.minexraft.MineXRaftClient;
+import net.sorenon.minexraft.XrCamera;
 import net.sorenon.minexraft.accessor.MatAccessor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,7 +23,13 @@ public abstract class GameRendererMixin {
     @Final
     private Camera camera;
 
-    @Shadow public abstract float getViewDistance();
+    @Shadow
+    public abstract float getViewDistance();
+
+    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/render/Camera"))
+    Camera createCamera() {
+        return new XrCamera();
+    }
 
     /**
      * If we are rendering an XR frame
@@ -46,6 +53,8 @@ public abstract class GameRendererMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 3), method = "renderWorld")
     void multiplyYaw(MatrixStack matrixStack, Quaternion yawQuat) {
-        matrixStack.multiply(camera.getRotation());
+//        matrixStack.multiply(camera.getRotation());
+
+        matrixStack.multiply(((XrCamera)camera).getRawRotationInverted());
     }
 }

@@ -4,10 +4,11 @@
   "package": "net.sorenon.minexraft.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-
+    "accessor.CameraExt",
+    "accessor.EntityExt",
+    "accessor.ERDExt"
   ],
   "client": [
-    "CameraMixin",
     "FramebufferMixin",
     "GameRendererMixin",
     "GlStateManagerMixin",

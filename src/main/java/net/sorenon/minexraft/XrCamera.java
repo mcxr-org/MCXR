@@ -2,57 +2,94 @@ package net.sorenon.minexraft;
 
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
-import net.sorenon.minexraft.accessor.CameraExt;
+import net.sorenon.minexraft.mixin.accessor.CameraExt;
 import org.joml.Math;
-import org.lwjgl.openxr.XrQuaternionf;
+import org.joml.Quaternionf;
+import org.lwjgl.openxr.XrPosef;
 
-//Unused for now
 public class XrCamera extends Camera {
+
+    private Vec3d headPos;
+    private Quaternionf headRot;
+
+    private final Quaternionf quat = new Quaternionf();
+
+    private final Quaternionf rawRotation = new Quaternionf();
+
+    /**
+     * Called just before each render tick, sets the camera to the center of the headset for sounds
+     */
+    public void updateXR(BlockView area, Entity focusedEntity, Pose viewPose) {
+        CameraExt thiz = (CameraExt) this;
+        thiz.ready(true);
+        thiz.area(area);
+        thiz.focusedEntity(focusedEntity);
+        thiz.thirdPerson(false);
+        thiz.inverseView(false);
+
+        headPos = viewPose.getPosMc();
+        headRot = viewPose.getOrientation();
+        thiz.pitch(viewPose.getPitch());
+        thiz.yaw(viewPose.getYaw());
+
+        setPose(headPos, headRot, 1.0f);
+    }
+
+    /**
+     * Called just before each frame
+     */
+    public void setEyePose(XrPosef pose, float tickDelta) {
+        setPose(
+                new Vec3d(pose.position$().x(), pose.position$().y(), pose.position$().z()),
+                new Quaternionf(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w()),
+                tickDelta
+        );
+    }
+
+    /**
+     * Called just after each frame
+     */
+    public void popEyePose() {
+        setPose(headPos, headRot, 1.0f);
+    }
+
+    protected void setPose(Vec3d viewPos, Quaternionf viewRot, float tickDelta) {
+        CameraExt thiz = (CameraExt) this;
+
+        rawRotation.set(viewRot);
+
+        //Stupid block game wants quaternion with yaw rotated 180 degrees, i might need to remove or tinker with roll as well if it starts to mess things up
+        viewRot.rotateX((float) Math.PI, quat);
+        this.getRotation().set(quat.x, quat.y, quat.z, quat.w);
+
+        this.getHorizontalPlane().set(0.0F, 0.0F, 1.0F);
+        this.getHorizontalPlane().rotate(this.getRotation());
+        this.getVerticalPlane().set(0.0F, 1.0F, 0.0F);
+        this.getVerticalPlane().rotate(this.getRotation());
+
+        thiz.diagonalPlane().set(1.0F, 0.0F, 0.0F);
+        thiz.diagonalPlane().rotate(this.getRotation());
+
+        Entity focusedEntity = getFocusedEntity();
+        this.setPos(
+                MathHelper.lerp((double) tickDelta, focusedEntity.prevX, focusedEntity.getX()) + viewPos.x,
+                MathHelper.lerp((double) tickDelta, focusedEntity.prevY, focusedEntity.getY()) + viewPos.y,
+                MathHelper.lerp((double) tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + viewPos.z
+        );
+    }
 
     @Override
     public void update(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta) {
-        super.update(area, focusedEntity, thirdPerson, inverseView, tickDelta);
+
     }
 
-    @Override
-    protected void setRotation(float _f, float _f2) {
-        if (MineXRaftClient.eyePose != null) {
-            XrQuaternionf quat = MineXRaftClient.eyePose.orientation();
-            float invNorm = 1.0F / (quat.x() * quat.x() + quat.y() * quat.y() + quat.z() * quat.z() + quat.w() * quat.w());
-            float x = -quat.x() * invNorm;
-            float y = -quat.y() * invNorm;
-            float z = -quat.z() * invNorm;
-            float w = quat.w() * invNorm;
+    public Quaternion getRawRotationInverted() {
+        rawRotation.invert(quat);
 
-            this.getRotation().set(x, y, z, w);
-            this.getHorizontalPlane().set(0.0F, 0.0F, 1.0F);
-            this.getHorizontalPlane().rotate(this.getRotation());
-            this.getVerticalPlane().set(0.0F, 1.0F, 0.0F);
-            this.getVerticalPlane().rotate(this.getRotation());
-
-            CameraExt thiz = (CameraExt) this;
-            thiz.getDiagonalPlane().set(1.0F, 0.0F, 0.0F);
-            thiz.getDiagonalPlane().rotate(this.getRotation());
-
-            //TODO check if this is crap
-            float yaw = (float) Math.atan2(2.0D * (double)(x * w - y * z), 1.0D - 2.0D * (double)(x * x + y * y));
-            float pitch = (float)Math.asin(2.0D * (double)(x * z + y * w));
-            float roll = (float)Math.atan2(2.0D * (double)(z * w - x * y), 1.0D - 2.0D * (double)(y * y + z * z));
-            thiz.setYaw(yaw);
-            thiz.setPitch(-pitch);
-        } else {
-            super.setRotation(_f, _f2);
-        }
-    }
-
-    @Override
-    public float getPitch() {
-        return super.getPitch();
-    }
-
-    @Override
-    public float getYaw() {
-        return super.getYaw();
+        return new Quaternion(quat.x, quat.y, quat.z, quat.w);
     }
 }

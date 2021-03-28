@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(TitleScreen.class)
 public class TitleMixin {
 
-    //Just for debuging
+    //Just for debugging
     @Inject(method = "mouseClicked", at = @At("HEAD"), cancellable = true)
     void click(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir){
         MinecraftClient.getInstance().method_29970(new SaveLevelScreen(new TranslatableText("selectWorld.data_read")));

@@ -20,9 +20,7 @@ import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.MetricsData;
-import net.minecraft.util.TickDurationMonitor;
 import net.minecraft.util.Util;
-import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
@@ -30,7 +28,6 @@ import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.sorenon.minexraft.MineXRaftClient;
 import net.sorenon.minexraft.OpenXR;
 import net.sorenon.minexraft.accessor.MinecraftClientEXT;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -38,7 +35,6 @@ import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrEventDataBuffer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -47,8 +43,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
-
-import static net.minecraft.client.MinecraftClient.IS_SYSTEM_MAC;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> implements MinecraftClientEXT {
@@ -104,7 +98,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Final
     public GameRenderer gameRenderer;
 
-    @Mutable
     @Shadow
     @Final
     private Framebuffer framebuffer;
@@ -167,12 +160,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Nullable
     private IntegratedServer server;
 
-//    Framebuffer xrFramebuffer;
-
-    @Shadow public abstract void onResolutionChanged();
-
-    @Shadow protected abstract void render(boolean tick);
-
     @Shadow @Final public static boolean IS_SYSTEM_MAC;
 
     @Inject(method = "run", at = @At("HEAD"))
@@ -182,7 +169,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
 
         OpenXR.Swapchain swapchain = openXR.swapchains[0];
-//        xrFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
         framebuffer.resize(swapchain.width, swapchain.height, true);
         MineXRaftClient.guiFramebuffer = new Framebuffer(1920, 1080, true, IS_SYSTEM_MAC);
 

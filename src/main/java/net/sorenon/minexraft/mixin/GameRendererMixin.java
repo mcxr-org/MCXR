@@ -1,22 +1,15 @@
 package net.sorenon.minexraft.mixin;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3d;
 import net.sorenon.minexraft.MineXRaftClient;
 import net.sorenon.minexraft.XrCamera;
 import net.sorenon.minexraft.accessor.MatAccessor;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.openxr.XrPosef;
-import org.lwjgl.openxr.XrQuaternionf;
-import org.lwjgl.openxr.XrVector2f;
-import org.lwjgl.openxr.XrVector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -36,15 +29,18 @@ public abstract class GameRendererMixin {
     @Shadow
     public abstract float getViewDistance();
 
-    @Shadow @Final private MinecraftClient client;
-
-    @Shadow public abstract Matrix4f getBasicProjectionMatrix(Camera camera, float f, boolean bl);
-
-    @Shadow public abstract Camera getCamera();
+    @Shadow
+    @Final
+    private MinecraftClient client;
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/render/Camera"))
     Camera createCamera() {
         return new XrCamera();
+    }
+
+    @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
+    void cancelViewBob(MatrixStack matrixStack, float f, CallbackInfo ci) {
+        ci.cancel();
     }
 
     /**
@@ -76,15 +72,14 @@ public abstract class GameRendererMixin {
 
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render")
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        MineXRaftClient.framebufferWidth = 1920;
-        MineXRaftClient.framebufferHeight = 1080;
         MineXRaftClient.guiFramebuffer.beginWrite(true);
-        GlStateManager.clearColor(0,0,0,0);
+        MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
+        GlStateManager.clearColor(0, 0, 0, 0);
         GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC);
     }
 
     @Inject(method = "render", at = @At("TAIL"))
-    public void guiRenderEnd(float tickDelta, long startTime, boolean tick, CallbackInfo ci){
+    public void guiRenderEnd(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
         MineXRaftClient.tmpResetSize();
         client.getFramebuffer().beginWrite(true);
     }

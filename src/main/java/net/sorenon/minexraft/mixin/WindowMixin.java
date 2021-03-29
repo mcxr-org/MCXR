@@ -25,7 +25,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import static org.lwjgl.opengl.GL11.glViewport;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -115,8 +114,7 @@ public class WindowMixin {
     void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
         if (rect != null) {
-//            cir.setReturnValue(rect.extent().width());
-            cir.setReturnValue(MineXRaftClient.framebufferWidth);
+            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureWidth);
         }
     }
 
@@ -124,8 +122,7 @@ public class WindowMixin {
     void frameBufferHeight(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
         if (rect != null) {
-//            cir.setReturnValue(rect.extent().height());
-            cir.setReturnValue(MineXRaftClient.framebufferHeight);
+            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureHeight);
         }
     }
 
@@ -133,12 +130,8 @@ public class WindowMixin {
     void scframeBufferHeight(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
         if (rect != null) {
-//            int j = (int) (rect.extent().height() / scaleFactor);
-//            cir.setReturnValue(rect.extent().height() / scaleFactor > (double) j ? j + 1 : j);
-//            int j = (int) (MineXRaftClient.framebufferHeight / scaleFactor);
-//            cir.setReturnValue(MineXRaftClient.framebufferHeight / scaleFactor > (double) j ? j + 1 : j);
-            int j = (int) (MineXRaftClient.framebufferHeight / sca2);
-            cir.setReturnValue(MineXRaftClient.framebufferHeight / sca2 > (double) j ? j + 1 : j);
+            int j = (int) (MineXRaftClient.primaryRenderTarget.textureHeight / sca2);
+            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureHeight / sca2 > (double) j ? j + 1 : j);
         }
     }
 
@@ -146,12 +139,8 @@ public class WindowMixin {
     void scframeBufferWidth(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
         if (rect != null) {
-//            int j = (int) (rect.extent().width() / scaleFactor);
-//            cir.setReturnValue(rect.extent().width() / scaleFactor > (double) j ? j + 1 : j);
-//            int j = (int) (MineXRaftClient.framebufferWidth / scaleFactor);
-//            cir.setReturnValue(MineXRaftClient.framebufferWidth / scaleFactor > (double) j ? j + 1 : j);
-            int j = (int) (MineXRaftClient.framebufferWidth / sca2);
-            cir.setReturnValue(MineXRaftClient.framebufferWidth / sca2 > (double) j ? j + 1 : j);
+            int j = (int) (MineXRaftClient.primaryRenderTarget.textureWidth / sca2);
+            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.viewportWidth / sca2 > (double) j ? j + 1 : j);
         }
     }
 

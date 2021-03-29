@@ -7,7 +7,6 @@
     "InGameHudMixin",
     "accessor.CameraExt",
     "accessor.EntityExt",
-    "accessor.ERDExt"
   ],
   "client": [
     "FramebufferMixin",

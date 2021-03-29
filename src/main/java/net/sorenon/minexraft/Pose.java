@@ -1,6 +1,7 @@
 package net.sorenon.minexraft;
 
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Math;
 import org.joml.Quaternionf;
@@ -12,7 +13,7 @@ public class Pose {
     private final Quaternionf orientation = new Quaternionf();
     private final Vector3f normal = new Vector3f(0, 0, -1);
     private final Vector3f pos = new Vector3f();
-    private float yaw = 0;
+    private float yaw = 180;
     private float pitch = 0;
 
     public void set(XrPosef pose) {
@@ -45,6 +46,10 @@ public class Pose {
 
     public Quaternionf getOrientation() {
         return orientation;
+    }
+
+    public Quaternion getOrientationMc() {
+        return new Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
     }
 
     public float getYaw() {

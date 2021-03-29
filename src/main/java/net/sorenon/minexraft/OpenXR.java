@@ -90,7 +90,7 @@ public class OpenXR {
         XrSwapchainImageOpenGLKHR.Buffer images;
     }
 
-    static class InputState implements NativeResource {
+    public static class InputState implements NativeResource {
         XrActionSet actionSet;
         XrAction poseAction;
         XrAction selectAction;
@@ -99,15 +99,12 @@ public class OpenXR {
         XrSpace[] handSpace = new XrSpace[2];
         boolean[] renderHand = new boolean[2];
         boolean[] handSelect = new boolean[2];
-        XrPosef[] handPose = {XrPosef.malloc().set(identityPose), XrPosef.malloc().set(identityPose)};
-        XrVector2f[] handThumbstick = {XrVector2f.calloc(), XrVector2f.calloc()};
+        public Pose[] poses = {new Pose(), new Pose()};
+        public XrVector2f[] handThumbstick = {XrVector2f.calloc(), XrVector2f.calloc()};
 
         @Override
         public void free() {
             memFree(handSubactionPath);
-            for (XrPosef xrPosef : handPose) {
-                xrPosef.free();
-            }
         }
     }
 
@@ -606,13 +603,15 @@ public class OpenXR {
                     if (!inputState.renderHand[i]) {
                         continue;
                     }
-                    setPoseFromSpace(inputState.handSpace[i], predictedDisplayTime, inputState.handPose[i]);
+//                    setPoseFromSpace(inputState.handSpace[i], predictedDisplayTime, inputState.handPose[i]);
+                    setPoseFromSpace(inputState.handSpace[i], predictedDisplayTime, inputState.poses[i]);
+
                 }
             }
 
-            XrPosef viewPose = XrPosef.mallocStack().set(identityPose);
-            setPoseFromSpace(xrViewSpace, predictedDisplayTime, viewPose);
-            MineXRaftClient.headPose.set(viewPose);
+//            XrPosef viewPose = XrPosef.mallocStack().set(identityPose);
+            setPoseFromSpace(xrViewSpace, predictedDisplayTime, MineXRaftClient.headPose);
+//            MineXRaftClient.headPose.set(viewPose);
 
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
             if (this.client.getCameraEntity() != null || this.client.player != null) {
@@ -669,7 +668,7 @@ public class OpenXR {
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
                     MineXRaftClient.tmpResetSize();
                     MineXRaftClient.fov = projectionLayerView.fov();
-                    MineXRaftClient.eyePose = projectionLayerView.pose();
+                    MineXRaftClient.eyePose.set(projectionLayerView.pose());
                     MineXRaftClient.viewIndex = viewIndex;
                     if (camera.isReady()) {
                         camera.setEyePose(projectionLayerView.pose(), client.getTickDelta());
@@ -678,7 +677,6 @@ public class OpenXR {
                     if (camera.isReady()) {
                         camera.popEyePose();
                     }
-                    MineXRaftClient.eyePose = null;
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
 
@@ -982,7 +980,8 @@ public class OpenXR {
 
                 // If we have a select event, update the hand pose to match the event's timestamp
                 if (inputState.handSelect[hand]) {
-                    setPoseFromSpace(inputState.handSpace[hand], select_state.lastChangeTime(), inputState.handPose[hand]);
+//                    setPoseFromSpace(inputState.handSpace[hand], select_state.lastChangeTime(), inputState.handPose[hand]);
+                    setPoseFromSpace(inputState.handSpace[hand], select_state.lastChangeTime(), inputState.poses[hand]);
                 }
 
                 XrActionStateVector2f thumbstick_state = XrActionStateVector2f.callocStack().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
@@ -992,24 +991,26 @@ public class OpenXR {
                     inputState.handThumbstick[hand].set(thumbstick_state.currentState());
                     System.out.printf("X:%f Y:%f\n", thumbstick_state.currentState().x(), thumbstick_state.currentState().y());
                 }
-                XrQuaternionf rot = inputState.handPose[hand].orientation();
-
-                Quaternionf quat = new Quaternionf(rot.x(), rot.y(), rot.z(), rot.w());
-
-                Vector3f velocity = new Vector3f(thumbstick_state.currentState().x(), 0, -thumbstick_state.currentState().y());
-                float speed = velocity.length() / 10;
-                if (speed != 0) {
-                    quat.transform(velocity);
-                    velocity.y = 0;
-                    velocity.normalize();
-                    MineXRaftClient.xrOrigin = MineXRaftClient.xrOrigin.add(velocity.x * speed, 0, velocity.z * speed);
-                }
             }
         }
     }
 
 
-    public void setPoseFromSpace(XrSpace handSpace, long time, XrPosef result) {
+//    public void setPoseFromSpace(XrSpace handSpace, long time, XrPosef result) {
+//        try (MemoryStack ignored = stackPush()) {
+//            XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
+////            int res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+//            int res = xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+//            if (res == XR10.XR_SUCCESS &&
+//                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
+//                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
+//
+//                result.set(space_location.pose());
+//            }
+//        }
+//    }
+
+    public void setPoseFromSpace(XrSpace handSpace, long time, Pose result) {
         try (MemoryStack ignored = stackPush()) {
             XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
 //            int res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);

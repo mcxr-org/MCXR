@@ -5,8 +5,9 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "InGameHudMixin",
+    "KeyboardInputMixin",
     "accessor.CameraExt",
-    "accessor.EntityExt",
+    "accessor.EntityExt"
   ],
   "client": [
     "FramebufferMixin",

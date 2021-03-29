@@ -11,13 +11,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.SharedLibrary;
-import sun.security.provider.SHA;
 
 import java.nio.file.Paths;
 
@@ -31,7 +30,7 @@ public class MineXRaftClient implements ClientModInitializer {
     public static XrRect2Di viewportRect = null;
     public static Framebuffer primaryRenderTarget = null;
     public static XrFovf fov = null;
-    public static XrPosef eyePose = null;
+    public static Pose eyePose = new Pose();
     public static int viewIndex = 0;
 
     public static Framebuffer guiFramebuffer = null;
@@ -65,7 +64,6 @@ public class MineXRaftClient implements ClientModInitializer {
 
         System.out.println("Hello Fabric world!");
 ///execute in minecraft:overworld run tp @s 5804.48 137.00 -4601.16 3.23 72.30
-        float handGuiScale = 1f / 4000;
         WorldRenderEvents.LAST.register(context -> {
             for (int i = 0; i < 2; i++) {
                 if (!OPEN_XR.inputState.renderHand[i]) {
@@ -80,22 +78,18 @@ public class MineXRaftClient implements ClientModInitializer {
                 RenderSystem.enableAlphaTest();
                 RenderSystem.defaultAlphaFunc();
 
-                XrPosef pose = OPEN_XR.inputState.handPose[i];
-                XrVector3f pos = pose.position$();
                 XrVector2f thumbstick = OPEN_XR.inputState.handThumbstick[i];
-                XrQuaternionf quat = pose.orientation();
                 RenderSystem.pushMatrix();
-                XrVector3f eyePos = MineXRaftClient.eyePose.position$();
-                Vec3d gripPos = new Vec3d(pos.x(), pos.y(), pos.z());
+                Pose pose = OPEN_XR.inputState.poses[i];
+                Vec3d gripPos = pose.getPosMc();
+                Vector3f eyePos = MineXRaftClient.eyePose.getPos();
                 RenderSystem.translated(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
                 RenderSystem.pushMatrix();
-                RenderSystem.multMatrix(new Matrix4f(new Quaternion(quat.x(), quat.y(), quat.z(), quat.w())));
+                RenderSystem.multMatrix(new Matrix4f(pose.getOrientationMc()));
                 RenderSystem.translated(thumbstick.x() * 0.05f, 0, thumbstick.y() * -0.05f);
 
-                {
-                    thing();
-                }
+                renderHandGui();
 
                 RenderSystem.scalef(0.01F, 0.01F, 0.01F);
 
@@ -158,7 +152,7 @@ public class MineXRaftClient implements ClientModInitializer {
         });
     }
 
-    private static void thing(){
+    private static void renderHandGui(){
         float handGuiScale = 1f / 4000;
 
         float x = -0.1f;

@@ -3,6 +3,7 @@ package net.sorenon.minexraft;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormats;
@@ -33,6 +34,8 @@ public class MineXRaftClient implements ClientModInitializer {
     public static XrFovf fov = null;
     public static XrPosef eyePose = null;
     public static int viewIndex = 0;
+
+    public static Framebuffer guiFramebuffer = null;
 
     public static void tmpResetSize(){
         if (viewportRect != null) {
@@ -86,8 +89,35 @@ public class MineXRaftClient implements ClientModInitializer {
                 RenderSystem.pushMatrix();
                 RenderSystem.multMatrix(new Matrix4f(new Quaternion(quat.x(), quat.y(), quat.z(), quat.w())));
                 RenderSystem.translated(thumbstick.x() * 0.05f, 0, thumbstick.y() * -0.05f);
+
+                {
+                    int x0 = 0;
+                    int x1 = x0 + 1;
+                    int y0 = 0;
+                    int y1 = y0 + 1;
+                    int z = 0;
+
+                    int u0 = 0;
+                    int u1 = 1;
+                    int v0 = 0;
+                    int v1 = 1;
+
+                    RenderSystem.enableTexture();
+                    RenderSystem.bindTexture(MineXRaftClient.guiFramebuffer.getColorAttachment());
+                    BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+                    bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE);
+                    bufferBuilder.vertex((float) x0, (float) y1, (float) z).texture(u0, v1).next();
+                    bufferBuilder.vertex((float) x1, (float) y1, (float) z).texture(u1, v1).next();
+                    bufferBuilder.vertex((float) x1, (float) y0, (float) z).texture(u1, v0).next();
+                    bufferBuilder.vertex((float) x0, (float) y0, (float) z).texture(u0, v0).next();
+                    RenderSystem.enableAlphaTest();
+                    RenderSystem.defaultAlphaFunc();
+                    Tessellator.getInstance().draw();
+                }
+
                 RenderSystem.scalef(0.01F, 0.01F, 0.01F);
 
+                RenderSystem.disableTexture();
                 GL11.glPointSize(100.0f);
                 BufferBuilder buffer = Tessellator.getInstance().getBuffer();
                 buffer.begin(GL11.GL_POINTS, VertexFormats.POSITION_COLOR);

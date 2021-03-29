@@ -4,6 +4,7 @@
   "package": "net.sorenon.minexraft.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "InGameHudMixin",
     "accessor.CameraExt",
     "accessor.EntityExt",
     "accessor.ERDExt"

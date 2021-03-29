@@ -173,6 +173,8 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Shadow protected abstract void render(boolean tick);
 
+    @Shadow @Final public static boolean IS_SYSTEM_MAC;
+
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
         OpenXR openXR = MineXRaftClient.OPEN_XR;
@@ -182,6 +184,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         OpenXR.Swapchain swapchain = openXR.swapchains[0];
 //        xrFramebuffer = new Framebuffer(swapchain.width, swapchain.height, true, IS_SYSTEM_MAC);
         framebuffer.resize(swapchain.width, swapchain.height, true);
+        MineXRaftClient.guiFramebuffer = new Framebuffer(1920, 1080, true, IS_SYSTEM_MAC);
 
         options.hudHidden = true;
     }

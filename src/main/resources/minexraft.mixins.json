@@ -4,6 +4,7 @@
   "package": "net.sorenon.minexraft.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "ClientPlayNetworkHandlerMixin",
     "InGameHudMixin",
     "KeyboardInputMixin",
     "accessor.CameraExt",

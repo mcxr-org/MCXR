@@ -9,6 +9,7 @@ import net.minecraft.world.BlockView;
 import net.sorenon.minexraft.mixin.accessor.CameraExt;
 import org.joml.Math;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.openxr.XrPosef;
 
 public class XrCamera extends Camera {
@@ -42,10 +43,10 @@ public class XrCamera extends Camera {
     /**
      * Called just before each frame
      */
-    public void setEyePose(XrPosef pose, float tickDelta) {
+    public void setEyePose(Pose pose, float tickDelta) {
         setPose(
-                new Vec3d(pose.position$().x(), pose.position$().y(), pose.position$().z()),
-                new Quaternionf(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w()),
+                pose.getPosMc(),
+                pose.getOrientation(),
                 tickDelta
         );
     }
@@ -73,12 +74,12 @@ public class XrCamera extends Camera {
 
         Entity focusedEntity = getFocusedEntity();
         if (focusedEntity != null) {
-            this.setRotation(focusedEntity.getYaw(tickDelta), focusedEntity.getPitch(tickDelta));//TODO make this not bad
+            this.setRotation(focusedEntity.getYaw(1.0f), focusedEntity.getPitch(1.0f));//TODO make this not bad
 
             this.setPos(
-                    MathHelper.lerp(tickDelta, focusedEntity.prevX, focusedEntity.getX()) + viewPos.x,
-                    MathHelper.lerp(tickDelta, focusedEntity.prevY, focusedEntity.getY()) + viewPos.y,
-                    MathHelper.lerp(tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + viewPos.z
+                    MathHelper.lerp(tickDelta, focusedEntity.prevX, focusedEntity.getX()) + viewPos.x + MineXRaftClient.xrOffset.x,
+                    MathHelper.lerp(tickDelta, focusedEntity.prevY, focusedEntity.getY()) + viewPos.y + MineXRaftClient.xrOffset.y,
+                    MathHelper.lerp(tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + viewPos.z + MineXRaftClient.xrOffset.z
             );
         }
     }

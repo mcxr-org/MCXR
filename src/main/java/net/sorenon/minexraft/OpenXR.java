@@ -22,10 +22,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.HashMap;
-import java.util.Map;
 
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryStack.stackMallocLong;
@@ -282,6 +279,9 @@ public class OpenXR {
 
                 long[] desiredSwapchainFormats = {
                         GL_SRGB8_ALPHA8,
+                        //SRGB formats perform automatic inverse gamma correction inside the driver
+                        //but all SRGB formats are linear so in the future we want to do inverse gamma correction ourselves
+                        //and use GL_RGBA16F instead
                         GL11.GL_RGB10_A2,
                         GL30.GL_RGBA16F,
                         // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
@@ -528,9 +528,7 @@ public class OpenXR {
                 }
             }
 
-//            XrPosef viewPose = XrPosef.mallocStack().set(identityPose);
-            setPoseFromSpace(xrViewSpace, predictedDisplayTime, MineXRaftClient.headPose);
-//            MineXRaftClient.headPose.set(viewPose);
+            setPoseFromSpace(xrViewSpace, predictedDisplayTime, MineXRaftClient.headPose, MineXRaftClient.yawTurn);
 
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
             camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.headPose);
@@ -584,10 +582,11 @@ public class OpenXR {
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
                     MineXRaftClient.tmpResetSize();
                     MineXRaftClient.fov = projectionLayerView.fov();
-                    MineXRaftClient.eyePose.set(projectionLayerView.pose());
+                    MineXRaftClient.eyePose.set(projectionLayerView.pose(), MineXRaftClient.yawTurn);
+//                    MineXRaftClient.eyePose.set(projectionLayerView.pose());
                     MineXRaftClient.viewIndex = viewIndex;
                     if (camera.isReady()) {
-                        camera.setEyePose(projectionLayerView.pose(), client.getTickDelta());
+                        camera.setEyePose(MineXRaftClient.eyePose, client.getTickDelta());
                     }
                     clientExt.doRenderXR(true, frameStartTime);
                     if (camera.isReady()) {
@@ -661,40 +660,6 @@ public class OpenXR {
         }
     }
 
-
-    private static class Geometry {
-
-        static float[] cubeVertices = {
-                -0.5f, 0.5f, -0.5f, 0.25f, 0f, 0f, -0.5f, -0.5f, 0.5f, 0.25f, 0f, 0f, -0.5f, -0.5f, -0.5f, 0.25f, 0f, 0f, -0.5f, 0.5f, -0.5f, 0.25f, 0f, 0f, -0.5f, 0.5f, 0.5f, 0.25f, 0f, 0f, -0.5f, -0.5f, 0.5f, 0.25f, 0f, 0f,
-                0.5f, 0.5f, -0.5f, 1f, 0f, 0f, 0.5f, -0.5f, -0.5f, 1f, 0f, 0f, 0.5f, -0.5f, 0.5f, 1f, 0f, 0f, 0.5f, 0.5f, -0.5f, 1f, 0f, 0f, 0.5f, -0.5f, 0.5f, 1f, 0f, 0f, 0.5f, 0.5f, 0.5f, 1f, 0f, 0f,
-                -0.5f, -0.5f, -0.5f, 0f, 0.25f, 0f, -0.5f, -0.5f, 0.5f, 0f, 0.25f, 0f, 0.5f, -0.5f, 0.5f, 0f, 0.25f, 0f, -0.5f, -0.5f, -0.5f, 0f, 0.25f, 0f, 0.5f, -0.5f, 0.5f, 0f, 0.25f, 0f, 0.5f, -0.5f, -0.5f, 0f, 0.25f, 0f,
-                -0.5f, 0.5f, -0.5f, 0f, 1f, 0f, 0.5f, 0.5f, -0.5f, 0f, 1f, 0f, 0.5f, 0.5f, 0.5f, 0f, 1f, 0f, -0.5f, 0.5f, -0.5f, 0f, 1f, 0f, 0.5f, 0.5f, 0.5f, 0f, 1f, 0f, -0.5f, 0.5f, 0.5f, 0f, 1f, 0f,
-                -0.5f, -0.5f, -0.5f, 0f, 0f, 0.25f, 0.5f, -0.5f, -0.5f, 0f, 0f, 0.25f, 0.5f, 0.5f, -0.5f, 0f, 0f, 0.25f, -0.5f, -0.5f, -0.5f, 0f, 0f, 0.25f, 0.5f, 0.5f, -0.5f, 0f, 0f, 0.25f, -0.5f, 0.5f, -0.5f, 0f, 0f, 0.25f,
-                -0.5f, -0.5f, 0.5f, 0f, 0f, 1f, -0.5f, 0.5f, 0.5f, 0f, 0f, 1f, 0.5f, 0.5f, 0.5f, 0f, 0f, 1f, -0.5f, -0.5f, 0.5f, 0f, 0f, 1f, 0.5f, 0.5f, 0.5f, 0f, 0f, 1f, 0.5f, -0.5f, 0.5f, 0f, 0f, 1f
-        };
-
-        // Winding order is clockwise. Each side uses a different color.
-        static short[] cubeIndices = {
-                0, 1, 2, 3, 4, 5,
-                6, 7, 8, 9, 10, 11,
-                12, 13, 14, 15, 16, 17,
-                18, 19, 20, 21, 22, 23,
-                24, 25, 26, 27, 28, 29,
-                30, 31, 32, 33, 34, 35,
-        };
-
-        static float[] quadVertices = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-                // positions   // texCoords
-                -1.0f, 1.0f, 0.0f, 1.0f,
-                -1.0f, -1.0f, 0.0f, 0.0f,
-                1.0f, -1.0f, 1.0f, 0.0f,
-
-                -1.0f, 1.0f, 0.0f, 1.0f,
-                1.0f, -1.0f, 1.0f, 0.0f,
-                1.0f, 1.0f, 1.0f, 1.0f
-        };
-    }
-
     public void xrCheck(int result) throws IllegalStateException {
         if (result >= 0) return;
 
@@ -711,19 +676,6 @@ public class OpenXR {
         public XrResultException(String s) {
             super(s);
         }
-    }
-
-    //This is probably just a temporary ease of access feature while i get used to the OpenXR api
-    public HashMap<String, Long> paths = new HashMap<>();
-
-    public long xrPath(String pathIn) {
-        return paths.computeIfAbsent(pathIn, s -> {
-            try (MemoryStack stack = stackPush()) {
-                LongBuffer buf = stack.mallocLong(1);
-                xrCheck(XR10.xrStringToPath(xrInstance, "/user/hand/left/input/grip/pose", buf));
-                return buf.get(0);
-            }
-        });
     }
 
     @SuppressWarnings("RedundantCast")
@@ -910,6 +862,15 @@ public class OpenXR {
                 if (select_state.changedSinceLastSync()) {
                     System.out.println(hand);
                     setPoseFromSpace(inputState.handSpace[hand], select_state.lastChangeTime(), inputState.poses[hand]);
+                    if (select_state.currentState()) {
+                        MineXRaftClient.yawTurn += Math.toRadians(22);
+                        Vector3f rotatedPos = new Quaternionf().rotateLocalY(MineXRaftClient.yawTurn).transform(MineXRaftClient.headPose.rawPos, new Vector3f());
+                        Vector3f finalPos = MineXRaftClient.xrOffset.add(MineXRaftClient.headPose.getPos(), new Vector3f());
+//                        System.out.println("Current / Wanted pos" + finalPos.toString());
+//                        System.out.println("Raw pos" + MineXRaftClient.headPose.rawPos.toString());
+//                        System.out.println("Rotated pos" + rotatedPos.toString());
+                        MineXRaftClient.xrOffset = finalPos.sub(rotatedPos).mul(1, 0, 1);
+                    }
                 }
 
                 XrActionStateVector2f thumbstick_state = XrActionStateVector2f.callocStack().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
@@ -921,11 +882,6 @@ public class OpenXR {
                 }
 
                 XrActionStateBoolean abutton_state = XrActionStateBoolean.callocStack().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
-                get_info.action(inputState.aPressAction);
-                xrCheck(XR10.xrGetActionStateBoolean(xrSession, get_info, abutton_state));
-                inputState.aDown[hand] = abutton_state.currentState();
-
-                XrActionStateBoolean trigger_state = XrActionStateBoolean.callocStack().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
                 get_info.action(inputState.aPressAction);
                 xrCheck(XR10.xrGetActionStateBoolean(xrSession, get_info, abutton_state));
                 inputState.aDown[hand] = abutton_state.currentState();
@@ -942,6 +898,19 @@ public class OpenXR {
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
 
                 result.set(space_location.pose());
+            }
+        }
+    }
+
+    public void setPoseFromSpace(XrSpace handSpace, long time, Pose result, float turnYaw) {
+        try (MemoryStack ignored = stackPush()) {
+            XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
+            int res = xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+            if (res == XR10.XR_SUCCESS &&
+                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
+                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
+
+                result.set(space_location.pose(), turnYaw);
             }
         }
     }

@@ -7,11 +7,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.json.ModelTransformation;
-import net.minecraft.client.util.ScreenshotUtils;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -21,7 +19,10 @@ import net.minecraft.world.LightType;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.openxr.*;
+import org.lwjgl.openxr.XR;
+import org.lwjgl.openxr.XrFovf;
+import org.lwjgl.openxr.XrRect2Di;
+import org.lwjgl.openxr.XrVector2f;
 import org.lwjgl.system.SharedLibrary;
 
 import java.nio.file.Paths;
@@ -40,7 +41,7 @@ public class MineXRaftClient implements ClientModInitializer {
     public static int viewIndex = 0;
 
     public static Framebuffer guiFramebuffer = null;
-//TODO mild issue with colours looking 'off', check if fb color space stuff can deal with it
+
     public static void tmpResetSize() {
 //        if (viewportRect != null) {
 //            framebufferWidth = viewportRect.extent().width();
@@ -51,7 +52,9 @@ public class MineXRaftClient implements ClientModInitializer {
 
     public static final Pose headPose = new Pose();
 
-    public static Vec3d xrOrigin = new Vec3d(0, 0, 0); //The center of player's playspace set at the same height of the PlayerEntity's feet
+    //    public static Vec3d xrOrigin = new Vec3d(0, 0, 0); //The center of the STAGE set at the same height of the PlayerEntity's feet
+    public static Vector3f xrOffset = new Vector3f(0, 0, 0);
+    public static float yawTurn = 0;
 
     @Override
     public void onInitializeClient() {
@@ -184,6 +187,10 @@ public class MineXRaftClient implements ClientModInitializer {
                 }
             }
         });
+    }
+
+    public static void resetView() {
+        MineXRaftClient.xrOffset = new Vector3f(0, 0, 0).sub(MineXRaftClient.headPose.getPos()).mul(1, 0, 1);
     }
 
     private static void renderHandGui() {

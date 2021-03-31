@@ -15,11 +15,28 @@ public class Pose {
     private final Vector3f pos = new Vector3f();
     private float yaw = 180;
     private float pitch = 0;
+    public Vector3f rawPos = new Vector3f();
 
     public void set(XrPosef pose) {
         pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
+        rawPos.set(pos);
         orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
-        
+
+        orientation.transform(normal.set(0, 0, -1), normal);
+
+        float yaw = getYawFromNormal(normal);
+        float pitch = (float) Math.asin(MathHelper.clamp(normal.y, -0.999999999, 0.999999999));
+        this.yaw = (float) -Math.toDegrees(yaw) + 180;
+        this.pitch = (float) -Math.toDegrees(pitch);
+    }
+
+    public void set(XrPosef pose, float turnYaw) {
+        pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
+        rawPos.set(pos);
+        orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
+        orientation.rotateLocalY(turnYaw);
+
+        new Quaternionf().rotateLocalY(turnYaw).transform(pos);
         orientation.transform(normal.set(0, 0, -1), normal);
 
         float yaw = getYawFromNormal(normal);

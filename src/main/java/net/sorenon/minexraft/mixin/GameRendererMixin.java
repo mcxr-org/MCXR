@@ -2,7 +2,9 @@ package net.sorenon.minexraft.mixin;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
@@ -38,8 +40,12 @@ public abstract class GameRendererMixin {
         return new XrCamera();
     }
 
+    @Redirect(method = "renderHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/HeldItemRenderer;renderItem(FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;Lnet/minecraft/client/network/ClientPlayerEntity;I)V"))
+    void cancelRenderHand(HeldItemRenderer heldItemRenderer, float tickDelta, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, ClientPlayerEntity player, int light) {
+    }
+
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
-    void cancelViewBob(MatrixStack matrixStack, float f, CallbackInfo ci) {
+    void cancelBobView(MatrixStack matrixStack, float f, CallbackInfo ci) {
         ci.cancel();
     }
 
@@ -74,6 +80,10 @@ public abstract class GameRendererMixin {
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
         MineXRaftClient.guiFramebuffer.beginWrite(true);
         MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
+//        if (MinecraftClient.getInstance().currentScreen != null) {
+//            MinecraftClient.getInstance().currentScreen.height = MinecraftClient.getInstance().getWindow().getScaledHeight();
+//            MinecraftClient.getInstance().currentScreen.width = MinecraftClient.getInstance().getWindow().getScaledWidth();
+//        }
         GlStateManager.clearColor(0, 0, 0, 0);
         GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC);
     }

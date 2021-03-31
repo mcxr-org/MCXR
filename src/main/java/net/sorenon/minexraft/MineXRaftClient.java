@@ -6,12 +6,18 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.util.ScreenshotUtils;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.LightType;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -34,8 +40,8 @@ public class MineXRaftClient implements ClientModInitializer {
     public static int viewIndex = 0;
 
     public static Framebuffer guiFramebuffer = null;
-
-    public static void tmpResetSize(){
+//TODO mild issue with colours looking 'off', check if fb color space stuff can deal with it
+    public static void tmpResetSize() {
 //        if (viewportRect != null) {
 //            framebufferWidth = viewportRect.extent().width();
 //            framebufferHeight = viewportRect.extent().height();
@@ -49,14 +55,6 @@ public class MineXRaftClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-//        fov = XrFovf.create();
-//        fov.angleLeft(-0.80285144f);
-//        fov.angleRight(0.80285144f);
-//        fov.angleUp(0.8552113f);
-//        fov.angleDown(-0.8552113f);
-//        if (true) return;
-
-
         SharedLibrary defaultOpenXRLoader = loadNative(XR.class, "C:\\Users\\soren\\Documents\\Programming\\openxr_loader_windows\\x64\\bin\\openxr_loader.dll", "openxr_loader");
         XR.create(defaultOpenXRLoader);
         OPEN_XR.createOpenXRInstance();
@@ -72,6 +70,7 @@ public class MineXRaftClient implements ClientModInitializer {
                 RenderSystem.depthMask(true);
                 RenderSystem.disableCull();
                 RenderSystem.enableBlend();
+                RenderSystem.disableDepthTest();
                 RenderSystem.defaultBlendFunc();
                 RenderSystem.disableTexture();
                 RenderSystem.lineWidth(1.0f);
@@ -123,15 +122,15 @@ public class MineXRaftClient implements ClientModInitializer {
         });
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            Entity entity = context.camera().getFocusedEntity();
+            Entity camEntity = context.camera().getFocusedEntity();
 
-            if (entity != null) {
+            if (camEntity != null) {
                 MatrixStack matrices = context.matrixStack();
                 Vec3d camPos = context.camera().getPos();
                 matrices.push();
-                double x = MathHelper.lerp(context.tickDelta(), entity.lastRenderX, entity.getX());
-                double y = MathHelper.lerp(context.tickDelta(), entity.lastRenderY, entity.getY());
-                double z = MathHelper.lerp(context.tickDelta(), entity.lastRenderZ, entity.getZ());
+                double x = MathHelper.lerp(context.tickDelta(), camEntity.lastRenderX, camEntity.getX());
+                double y = MathHelper.lerp(context.tickDelta(), camEntity.lastRenderY, camEntity.getY());
+                double z = MathHelper.lerp(context.tickDelta(), camEntity.lastRenderZ, camEntity.getZ());
                 matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
                 MatrixStack.Entry entry = matrices.peek();
 
@@ -139,7 +138,7 @@ public class MineXRaftClient implements ClientModInitializer {
                 VertexConsumer vertexConsumer = context.consumers().getBuffer(SHADOW_LAYER);
 
                 float alpha = MathHelper.clamp((float) Math.sqrt(camPos.squaredDistanceTo(x, y, z)) / 2f - 0.5f, 0.25f, 1);
-                float radius = entity.getWidth() / 2;
+                float radius = camEntity.getWidth() / 2;
                 float y0 = 0.005f;
 
                 vertexConsumer.vertex(entry.getModel(), -radius, y0, -radius).color(1.0F, 1.0F, 1.0F, alpha).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(entry.getNormal(), 0.0F, 1.0F, 0.0F).next();
@@ -149,15 +148,72 @@ public class MineXRaftClient implements ClientModInitializer {
 
                 matrices.pop();
             }
+
+            if (camEntity instanceof LivingEntity) {
+                for (int i = 0; i < 2; i++) {
+                    if (!OPEN_XR.inputState.renderHand[i]) {
+                        continue;
+                    }
+                    Pose pose = OPEN_XR.inputState.poses[i];
+                    Vec3d gripPos = pose.getPosMc();
+                    Vector3f eyePos = MineXRaftClient.eyePose.getPos();
+                    MatrixStack matrices = context.matrixStack();
+                    matrices.push();
+                    matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
+                    matrices.multiply(pose.getOrientationMc());
+
+                    matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F - 12));
+                    matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+                    matrices.scale(0.4f, 0.4f, 0.4f);
+                    matrices.translate(0, 1 / 16f, -1.25 / 16f);
+
+                    LivingEntity camLivEntity = (LivingEntity) camEntity;
+                    ItemStack stack = i == 0 ? camLivEntity.getOffHandStack() : camLivEntity.getMainHandStack();
+
+                    MinecraftClient.getInstance().getHeldItemRenderer().renderItem(
+                            camLivEntity,
+                            stack,
+                            i == 0 ? ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND : ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND,
+                            false,
+                            matrices,
+                            context.consumers(),
+                            LightmapTextureManager.pack(camEntity.world.getLightLevel(LightType.BLOCK, camEntity.getBlockPos()), camEntity.world.getLightLevel(LightType.SKY, camEntity.getBlockPos()))
+                    );
+
+                    matrices.pop();
+                }
+            }
         });
     }
 
-    private static void renderHandGui(){
+    private static void renderHandGui() {
         float handGuiScale = 1f / 4000;
 
-        float x = -0.1f;
-        float y0 = 0.1f;
-        float y1 = y0 - guiFramebuffer.textureHeight * handGuiScale;
+//        float x = -0.1f;
+//        float y0 = 0.1f;
+//        float y1 = y0 - guiFramebuffer.textureHeight * handGuiScale;
+//        float z0 = -0.1f;
+//        float z1 = z0 + guiFramebuffer.textureWidth * handGuiScale;
+//
+//        int u0 = 0;
+//        int u1 = 1;
+//        int v0 = 0;
+//        int v1 = 1;
+//
+//        RenderSystem.enableTexture();
+//        RenderSystem.bindTexture(guiFramebuffer.getColorAttachment());
+//        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+//        bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE);
+//        bufferBuilder.vertex(x, y1, z1).texture(u0, v1).next();
+//        bufferBuilder.vertex(x, y1, z0).texture(u1, v1).next();
+//        bufferBuilder.vertex(x, y0, z0).texture(u1, v0).next();
+//        bufferBuilder.vertex(x, y0, z1).texture(u0, v0).next();
+//        Tessellator.getInstance().draw();
+//        RenderSystem.disableTexture();
+
+        float x1 = 0;
+        float x0 = x1 - guiFramebuffer.textureHeight * handGuiScale;
+        float y = 0.1f;
         float z0 = -0.1f;
         float z1 = z0 + guiFramebuffer.textureWidth * handGuiScale;
 
@@ -166,14 +222,18 @@ public class MineXRaftClient implements ClientModInitializer {
         int v0 = 0;
         int v1 = 1;
 
+//        MinecraftClient client = MinecraftClient.getInstance(); I love this code so much im going to keep it
+//        ScreenshotUtils.saveScreenshot(client.runDirectory, guiFramebuffer.textureWidth, guiFramebuffer.textureHeight, guiFramebuffer, null);
+//        System.exit(0);
+
         RenderSystem.enableTexture();
         RenderSystem.bindTexture(guiFramebuffer.getColorAttachment());
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE);
-        bufferBuilder.vertex(x, y1, z1).texture(u0, v1).next();
-        bufferBuilder.vertex(x, y1, z0).texture(u1, v1).next();
-        bufferBuilder.vertex(x, y0, z0).texture(u1, v0).next();
-        bufferBuilder.vertex(x, y0, z1).texture(u0, v0).next();
+        bufferBuilder.vertex(x0, y, z1).texture(u0, v1).next();
+        bufferBuilder.vertex(x0, y, z0).texture(u1, v1).next();
+        bufferBuilder.vertex(x1, y, z0).texture(u1, v0).next();
+        bufferBuilder.vertex(x1, y, z1).texture(u0, v0).next();
         Tessellator.getInstance().draw();
         RenderSystem.disableTexture();
     }

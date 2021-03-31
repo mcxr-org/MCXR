@@ -171,8 +171,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         OpenXR.Swapchain swapchain = openXR.swapchains[0];
         framebuffer.resize(swapchain.width, swapchain.height, true);
         MineXRaftClient.guiFramebuffer = new Framebuffer(1920, 1080, true, IS_SYSTEM_MAC);
-
-        options.hudHidden = true;
+//        options.hudHidden = true;
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
@@ -190,6 +189,13 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             // Throttle loop since xrWaitFrame won't be called.
             Thread.sleep(250);
         }
+    }
+
+    @Redirect(at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "openScreen")
+    void initScreen(Screen screen, MinecraftClient client, int width, int height){
+        MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
+        screen.init((MinecraftClient)(Object) this, this.window.getScaledWidth(), this.window.getScaledHeight());
+        MineXRaftClient.tmpResetSize();
     }
 
     @Override
@@ -311,15 +317,4 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
         this.profiler.pop();
     }
-
-//    @Override
-//    public Framebuffer swapchainFramebuffer() {
-////        return xrFramebuffer;
-//        return framebuffer;
-//    }
-
-//    @Override
-//    public void setFramebuffer(Framebuffer framebuffer) {
-////        this.framebuffer = framebuffer;
-//    }
 }

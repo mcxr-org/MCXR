@@ -58,33 +58,39 @@ public class XrCamera extends Camera {
     }
 
     protected void setPose(Vec3d viewPos, Quaternionf viewRot, float tickDelta) {
-        CameraExt thiz = (CameraExt) this;
-
         rawRotation.set(viewRot);
 
-        //Stupid block game wants quaternion with yaw rotated 180 degrees, i might need to remove or tinker with roll as well if it starts to mess things up
-        viewRot.rotateX((float) Math.PI, quat);
-        this.getRotation().set(quat.x, quat.y, quat.z, quat.w);
-
-        this.getHorizontalPlane().set(0.0F, 0.0F, 1.0F);
-        this.getHorizontalPlane().rotate(this.getRotation());
-        this.getVerticalPlane().set(0.0F, 1.0F, 0.0F);
-        this.getVerticalPlane().rotate(this.getRotation());
-
-        thiz.diagonalPlane().set(1.0F, 0.0F, 0.0F);
-        thiz.diagonalPlane().rotate(this.getRotation());
+//        viewRot.rotateX((float) Math.PI, quat);
+//        this.getRotation().set(quat.x, quat.y, quat.z, quat.w);
+//
+//        this.getHorizontalPlane().set(0.0F, 0.0F, 1.0F);
+//        this.getHorizontalPlane().rotate(this.getRotation());
+//        this.getVerticalPlane().set(0.0F, 1.0F, 0.0F);
+//        this.getVerticalPlane().rotate(this.getRotation());
+//
+//        thiz.diagonalPlane().set(1.0F, 0.0F, 0.0F);
+//        thiz.diagonalPlane().rotate(this.getRotation());
 
         Entity focusedEntity = getFocusedEntity();
-        this.setPos(
-                MathHelper.lerp((double) tickDelta, focusedEntity.prevX, focusedEntity.getX()) + viewPos.x,
-                MathHelper.lerp((double) tickDelta, focusedEntity.prevY, focusedEntity.getY()) + viewPos.y,
-                MathHelper.lerp((double) tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + viewPos.z
-        );
+        if (focusedEntity != null) {
+            this.setRotation(focusedEntity.getYaw(tickDelta), focusedEntity.getPitch(tickDelta));//TODO make this not bad
+
+            this.setPos(
+                    MathHelper.lerp(tickDelta, focusedEntity.prevX, focusedEntity.getX()) + viewPos.x,
+                    MathHelper.lerp(tickDelta, focusedEntity.prevY, focusedEntity.getY()) + viewPos.y,
+                    MathHelper.lerp(tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + viewPos.z
+            );
+        }
     }
 
     @Override
     public void update(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta) {
-
+        CameraExt thiz = (CameraExt) this;
+        thiz.ready(true);
+        thiz.area(area);
+        thiz.focusedEntity(focusedEntity);
+        thiz.thirdPerson(false);
+        thiz.inverseView(false);
     }
 
     public Quaternion getRawRotationInverted() {

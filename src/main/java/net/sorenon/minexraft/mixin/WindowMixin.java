@@ -88,9 +88,12 @@ public class WindowMixin {
             openXR.xrSession = new XrSession(pp.get(0), openXR.xrInstance);
         }
 
+//        if (openXR.xrInstance.getCapabilities().XR_FB_color_space){
+//            FBColorSpace.xrSetColorSpaceFB(openXR.xrSession, FBColorSpace.XR_COLOR_SPACE_RIFT_S_FB);
+//        }
+
         openXR.createXRReferenceSpaces();
         openXR.createXRSwapchains();
-        openXR.createOpenGLResourses();
         openXR.makeActions();
     }
 
@@ -128,20 +131,24 @@ public class WindowMixin {
 
     @Inject(method = "getScaledHeight", at = @At("HEAD"), cancellable = true)
     void scframeBufferHeight(CallbackInfoReturnable<Integer> cir) {
-        XrRect2Di rect = MineXRaftClient.viewportRect;
-        if (rect != null) {
+//        XrRect2Di rect = MineXRaftClient.viewportRect;
+//        if (rect != null) {
+        if (MineXRaftClient.primaryRenderTarget != null) {
             int j = (int) (MineXRaftClient.primaryRenderTarget.textureHeight / sca2);
             cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureHeight / sca2 > (double) j ? j + 1 : j);
         }
+//        }
     }
 
     @Inject(method = "getScaledWidth", at = @At("HEAD"), cancellable = true)
     void scframeBufferWidth(CallbackInfoReturnable<Integer> cir) {
-        XrRect2Di rect = MineXRaftClient.viewportRect;
-        if (rect != null) {
+//        XrRect2Di rect = MineXRaftClient.viewportRect;
+//        if (rect != null) {
+        if (MineXRaftClient.primaryRenderTarget != null) {
             int j = (int) (MineXRaftClient.primaryRenderTarget.textureWidth / sca2);
             cir.setReturnValue(MineXRaftClient.primaryRenderTarget.viewportWidth / sca2 > (double) j ? j + 1 : j);
         }
+//        }
     }
 
     @Inject(method = "getScaleFactor", at = @At("HEAD"), cancellable = true)

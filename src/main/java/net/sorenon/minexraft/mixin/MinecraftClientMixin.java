@@ -27,6 +27,7 @@ import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.sorenon.minexraft.MineXRaftClient;
 import net.sorenon.minexraft.OpenXR;
+import net.sorenon.minexraft.input.XrInput;
 import net.sorenon.minexraft.accessor.MinecraftClientEXT;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -177,13 +178,14 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
     void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
         OpenXR openXR = MineXRaftClient.OPEN_XR;
+        XrInput xrInput = MineXRaftClient.XR_INPUT;
         if (openXR.pollEvents()) {
             running = false;
             return;
         }
 
         if (openXR.sessionRunning) {
-            openXR.pollActions();
+            xrInput.pollActions();
             openXR.renderFrameOpenXR();
         } else {
             // Throttle loop since xrWaitFrame won't be called.

@@ -16,6 +16,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
+import net.sorenon.minexraft.input.GameplayActionSet;
+import net.sorenon.minexraft.input.XrInput;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -33,6 +35,8 @@ import static org.lwjgl.system.APIUtil.apiLog;
 public class MineXRaftClient implements ClientModInitializer {
 
     public static final OpenXR OPEN_XR = new OpenXR();
+    public static XrInput XR_INPUT;
+    public static GameplayActionSet gameplayActionSet;
 
     public static XrRect2Di viewportRect = null;
     public static Framebuffer primaryRenderTarget = null;
@@ -67,7 +71,7 @@ public class MineXRaftClient implements ClientModInitializer {
 ///execute in minecraft:overworld run tp @s 5804.48 137.00 -4601.16 3.23 72.30
         WorldRenderEvents.LAST.register(context -> {
             for (int i = 0; i < 2; i++) {
-                if (!OPEN_XR.inputState.renderHand[i]) {
+                if (!MineXRaftClient.gameplayActionSet.isHandActive[i]) {
                     continue;
                 }
                 RenderSystem.depthMask(true);
@@ -80,16 +84,16 @@ public class MineXRaftClient implements ClientModInitializer {
                 RenderSystem.enableAlphaTest();
                 RenderSystem.defaultAlphaFunc();
 
-                XrVector2f thumbstick = OPEN_XR.inputState.handThumbstick[i];
+//                XrVector2f thumbstick = XR_INPUT.inputState.handThumbstick[i];
                 RenderSystem.pushMatrix();
-                Pose pose = OPEN_XR.inputState.poses[i];
+                Pose pose = MineXRaftClient.gameplayActionSet.poses[i];
                 Vec3d gripPos = pose.getPosMc();
                 Vector3f eyePos = MineXRaftClient.eyePose.getPos();
                 RenderSystem.translated(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
                 RenderSystem.pushMatrix();
                 RenderSystem.multMatrix(new Matrix4f(pose.getOrientationMc()));
-                RenderSystem.translated(thumbstick.x() * 0.05f, 0, thumbstick.y() * -0.05f);
+//                RenderSystem.translated(thumbstick.x() * 0.05f, 0, thumbstick.y() * -0.05f);
 
                 renderHandGui();
 
@@ -154,10 +158,10 @@ public class MineXRaftClient implements ClientModInitializer {
 
             if (camEntity instanceof LivingEntity) {
                 for (int i = 0; i < 2; i++) {
-                    if (!OPEN_XR.inputState.renderHand[i]) {
+                    if (!MineXRaftClient.gameplayActionSet.isHandActive[i]) {
                         continue;
                     }
-                    Pose pose = OPEN_XR.inputState.poses[i];
+                    Pose pose = MineXRaftClient.gameplayActionSet.poses[i];
                     Vec3d gripPos = pose.getPosMc();
                     Vector3f eyePos = MineXRaftClient.eyePose.getPos();
                     MatrixStack matrices = context.matrixStack();

@@ -15,9 +15,7 @@ public class KeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
     void mv(boolean slowDown, CallbackInfo ci) {
-        int offHand = 0;
-        int mainHand = 1;
-        XrVector2f thumbstick = MineXRaftClient.OPEN_XR.inputState.handThumbstick[offHand];
+        XrVector2f thumbstick = MineXRaftClient.gameplayActionSet.thumbstickOffHandState.currentState();
         this.movementForward = thumbstick.y();
         this.movementSideways = -thumbstick.x();
 
@@ -26,6 +24,6 @@ public class KeyboardInputMixin extends Input {
         this.pressingRight = thumbstick.x() > 0;
         this.pressingLeft = thumbstick.y() < 0;
 
-        this.jumping = MineXRaftClient.OPEN_XR.inputState.aDown[mainHand];
+        this.jumping = MineXRaftClient.gameplayActionSet.jumpState.currentState();
     }
 }

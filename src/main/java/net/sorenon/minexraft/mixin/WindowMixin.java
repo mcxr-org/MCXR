@@ -6,6 +6,8 @@ import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.OpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
+import net.sorenon.minexraft.input.GameplayActionSet;
+import net.sorenon.minexraft.input.XrInput;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWNativeWGL;
@@ -25,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -53,7 +56,7 @@ public class WindowMixin {
             //Initialize OpenXR's OpenGL compatability
             XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.mallocStack();
             graphicsRequirements.set(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR, 0, 0, 0);
-            openXR.xrCheck(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(openXR.xrInstance, openXR.systemID, graphicsRequirements));
+            openXR.check(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(openXR.xrInstance, openXR.systemID, graphicsRequirements));
 
             //Check if OpenGL ver is supported by OpenXR ver
             if (graphicsRequirements.minApiVersionSupported() > XR10.XR_MAKE_VERSION(GL11.glGetInteger(GL30.GL_MAJOR_VERSION), GL11.glGetInteger(GL30.GL_MINOR_VERSION), 0)) {
@@ -83,7 +86,7 @@ public class WindowMixin {
             );
 
             PointerBuffer pp = stack.mallocPointer(1);
-            openXR.xrCheck(XR10.xrCreateSession(openXR.xrInstance, sessionCreateInfo, pp));
+            openXR.check(XR10.xrCreateSession(openXR.xrInstance, sessionCreateInfo, pp));
             System.out.println(pp.get(0));
             openXR.xrSession = new XrSession(pp.get(0), openXR.xrInstance);
         }
@@ -94,25 +97,38 @@ public class WindowMixin {
 
         openXR.createXRReferenceSpaces();
         openXR.createXRSwapchains();
-        openXR.makeActions();
+        MineXRaftClient.XR_INPUT = new XrInput(openXR);
+//        MineXRaftClient.XR_INPUT.makeActions();
+
+        GameplayActionSet gameplayActionSet = MineXRaftClient.XR_INPUT.makeGameplayActionSet();
+        // Attach the action set we just made to the session
+        XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
+                XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
+                NULL,
+                stackPointers(gameplayActionSet.address())
+        );
+        openXR.check(XR10.xrAttachSessionActionSets(openXR.xrSession, attach_info));
+        MineXRaftClient.gameplayActionSet = gameplayActionSet;
+//        System.exit(0);
     }
 
     private double sca2 = 1;
+
     @Inject(method = "calculateScaleFactor", at = @At("HEAD"))
-    void sca(int guiScale, boolean forceUnicodeFont, CallbackInfoReturnable<Integer> cir){
+    void sca(int guiScale, boolean forceUnicodeFont, CallbackInfoReturnable<Integer> cir) {
         int framebufferWidth = 1920;
         int framebufferHeight = 1080;
-        
+
         int i;
-        for(i = 1; i != guiScale && i < framebufferWidth && i < framebufferHeight && framebufferWidth / (i + 1) >= 320 && framebufferHeight / (i + 1) >= 240; ++i) {
+        for (i = 1; i != guiScale && i < framebufferWidth && i < framebufferHeight && framebufferWidth / (i + 1) >= 320 && framebufferHeight / (i + 1) >= 240; ++i) {
         }
 
         if (forceUnicodeFont && i % 2 != 0) {
             ++i;
         }
         sca2 = i;
-    } 
-    
+    }
+
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
     void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;

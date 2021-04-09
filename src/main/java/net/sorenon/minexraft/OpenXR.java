@@ -536,10 +536,10 @@ public class OpenXR {
             // should result in a more accurate location, and reduce perceived lag.
             if (sessionState == XR10.XR_SESSION_STATE_FOCUSED) {
                 for (int i = 0; i < 2; i++) {
-                    if (!MineXRaftClient.gameplayActionSet.isHandActive[i]) {
+                    if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[i]) {
                         continue;
                     }
-                    setPoseFromSpace(MineXRaftClient.gameplayActionSet.poseGripSpaces[i], predictedDisplayTime, MineXRaftClient.gameplayActionSet.poses[i]);
+                    setPoseFromSpace(MineXRaftClient.vanillaCompatActionSet.poseGripSpaces[i], predictedDisplayTime, MineXRaftClient.vanillaCompatActionSet.poses[i]);
                 }
             }
 

@@ -3,7 +3,6 @@ package net.sorenon.minexraft.mixin;
 import net.minecraft.client.input.Input;
 import net.minecraft.client.input.KeyboardInput;
 import net.sorenon.minexraft.MineXRaftClient;
-import org.joml.Quaternionf;
 import org.lwjgl.openxr.XrVector2f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +14,7 @@ public class KeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
     void mv(boolean slowDown, CallbackInfo ci) {
-        XrVector2f thumbstick = MineXRaftClient.gameplayActionSet.thumbstickOffHandState.currentState();
+        XrVector2f thumbstick = MineXRaftClient.vanillaCompatActionSet.thumbstickOffHandState.currentState();
         this.movementForward = thumbstick.y();
         this.movementSideways = -thumbstick.x();
 
@@ -24,6 +23,6 @@ public class KeyboardInputMixin extends Input {
         this.pressingRight = thumbstick.x() > 0;
         this.pressingLeft = thumbstick.y() < 0;
 
-        this.jumping = MineXRaftClient.gameplayActionSet.jumpState.currentState();
+        this.jumping = MineXRaftClient.vanillaCompatActionSet.jumpState.currentState();
     }
 }

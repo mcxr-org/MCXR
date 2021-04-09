@@ -6,7 +6,7 @@ import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.OpenXR;
 import net.sorenon.minexraft.MineXRaftClient;
-import net.sorenon.minexraft.input.GameplayActionSet;
+import net.sorenon.minexraft.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.input.XrInput;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -100,15 +100,15 @@ public class WindowMixin {
         MineXRaftClient.XR_INPUT = new XrInput(openXR);
 //        MineXRaftClient.XR_INPUT.makeActions();
 
-        GameplayActionSet gameplayActionSet = MineXRaftClient.XR_INPUT.makeGameplayActionSet();
+        VanillaCompatActionSet vanillaCompatActionSet = MineXRaftClient.XR_INPUT.makeGameplayActionSet();
         // Attach the action set we just made to the session
         XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
                 XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
                 NULL,
-                stackPointers(gameplayActionSet.address())
+                stackPointers(vanillaCompatActionSet.address())
         );
         openXR.check(XR10.xrAttachSessionActionSets(openXR.xrSession, attach_info));
-        MineXRaftClient.gameplayActionSet = gameplayActionSet;
+        MineXRaftClient.vanillaCompatActionSet = vanillaCompatActionSet;
 //        System.exit(0);
     }
 

@@ -16,7 +16,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
-import net.sorenon.minexraft.input.GameplayActionSet;
+import net.sorenon.minexraft.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.input.XrInput;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -24,7 +24,6 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.openxr.XR;
 import org.lwjgl.openxr.XrFovf;
 import org.lwjgl.openxr.XrRect2Di;
-import org.lwjgl.openxr.XrVector2f;
 import org.lwjgl.system.SharedLibrary;
 
 import java.nio.file.Paths;
@@ -36,7 +35,7 @@ public class MineXRaftClient implements ClientModInitializer {
 
     public static final OpenXR OPEN_XR = new OpenXR();
     public static XrInput XR_INPUT;
-    public static GameplayActionSet gameplayActionSet;
+    public static VanillaCompatActionSet vanillaCompatActionSet;
 
     public static XrRect2Di viewportRect = null;
     public static Framebuffer primaryRenderTarget = null;
@@ -71,7 +70,7 @@ public class MineXRaftClient implements ClientModInitializer {
 ///execute in minecraft:overworld run tp @s 5804.48 137.00 -4601.16 3.23 72.30
         WorldRenderEvents.LAST.register(context -> {
             for (int i = 0; i < 2; i++) {
-                if (!MineXRaftClient.gameplayActionSet.isHandActive[i]) {
+                if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[i]) {
                     continue;
                 }
                 RenderSystem.depthMask(true);
@@ -86,7 +85,7 @@ public class MineXRaftClient implements ClientModInitializer {
 
 //                XrVector2f thumbstick = XR_INPUT.inputState.handThumbstick[i];
                 RenderSystem.pushMatrix();
-                Pose pose = MineXRaftClient.gameplayActionSet.poses[i];
+                Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[i];
                 Vec3d gripPos = pose.getPosMc();
                 Vector3f eyePos = MineXRaftClient.eyePose.getPos();
                 RenderSystem.translated(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
@@ -158,10 +157,10 @@ public class MineXRaftClient implements ClientModInitializer {
 
             if (camEntity instanceof LivingEntity) {
                 for (int i = 0; i < 2; i++) {
-                    if (!MineXRaftClient.gameplayActionSet.isHandActive[i]) {
+                    if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[i]) {
                         continue;
                     }
-                    Pose pose = MineXRaftClient.gameplayActionSet.poses[i];
+                    Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[i];
                     Vec3d gripPos = pose.getPosMc();
                     Vector3f eyePos = MineXRaftClient.eyePose.getPos();
                     MatrixStack matrices = context.matrixStack();

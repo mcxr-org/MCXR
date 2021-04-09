@@ -14,15 +14,12 @@ import org.lwjgl.openxr.XrPosef;
 
 public class XrCamera extends Camera {
 
-    private Vec3d headPos;
-    private Quaternionf headRot;
-
-    private final Quaternionf quat = new Quaternionf();
+    private Pose headPose;
 
     private final Quaternionf rawRotation = new Quaternionf();
 
     /**
-     * Called just before each render tick, sets the camera to the center of the headset for sounds
+     * Called just before each render tick, sets the camera to the center of the headset for updating the sound engine
      */
     public void updateXR(BlockView area, Entity focusedEntity, Pose viewPose) {
         CameraExt thiz = (CameraExt) this;
@@ -32,12 +29,9 @@ public class XrCamera extends Camera {
         thiz.thirdPerson(false);
         thiz.inverseView(false);
 
-        headPos = viewPose.getPosMc();
-        headRot = viewPose.getOrientation();
-        thiz.pitch(viewPose.getPitch());
-        thiz.yaw(viewPose.getYaw());
+        headPose = viewPose;
 
-        setPose(headPos, headRot, 1.0f);
+        setPose(viewPose, 1.0f);
     }
 
     /**
@@ -45,8 +39,7 @@ public class XrCamera extends Camera {
      */
     public void setEyePose(Pose pose, float tickDelta) {
         setPose(
-                pose.getPosMc(),
-                pose.getOrientation(),
+                pose,
                 tickDelta
         );
     }
@@ -55,31 +48,33 @@ public class XrCamera extends Camera {
      * Called just after each frame
      */
     public void popEyePose() {
-        setPose(headPos, headRot, 1.0f);
+        setPose(headPose, 1.0f);
     }
 
-    protected void setPose(Vec3d viewPos, Quaternionf viewRot, float tickDelta) {
-        rawRotation.set(viewRot);
-
-//        viewRot.rotateX((float) Math.PI, quat);
-//        this.getRotation().set(quat.x, quat.y, quat.z, quat.w);
-//
-//        this.getHorizontalPlane().set(0.0F, 0.0F, 1.0F);
-//        this.getHorizontalPlane().rotate(this.getRotation());
-//        this.getVerticalPlane().set(0.0F, 1.0F, 0.0F);
-//        this.getVerticalPlane().rotate(this.getRotation());
-//
-//        thiz.diagonalPlane().set(1.0F, 0.0F, 0.0F);
-//        thiz.diagonalPlane().rotate(this.getRotation());
+    protected void setPose(Pose pose, float tickDelta) {
+        rawRotation.set(pose.getOrientation());
 
         Entity focusedEntity = getFocusedEntity();
         if (focusedEntity != null) {
-            this.setRotation(focusedEntity.getYaw(1.0f), focusedEntity.getPitch(1.0f));//TODO make this not bad
+            CameraExt thiz = ((CameraExt) this);
+
+            thiz.pitch(pose.getPitch());
+            thiz.yaw(pose.getYaw());
+            this.getRotation().set(0.0F, 0.0F, 0.0F, 1.0F);
+            this.getRotation().hamiltonProduct(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(-pose.getYaw()));
+            this.getRotation().hamiltonProduct(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(pose.getPitch()));
+
+            Vector3f look = pose.getNormal();
+            Vector3f up = rawRotation.transform(new Vector3f(0, 1, 0));
+            Vector3f right = rawRotation.transform(new Vector3f(1, 0, 0));
+            this.getHorizontalPlane().set(look.x, look.y, look.z);
+            this.getVerticalPlane().set(up.x, up.y, up.z);
+            thiz.diagonalPlane().set(right.x, right.y, right.z);
 
             this.setPos(
-                    MathHelper.lerp(tickDelta, focusedEntity.prevX, focusedEntity.getX()) + viewPos.x + MineXRaftClient.xrOffset.x,
-                    MathHelper.lerp(tickDelta, focusedEntity.prevY, focusedEntity.getY()) + viewPos.y + MineXRaftClient.xrOffset.y,
-                    MathHelper.lerp(tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + viewPos.z + MineXRaftClient.xrOffset.z
+                    MathHelper.lerp(tickDelta, focusedEntity.prevX, focusedEntity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
+                    MathHelper.lerp(tickDelta, focusedEntity.prevY, focusedEntity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
+                    MathHelper.lerp(tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z
             );
         }
     }
@@ -95,8 +90,8 @@ public class XrCamera extends Camera {
     }
 
     public Quaternion getRawRotationInverted() {
-        rawRotation.invert(quat);
+        Quaternionf inv = rawRotation.invert(new Quaternionf());
 
-        return new Quaternion(quat.x, quat.y, quat.z, quat.w);
+        return new Quaternion(inv.x, inv.y, inv.z, inv.w);
     }
 }

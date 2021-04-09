@@ -1,8 +1,8 @@
-package net.sorenon.minexraft.mixin;
+package net.sorenon.minexraft.client.mixin;
 
 import net.minecraft.client.input.Input;
 import net.minecraft.client.input.KeyboardInput;
-import net.sorenon.minexraft.MineXRaftClient;
+import net.sorenon.minexraft.client.MineXRaftClient;
 import org.lwjgl.openxr.XrVector2f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

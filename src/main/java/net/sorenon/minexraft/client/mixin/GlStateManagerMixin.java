@@ -1,20 +1,10 @@
-package net.sorenon.minexraft.mixin;
+package net.sorenon.minexraft.client.mixin;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.sorenon.minexraft.MineXRaftClient;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL21;
+import net.sorenon.minexraft.client.MineXRaftClient;
 import org.lwjgl.openxr.XrRect2Di;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.nio.IntBuffer;
-
-import static org.lwjgl.opengl.GL11.glViewport;
 
 @Mixin(GlStateManager.class)
 public class GlStateManagerMixin {

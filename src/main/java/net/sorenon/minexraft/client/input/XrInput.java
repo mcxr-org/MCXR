@@ -1,13 +1,12 @@
-package net.sorenon.minexraft.input;
+package net.sorenon.minexraft.client.input;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Pair;
-import net.sorenon.minexraft.MineXRaftClient;
-import net.sorenon.minexraft.OpenXR;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.OpenXR;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;

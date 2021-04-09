@@ -1,13 +1,13 @@
-package net.sorenon.minexraft.mixin;
+package net.sorenon.minexraft.client.mixin;
 
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
-import net.sorenon.minexraft.OpenXR;
-import net.sorenon.minexraft.MineXRaftClient;
-import net.sorenon.minexraft.input.VanillaCompatActionSet;
-import net.sorenon.minexraft.input.XrInput;
+import net.sorenon.minexraft.client.OpenXR;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
+import net.sorenon.minexraft.client.input.XrInput;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWNativeWGL;

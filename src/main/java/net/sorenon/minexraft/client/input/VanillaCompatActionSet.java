@@ -1,6 +1,6 @@
-package net.sorenon.minexraft.input;
+package net.sorenon.minexraft.client.input;
 
-import net.sorenon.minexraft.Pose;
+import net.sorenon.minexraft.client.Pose;
 import org.lwjgl.openxr.*;
 
 public class VanillaCompatActionSet extends XrActionSet {

@@ -1,16 +1,13 @@
-package net.sorenon.minexraft;
+package net.sorenon.minexraft.client;
 
 import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.BlockView;
-import net.sorenon.minexraft.mixin.accessor.CameraExt;
-import org.joml.Math;
+import net.sorenon.minexraft.client.mixin.accessor.CameraExt;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.openxr.XrPosef;
 
 public class XrCamera extends Camera {
 

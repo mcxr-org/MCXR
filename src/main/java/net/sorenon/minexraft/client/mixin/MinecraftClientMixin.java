@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.mixin;
+package net.sorenon.minexraft.client.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
@@ -25,10 +25,10 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.sorenon.minexraft.MineXRaftClient;
-import net.sorenon.minexraft.OpenXR;
-import net.sorenon.minexraft.input.XrInput;
-import net.sorenon.minexraft.accessor.MinecraftClientEXT;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.OpenXR;
+import net.sorenon.minexraft.client.input.XrInput;
+import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;

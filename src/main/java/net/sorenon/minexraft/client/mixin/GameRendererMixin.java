@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.mixin;
+package net.sorenon.minexraft.client.mixin;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
@@ -8,9 +8,9 @@ import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
-import net.sorenon.minexraft.MineXRaftClient;
-import net.sorenon.minexraft.XrCamera;
-import net.sorenon.minexraft.accessor.MatAccessor;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.XrCamera;
+import net.sorenon.minexraft.client.accessor.MatAccessor;
 import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

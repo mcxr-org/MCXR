@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.mixin.accessor;
+package net.sorenon.minexraft.client.mixin.accessor;
 
 import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;

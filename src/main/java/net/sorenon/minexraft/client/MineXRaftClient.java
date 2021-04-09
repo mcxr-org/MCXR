@@ -1,4 +1,4 @@
-package net.sorenon.minexraft;
+package net.sorenon.minexraft.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ClientModInitializer;
@@ -16,8 +16,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
-import net.sorenon.minexraft.input.VanillaCompatActionSet;
-import net.sorenon.minexraft.input.XrInput;
+import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
+import net.sorenon.minexraft.client.input.XrInput;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;

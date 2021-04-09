@@ -1,4 +1,4 @@
-package net.sorenon.minexraft;
+package net.sorenon.minexraft.client;
 
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;

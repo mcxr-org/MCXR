@@ -1,12 +1,12 @@
-package net.sorenon.minexraft;
+package net.sorenon.minexraft.client;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
-import net.sorenon.minexraft.mixin.accessor.EntityExt;
-import net.sorenon.minexraft.accessor.FBAccessor;
-import net.sorenon.minexraft.accessor.MinecraftClientEXT;
+import net.sorenon.minexraft.client.mixin.accessor.EntityExt;
+import net.sorenon.minexraft.client.accessor.FBAccessor;
+import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
 import org.joml.*;
 import org.joml.Math;
 import org.lwjgl.PointerBuffer;

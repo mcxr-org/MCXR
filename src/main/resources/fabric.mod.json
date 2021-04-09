@@ -22,11 +22,11 @@
       "net.sorenon.minexraft.MineXRaft"
     ],
     "client": [
-      "net.sorenon.minexraft.MineXRaftClient"
+      "net.sorenon.minexraft.client.MineXRaftClient"
     ]
   },
   "mixins": [
-    "minexraft.mixins.json"
+    "minexraft.client.mixins.json"
   ],
 
   "depends": {

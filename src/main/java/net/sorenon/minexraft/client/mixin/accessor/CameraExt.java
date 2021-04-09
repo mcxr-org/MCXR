@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.mixin.accessor;
+package net.sorenon.minexraft.client.mixin.accessor;
 
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.math.Vector3f;

@@ -1,13 +1,11 @@
-package net.sorenon.minexraft.mixin;
+package net.sorenon.minexraft.client.mixin;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Matrix4f;
-import net.sorenon.minexraft.OpenXR;
-import net.sorenon.minexraft.MineXRaftClient;
-import net.sorenon.minexraft.accessor.MatAccessor;
+import net.sorenon.minexraft.client.OpenXR;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.accessor.MatAccessor;
 import org.lwjgl.openxr.XrFovf;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

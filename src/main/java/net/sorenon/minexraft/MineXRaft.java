@@ -1,8 +1,6 @@
 package net.sorenon.minexraft;
 
 import net.fabricmc.api.ModInitializer;
-import net.sorenon.minexraft.accessor.MatAccessor;
-import org.lwjgl.openxr.XrFovf;
 
 public class MineXRaft implements ModInitializer {
 

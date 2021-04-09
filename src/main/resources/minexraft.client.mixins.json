@@ -1,15 +1,8 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.sorenon.minexraft.mixin",
+  "package": "net.sorenon.minexraft.client.mixin",
   "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "ClientPlayNetworkHandlerMixin",
-    "InGameHudMixin",
-    "KeyboardInputMixin",
-    "accessor.CameraExt",
-    "accessor.EntityExt"
-  ],
   "client": [
     "FramebufferMixin",
     "GameRendererMixin",
@@ -17,7 +10,12 @@
     "MatMixin",
     "MinecraftClientMixin",
     "TitleMixin",
-    "WindowMixin"
+    "WindowMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "InGameHudMixin",
+    "KeyboardInputMixin",
+    "accessor.CameraExt",
+    "accessor.EntityExt"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,7 +1,7 @@
-package net.sorenon.minexraft.mixin;
+package net.sorenon.minexraft.client.mixin;
 
 import net.minecraft.client.gl.Framebuffer;
-import net.sorenon.minexraft.accessor.FBAccessor;
+import net.sorenon.minexraft.client.accessor.FBAccessor;
 import org.lwjgl.opengl.GL30;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

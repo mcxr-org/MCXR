@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.accessor;
+package net.sorenon.minexraft.client.accessor;
 
 import org.lwjgl.openxr.XrFovf;
 

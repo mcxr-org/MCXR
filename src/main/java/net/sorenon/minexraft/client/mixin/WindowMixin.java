@@ -6,6 +6,7 @@ import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.client.OpenXR;
 import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.XrRenderPass;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import org.lwjgl.PointerBuffer;
@@ -44,7 +45,7 @@ public class WindowMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
     private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
-        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE); //Disable vsync
+        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE); //Disable vsync (glfw is weird so this might not actually disable vsync)
 
         return GLFW.glfwCreateWindow(width, height, title, monitor, share);
     }
@@ -90,19 +91,7 @@ public class WindowMixin {
 //        }
 
         openXR.createXRReferenceSpaces();
-        openXR.createXRSwapchains();
-        MineXRaftClient.XR_INPUT = new XrInput(openXR);
-//        MineXRaftClient.XR_INPUT.makeActions();
 
-        VanillaCompatActionSet vanillaCompatActionSet = MineXRaftClient.XR_INPUT.makeGameplayActionSet();
-        // Attach the action set we just made to the session
-        XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
-                XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
-                NULL,
-                stackPointers(vanillaCompatActionSet.address())
-        );
-        openXR.check(XR10.xrAttachSessionActionSets(openXR.xrSession, attach_info));
-        MineXRaftClient.vanillaCompatActionSet = vanillaCompatActionSet;
 //        System.exit(0);
     }
 
@@ -139,7 +128,8 @@ public class WindowMixin {
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
     void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
-        if (rect != null) {
+//        if (rect != null) {
+        if (MineXRaftClient.primaryRenderTarget != null) {
             cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureWidth);
         }
     }
@@ -147,7 +137,8 @@ public class WindowMixin {
     @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
     void frameBufferHeight(CallbackInfoReturnable<Integer> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
-        if (rect != null) {
+//        if (rect != null) {
+        if (MineXRaftClient.primaryRenderTarget != null) {
             cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureHeight);
         }
     }
@@ -177,7 +168,8 @@ public class WindowMixin {
     @Inject(method = "getScaleFactor", at = @At("HEAD"), cancellable = true)
     void f(CallbackInfoReturnable<Double> cir) {
         XrRect2Di rect = MineXRaftClient.viewportRect;
-        if (rect != null) {
+//        if (rect != null) {
+        if (MineXRaftClient.primaryRenderTarget != null) {
             cir.setReturnValue(sca2);
         }
     }

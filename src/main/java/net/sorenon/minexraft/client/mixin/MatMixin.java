@@ -4,12 +4,19 @@ import net.minecraft.util.math.Matrix4f;
 import net.sorenon.minexraft.client.OpenXR;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.accessor.MatAccessor;
+import org.joml.Math;
 import org.lwjgl.openxr.XrFovf;
+import org.lwjgl.system.MemoryStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.nio.FloatBuffer;
+
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 @Mixin(Matrix4f.class)
 public abstract class MatMixin implements MatAccessor {
@@ -65,7 +72,7 @@ public abstract class MatMixin implements MatAccessor {
     @Override
     public void createProjectionFov(XrFovf fov, float nearZ, float farZ) {
         org.joml.Matrix4f proj = new org.joml.Matrix4f();
-        OpenXR.createProjectionFov(proj, fov, nearZ, farZ);
+        createProjectionFov(proj, fov, nearZ, farZ);
 
         a00 = proj.m00();
         a10 = proj.m01();
@@ -113,11 +120,66 @@ public abstract class MatMixin implements MatAccessor {
 //        }
     }
 
+    @Unique
+    private static void createProjectionFov(org.joml.Matrix4f dest, XrFovf fov, float nearZ, float farZ) {
+        try (MemoryStack stack = stackPush()) {
+            float tanLeft = (float) Math.tan(fov.angleLeft());
+            float tanRight = (float) Math.tan(fov.angleRight());
+            float tanDown = (float) Math.tan(fov.angleDown());
+            float tanUp = (float) Math.tan(fov.angleUp());
+            float tanAngleWidth = tanRight - tanLeft;
+            float tanAngleHeight = tanUp - tanDown;
+
+            FloatBuffer m = stack.mallocFloat(16);
+            m.put(0, 2.0f / tanAngleWidth);
+            m.put(4, 0.0f);
+            m.put(8, (tanRight + tanLeft) / tanAngleWidth);
+            m.put(12, 0.0f);
+
+            m.put(1, 0.0f);
+            m.put(5, 2.0f / tanAngleHeight);
+            m.put(9, (tanUp + tanDown) / tanAngleHeight);
+            m.put(13, 0.0f);
+
+            m.put(2, 0.0f);
+            m.put(6, 0.0f);
+            m.put(10, -(farZ + nearZ) / (farZ - nearZ));
+            m.put(14, -(farZ * (nearZ + nearZ)) / (farZ - nearZ));
+
+            m.put(3, 0.0f);
+            m.put(7, 0.0f);
+            m.put(11, -1.0f);
+            m.put(15, 0.0f);
+
+            //###
+
+            m.put(0, 2.0f / tanAngleWidth);
+            m.put(1, 0.0f);
+            m.put(2, 0.0f);
+            m.put(3, 0.0f);
+            m.put(4, 0.0f);
+            m.put(5, 2.0f / tanAngleHeight);
+            m.put(6, 0.0f);
+            m.put(7, 0.0f);
+            m.put(8, (tanRight + tanLeft) / tanAngleWidth);
+            m.put(9, (tanUp + tanDown) / tanAngleHeight);
+            m.put(10, -(farZ + nearZ) / (farZ - nearZ));
+            m.put(11, -1.0f);
+            m.put(12, 0.0f);
+            m.put(13, 0.0f);
+            m.put(14, -(farZ * (nearZ + nearZ)) / (farZ - nearZ));
+            m.put(15, 0.0f);
+            dest.set(m);
+        }
+    }
+
     @Inject(method = "viewboxMatrix", cancellable = true, at = @At("HEAD"))
     private static void masta(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
-        Matrix4f mat = new Matrix4f();
-        mat.loadIdentity();
-        ((MatAccessor)(Object)mat).createProjectionFov(MineXRaftClient.fov, cameraDepth, viewDistance);
-        cir.setReturnValue(mat);
+        if (MineXRaftClient.fov != null) {
+            Matrix4f mat = new Matrix4f();
+            mat.loadIdentity();
+            ((MatAccessor)(Object)mat).createProjectionFov(MineXRaftClient.fov, cameraDepth, viewDistance);
+            cir.setReturnValue(mat);
+        }
     }
 }

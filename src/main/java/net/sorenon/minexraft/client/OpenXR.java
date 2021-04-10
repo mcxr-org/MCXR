@@ -1,31 +1,26 @@
 package net.sorenon.minexraft.client;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
-import net.sorenon.minexraft.client.mixin.accessor.EntityExt;
 import net.sorenon.minexraft.client.accessor.FBAccessor;
 import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
-import org.joml.*;
-import org.joml.Math;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.openxr.*;
-import org.lwjgl.system.*;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.NativeType;
+import org.lwjgl.system.Struct;
 import org.lwjgl.system.dyncall.DynCall;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.HashMap;
 
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.GL_SRGB8_ALPHA8;
 import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryStack.stackMallocLong;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,6 +66,7 @@ public class OpenXR {
         public int width;
         public int height;
         XrSwapchainImageOpenGLKHR.Buffer images;
+        XrFramebuffer framebuffer;
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -250,7 +246,7 @@ public class OpenXR {
             referenceSpaceCreateInfo.set(
                     XR10.XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
                     NULL,
-                    XR10.XR_REFERENCE_SPACE_TYPE_STAGE, //TODO make this local
+                    XR10.XR_REFERENCE_SPACE_TYPE_STAGE,
                     identityPose
             );
             PointerBuffer pp = stack.mallocPointer(1);
@@ -357,6 +353,7 @@ public class OpenXR {
 
                     check(XR10.xrEnumerateSwapchainImages(swapchainWrapper.handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())));
                     swapchainWrapper.images = swapchainImageBuffer;
+                    swapchainWrapper.framebuffer = new XrFramebuffer(swapchainWrapper.width, swapchainWrapper.height);
                     swapchains[i] = swapchainWrapper;
                 }
             }
@@ -478,8 +475,14 @@ public class OpenXR {
             PointerBuffer layers = stack.callocPointer(1);
 
             if (frameState.shouldRender()) {
-                if (renderLayerOpenXR(frameState.predictedDisplayTime(), layerProjection)) {
-                    layers.put(layerProjection.address());
+                if (client.world != null) {
+                    if (renderLayerOpenXR(frameState.predictedDisplayTime(), layerProjection)) {
+                        layers.put(layerProjection.address());
+                    }
+                } else {
+                    if (renderLayerBlankOpenXR(frameState.predictedDisplayTime(), layerProjection)) {
+                        layers.put(layerProjection.address());
+                    }
                 }
             }
             layers.flip();
@@ -548,26 +551,13 @@ public class OpenXR {
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
             camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.headPose);
 
-            if (MinecraftClient.getInstance().player != null) {
-                Entity player = MinecraftClient.getInstance().player;
-                EntityExt ext = (EntityExt) player;
-
-                float yawMc = MineXRaftClient.headPose.getYaw();
-                float pitchMc = MineXRaftClient.headPose.getPitch();
-                float dYaw = yawMc - ext.yaw();
-                float dPitch = pitchMc - ext.pitch();
-                ext.yaw(yawMc);
-                ext.pitch(pitchMc);
-                ext.prevYaw(ext.prevYaw() + dYaw);
-                ext.prevPitch(MathHelper.clamp(ext.prevPitch() + dPitch, -90, 90));
-                if (player.getVehicle() != null) {
-                    player.getVehicle().onPassengerLookAround(player);
-                }
-            }
-
             long frameStartTime = Util.getMeasuringTimeNano();
             clientExt.preRenderXR(true, frameStartTime);
-
+            {
+                MineXRaftClient.renderPass = XrRenderPass.GUI;
+                clientExt.doRenderXR(true, frameStartTime);
+                MineXRaftClient.renderPass = XrRenderPass.VANILLA;
+            }
             // Render view to the appropriate part of the swapchain image.
             for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
                 // Each view has a separate swapchain which is acquired, rendered to, and released.
@@ -593,7 +583,13 @@ public class OpenXR {
 
                 {
                     XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                    ((FBAccessor) client.getFramebuffer()).setColorTexture(xrSwapchainImageOpenGLKHR.image());
+                    //TODO come up with better system for designating main framebuffer
+                    {
+                        viewSwapchain.framebuffer.SetColorAttachment(xrSwapchainImageOpenGLKHR.image());
+                        clientExt.setRenderTarget(viewSwapchain.framebuffer);
+                        viewSwapchain.framebuffer.endWrite();
+                    }
+
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
                     MineXRaftClient.tmpResetSize();
                     MineXRaftClient.fov = projectionLayerView.fov();
@@ -603,12 +599,18 @@ public class OpenXR {
                     if (camera.isReady()) {
                         camera.setEyePose(MineXRaftClient.eyePose, client.getTickDelta());
                     }
+                    MineXRaftClient.renderPass = XrRenderPass.WORLD;
                     clientExt.doRenderXR(true, frameStartTime);
+                    MineXRaftClient.renderPass = XrRenderPass.VANILLA;
                     if (camera.isReady()) {
                         camera.popEyePose();
                     }
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
+
+                    {
+                        clientExt.popRenderTarget();
+                    }
                 }
 
                 XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
@@ -623,55 +625,72 @@ public class OpenXR {
         }
     }
 
-    public static Matrix4f createProjectionFov(Matrix4f dest, XrFovf fov, float nearZ, float farZ) {
+    private boolean renderLayerBlankOpenXR(long predictedDisplayTime, XrCompositionLayerProjection layer) {
         try (MemoryStack stack = stackPush()) {
-            float tanLeft = (float) Math.tan(fov.angleLeft());
-            float tanRight = (float) Math.tan(fov.angleRight());
-            float tanDown = (float) Math.tan(fov.angleDown());
-            float tanUp = (float) Math.tan(fov.angleUp());
-            float tanAngleWidth = tanRight - tanLeft;
-            float tanAngleHeight = tanUp - tanDown;
+            XrCompositionLayerProjectionView.Buffer projectionLayerViews;
 
-            FloatBuffer m = stack.mallocFloat(16);
-            m.put(0, 2.0f / tanAngleWidth);
-            m.put(4, 0.0f);
-            m.put(8, (tanRight + tanLeft) / tanAngleWidth);
-            m.put(12, 0.0f);
+            XrViewState viewState = new XrViewState(stack.calloc(XrViewState.SIZEOF));
+            viewState.type(XR10.XR_TYPE_VIEW_STATE);
+            IntBuffer intBuf = stack.mallocInt(1);
 
-            m.put(1, 0.0f);
-            m.put(5, 2.0f / tanAngleHeight);
-            m.put(9, (tanUp + tanDown) / tanAngleHeight);
-            m.put(13, 0.0f);
+            XrViewLocateInfo viewLocateInfo = new XrViewLocateInfo(stack.malloc(XrViewLocateInfo.SIZEOF));
+            viewLocateInfo.set(XR10.XR_TYPE_VIEW_LOCATE_INFO,
+                    0,
+                    viewConfigType,
+                    predictedDisplayTime,
+                    xrAppSpace
+            );
 
-            m.put(2, 0.0f);
-            m.put(6, 0.0f);
-            m.put(10, -(farZ + nearZ) / (farZ - nearZ));
-            m.put(14, -(farZ * (nearZ + nearZ)) / (farZ - nearZ));
+            check(XR10.xrLocateViews(xrSession, viewLocateInfo, viewState, intBuf, views));
 
-            m.put(3, 0.0f);
-            m.put(7, 0.0f);
-            m.put(11, -1.0f);
-            m.put(15, 0.0f);
+            if ((viewState.viewStateFlags() & XR10.XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
+                    (viewState.viewStateFlags() & XR10.XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0) {
+                return false;  // There is no valid tracking poses for the views.
+            }
+            int viewCountOutput = intBuf.get(0);
+            assert (viewCountOutput == views.capacity());
+            assert (viewCountOutput == viewConfigs.capacity());
+            assert (viewCountOutput == swapchains.length);
 
-            //###
+            projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
 
-            m.put(0, 2.0f / tanAngleWidth);
-            m.put(1, 0.0f);
-            m.put(2, 0.0f);
-            m.put(3, 0.0f);
-            m.put(4, 0.0f);
-            m.put(5, 2.0f / tanAngleHeight);
-            m.put(6, 0.0f);
-            m.put(7, 0.0f);
-            m.put(8, (tanRight + tanLeft) / tanAngleWidth);
-            m.put(9, (tanUp + tanDown) / tanAngleHeight);
-            m.put(10, -(farZ + nearZ) / (farZ - nearZ));
-            m.put(11, -1.0f);
-            m.put(12, 0.0f);
-            m.put(13, 0.0f);
-            m.put(14, -(farZ * (nearZ + nearZ)) / (farZ - nearZ));
-            m.put(15, 0.0f);
-            return dest.set(m);
+            clientExt.render();
+
+            // Render view to the appropriate part of the swapchain image.
+            for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
+                // Each view has a separate swapchain which is acquired, rendered to, and released.
+                Swapchain viewSwapchain = swapchains[viewIndex];
+
+                XrSwapchainImageAcquireInfo acquireInfo = new XrSwapchainImageAcquireInfo(stack.calloc(XrSwapchainImageAcquireInfo.SIZEOF));
+                acquireInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO);
+
+                check(XR10.xrAcquireSwapchainImage(viewSwapchain.handle, acquireInfo, intBuf));
+                int swapchainImageIndex = intBuf.get(0);
+
+                XrSwapchainImageWaitInfo waitInfo = new XrSwapchainImageWaitInfo(stack.malloc(XrSwapchainImageWaitInfo.SIZEOF));
+                waitInfo.set(XR10.XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO, 0, XR10.XR_INFINITE_DURATION);
+
+                check(XR10.xrWaitSwapchainImage(viewSwapchain.handle, waitInfo));
+
+                XrCompositionLayerProjectionView projectionLayerView = projectionLayerViews.get(viewIndex);
+                projectionLayerView.pose(views.get(viewIndex).pose());
+                projectionLayerView.fov(views.get(viewIndex).fov());
+                projectionLayerView.subImage().swapchain(viewSwapchain.handle);
+                projectionLayerView.subImage().imageRect().offset().set(0, 0);
+                projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
+
+                XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
+                viewSwapchain.framebuffer.SetColorAttachment(xrSwapchainImageOpenGLKHR.image());
+                viewSwapchain.framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+
+                XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
+                releaseInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO);
+                check(XR10.xrReleaseSwapchainImage(viewSwapchain.handle, releaseInfo));
+            }
+
+            layer.space(xrAppSpace);
+            layer.views(projectionLayerViews);
+            return true;
         }
     }
 

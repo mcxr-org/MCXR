@@ -242,8 +242,8 @@ public class XrInput {
                 bindings.get(5).set(actionSet.thumbstickMainHand, xr.getPath("/user/hand/right/input/thumbstick"));
                 bindings.get(6).set(actionSet.inventoryAction, xr.getPath("/user/hand/left/input/trackpad/click"));
                 bindings.get(7).set(actionSet.jumpAction, xr.getPath("/user/hand/right/input/trackpad/click"));
-                bindings.get(8).set(actionSet.sprintAction, xr.getPath("/user/hand/right/input/squeeze/value"));
-                bindings.get(9).set(actionSet.sneakAction, xr.getPath("/user/hand/left/input/squeeze/value"));
+                bindings.get(8).set(actionSet.sprintAction, xr.getPath("/user/hand/right/input/squeeze/click"));
+                bindings.get(9).set(actionSet.sneakAction, xr.getPath("/user/hand/left/input/squeeze/click"));
 
                 XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
                         XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,

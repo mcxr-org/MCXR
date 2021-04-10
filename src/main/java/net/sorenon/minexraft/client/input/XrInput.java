@@ -188,7 +188,7 @@ public class XrInput {
             actionSet.poseGrip = grip.getLeft();
             actionSet.poseGripSpaces = grip.getRight();
 
-            {
+            {//TODO make these data-driven by json files
                 XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
                 bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
                 bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
@@ -205,6 +205,28 @@ public class XrInput {
                         XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
                         NULL,
                         xr.getPath("/interaction_profiles/oculus/touch_controller"),
+                        bindings
+                );
+
+                xr.check(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
+            }
+            {
+                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
+                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
+                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
+                bindings.get(2).set(actionSet.useAction, xr.getPath("/user/hand/left/input/trigger/value"));
+                bindings.get(3).set(actionSet.attackAction, xr.getPath("/user/hand/right/input/trigger/value"));
+                bindings.get(4).set(actionSet.thumbstickOffHand, xr.getPath("/user/hand/left/input/thumbstick"));
+                bindings.get(5).set(actionSet.thumbstickMainHand, xr.getPath("/user/hand/right/input/thumbstick"));
+                bindings.get(6).set(actionSet.inventoryAction, xr.getPath("/user/hand/left/input/b/click"));
+                bindings.get(7).set(actionSet.jumpAction, xr.getPath("/user/hand/right/input/a/click"));
+                bindings.get(8).set(actionSet.sprintAction, xr.getPath("/user/hand/right/input/squeeze/value"));
+                bindings.get(9).set(actionSet.sneakAction, xr.getPath("/user/hand/left/input/squeeze/value"));
+
+                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
+                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
+                        NULL,
+                        xr.getPath("/interaction_profiles/valve/index_controller"),
                         bindings
                 );
 

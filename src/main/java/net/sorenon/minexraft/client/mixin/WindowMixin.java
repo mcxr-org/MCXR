@@ -21,6 +21,7 @@ import org.lwjgl.system.windows.User32;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -65,14 +66,7 @@ public class WindowMixin {
 
             //Bind the OpenGL context to the OpenXR instance and create the session
             if (Platform.get() == Platform.WINDOWS) {
-                XrGraphicsBindingOpenGLWin32KHR graphicsBinding = XrGraphicsBindingOpenGLWin32KHR.malloc();
-                graphicsBinding.set(
-                        KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
-                        NULL,
-                        User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(handle)),
-                        GLFWNativeWGL.glfwGetWGLContext(handle)
-                );
-                openXR.graphicsBinding = graphicsBinding;
+                openXR.graphicsBinding = createWinBinding();
             } else {
                 throw new IllegalStateException();
             }
@@ -111,6 +105,19 @@ public class WindowMixin {
         MineXRaftClient.vanillaCompatActionSet = vanillaCompatActionSet;
 //        System.exit(0);
     }
+
+    @Unique
+    private XrGraphicsBindingOpenGLWin32KHR createWinBinding() {
+        XrGraphicsBindingOpenGLWin32KHR graphicsBinding = XrGraphicsBindingOpenGLWin32KHR.malloc();
+        graphicsBinding.set(
+                KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
+                NULL,
+                User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(handle)),
+                GLFWNativeWGL.glfwGetWGLContext(handle)
+        );
+        return graphicsBinding;
+    }
+
 
     private double sca2 = 1;
 

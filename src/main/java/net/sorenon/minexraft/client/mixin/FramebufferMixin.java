@@ -13,7 +13,6 @@ import static org.lwjgl.opengl.GL30.*;
 @Mixin(Framebuffer.class)
 public class FramebufferMixin implements FBAccessor {
 
-
     @Shadow private int colorAttachment;
 
     @Shadow public int fbo;

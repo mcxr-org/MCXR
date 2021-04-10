@@ -36,7 +36,6 @@ dependencies {
 	}
 
 	compile files('C:\\Users\\soren\\Documents\\Programming\\lwjgl\\lwjgl3\\bin\\RELEASE\\lwjgl-openxr\\lwjgl-openxr.jar')
-	compile files('C:\\Users\\soren\\Documents\\Programming\\lwjgl\\lwjgl3\\bin\\RELEASE\\lwjgl-openxr\\lwjgl-openxr-natives-windows.jar')
 }
 
 processResources {

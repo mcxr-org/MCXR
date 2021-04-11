@@ -1,24 +1,26 @@
 package net.sorenon.minexraft.client.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.impl.client.rendering.WorldRenderContextImpl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.screen.Overlay;
+import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SplashScreen;
 import net.minecraft.client.options.CloudRenderMode;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.Option;
-import net.minecraft.client.render.BackgroundRenderer;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.*;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.MetricsData;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiler.ProfileResult;
@@ -27,6 +29,8 @@ import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.OpenXR;
+import net.sorenon.minexraft.client.XrRenderPass;
+import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
 import org.jetbrains.annotations.Nullable;
@@ -34,9 +38,8 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrEventDataBuffer;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -44,6 +47,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+
+import static org.lwjgl.system.MemoryStack.stackPointers;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> implements MinecraftClientEXT {
@@ -99,6 +105,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Final
     public GameRenderer gameRenderer;
 
+    @Mutable
     @Shadow
     @Final
     private Framebuffer framebuffer;
@@ -161,7 +168,16 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Nullable
     private IntegratedServer server;
 
-    @Shadow @Final public static boolean IS_SYSTEM_MAC;
+    @Shadow
+    @Final
+    public static boolean IS_SYSTEM_MAC;
+
+    @Shadow
+    protected abstract void render(boolean tick);
+
+    @Shadow @Nullable public ClientWorld world;
+    @Unique
+    private Framebuffer mainRenderTarget;
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
@@ -169,10 +185,24 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         openXR.eventDataBuffer = XrEventDataBuffer.calloc();
         openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
 
-        OpenXR.Swapchain swapchain = openXR.swapchains[0];
-        framebuffer.resize(swapchain.width, swapchain.height, true);
+        openXR.createXRSwapchains();
+        MineXRaftClient.XR_INPUT = new XrInput(openXR);
+//        MineXRaftClient.XR_INPUT.makeActions();
+
+        VanillaCompatActionSet vanillaCompatActionSet = MineXRaftClient.XR_INPUT.makeGameplayActionSet();
+        // Attach the action set we just made to the session
+        XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
+                XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
+                NULL,
+                stackPointers(vanillaCompatActionSet.address())
+        );
+        openXR.check(XR10.xrAttachSessionActionSets(openXR.xrSession, attach_info));
+        MineXRaftClient.vanillaCompatActionSet = vanillaCompatActionSet;
+
+//        OpenXR.Swapchain swapchain = openXR.swapchains[0];
+//        framebuffer.resize(swapchain.width, swapchain.height, true);
+        mainRenderTarget = framebuffer;
         MineXRaftClient.guiFramebuffer = new Framebuffer(1920, 1080, true, IS_SYSTEM_MAC);
-//        options.hudHidden = true;
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
@@ -193,11 +223,15 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         }
     }
 
-    @Redirect(at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "openScreen")
-    void initScreen(Screen screen, MinecraftClient client, int width, int height){
-        MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
-        screen.init((MinecraftClient)(Object) this, this.window.getScaledWidth(), this.window.getScaledHeight());
-        MineXRaftClient.tmpResetSize();
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "openScreen")
+    void initScreen(Screen screen, MinecraftClient client, int width, int height) {
+        if (world != null) {
+            MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
+            screen.init(client, this.window.getScaledWidth(), this.window.getScaledHeight());
+            MineXRaftClient.tmpResetSize();
+        } else {
+            screen.init(client, width, height);
+        }
     }
 
     @Override
@@ -257,9 +291,15 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         if (!this.skipGameRender) {
             this.profiler.swap("gameRenderer");
             this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, frameStartTime, tick);
-            this.profiler.swap("toasts");
-            this.toastManager.draw(new MatrixStack());
-            this.profiler.pop();
+
+            if (MineXRaftClient.renderPass == XrRenderPass.GUI) {
+                this.profiler.swap("toasts");
+                this.toastManager.draw(new MatrixStack());
+                this.profiler.pop();
+
+                MineXRaftClient.tmpResetSize();
+                framebuffer.beginWrite(true);
+            }
         }
 
         if (this.tickProfilerResult != null) {
@@ -318,5 +358,17 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         }
 
         this.profiler.pop();
+    }
+
+    public void render(){
+        this.render(true);
+    }
+
+    public void setRenderTarget(Framebuffer framebuffer) {
+        this.framebuffer = framebuffer;
+    }
+
+    public void popRenderTarget() {
+        framebuffer = mainRenderTarget;
     }
 }

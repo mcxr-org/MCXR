@@ -6,12 +6,16 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
+import net.minecraft.world.World;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.XrCamera;
+import net.sorenon.minexraft.client.XrRenderPass;
 import net.sorenon.minexraft.client.accessor.MatAccessor;
 import org.lwjgl.opengl.GL11;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -76,21 +80,30 @@ public abstract class GameRendererMixin {
         matrixStack.multiply(((XrCamera) camera).getRawRotationInverted());
     }
 
-    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render")
+    @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;world:Lnet/minecraft/client/world/ClientWorld;", opcode = Opcodes.GETFIELD, ordinal = 0), method = "render")
+    public ClientWorld getWorld(MinecraftClient client) {
+        if (MineXRaftClient.renderPass == XrRenderPass.WORLD) {
+            return client.world;
+        } else {
+            return null;
+        }
+    }
+
+    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        MineXRaftClient.guiFramebuffer.beginWrite(true);
-        MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
-//        if (MinecraftClient.getInstance().currentScreen != null) {
-//            MinecraftClient.getInstance().currentScreen.height = MinecraftClient.getInstance().getWindow().getScaledHeight();
-//            MinecraftClient.getInstance().currentScreen.width = MinecraftClient.getInstance().getWindow().getScaledWidth();
-//        }
-        GlStateManager.clearColor(0, 0, 0, 0);
-        GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC);
+        if (MineXRaftClient.renderPass == XrRenderPass.GUI) {
+            MineXRaftClient.guiFramebuffer.beginWrite(true);
+            MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
+            GlStateManager.clearColor(0, 0, 0, 0);
+            GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC);
+        } else if (MineXRaftClient.renderPass == XrRenderPass.WORLD) {
+            ci.cancel();
+        }
     }
 
     @Inject(method = "render", at = @At("TAIL"))
     public void guiRenderEnd(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        MineXRaftClient.tmpResetSize();
-        client.getFramebuffer().beginWrite(true);
+//        MineXRaftClient.tmpResetSize();
+//        client.getFramebuffer().beginWrite(true);
     }
 }

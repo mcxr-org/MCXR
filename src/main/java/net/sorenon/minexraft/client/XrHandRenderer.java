@@ -19,7 +19,7 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-public class XRHandRenderer {
+public class XrHandRenderer {
 
     public void renderHands(WorldRenderContext context) {
         Entity camEntity = context.camera().getFocusedEntity();
@@ -85,7 +85,7 @@ public class XRHandRenderer {
         }
     }
 
-    public void renderHandsDebug(WorldRenderContext context) {
+    public void renderHandsDebug(Camera camera) {
         for (int i = 0; i < 2; i++) {
             if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[i]) {
                 continue;
@@ -111,7 +111,7 @@ public class XRHandRenderer {
             RenderSystem.multMatrix(new Matrix4f(pose.getOrientationMc()));
 //                RenderSystem.translated(thumbstick.x() * 0.05f, 0, thumbstick.y() * -0.05f);
 
-//            renderHandGui();
+            renderHandGui();
 
             RenderSystem.scalef(0.01F, 0.01F, 0.01F);
 
@@ -128,7 +128,7 @@ public class XRHandRenderer {
         }
 
         RenderSystem.pushMatrix();
-        RenderSystem.translated(-context.camera().getPos().x, -context.camera().getPos().y, -context.camera().getPos().z);
+        RenderSystem.translated(-camera.getPos().x, -camera.getPos().y, -camera.getPos().z);
 
         GL11.glPointSize(4.0f);
         BufferBuilder buffer = Tessellator.getInstance().getBuffer();
@@ -146,28 +146,6 @@ public class XRHandRenderer {
 
     private static void renderHandGui() {
         float handGuiScale = 1f / 4000;
-
-//        float x = -0.1f;
-//        float y0 = 0.1f;
-//        float y1 = y0 - guiFramebuffer.textureHeight * handGuiScale;
-//        float z0 = -0.1f;
-//        float z1 = z0 + guiFramebuffer.textureWidth * handGuiScale;
-//
-//        int u0 = 0;
-//        int u1 = 1;
-//        int v0 = 0;
-//        int v1 = 1;
-//
-//        RenderSystem.enableTexture();
-//        RenderSystem.bindTexture(guiFramebuffer.getColorAttachment());
-//        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-//        bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE);
-//        bufferBuilder.vertex(x, y1, z1).texture(u0, v1).next();
-//        bufferBuilder.vertex(x, y1, z0).texture(u1, v1).next();
-//        bufferBuilder.vertex(x, y0, z0).texture(u1, v0).next();
-//        bufferBuilder.vertex(x, y0, z1).texture(u0, v0).next();
-//        Tessellator.getInstance().draw();
-//        RenderSystem.disableTexture();
         Framebuffer guiFramebuffer = MineXRaftClient.guiFramebuffer;
 
         float x1 = 0;

@@ -26,8 +26,10 @@ import static org.lwjgl.system.APIUtil.apiLog;
 public class MineXRaftClient implements ClientModInitializer {
 
     public static final OpenXR OPEN_XR = new OpenXR();
+    public static MineXRaftClient INSTANCE;
     public static XrInput XR_INPUT;
     public static VanillaCompatActionSet vanillaCompatActionSet;
+    public static XrRenderPass renderPass = XrRenderPass.VANILLA;
 
     public static XrRect2Di viewportRect = null;
     public static Framebuffer primaryRenderTarget = null;
@@ -51,10 +53,12 @@ public class MineXRaftClient implements ClientModInitializer {
     public static Vector3f xrOffset = new Vector3f(0, 0, 0);
     public static float yawTurn = 0;
 
-    public XRHandRenderer handRenderer = new XRHandRenderer();
+    public XrHandRenderer handRenderer = new XrHandRenderer();
 
     @Override
     public void onInitializeClient() {
+        INSTANCE = this;
+
         String loaderPath = "";
         try { //TODO bundle loader binaries with the mod
             File configFile = FabricLoader.getInstance().getConfigDir().resolve("mcxr.properties").toFile();
@@ -98,7 +102,7 @@ public class MineXRaftClient implements ClientModInitializer {
         System.out.println("Hello Fabric world!");
 ///execute in minecraft:overworld run tp @s 5804.48 137.00 -4601.16 3.23 72.30
         WorldRenderEvents.LAST.register(context -> {
-            handRenderer.renderHandsDebug(context);
+            handRenderer.renderHandsDebug(context.camera());
         });
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {

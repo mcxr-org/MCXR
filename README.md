@@ -6,7 +6,7 @@ A rudimentary XR mod for Minecraft Fabric using the Fabric and OpenXR API.
 Tread carefully: MCXR is spaghetti code and is due for a clean-up. If you are making any changes to the code, be aware that your PR **may not be merged**.
 
 # *Installation*
-This mod currently relies on prior knowledge of how to use an IDE in order to run. If you are unsure of what you are doing, it's recommended that you wait until the first release of the JAR mod. If you are a developer and would like to test out the current version of Minecraft XR, clone the repo.
+This mod currently relies on prior knowledge of how to use an IDE in order to run. If you are unsure of what you are doing, it's recommended that you wait until the first release of the JAR mod. If you are a developer and would like to test out the current version of Minecraft XR, clone the repo. You will need the [LWJGL OpenXR Jar](https://cdn.discordapp.com/attachments/830232018607538216/830232401434116126/lwjgl-openxr.jar) file in order to run the mod.
 
 ## *Related Links*
 Join the Discord server [here.](https://discord.gg/fyBye2ptkS)<br />

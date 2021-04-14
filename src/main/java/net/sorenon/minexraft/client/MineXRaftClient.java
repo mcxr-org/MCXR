@@ -94,7 +94,9 @@ public class MineXRaftClient implements ClientModInitializer {
         System.out.println("Hello Fabric world!");
 ///execute in minecraft:overworld run tp @s 5804.48 137.00 -4601.16 3.23 72.30
         WorldRenderEvents.LAST.register(context -> {
-            vrFirstPersonRenderer.renderHandsDebug(context.camera());
+            if (!MinecraftClient.getInstance().options.hudHidden) {
+                vrFirstPersonRenderer.renderHandsGui();
+            }
         });
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {

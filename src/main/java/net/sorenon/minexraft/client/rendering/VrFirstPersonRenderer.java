@@ -69,33 +69,38 @@ public class VrFirstPersonRenderer {
 
                 int light = LightmapTextureManager.pack(camEntity.world.getLightLevel(LightType.BLOCK, camEntity.getBlockPos()), camEntity.world.getLightLevel(LightType.SKY, camEntity.getBlockPos()));
 
-//                if (camEntity instanceof ClientPlayerEntity) {
-//                    matrices.push();
-//                    matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(180.0F));
-//                    matrices.scale(0.4f, 0.4f, 0.4f);
-//
-//                    ClientPlayerEntity player = (ClientPlayerEntity) camEntity;
-//                    ModelPart rightArm = new ModelPart(64, 64, 30, 16);
-//                    rightArm.addCuboid(0,0,0, 4.0F, 4.0F, 4.0F);
-//                    VertexConsumer consumer = context.consumers().getBuffer(RenderLayer.getEntityTranslucent(player.getSkinTexture()));
-//                    rightArm.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV);
-//                    matrices.pop();
-//                }
-
-                //Start render item
-                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F - 12));
-                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+                //Transform to middle of controller
+                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
                 matrices.scale(0.4f, 0.4f, 0.4f);
-                matrices.translate(0, 1 / 16f, -1.25 / 16f);
+                matrices.translate(0, 1 / 16f, -1.5f / 16f);
+                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(5));
+
+                if (camEntity instanceof ClientPlayerEntity) {
+                    matrices.push();
+                    matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
+                    matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+
+                    matrices.translate(-2 / 16f, -12 / 16f, 0);
+                    ClientPlayerEntity player = (ClientPlayerEntity) camEntity;
+                    ModelPart armModel = new ModelPart(64, 64, 40, 16);
+                    if (player.getModel().equals("slim")) {
+                        armModel.addCuboid(0.5f, 0, 0, 3.0F, 12.0F, 4.0F);
+                    } else {
+                        armModel.addCuboid(0, 0, 0, 4.0F, 12.0F, 4.0F);
+                    }
+
+                    VertexConsumer consumer = context.consumers().getBuffer(RenderLayer.getEntityTranslucent(player.getSkinTexture()));
+                    armModel.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV);
+                    matrices.pop();
+                }
 
                 LivingEntity camLivEntity = (LivingEntity) camEntity;
-                ItemStack stack = i == 0 ? camLivEntity.getOffHandStack() : camLivEntity.getMainHandStack();
 
                 MinecraftClient.getInstance().getHeldItemRenderer().renderItem(
                         camLivEntity,
-                        stack,
+                        i == 0 ? camLivEntity.getOffHandStack() : camLivEntity.getMainHandStack(),
                         i == 0 ? ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND : ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND,
-                        false,
+                        i == 0,
                         matrices,
                         context.consumers(),
                         light
@@ -106,7 +111,7 @@ public class VrFirstPersonRenderer {
         }
     }
 
-    public void renderHandsDebug(Camera camera) {
+    public void renderHandsGui() {
         for (int i = 0; i < 2; i++) {
             if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[i]) {
                 continue;
@@ -121,43 +126,29 @@ public class VrFirstPersonRenderer {
             RenderSystem.enableAlphaTest();
             RenderSystem.defaultAlphaFunc();
 
-//                XrVector2f thumbstick = XR_INPUT.inputState.handThumbstick[i];
             RenderSystem.pushMatrix();
             Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[i];
             Vec3d gripPos = pose.getPosMc();
             Vector3f eyePos = MineXRaftClient.eyePose.getPos();
             RenderSystem.translated(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
-
-            RenderSystem.pushMatrix();
             RenderSystem.multMatrix(new Matrix4f(pose.getOrientationMc()));
-//                RenderSystem.translated(thumbstick.x() * 0.05f, 0, thumbstick.y() * -0.05f);
 
             renderHandGui();
 
-            RenderSystem.scalef(0.01F, 0.01F, 0.01F);
+            if (MinecraftClient.getInstance().options.debugEnabled) {
+                RenderSystem.scalef(0.01F, 0.01F, 0.01F);
 
-            GL11.glPointSize(100.0f);
-            BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-            buffer.begin(GL11.GL_POINTS, VertexFormats.POSITION_COLOR);
-            buffer.vertex(0, 0, 0).color(1f, 0f, 0f, 1f).next();
-            Tessellator.getInstance().draw();
+                GL11.glPointSize(100.0f);
+                BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+                buffer.begin(GL11.GL_POINTS, VertexFormats.POSITION_COLOR);
+                buffer.vertex(0, 0, 0).color(1f, 0f, 0f, 1f).next();
+                Tessellator.getInstance().draw();
 
-            RenderSystem.renderCrosshair(10);
-            RenderSystem.popMatrix();
+                RenderSystem.renderCrosshair(10);
+            }
 
             RenderSystem.popMatrix();
         }
-
-        RenderSystem.pushMatrix();
-        RenderSystem.translated(-camera.getPos().x, -camera.getPos().y, -camera.getPos().z);
-
-        GL11.glPointSize(4.0f);
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-        buffer.begin(GL11.GL_POINTS, VertexFormats.POSITION_COLOR);
-        buffer.vertex(0, 0, Math.sin(GLFW.glfwGetTime() / 3)).color(1f, 0f, 0f, 1f).next();
-        Tessellator.getInstance().draw();
-
-        RenderSystem.popMatrix();
 
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();

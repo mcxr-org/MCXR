@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+//TODO have a look at https://github.com/LambdAurora/LambdaControls compat
 @Mixin(KeyboardInput.class)
 public class VrKeyboardInputMixin extends Input {
 

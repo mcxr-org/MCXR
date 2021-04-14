@@ -1,8 +1,14 @@
 package net.sorenon.minexraft.client;
 
+import com.mojang.blaze3d.platform.FramebufferInfo;
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Util;
 import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
+import net.sorenon.minexraft.client.rendering.MainRenderTarget;
+import net.sorenon.minexraft.client.rendering.RenderPass;
+import net.sorenon.minexraft.client.rendering.XrCamera;
+import net.sorenon.minexraft.client.rendering.XrFramebuffer;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -518,12 +524,16 @@ public class OpenXR {
 
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
             camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.viewSpacePose);
+            MainRenderTarget mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
 
             long frameStartTime = Util.getMeasuringTimeNano();
             clientExt.preRenderXR(true, frameStartTime);
             {
                 MineXRaftClient.renderPass = RenderPass.GUI;
+                mainRenderTarget.setFramebuffer(MineXRaftClient.guiFramebuffer);
+                MineXRaftClient.guiFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
                 clientExt.doRenderXR(true, frameStartTime);
+                mainRenderTarget.resetFramebuffer();
                 MineXRaftClient.renderPass = RenderPass.VANILLA;
             }
             // Render view to the appropriate part of the swapchain image.
@@ -551,15 +561,12 @@ public class OpenXR {
 
                 {
                     XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                    //TODO come up with better system for designating main framebuffer
-                    {
-                        viewSwapchain.framebuffer.SetColorAttachment(xrSwapchainImageOpenGLKHR.image());
-                        clientExt.setRenderTarget(viewSwapchain.framebuffer);
-                        viewSwapchain.framebuffer.endWrite();
-                    }
+
+                    viewSwapchain.framebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
+                    GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, 0);
+                    mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
 
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
-                    MineXRaftClient.tmpResetSize();
                     MineXRaftClient.fov = projectionLayerView.fov();
                     MineXRaftClient.eyePose.set(projectionLayerView.pose(), MineXRaftClient.yawTurn);
 //                    MineXRaftClient.eyePose.set(projectionLayerView.pose());
@@ -576,9 +583,7 @@ public class OpenXR {
                     MineXRaftClient.fov = null;
                     MineXRaftClient.viewportRect = null;
 
-                    {
-                        clientExt.popRenderTarget();
-                    }
+                    mainRenderTarget.resetFramebuffer();
                 }
 
                 XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
@@ -648,7 +653,7 @@ public class OpenXR {
                 projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
 
                 XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                viewSwapchain.framebuffer.SetColorAttachment(xrSwapchainImageOpenGLKHR.image());
+                viewSwapchain.framebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
                 viewSwapchain.framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
 
                 XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
@@ -711,14 +716,16 @@ public class OpenXR {
      * Minecraft uses an old version of lwjgl so we have to create custom methods to call certain native functions
      */
     private int xrLocateSpace(XrSpace space, XrSpace baseSpace, @NativeType("XrTime") long time, @NativeType("XrSpaceLocation *") XrSpaceLocation location) {
-        long __functionAddress = space.getCapabilities().xrLocateSpace;
-//        return JNI.callPPJPI(space.address(), baseSpace.address(), time, location, __functionAddress);
+        return callPPJPI(space.address(), baseSpace.address(), time, location.address(), space.getCapabilities().xrLocateSpace);
+    }
+
+    public static int callPPJPI(long param0, long param1, long param2, long param3, long __functionAddress) {
         DynCall.dcMode(vm, DynCall.DC_CALL_C_DEFAULT);
         DynCall.dcReset(vm);
-        DynCall.dcArgPointer(vm, space.address());
-        DynCall.dcArgPointer(vm, baseSpace.address());
-        DynCall.dcArgLongLong(vm, time);
-        DynCall.dcArgPointer(vm, location.address());
+        DynCall.dcArgPointer(vm, param0);
+        DynCall.dcArgPointer(vm, param1);
+        DynCall.dcArgLongLong(vm, param2);
+        DynCall.dcArgPointer(vm, param3);
         return DynCall.dcCallInt(vm, __functionAddress);
     }
 }

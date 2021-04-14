@@ -1,21 +1,38 @@
-package net.sorenon.minexraft.client;
+package net.sorenon.minexraft.client.rendering;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.sorenon.minexraft.client.mixin.accessor.FramebufferExt;
 
+/**
+ * This class provides a system to change the main fbo that the game renders to while providing the illusion that
+ * it is always the same fbo. This limits compat issues while still providing a simple interface for changing the size
+ * and targets of the main framebuffer.
+ */
 public class MainRenderTarget extends Framebuffer {
 
-    public final Framebuffer defaultFramebuffer;
+    //The framebuffer used for rendering to the window
+    public final Framebuffer windowFramebuffer;
+
+    //The framebuffer that is affected by draw calls
     private Framebuffer currentFramebuffer;
+
+    //The dimensions of all the vanilla framebuffers
+    public int gameWidth;
+    public int gameHeight;
 
     public MainRenderTarget(int width, int height, boolean useDepth, boolean getError) {
         super(width, height, useDepth, getError);
-        defaultFramebuffer = new Framebuffer(width, height, useDepth, getError);
-        setFramebuffer(defaultFramebuffer);
+        windowFramebuffer = new Framebuffer(width, height, useDepth, getError);
+        setFramebuffer(windowFramebuffer);
+        gameWidth = width;
+        gameHeight = height;
     }
 
+    //Used to set the current framebuffer without resizing the dimensions of the other framebuffers
+    //This is meant for the defaultFramebuffer and any framebuffers used in rendering gui
     public void setFramebuffer(Framebuffer framebuffer) {
-        this.currentFramebuffer = defaultFramebuffer;
+        this.currentFramebuffer = framebuffer;
 
         this.textureWidth = framebuffer.textureWidth;
         this.textureHeight = framebuffer.textureHeight;
@@ -33,30 +50,39 @@ public class MainRenderTarget extends Framebuffer {
         thiz.depthAttachment(framebuffer.getDepthAttachment());
     }
 
-    public void reset() {
-        setFramebuffer(defaultFramebuffer);
+    public void setXrFramebuffer(XrFramebuffer framebuffer) {
+        setFramebuffer(framebuffer);
+        if (framebuffer.textureWidth != gameWidth ||
+            framebuffer.textureHeight != gameHeight) {
+            MinecraftClient.getInstance().gameRenderer.onResized(framebuffer.textureWidth, framebuffer.textureHeight);
+            System.out.println("Resizing GameRenderer");
+        }
+    }
+
+    public void resetFramebuffer() {
+        setFramebuffer(windowFramebuffer);
     }
 
     public Framebuffer getFramebuffer() {
         return currentFramebuffer;
     }
 
-    public Framebuffer getDefaultFramebuffer() {
-        return defaultFramebuffer;
+    public Framebuffer getWindowFramebuffer() {
+        return windowFramebuffer;
     }
 
     public boolean isCustomFramebuffer() {
-        return currentFramebuffer != defaultFramebuffer;
+        return currentFramebuffer != windowFramebuffer;
     }
 
     public void resize(int width, int height, boolean getError) {
-        if (currentFramebuffer != null) {
-            currentFramebuffer.resize(width, height, getError);
+        if (windowFramebuffer != null) {
+            windowFramebuffer.resize(width, height, getError);
         }
     }
 
     public void delete() {
-        currentFramebuffer.delete();
+        windowFramebuffer.delete();
     }
 
     public void copyDepthFrom(Framebuffer framebuffer) {

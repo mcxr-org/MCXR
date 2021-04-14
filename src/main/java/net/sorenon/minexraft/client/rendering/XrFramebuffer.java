@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client;
+package net.sorenon.minexraft.client.rendering;
 
 import com.mojang.blaze3d.platform.FramebufferInfo;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -13,10 +13,10 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL30.*;
 
 /*
-The framebuffer class is most likely the largest cause of compatibility issues between rendering mods;
-Since Minecraft and these mods expect the framebuffer to be the same size between frames (excluding after a resize)
-they are designed with a constantly sized framebuffer in mind despite the fact that in an XR environment
-the size of the framebuffer can change between draws in the same frame
+The framebuffer class is most likely the largest cause of compatibility issues between rendering mods and the game itself.
+This is due to Minecraft and these mods expecting the framebuffer to be the same size between frames (excluding after a resize)
+they are designed with a constantly sized framebuffer in mind despite the fact that in an XR environment the size of the
+framebuffer can change between draws in the same frame
 
 These are the methods that i can think of to deal with this:
 1. Redesign each mod to be able to handle multiple sizes of framebuffer
@@ -31,10 +31,15 @@ And my thoughts on each:
 2. Easiest solution and works well with iris
 3. Also an easy solution and only effects a small demographic of players
 4. Eh maybe
-5. Very contrived but could work
+5. Difficult but could work
 
-For the first release I will use method 2 then implement method 3 later
+Method 3 has been implemented
 If method 3 has too great of a performance issue (which i doubt) i will look at method 5
+ */
+
+/**
+ * XrFramebuffer is a framebuffer which accepts a color texture for rendering to rather than creating its own
+ * In the future when anti aliasing is implemented this class will be removed and a default Framebuffer used instead
  */
 public class XrFramebuffer extends Framebuffer {
 
@@ -77,7 +82,7 @@ public class XrFramebuffer extends Framebuffer {
         this.endRead();
     }
 
-    public void SetColorAttachment(int colorAttachment) {
+    public void setColorAttachment(int colorAttachment) {
         ((FramebufferExt) this).colorAttachment(colorAttachment);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);

@@ -1,9 +1,11 @@
 package net.sorenon.minexraft.client.mixin;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
+import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.OpenXR;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import org.lwjgl.PointerBuffer;
@@ -41,7 +43,8 @@ public class WindowMixin {
     private long handle;
 
     /**
-     * Disables VSync since we don't want the refresh rate of the monitor affecting the draw cycle
+     * Disables any sort of VSync or double buffering since we don't want the refresh rate of the monitor affecting the draw cycle
+     * Maybe there is a way to switch buffers on a different thread to the XR rendering?
      */
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
     private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
@@ -90,6 +93,7 @@ public class WindowMixin {
 
         openXR.createXRReferenceSpaces();
 
+        MineXRaftClient.guiScale = MineXRaftClient.calcGuiScale();
 //        System.exit(0);
     }
 
@@ -105,75 +109,55 @@ public class WindowMixin {
         return graphicsBinding;
     }
 
-
-    private double sca2 = 1;
-
-    @Inject(method = "calculateScaleFactor", at = @At("HEAD"))
-    void sca(int guiScale, boolean forceUnicodeFont, CallbackInfoReturnable<Integer> cir) {
-        int framebufferWidth = 1920;
-        int framebufferHeight = 1080;
-
-        int i;
-        for (i = 1; i != guiScale && i < framebufferWidth && i < framebufferHeight && framebufferWidth / (i + 1) >= 320 && framebufferHeight / (i + 1) >= 240; ++i) {
-        }
-
-        if (forceUnicodeFont && i % 2 != 0) {
-            ++i;
-        }
-        sca2 = i;
-    }
-
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
-    void frameBufferWidth(CallbackInfoReturnable<Integer> cir) {
-        XrRect2Di rect = MineXRaftClient.viewportRect;
-//        if (rect != null) {
-        if (MineXRaftClient.primaryRenderTarget != null) {
-            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureWidth);
+    void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
+        MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
+        if (isCustomFramebuffer(mainRenderTarget)) {
+            cir.setReturnValue(mainRenderTarget.viewportWidth);
         }
     }
 
     @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
-    void frameBufferHeight(CallbackInfoReturnable<Integer> cir) {
-        XrRect2Di rect = MineXRaftClient.viewportRect;
-//        if (rect != null) {
-        if (MineXRaftClient.primaryRenderTarget != null) {
-            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureHeight);
+    void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
+        MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
+        if (isCustomFramebuffer(mainRenderTarget)) {
+            cir.setReturnValue(mainRenderTarget.viewportHeight);
         }
     }
 
     @Inject(method = "getScaledHeight", at = @At("HEAD"), cancellable = true)
-    void scframeBufferHeight(CallbackInfoReturnable<Integer> cir) {
-//        XrRect2Di rect = MineXRaftClient.viewportRect;
-//        if (rect != null) {
-        if (MineXRaftClient.primaryRenderTarget != null) {
-            int j = (int) (MineXRaftClient.primaryRenderTarget.textureHeight / sca2);
-            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.textureHeight / sca2 > (double) j ? j + 1 : j);
+    void getScaledHeight(CallbackInfoReturnable<Integer> cir) {
+        MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
+        if (isCustomFramebuffer(mainRenderTarget)) {
+            int j = (int) (mainRenderTarget.viewportHeight / MineXRaftClient.guiScale);
+            cir.setReturnValue(mainRenderTarget.viewportHeight / MineXRaftClient.guiScale > (double) j ? j + 1 : j);
         }
-//        }
     }
 
     @Inject(method = "getScaledWidth", at = @At("HEAD"), cancellable = true)
-    void scframeBufferWidth(CallbackInfoReturnable<Integer> cir) {
-//        XrRect2Di rect = MineXRaftClient.viewportRect;
-//        if (rect != null) {
-        if (MineXRaftClient.primaryRenderTarget != null) {
-            int j = (int) (MineXRaftClient.primaryRenderTarget.textureWidth / sca2);
-            cir.setReturnValue(MineXRaftClient.primaryRenderTarget.viewportWidth / sca2 > (double) j ? j + 1 : j);
+    void getScaledWidth(CallbackInfoReturnable<Integer> cir) {
+        MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
+        if (isCustomFramebuffer(mainRenderTarget)) {
+            int j = (int) (mainRenderTarget.viewportWidth / MineXRaftClient.guiScale);
+            cir.setReturnValue(mainRenderTarget.viewportWidth / MineXRaftClient.guiScale > (double) j ? j + 1 : j);
         }
-//        }
     }
 
     @Inject(method = "getScaleFactor", at = @At("HEAD"), cancellable = true)
-    void f(CallbackInfoReturnable<Double> cir) {
-//        XrRect2Di rect = MineXRaftClient.viewportRect;
-//        if (rect != null) {
-        if (MineXRaftClient.primaryRenderTarget != null) {
-            cir.setReturnValue(sca2);
+    void getScaleFactor(CallbackInfoReturnable<Double> cir) {
+        MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
+        if (isCustomFramebuffer(mainRenderTarget)) {
+            cir.setReturnValue(MineXRaftClient.guiScale);
         }
     }
 
     @Inject(method = "onWindowFocusChanged", at = @At("HEAD"), cancellable = true)
     void preventPauseOnUnFocus(long window, boolean focused, CallbackInfo ci) {
         ci.cancel();
+    }
+    
+    @Unique
+    boolean isCustomFramebuffer(MainRenderTarget mainRenderTarget){
+        return mainRenderTarget != null && mainRenderTarget.isCustomFramebuffer();
     }
 }

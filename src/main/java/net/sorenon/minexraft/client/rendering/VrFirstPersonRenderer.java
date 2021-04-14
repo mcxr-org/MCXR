@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client;
+package net.sorenon.minexraft.client.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -18,6 +18,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.Pose;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;

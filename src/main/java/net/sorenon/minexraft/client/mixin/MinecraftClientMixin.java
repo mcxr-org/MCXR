@@ -23,12 +23,12 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.OpenXR;
-import net.sorenon.minexraft.client.RenderPass;
+import net.sorenon.minexraft.client.*;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
+import net.sorenon.minexraft.client.rendering.MainRenderTarget;
+import net.sorenon.minexraft.client.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -171,9 +171,14 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Shadow
     protected abstract void render(boolean tick);
 
-    @Shadow @Nullable public ClientWorld world;
-    @Unique
-    private Framebuffer mainRenderTarget;
+    @Shadow
+    @Nullable
+    public ClientWorld world;
+
+    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/Framebuffer"))
+    Framebuffer createFramebuffer(int width, int height, boolean useDepth, boolean getError) {
+        return new MainRenderTarget(width, height, useDepth, getError);
+    }
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
@@ -195,10 +200,8 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         openXR.check(XR10.xrAttachSessionActionSets(openXR.xrSession, attach_info));
         MineXRaftClient.vanillaCompatActionSet = vanillaCompatActionSet;
 
-//        OpenXR.Swapchain swapchain = openXR.swapchains[0];
-//        framebuffer.resize(swapchain.width, swapchain.height, true);
-        mainRenderTarget = framebuffer;
         MineXRaftClient.guiFramebuffer = new Framebuffer(1920, 1080, true, IS_SYSTEM_MAC);
+        MineXRaftClient.guiFramebuffer.setClearColor(0,0,0,0);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
@@ -220,13 +223,18 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "openScreen")
-    void initScreen(Screen screen, MinecraftClient client, int width, int height) {
+    void initScreen(Screen screen, MinecraftClient client, int widthIn, int heightIn) {
         if (world != null) {
-            MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
-            screen.init(client, this.window.getScaledWidth(), this.window.getScaledHeight());
-            MineXRaftClient.tmpResetSize();
-        } else {
+            //TODO move this code to some gui manager class
+            double guiScale = MineXRaftClient.guiScale;
+            int heightFloor = (int) (MineXRaftClient.guiFramebuffer.viewportHeight / guiScale);
+            int height = MineXRaftClient.guiFramebuffer.viewportHeight / guiScale > (double) heightFloor ? heightFloor + 1 : heightFloor;
+
+            int widthFloor = (int) (MineXRaftClient.guiFramebuffer.viewportWidth / guiScale);
+            int width = MineXRaftClient.guiFramebuffer.viewportWidth / guiScale > (double) widthFloor ? widthFloor + 1 : widthFloor;
             screen.init(client, width, height);
+        } else {
+            screen.init(client, widthIn, heightIn);
         }
     }
 
@@ -291,13 +299,12 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             this.profiler.swap("gameRenderer");
             this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, frameStartTime, tick);
 
-            if (MineXRaftClient.renderPass == RenderPass.GUI) {
+            if (MineXRaftClient.renderPass == RenderPass.GUI || MineXRaftClient.renderPass == RenderPass.VANILLA) {
                 this.profiler.swap("toasts");
                 this.toastManager.draw(new MatrixStack());
                 this.profiler.pop();
 
-                MineXRaftClient.tmpResetSize();
-                framebuffer.beginWrite(true);
+//                framebuffer.beginWrite(true);
             }
         }
 
@@ -359,15 +366,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.profiler.pop();
     }
 
-    public void render(){
+    public void render() {
         this.render(true);
-    }
-
-    public void setRenderTarget(Framebuffer framebuffer) {
-        this.framebuffer = framebuffer;
-    }
-
-    public void popRenderTarget() {
-        framebuffer = mainRenderTarget;
     }
 }

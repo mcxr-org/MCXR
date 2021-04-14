@@ -6,13 +6,11 @@
   "client": [
     "VrClientPlayNetworkHandlerMixin",
     "GameRendererMixin",
-    "GlStateManagerMixin",
     "InGameHudMixin",
     "VrKeyboardInputMixin",
     "MatMixin",
     "MinecraftClientMixin",
     "RenderSystemMixin",
-    "TitleMixin",
     "WindowMixin",
     "accessor.CameraExt",
     "accessor.EntityExt",
@@ -20,8 +18,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-    "FramebufferMixin"
-  ]
+  }
 }

@@ -1,6 +1,5 @@
 package net.sorenon.minexraft.client.mixin;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
@@ -9,11 +8,11 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
+import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.XrCamera;
-import net.sorenon.minexraft.client.RenderPass;
+import net.sorenon.minexraft.client.rendering.XrCamera;
+import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.accessor.MatAccessor;
-import org.lwjgl.opengl.GL11;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,6 +32,8 @@ public abstract class GameRendererMixin {
 
     @Shadow
     public abstract float getViewDistance();
+
+    @Shadow @Final private MinecraftClient client;
 
     /**
      * Replace the default camera with an XrCamera
@@ -66,6 +67,13 @@ public abstract class GameRendererMixin {
         }
     }
 
+    @Inject(method = "onResized", at = @At("HEAD"))
+    void onResized(int i, int j, CallbackInfo ci) {
+        MainRenderTarget mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
+        mainRenderTarget.gameWidth = i;
+        mainRenderTarget.gameHeight = j;
+    }
+
     /**
      * Rotate the matrix stack using a quaternion rather than pitch and yaw
      */
@@ -91,17 +99,11 @@ public abstract class GameRendererMixin {
     }
 
     /**
-     * If we are doing a gui render pass bind and clear the gui framebuffer
-     * If we are doing a world render pass skip rendering the gui entirely
+     * If we are doing a world render pass skip rendering the gui
      */
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if (MineXRaftClient.renderPass == RenderPass.GUI) {
-            MineXRaftClient.guiFramebuffer.beginWrite(true);
-            MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
-            GlStateManager.clearColor(0, 0, 0, 0);
-            GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC);
-        } else if (MineXRaftClient.renderPass == RenderPass.WORLD) {
+        if (MineXRaftClient.renderPass == RenderPass.WORLD) {
             ci.cancel();
         }
     }

@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client;
+package net.sorenon.minexraft.client.rendering;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
@@ -6,6 +6,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.world.BlockView;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.Pose;
 import net.sorenon.minexraft.client.mixin.accessor.CameraExt;
 import net.sorenon.minexraft.client.mixin.accessor.EntityExt;
 import org.joml.Quaternionf;

@@ -1,9 +1,8 @@
 package net.sorenon.minexraft.client.mixin;
 
 import net.minecraft.util.math.Matrix4f;
-import net.sorenon.minexraft.client.OpenXR;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.RenderPass;
+import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.accessor.MatAccessor;
 import org.joml.Math;
 import org.lwjgl.openxr.XrFovf;

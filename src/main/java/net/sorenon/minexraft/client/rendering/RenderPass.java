@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client;
+package net.sorenon.minexraft.client.rendering;
 
 public enum RenderPass {
     WORLD,

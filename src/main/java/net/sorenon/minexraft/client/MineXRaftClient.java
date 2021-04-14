@@ -7,6 +7,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
+import net.sorenon.minexraft.client.rendering.RenderPass;
+import net.sorenon.minexraft.client.rendering.VrFirstPersonRenderer;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.XR;
 import org.lwjgl.openxr.XrFovf;
@@ -29,31 +31,21 @@ public class MineXRaftClient implements ClientModInitializer {
     public static MineXRaftClient INSTANCE;
     public static XrInput XR_INPUT;
     public static VanillaCompatActionSet vanillaCompatActionSet;
-    public static RenderPass renderPass = RenderPass.VANILLA;
-
-    public static XrRect2Di viewportRect = null;
-    public static Framebuffer primaryRenderTarget = null;//TODO remove this spaghetti nonsense
-    public static XrFovf fov = null;
-    public static Pose eyePose = new Pose();
-    public static int viewIndex = 0;
-
     public static Framebuffer guiFramebuffer = null;
+    public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer();
 
-    public static void tmpResetSize() {
-//        if (viewportRect != null) {
-//            framebufferWidth = viewportRect.extent().width();
-//            framebufferHeight = viewportRect.extent().height();
-//        }
-        primaryRenderTarget = MinecraftClient.getInstance().getFramebuffer();
-    }
+    public static RenderPass renderPass = RenderPass.VANILLA;
+    public static XrRect2Di viewportRect = null; //Unused since I'm not sure of any circumstances where it's needed
+    public static XrFovf fov = null;
+    public static int viewIndex = 0;
+    public static double guiScale;
 
+    public static Pose eyePose = new Pose();
     public static final Pose viewSpacePose = new Pose();
 
     //    public static Vec3d xrOrigin = new Vec3d(0, 0, 0); //The center of the STAGE set at the same height of the PlayerEntity's feet
     public static Vector3f xrOffset = new Vector3f(0, 0, 0);
     public static float yawTurn = 0;
-
-    public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer();
 
     @Override
     public void onInitializeClient() {
@@ -108,6 +100,26 @@ public class MineXRaftClient implements ClientModInitializer {
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             vrFirstPersonRenderer.renderHands(context);
         });
+    }
+
+    //TODO create a gui manager class
+    public static double calcGuiScale() {
+        int guiScale = 0;
+        boolean forceUnicodeFont = MinecraftClient.getInstance().forcesUnicodeFont();
+
+        int framebufferWidth = 1920;
+        int framebufferHeight = 1080;
+
+        int i;
+        i = 1;
+        while (i != guiScale && i < framebufferWidth && i < framebufferHeight && framebufferWidth / (i + 1) >= 320 && framebufferHeight / (i + 1) >= 240) {
+            ++i;
+        }
+
+        if (forceUnicodeFont && i % 2 != 0) {
+            ++i;
+        }
+        return i;
     }
 
     public static void resetView() {

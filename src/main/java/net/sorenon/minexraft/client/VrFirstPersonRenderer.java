@@ -4,12 +4,15 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
@@ -19,7 +22,7 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-public class XrHandRenderer {
+public class VrFirstPersonRenderer {
 
     public void renderHands(WorldRenderContext context) {
         Entity camEntity = context.camera().getFocusedEntity();
@@ -62,6 +65,22 @@ public class XrHandRenderer {
                 matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
                 matrices.multiply(pose.getOrientationMc());
 
+                int light = LightmapTextureManager.pack(camEntity.world.getLightLevel(LightType.BLOCK, camEntity.getBlockPos()), camEntity.world.getLightLevel(LightType.SKY, camEntity.getBlockPos()));
+
+//                if (camEntity instanceof ClientPlayerEntity) {
+//                    matrices.push();
+//                    matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(180.0F));
+//                    matrices.scale(0.4f, 0.4f, 0.4f);
+//
+//                    ClientPlayerEntity player = (ClientPlayerEntity) camEntity;
+//                    ModelPart rightArm = new ModelPart(64, 64, 30, 16);
+//                    rightArm.addCuboid(0,0,0, 4.0F, 4.0F, 4.0F);
+//                    VertexConsumer consumer = context.consumers().getBuffer(RenderLayer.getEntityTranslucent(player.getSkinTexture()));
+//                    rightArm.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV);
+//                    matrices.pop();
+//                }
+
+                //Start render item
                 matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F - 12));
                 matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
                 matrices.scale(0.4f, 0.4f, 0.4f);
@@ -77,7 +96,7 @@ public class XrHandRenderer {
                         false,
                         matrices,
                         context.consumers(),
-                        LightmapTextureManager.pack(camEntity.world.getLightLevel(LightType.BLOCK, camEntity.getBlockPos()), camEntity.world.getLightLevel(LightType.SKY, camEntity.getBlockPos()))
+                        light
                 );
 
                 matrices.pop();

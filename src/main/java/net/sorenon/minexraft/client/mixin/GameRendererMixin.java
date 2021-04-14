@@ -9,10 +9,9 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
-import net.minecraft.world.World;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.XrCamera;
-import net.sorenon.minexraft.client.XrRenderPass;
+import net.sorenon.minexraft.client.RenderPass;
 import net.sorenon.minexraft.client.accessor.MatAccessor;
 import org.lwjgl.opengl.GL11;
 import org.objectweb.asm.Opcodes;
@@ -35,10 +34,9 @@ public abstract class GameRendererMixin {
     @Shadow
     public abstract float getViewDistance();
 
-    @Shadow
-    @Final
-    private MinecraftClient client;
-
+    /**
+     * Replace the default camera with an XrCamera
+     */
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/render/Camera"))
     Camera createCamera() {
         return new XrCamera();
@@ -54,12 +52,11 @@ public abstract class GameRendererMixin {
     }
 
     /**
-     * If we are rendering an XR frame
-     * return a projection matrix using the XR fov
+     * Replace the vanilla projection matrix
      */
     @Inject(method = "getBasicProjectionMatrix", at = @At("HEAD"), cancellable = true)
     void getXrProjectionMatrix(Camera camera, float f, boolean bl, CallbackInfoReturnable<Matrix4f> cir) {
-        if (MineXRaftClient.fov != null) {
+        if (MineXRaftClient.renderPass != RenderPass.VANILLA && MineXRaftClient.fov != null) {
             Matrix4f proj = new Matrix4f();
             proj.loadIdentity();
             //noinspection ConstantConditions
@@ -69,41 +66,43 @@ public abstract class GameRendererMixin {
         }
     }
 
+    /**
+     * Rotate the matrix stack using a quaternion rather than pitch and yaw
+     */
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 2), method = "renderWorld")
     void multiplyPitch(MatrixStack matrixStack, Quaternion pitchQuat) {
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 3), method = "renderWorld")
     void multiplyYaw(MatrixStack matrixStack, Quaternion yawQuat) {
-//        matrixStack.multiply(camera.getRotation());
-
         matrixStack.multiply(((XrCamera) camera).getRawRotationInverted());
     }
 
+    /**
+     * If we aren't doing a world render pass, always return null to skip rendering the world
+     */
     @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;world:Lnet/minecraft/client/world/ClientWorld;", opcode = Opcodes.GETFIELD, ordinal = 0), method = "render")
     public ClientWorld getWorld(MinecraftClient client) {
-        if (MineXRaftClient.renderPass == XrRenderPass.WORLD) {
+        if (MineXRaftClient.renderPass == RenderPass.WORLD || MineXRaftClient.renderPass == RenderPass.VANILLA) {
             return client.world;
         } else {
             return null;
         }
     }
 
+    /**
+     * If we are doing a gui render pass bind and clear the gui framebuffer
+     * If we are doing a world render pass skip rendering the gui entirely
+     */
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if (MineXRaftClient.renderPass == XrRenderPass.GUI) {
+        if (MineXRaftClient.renderPass == RenderPass.GUI) {
             MineXRaftClient.guiFramebuffer.beginWrite(true);
             MineXRaftClient.primaryRenderTarget = MineXRaftClient.guiFramebuffer;
             GlStateManager.clearColor(0, 0, 0, 0);
             GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT, MinecraftClient.IS_SYSTEM_MAC);
-        } else if (MineXRaftClient.renderPass == XrRenderPass.WORLD) {
+        } else if (MineXRaftClient.renderPass == RenderPass.WORLD) {
             ci.cancel();
         }
-    }
-
-    @Inject(method = "render", at = @At("TAIL"))
-    public void guiRenderEnd(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-//        MineXRaftClient.tmpResetSize();
-//        client.getFramebuffer().beginWrite(true);
     }
 }

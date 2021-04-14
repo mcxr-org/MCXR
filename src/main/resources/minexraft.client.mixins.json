@@ -4,11 +4,11 @@
   "package": "net.sorenon.minexraft.client.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "ClientPlayNetworkHandlerMixin",
+    "VrClientPlayNetworkHandlerMixin",
     "GameRendererMixin",
     "GlStateManagerMixin",
     "InGameHudMixin",
-    "KeyboardInputMixin",
+    "VrKeyboardInputMixin",
     "MatMixin",
     "MinecraftClientMixin",
     "RenderSystemMixin",

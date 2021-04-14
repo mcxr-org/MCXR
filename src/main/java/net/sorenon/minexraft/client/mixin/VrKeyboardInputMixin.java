@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(KeyboardInput.class)
-public class KeyboardInputMixin extends Input {
+public class VrKeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
-    void mv(boolean slowDown, CallbackInfo ci) {
+    void overwriteMovement(boolean slowDown, CallbackInfo ci) {
         XrVector2f thumbstick = MineXRaftClient.vanillaCompatActionSet.thumbstickOffHandState.currentState();
         this.movementForward = thumbstick.y();
         this.movementSideways = -thumbstick.x();

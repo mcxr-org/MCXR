@@ -9,6 +9,10 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(RenderSystem.class)
 public class RenderSystemMixin {
 
+    /**
+     * GLFW has been set up as single buffer so calling glfwSwapBuffers does nothing and
+     * glFlush needs to be called instead
+     */
     @Redirect(method = "flipFrame", at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwSwapBuffers(J)V"))
     private static void glfwSwapBuffers(long window) {
         GL11.glFlush();

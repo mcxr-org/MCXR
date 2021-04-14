@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.Shadow;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL30.*;
 
-//TODO extend Framebuffer
 @Mixin(Framebuffer.class)
 public class FramebufferMixin implements FBAccessor {
 

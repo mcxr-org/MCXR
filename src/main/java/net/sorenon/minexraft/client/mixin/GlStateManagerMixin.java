@@ -24,6 +24,7 @@ public class GlStateManagerMixin {
 ////                    rect.extent().width(),
 ////                    rect.extent().height()
 ////            );
+            //TODO fix this crappy spaghetti code
             glViewport(
                     0,
                     0,

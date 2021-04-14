@@ -2,7 +2,6 @@ package net.sorenon.minexraft.client;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Util;
-import net.sorenon.minexraft.client.accessor.FBAccessor;
 import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
@@ -30,6 +29,10 @@ import static org.lwjgl.system.MemoryUtil.*;
  * https://github.com/ReliaSolve/OpenXR-OpenGL-Example
  * Can only run on windows until glfw is updated
  * Requires a stereo headset and an install of the OpenXR runtime to run
+ */
+
+/**
+ * This class is where most of the OpenXR stuff happens, ideally this will be split into classes over time
  */
 public class OpenXR {
 
@@ -67,42 +70,6 @@ public class OpenXR {
         public int height;
         XrSwapchainImageOpenGLKHR.Buffer images;
         XrFramebuffer framebuffer;
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-
-
-        if (true) return;
-//            XR.create("C:\\Program Files (x86)\\Steam\\steamapps\\common\\SteamVR\\bin\\win64\\openxr_loader.dll");
-//        XR.create();
-
-        OpenXR openXR = new OpenXR();
-//        helloOpenXR.createOpenXRInstance();
-//        helloOpenXR.initializeOpenXRSystem();
-//        helloOpenXR.initializeAndBindOpenGL();
-//        helloOpenXR.createXRReferenceSpace();
-//        helloOpenXR.createXRSwapchains();
-//        helloOpenXR.createOpenGLResourses();
-
-        openXR.eventDataBuffer = XrEventDataBuffer.calloc();
-        openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
-//        while (!helloOpenXR.pollEvents() && !glfwWindowShouldClose(helloOpenXR.window)) {
-//            if (helloOpenXR.sessionRunning) {
-//                helloOpenXR.renderFrameOpenXR();
-//            } else {
-//                // Throttle loop since xrWaitFrame won't be called.
-//                Thread.sleep(250);
-//            }
-//        }
-
-        //Destroy OpenXR
-        openXR.eventDataBuffer.free();
-        openXR.graphicsBinding.free();
-        openXR.views.free();
-        openXR.viewConfigs.free();
-        for (Swapchain swapchain : openXR.swapchains) {
-            swapchain.images.free();
-        }
     }
 
     /**
@@ -354,6 +321,7 @@ public class OpenXR {
                     check(XR10.xrEnumerateSwapchainImages(swapchainWrapper.handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())));
                     swapchainWrapper.images = swapchainImageBuffer;
                     swapchainWrapper.framebuffer = new XrFramebuffer(swapchainWrapper.width, swapchainWrapper.height);
+                    swapchainWrapper.framebuffer.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
                     swapchains[i] = swapchainWrapper;
                 }
             }
@@ -546,17 +514,17 @@ public class OpenXR {
                 }
             }
 
-            setPoseFromSpace(xrViewSpace, predictedDisplayTime, MineXRaftClient.headPose);
+            setPoseFromSpace(xrViewSpace, predictedDisplayTime, MineXRaftClient.viewSpacePose);
 
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
-            camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.headPose);
+            camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.viewSpacePose);
 
             long frameStartTime = Util.getMeasuringTimeNano();
             clientExt.preRenderXR(true, frameStartTime);
             {
-                MineXRaftClient.renderPass = XrRenderPass.GUI;
+                MineXRaftClient.renderPass = RenderPass.GUI;
                 clientExt.doRenderXR(true, frameStartTime);
-                MineXRaftClient.renderPass = XrRenderPass.VANILLA;
+                MineXRaftClient.renderPass = RenderPass.VANILLA;
             }
             // Render view to the appropriate part of the swapchain image.
             for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
@@ -599,9 +567,9 @@ public class OpenXR {
                     if (camera.isReady()) {
                         camera.setEyePose(MineXRaftClient.eyePose, client.getTickDelta());
                     }
-                    MineXRaftClient.renderPass = XrRenderPass.WORLD;
+                    MineXRaftClient.renderPass = RenderPass.WORLD;
                     clientExt.doRenderXR(true, frameStartTime);
-                    MineXRaftClient.renderPass = XrRenderPass.VANILLA;
+                    MineXRaftClient.renderPass = RenderPass.VANILLA;
                     if (camera.isReady()) {
                         camera.popEyePose();
                     }

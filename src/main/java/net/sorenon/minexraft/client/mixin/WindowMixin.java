@@ -6,9 +6,6 @@ import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.client.OpenXR;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.XrRenderPass;
-import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
-import net.sorenon.minexraft.client.input.XrInput;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWNativeWGL;
@@ -33,6 +30,9 @@ import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
+/**
+ * This class is a bit of a disaster as a result of getting the mod off of the ground but I'm working on it
+ */
 @Mixin(Window.class)
 public class WindowMixin {
 
@@ -40,19 +40,17 @@ public class WindowMixin {
     @Final
     private long handle;
 
-    @Shadow
-    private double scaleFactor;
-
+    /**
+     * Disables VSync since we don't want the refresh rate of the monitor affecting the draw cycle
+     */
     @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
     private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
-        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE); //Disable vsync (glfw is weird so this might not actually disable vsync)
-
+        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE);
         return GLFW.glfwCreateWindow(width, height, title, monitor, share);
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void postInit(WindowEventHandler eventHandler, MonitorTracker monitorTracker, WindowSettings settings, String videoMode, String title, CallbackInfo ci) {
-        //TODO initialize session only on user command
         OpenXR openXR = MineXRaftClient.OPEN_XR;
         try (MemoryStack stack = stackPush()) {
             //Initialize OpenXR's OpenGL compatability
@@ -167,21 +165,15 @@ public class WindowMixin {
 
     @Inject(method = "getScaleFactor", at = @At("HEAD"), cancellable = true)
     void f(CallbackInfoReturnable<Double> cir) {
-        XrRect2Di rect = MineXRaftClient.viewportRect;
+//        XrRect2Di rect = MineXRaftClient.viewportRect;
 //        if (rect != null) {
         if (MineXRaftClient.primaryRenderTarget != null) {
             cir.setReturnValue(sca2);
         }
     }
 
-
-//    @Inject(method = "swapBuffers", at = @At("HEAD"), cancellable = true)
-//    private void swapBuffers(CallbackInfo ci){
-//        ci.cancel();
-//    }
-
     @Inject(method = "onWindowFocusChanged", at = @At("HEAD"), cancellable = true)
-    void foc(long window, boolean focused, CallbackInfo ci) {
+    void preventPauseOnUnFocus(long window, boolean focused, CallbackInfo ci) {
         ci.cancel();
     }
 }

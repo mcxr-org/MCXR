@@ -1,13 +1,10 @@
 package net.sorenon.minexraft.client.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.impl.client.rendering.WorldRenderContextImpl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gui.screen.Overlay;
-import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SplashScreen;
 import net.minecraft.client.options.CloudRenderMode;
@@ -20,7 +17,6 @@ import net.minecraft.client.util.Window;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.MetricsData;
 import net.minecraft.util.Util;
 import net.minecraft.util.profiler.ProfileResult;
@@ -29,7 +25,7 @@ import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.OpenXR;
-import net.sorenon.minexraft.client.XrRenderPass;
+import net.sorenon.minexraft.client.RenderPass;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
@@ -234,6 +230,9 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         }
     }
 
+    /**
+     * I split render into 3 functions because it makes developing easier and I couldn't find any mixins that used it
+     */
     @Override
     public void preRenderXR(boolean tick, long time) {
         this.window.setPhase("Pre render");
@@ -292,7 +291,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             this.profiler.swap("gameRenderer");
             this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, frameStartTime, tick);
 
-            if (MineXRaftClient.renderPass == XrRenderPass.GUI) {
+            if (MineXRaftClient.renderPass == RenderPass.GUI) {
                 this.profiler.swap("toasts");
                 this.toastManager.draw(new MatrixStack());
                 this.profiler.pop();

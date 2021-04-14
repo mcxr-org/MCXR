@@ -8,13 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface FramebufferExt {
 
     @Accessor("colorAttachment")
-    int colorAttachment();
-
-    @Accessor("colorAttachment")
     void colorAttachment(int colorAttachment);
-    
-    @Accessor("depthAttachment")
-    int depthAttachment();
 
     @Accessor("depthAttachment")
     void depthAttachment(int depthAttachment);

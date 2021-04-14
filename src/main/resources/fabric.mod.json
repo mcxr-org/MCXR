@@ -1,21 +1,17 @@
 {
   "schemaVersion": 1,
-  "id": "minexraft",
+  "id": "mcxr",
   "version": "${version}",
-
-  "name": "MineXRaft",
+  "name": "Minecraft XR",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
-    "Me!"
+    "Sorenon"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "sources": "https://github.com/Sorenon/MCXR"
   },
-
   "license": "CC0-1.0",
   "icon": "assets/minexraft/icon.png",
-
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -28,13 +24,9 @@
   "mixins": [
     "minexraft.client.mixins.json"
   ],
-
   "depends": {
     "fabricloader": ">=0.7.4",
     "fabric": "*",
     "minecraft": "1.16.x"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

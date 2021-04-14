@@ -29,10 +29,10 @@ public class MineXRaftClient implements ClientModInitializer {
     public static MineXRaftClient INSTANCE;
     public static XrInput XR_INPUT;
     public static VanillaCompatActionSet vanillaCompatActionSet;
-    public static XrRenderPass renderPass = XrRenderPass.VANILLA;
+    public static RenderPass renderPass = RenderPass.VANILLA;
 
     public static XrRect2Di viewportRect = null;
-    public static Framebuffer primaryRenderTarget = null;
+    public static Framebuffer primaryRenderTarget = null;//TODO remove this spaghetti nonsense
     public static XrFovf fov = null;
     public static Pose eyePose = new Pose();
     public static int viewIndex = 0;
@@ -47,13 +47,13 @@ public class MineXRaftClient implements ClientModInitializer {
         primaryRenderTarget = MinecraftClient.getInstance().getFramebuffer();
     }
 
-    public static final Pose headPose = new Pose();
+    public static final Pose viewSpacePose = new Pose();
 
     //    public static Vec3d xrOrigin = new Vec3d(0, 0, 0); //The center of the STAGE set at the same height of the PlayerEntity's feet
     public static Vector3f xrOffset = new Vector3f(0, 0, 0);
     public static float yawTurn = 0;
 
-    public XrHandRenderer handRenderer = new XrHandRenderer();
+    public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer();
 
     @Override
     public void onInitializeClient() {
@@ -102,16 +102,16 @@ public class MineXRaftClient implements ClientModInitializer {
         System.out.println("Hello Fabric world!");
 ///execute in minecraft:overworld run tp @s 5804.48 137.00 -4601.16 3.23 72.30
         WorldRenderEvents.LAST.register(context -> {
-            handRenderer.renderHandsDebug(context.camera());
+            vrFirstPersonRenderer.renderHandsDebug(context.camera());
         });
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            handRenderer.renderHands(context);
+            vrFirstPersonRenderer.renderHands(context);
         });
     }
 
     public static void resetView() {
-        MineXRaftClient.xrOffset = new Vector3f(0, 0, 0).sub(MineXRaftClient.headPose.getPos()).mul(1, 0, 1);
+        MineXRaftClient.xrOffset = new Vector3f(0, 0, 0).sub(MineXRaftClient.viewSpacePose.getPos()).mul(1, 0, 1);
     }
 
     private static SharedLibrary loadNative(Class<?> context, String path, String libName) {

@@ -11,16 +11,23 @@ import net.sorenon.minexraft.client.mixin.accessor.EntityExt;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+/**
+ * Rather than altering Camera with mixins we instead replace the Camera instance entirely with an XrCamera instance.
+ * My reasoning behind this is that this mod should have complete control of the camera. If another mod
+ * wants to do alter the camera then chances are what they're doing wont translate well to an XR scenario.
+ * But if they do need to alter the camera in an XR scenario then they can always mixin this class.
+ */
 public class XrCamera extends Camera {
 
-    private Pose headPose;
+    //The pose at the center of the viewspace
+    private Pose viewSpacePose;
 
     private final Quaternionf rawRotation = new Quaternionf();
 
     /**
      * Called just before each render tick, sets the camera to the center of the headset for updating the sound engine and updates the pitch yaw of the player
      */
-    public void updateXR(BlockView area, Entity focusedEntity, Pose viewPose) {
+    public void updateXR(BlockView area, Entity focusedEntity, Pose viewSpacePose) {
         CameraExt thiz = (CameraExt) this;
         thiz.ready(focusedEntity != null);
         thiz.area(area);
@@ -28,16 +35,16 @@ public class XrCamera extends Camera {
         thiz.thirdPerson(false);
         thiz.inverseView(false);
 
-        headPose = viewPose;
+        this.viewSpacePose = viewSpacePose;
 
-        setPose(viewPose, 1.0f);
+        setPose(viewSpacePose, 1.0f);
 
         if (focusedEntity != null && MinecraftClient.getInstance().player == focusedEntity) {
             Entity player = MinecraftClient.getInstance().player;
             EntityExt ext = (EntityExt) player;
 
-            float yawMc = MineXRaftClient.headPose.getYaw();
-            float pitchMc = MineXRaftClient.headPose.getPitch();
+            float yawMc = MineXRaftClient.viewSpacePose.getYaw();
+            float pitchMc = MineXRaftClient.viewSpacePose.getPitch();
             float dYaw = yawMc - ext.yaw();
             float dPitch = pitchMc - ext.pitch();
             ext.yaw(yawMc);
@@ -64,7 +71,7 @@ public class XrCamera extends Camera {
      * Called just after each frame
      */
     public void popEyePose() {
-        setPose(headPose, 1.0f);
+        setPose(viewSpacePose, 1.0f);
     }
 
     protected void setPose(Pose pose, float tickDelta) {

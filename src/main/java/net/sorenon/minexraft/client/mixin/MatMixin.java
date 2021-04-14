@@ -3,6 +3,7 @@ package net.sorenon.minexraft.client.mixin;
 import net.minecraft.util.math.Matrix4f;
 import net.sorenon.minexraft.client.OpenXR;
 import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.RenderPass;
 import net.sorenon.minexraft.client.accessor.MatAccessor;
 import org.joml.Math;
 import org.lwjgl.openxr.XrFovf;
@@ -173,9 +174,12 @@ public abstract class MatMixin implements MatAccessor {
         }
     }
 
+    /**
+     * why does yarn have viewboxMatrix and projectionMatrix mixed up?
+     */
     @Inject(method = "viewboxMatrix", cancellable = true, at = @At("HEAD"))
-    private static void masta(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
-        if (MineXRaftClient.fov != null) {
+    private static void overwriteProjectionMatrix(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
+        if (MineXRaftClient.renderPass != RenderPass.VANILLA && MineXRaftClient.fov != null) {
             Matrix4f mat = new Matrix4f();
             mat.loadIdentity();
             ((MatAccessor)(Object)mat).createProjectionFov(MineXRaftClient.fov, cameraDepth, viewDistance);

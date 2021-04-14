@@ -1,6 +1,6 @@
 package net.sorenon.minexraft.client;
 
-public enum XrRenderPass {
+public enum RenderPass {
     WORLD,
     GUI,
     VANILLA

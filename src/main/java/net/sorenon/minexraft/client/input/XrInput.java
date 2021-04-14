@@ -94,8 +94,8 @@ public class XrInput {
             } else {
                 if (Math.abs(x) >= 0.4f) {
                     MineXRaftClient.yawTurn += Math.toRadians(22) * -Math.signum(x);
-                    Vector3f rotatedPos = new Quaternionf().rotateLocalY(MineXRaftClient.yawTurn).transform(MineXRaftClient.headPose.rawPos, new Vector3f());
-                    Vector3f finalPos = MineXRaftClient.xrOffset.add(MineXRaftClient.headPose.getPos(), new Vector3f());
+                    Vector3f rotatedPos = new Quaternionf().rotateLocalY(MineXRaftClient.yawTurn).transform(MineXRaftClient.viewSpacePose.rawPos, new Vector3f());
+                    Vector3f finalPos = MineXRaftClient.xrOffset.add(MineXRaftClient.viewSpacePose.getPos(), new Vector3f());
 
                     MineXRaftClient.xrOffset = finalPos.sub(rotatedPos).mul(1, 0, 1);
 

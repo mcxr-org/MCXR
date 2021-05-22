@@ -20,12 +20,12 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | --------------------------- | ------------------------------- | ----------------------------- | ---------------------------- |
 | State                       | Released                        | Released                      | 🚧Pre-Alpha                  |
 | Platform                    | Bedrock                         | Java                          | Java                         |
-| Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric (Quilt when released) |
+| Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric                       |
 | Performance                 | 🥇                              | 🥉                            | 🥈                           |
 | Supported Devices           | 👎 Only Oculus headsets and WMR | ✅OpenVR supported devices     | ✅OpenXR supported devices    |
 | Pretty Shader Support       | ⛔                               | ✅Optifine                     | 🚧Canvas or Iris             |
 | Vanilla Compatibility       | ✅                               | ✅                             | ✅                            |
-| Vr Addon Support            | ⛔                               | 🚧Not recommended             | 🚧In development             |
+| Vr Addon Support            | ⛔                               | 🚧In development             | 🚧In development             |
 | Thirdparty Mod Intergration | N/A                             | ⛔                             | 🚧In development             |
 | Immersive UI                | ⛔                               | ⛔                             | 🚧In development             |
 | Immersive Controls          | ⛔                               | ✅                             | 🚧In development             |
@@ -34,7 +34,7 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | Linkless Quest Support      | ✅                               | 🚧[In development](https://discord.com/invite/cRdBUaUzcx)      | 🚧In development             |
 | Vr Multiplayer              | ⛔                               | ✅                             | 🚧In development             |
 | Spigot Plugin               | N/A                             | ✅                             | ⛔                            |
-| Patch Method                | N/A                             | Jar mod                       | Mixins (ASMR when released)  |
+| Patch Method                | N/A                             | Jar mod                       | Mixins                       |
 | Sponsored by Facebook       | Yes                             | No                            | No                           |
 | Initial Release Year        | 2016                            | 2013 / 2016                   | 2021                         |
 | Linux Support                 | ⛔                               | ✅                            | 🚧In development             |

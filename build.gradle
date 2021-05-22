@@ -30,19 +30,10 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	/**TODO copy JOML and the OpenXR bindings into src/
-	 * Iris has a well configured copy of JOML for Minecraft
-	 * and the OpenXR bindings need to be modified anyway.
-     *
-     * This will bloat the jar size but since we are probably going to bundle natives
-     * it shouldn't make too much of a difference on top of that
-	 */
 	modImplementation("grondag:joml-mod:1.4.20") {
 		exclude group: "grondag"
 		exclude group: "net.fabricmc"
 	}
-
-	compile files('C:\\Users\\soren\\Documents\\Programming\\lwjgl\\lwjgl3\\bin\\RELEASE\\lwjgl-openxr\\lwjgl-openxr.jar')
 }
 
 processResources {

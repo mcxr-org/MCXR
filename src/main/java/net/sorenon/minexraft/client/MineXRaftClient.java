@@ -79,7 +79,7 @@ public class MineXRaftClient implements ClientModInitializer {
                         properties.store(stream, "");
                     }
                 }
-                throw new IllegalStateException("Set path to openxr loader in " + configFile.getAbsolutePath());
+                throw new IllegalStateException("Set path to org.lwjgl.openxr loader in " + configFile.getAbsolutePath());
             }
 
         } catch (IOException e) {

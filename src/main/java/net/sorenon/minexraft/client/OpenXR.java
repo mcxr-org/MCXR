@@ -688,7 +688,7 @@ public class OpenXR {
     public void setPoseFromSpace(XrSpace handSpace, long time, Pose result) {
         try (MemoryStack ignored = stackPush()) {
             XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
-            int res = xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+            int res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
             if (res == XR10.XR_SUCCESS &&
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
@@ -708,24 +708,5 @@ public class OpenXR {
                 return buf.get();
             }
         });
-    }
-
-    private static final long vm = DynCall.dcNewCallVM(4096);
-
-    /**
-     * Minecraft uses an old version of lwjgl so we have to create custom methods to call certain native functions
-     */
-    private int xrLocateSpace(XrSpace space, XrSpace baseSpace, @NativeType("XrTime") long time, @NativeType("XrSpaceLocation *") XrSpaceLocation location) {
-        return callPPJPI(space.address(), baseSpace.address(), time, location.address(), space.getCapabilities().xrLocateSpace);
-    }
-
-    public static int callPPJPI(long param0, long param1, long param2, long param3, long __functionAddress) {
-        DynCall.dcMode(vm, DynCall.DC_CALL_C_DEFAULT);
-        DynCall.dcReset(vm);
-        DynCall.dcArgPointer(vm, param0);
-        DynCall.dcArgPointer(vm, param1);
-        DynCall.dcArgLongLong(vm, param2);
-        DynCall.dcArgPointer(vm, param3);
-        return DynCall.dcCallInt(vm, __functionAddress);
     }
 }

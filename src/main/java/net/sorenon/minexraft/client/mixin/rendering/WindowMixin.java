@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client.mixin;
+package net.sorenon.minexraft.client.mixin.rendering;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;

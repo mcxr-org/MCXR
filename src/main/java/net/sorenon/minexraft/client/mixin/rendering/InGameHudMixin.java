@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client.mixin;
+package net.sorenon.minexraft.client.mixin.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.hud.InGameHud;

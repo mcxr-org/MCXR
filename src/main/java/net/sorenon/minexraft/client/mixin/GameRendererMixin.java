@@ -1,110 +1,89 @@
 package net.sorenon.minexraft.client.mixin;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.item.HeldItemRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Quaternion;
-import net.sorenon.minexraft.client.rendering.MainRenderTarget;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.decoration.ItemFrameEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.*;
+import net.minecraft.world.RaycastContext;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.rendering.XrCamera;
-import net.sorenon.minexraft.client.rendering.RenderPass;
-import net.sorenon.minexraft.client.accessor.Matrix4fExt;
-import org.objectweb.asm.Opcodes;
+import net.sorenon.minexraft.client.Pose;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(value = GameRenderer.class, priority = 10_000)
-public abstract class GameRendererMixin {
+@Mixin(GameRenderer.class)
+public class GameRendererMixin {
 
     @Shadow
     @Final
-    private Camera camera;
-
-    @Shadow
-    public abstract float getViewDistance();
-
-    @Shadow @Final private MinecraftClient client;
+    private MinecraftClient client;
 
     /**
-     * Replace the default camera with an XrCamera
+     * @author Sorenon
+     * TODO split this up so we arn't overwriteing
      */
-    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/render/Camera"))
-    Camera createCamera() {
-        return new XrCamera();
-    }
+    @Overwrite()
+    public void updateTargetedEntity(float tickDelta) {
+        Entity entity = this.client.getCameraEntity();
+        if (entity != null) {
+            if (this.client.world != null) {
+                this.client.getProfiler().push("pick");
+                this.client.targetedEntity = null;
+                double d = this.client.interactionManager.getReachDistance();
+//                this.client.crosshairTarget = entity.raycast(d, tickDelta, false);
+                int hand = 1;
+                Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[hand];
+                Vec3d pos = new Vec3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
+                        MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
+                        MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z);
+                Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+                Vec3d dir = new Vec3d(dir1.x, dir1.y, dir1.z);
+                Vec3d endPos = pos.add(dir.multiply(d));
+                this.client.crosshairTarget = entity.world.raycast(new RaycastContext(pos, endPos, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, entity));
+                boolean bl = false;
+                double e = d;
+                if (this.client.interactionManager.hasExtendedReach()) {
+                    e = 6.0D;
+                    d = e;
+                } else {
+                    if (d > 3.0D) {
+                        bl = true;
+                    }
+                }
 
-    @Redirect(method = "renderHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/HeldItemRenderer;renderItem(FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;Lnet/minecraft/client/network/ClientPlayerEntity;I)V"))
-    void cancelRenderHand(HeldItemRenderer heldItemRenderer, float tickDelta, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, ClientPlayerEntity player, int light) {
-    }
+                e *= e;
+                if (this.client.crosshairTarget != null) {
+                    e = this.client.crosshairTarget.getPos().squaredDistanceTo(pos);
+                }
 
-    @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
-    void cancelBobView(MatrixStack matrixStack, float f, CallbackInfo ci) {
-        ci.cancel();
-    }
+                endPos = pos.add(dir.x * d, dir.y * d, dir.z * d);
+                float f = 1.0F;
+                Box box = entity.getBoundingBox().stretch(dir.multiply(d)).expand(f, f, f);
+                EntityHitResult entityHitResult = ProjectileUtil.raycast(entity, pos, endPos, box, (entityx) -> !entityx.isSpectator() && entityx.collides(), e);
+                if (entityHitResult != null) {
+                    Entity entity2 = entityHitResult.getEntity();
+                    Vec3d vec3d4 = entityHitResult.getPos();
+                    double g = pos.squaredDistanceTo(vec3d4);
+                    if (bl && g > 9.0D) {
+                        this.client.crosshairTarget = BlockHitResult.createMissed(vec3d4, Direction.getFacing(dir.x, dir.y, dir.z), new BlockPos(vec3d4));
+                    } else if (g < e || this.client.crosshairTarget == null) {
+                        this.client.crosshairTarget = entityHitResult;
+                        if (entity2 instanceof LivingEntity || entity2 instanceof ItemFrameEntity) {
+                            this.client.targetedEntity = entity2;
+                        }
+                    }
+                }
 
-    /**
-     * Replace the vanilla projection matrix
-     */
-    @Inject(method = "getBasicProjectionMatrix", at = @At("HEAD"), cancellable = true)
-    void getXrProjectionMatrix(Camera camera, float f, boolean bl, CallbackInfoReturnable<Matrix4f> cir) {
-        if (MineXRaftClient.renderPass != RenderPass.VANILLA && MineXRaftClient.fov != null) {
-            Matrix4f proj = new Matrix4f();
-            proj.loadIdentity();
-            //noinspection ConstantConditions
-            ((Matrix4fExt) (Object) proj).createProjectionFov(MineXRaftClient.fov, 0.05F, this.getViewDistance() * 4);
-
-            cir.setReturnValue(proj);
-        }
-    }
-
-    @Inject(method = "onResized", at = @At("HEAD"))
-    void onResized(int i, int j, CallbackInfo ci) {
-        MainRenderTarget mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
-        mainRenderTarget.gameWidth = i;
-        mainRenderTarget.gameHeight = j;
-    }
-
-    /**
-     * Rotate the matrix stack using a quaternion rather than pitch and yaw
-     */
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 2), method = "renderWorld")
-    void multiplyPitch(MatrixStack matrixStack, Quaternion pitchQuat) {
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 3), method = "renderWorld")
-    void multiplyYaw(MatrixStack matrixStack, Quaternion yawQuat) {
-        matrixStack.multiply(((XrCamera) camera).getRawRotationInverted());
-    }
-
-    /**
-     * If we aren't doing a world render pass, always return null to skip rendering the world
-     */
-    @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;world:Lnet/minecraft/client/world/ClientWorld;", opcode = Opcodes.GETFIELD, ordinal = 0), method = "render")
-    public ClientWorld getWorld(MinecraftClient client) {
-        if (MineXRaftClient.renderPass == RenderPass.WORLD || MineXRaftClient.renderPass == RenderPass.VANILLA) {
-            return client.world;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * If we are doing a world render pass, skip rendering the gui
-     */
-    @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
-    public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if (MineXRaftClient.renderPass == RenderPass.WORLD) {
-            ci.cancel();
+                this.client.getProfiler().pop();
+            }
         }
     }
 }

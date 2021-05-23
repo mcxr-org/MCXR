@@ -1,5 +1,6 @@
 package net.sorenon.minexraft.client.rendering;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
@@ -14,10 +15,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.LightType;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
@@ -70,10 +73,14 @@ public class VrFirstPersonRenderer {
                 matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
                 matrices.scale(0.4f, 0.4f, 0.4f);
                 matrices.translate(0, 1 / 16f, -1.5f / 16f);
-                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(15));
+                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(MineXRaftClient.handPitchAdjust));
+                float swing = -0.4f * MathHelper.sin((float) (Math.sqrt(((LivingEntity) camEntity).getHandSwingProgress(context.tickDelta())) * Math.PI * 2));
 
                 if (camEntity instanceof ClientPlayerEntity) {
                     matrices.push();
+                    if (i == MineXRaftClient.mainHand && ((ClientPlayerEntity) camEntity).getMainHandStack().isEmpty()) {
+                        matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getRadialQuaternion(swing));
+                    }
                     matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
                     matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
 
@@ -92,6 +99,10 @@ public class VrFirstPersonRenderer {
                 }
 
                 LivingEntity camLivEntity = (LivingEntity) camEntity;
+
+                if (i == MineXRaftClient.mainHand && !camLivEntity.getMainHandStack().isEmpty()) {
+                    matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getRadialQuaternion(swing));
+                }
 
                 MinecraftClient.getInstance().getHeldItemRenderer().renderItem(
                         camLivEntity,
@@ -128,12 +139,37 @@ public class VrFirstPersonRenderer {
             Vec3d gripPos = pose.getPosMc();
             Vector3f eyePos = MineXRaftClient.eyePose.getPos();
             RenderSystem.translated(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
-            RenderSystem.multMatrix(new Matrix4f(pose.getOrientationMc()));
 
-            renderHandGui();
+            RenderSystem.pushMatrix();
+            Quaternionf quat = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf());
+            RenderSystem.multMatrix(new Matrix4f(new Quaternion(quat.x, quat.y, quat.z, quat.w)));
+
+            if (i == MineXRaftClient.mainHand) {
+                RenderSystem.scalef(0.01F, 0.01F, 0.01F);
+                BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+                GlStateManager.disableTexture();
+                GlStateManager.depthMask(false);
+                GL11.glLineWidth(4.0F);
+                buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
+                buffer.vertex(0, 0, 0).color(0f, 0f, 0f, 1f).next();
+                buffer.vertex(0, -1000, 0).color(0.1f, 0.1f, 0.1f, 1f).next();
+                Tessellator.getInstance().draw();
+
+                GlStateManager.enableDepthTest();
+                GL11.glLineWidth(2.0F);
+                buffer.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
+                buffer.vertex(0, 0, 0).color(1f, 0.1f, 0.1f, 1f).next();
+                buffer.vertex(0, -1000, 0).color(1f, 0.1f, 0.1f, 1f).next();
+                Tessellator.getInstance().draw();
+                GlStateManager.disableDepthTest();
+            } else {
+                renderHandGui();
+            }
+            RenderSystem.popMatrix();
 
             if (MinecraftClient.getInstance().options.debugEnabled) {
                 RenderSystem.scalef(0.01F, 0.01F, 0.01F);
+                RenderSystem.multMatrix(new Matrix4f(pose.getOrientationMc()));
 
                 GL11.glPointSize(100.0f);
                 BufferBuilder buffer = Tessellator.getInstance().getBuffer();

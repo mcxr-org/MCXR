@@ -5,17 +5,20 @@
   "compatibilityLevel": "JAVA_8",
   "client": [
     "VrClientPlayNetworkHandlerMixin",
-    "GameRendererMixin",
-    "InGameHudMixin",
     "VrKeyboardInputMixin",
-    "Matrix4fMixin",
-    "MinecraftClientMixin",
-    "RenderSystemMixin",
-    "WindowMixin",
     "accessor.CameraAcc",
-    "accessor.FramebufferAcc"
+    "accessor.FramebufferAcc",
+    "rendering.GameRendererMixin",
+    "rendering.InGameHudMixin",
+    "rendering.Matrix4fMixin",
+    "rendering.MinecraftClientMixin",
+    "rendering.RenderSystemMixin",
+    "rendering.WindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "GameRendererMixin"
+  ]
 }

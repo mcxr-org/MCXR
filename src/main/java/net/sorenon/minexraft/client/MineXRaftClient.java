@@ -42,6 +42,9 @@ public class MineXRaftClient implements ClientModInitializer {
     public static Vector3f xrOffset = new Vector3f(0, 0, 0);
     public static float yawTurn = 0;
 
+    public static float handPitchAdjust = 15;
+    public static int mainHand = 1;
+
     @Override
     public void onInitializeClient() {
         INSTANCE = this;

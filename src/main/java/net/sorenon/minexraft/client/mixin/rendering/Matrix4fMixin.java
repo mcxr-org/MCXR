@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client.mixin;
+package net.sorenon.minexraft.client.mixin.rendering;
 
 import net.minecraft.util.math.Matrix4f;
 import net.sorenon.minexraft.client.MineXRaftClient;

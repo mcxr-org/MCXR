@@ -2,11 +2,11 @@ package net.sorenon.minexraft.client.rendering;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
-import net.sorenon.minexraft.client.mixin.accessor.FramebufferExt;
+import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
 
 /**
- * This class provides a system to change the main fbo that the game renders to while providing the illusion that
- * it is always the same fbo. This limits compat issues while still providing a simple interface for changing the size
+ * This class provides a system to change the main framebuffer that the game renders to while providing the illusion that
+ * it is always the same framebuffer. This limits compat issues while still providing a simple interface for changing the size
  * and targets of the main framebuffer.
  */
 public class MainRenderTarget extends Framebuffer {
@@ -17,7 +17,7 @@ public class MainRenderTarget extends Framebuffer {
     //The framebuffer that is affected by draw calls
     private Framebuffer currentFramebuffer;
 
-    //The dimensions of all the vanilla framebuffers
+    //The current dimensions of all the vanilla framebuffers
     public int gameWidth;
     public int gameHeight;
 
@@ -45,7 +45,7 @@ public class MainRenderTarget extends Framebuffer {
         this.clearColor[3] = framebuffer.clearColor[3];
         this.texFilter = framebuffer.texFilter;
 
-        FramebufferExt thiz = ((FramebufferExt) this);
+        FramebufferAcc thiz = ((FramebufferAcc) this);
         thiz.colorAttachment(framebuffer.getColorAttachment());
         thiz.depthAttachment(framebuffer.getDepthAttachment());
     }

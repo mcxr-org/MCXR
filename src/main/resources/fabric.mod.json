@@ -10,7 +10,7 @@
   "contact": {
     "sources": "https://github.com/Sorenon/MCXR"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/minexraft/icon.png",
   "environment": "*",
   "entrypoints": {

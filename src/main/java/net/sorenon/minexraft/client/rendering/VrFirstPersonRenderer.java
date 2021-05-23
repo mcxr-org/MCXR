@@ -11,8 +11,6 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
@@ -21,7 +19,6 @@ import net.minecraft.world.LightType;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 public class VrFirstPersonRenderer {
@@ -73,7 +70,7 @@ public class VrFirstPersonRenderer {
                 matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
                 matrices.scale(0.4f, 0.4f, 0.4f);
                 matrices.translate(0, 1 / 16f, -1.5f / 16f);
-                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(5));
+                matrices.multiply(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(15));
 
                 if (camEntity instanceof ClientPlayerEntity) {
                     matrices.push();
@@ -158,7 +155,7 @@ public class VrFirstPersonRenderer {
 
     private static void renderHandGui() {
         float handGuiScale = 1f / 4000;
-        Framebuffer guiFramebuffer = MineXRaftClient.guiFramebuffer;
+        Framebuffer guiFramebuffer = MineXRaftClient.INSTANCE.flatGuiManager.framebuffer;
 
         float x1 = 0;
         float x0 = x1 - guiFramebuffer.textureHeight * handGuiScale;

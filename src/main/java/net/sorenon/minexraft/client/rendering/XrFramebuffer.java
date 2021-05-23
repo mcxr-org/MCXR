@@ -6,7 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.texture.TextureUtil;
-import net.sorenon.minexraft.client.mixin.accessor.FramebufferExt;
+import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
 import org.lwjgl.opengl.GL30;
 
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
@@ -58,7 +58,7 @@ public class XrFramebuffer extends Framebuffer {
 //        this.colorAttachment = TextureUtil.generateId();
         if (this.useDepthAttachment) {
             int depthAttachment = TextureUtil.generateId();
-            ((FramebufferExt) this).depthAttachment(depthAttachment);
+            ((FramebufferAcc) this).depthAttachment(depthAttachment);
             GlStateManager.bindTexture(depthAttachment);
             GlStateManager.texParameter(3553, 10241, 9728);
             GlStateManager.texParameter(3553, 10240, 9728);
@@ -83,7 +83,7 @@ public class XrFramebuffer extends Framebuffer {
     }
 
     public void setColorAttachment(int colorAttachment) {
-        ((FramebufferExt) this).colorAttachment(colorAttachment);
+        ((FramebufferAcc) this).colorAttachment(colorAttachment);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
     }

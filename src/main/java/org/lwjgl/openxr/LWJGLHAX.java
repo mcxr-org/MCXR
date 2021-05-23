@@ -1,8 +1,12 @@
 package org.lwjgl.openxr;
 
 import org.lwjgl.system.FunctionProvider;
+import org.lwjgl.system.SharedLibrary;
 import org.lwjgl.system.dyncall.DynCall;
 
+import java.nio.file.Paths;
+
+import static org.lwjgl.system.APIUtil.apiCreateLibrary;
 import static org.lwjgl.system.APIUtil.apiLog;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -28,6 +32,19 @@ public class LWJGLHAX {
             caps[index] = address;
         }
         return available;
+    }
+
+    public static SharedLibrary loadNative(Class<?> context, String path, String libName) {
+        apiLog("Loading library: " + path);
+
+        // METHOD 1: absolute path
+        if (Paths.get(path).isAbsolute()) {
+            SharedLibrary lib = apiCreateLibrary(path);
+            apiLog("\tSuccess");
+            return lib;
+        }
+
+        throw new UnsatisfiedLinkError("Failed to locate library: " + libName);
     }
 
     private static final long vm = DynCall.dcNewCallVM(4096);

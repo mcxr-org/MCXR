@@ -10,20 +10,16 @@ import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.VrFirstPersonRenderer;
 import org.joml.Vector3f;
-import org.lwjgl.openxr.XR;
-import org.lwjgl.openxr.XrFovf;
-import org.lwjgl.openxr.XrRect2Di;
-import org.lwjgl.system.SharedLibrary;
+import org.lwjgl.openxr.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.Properties;
 
-import static org.lwjgl.system.APIUtil.apiCreateLibrary;
-import static org.lwjgl.system.APIUtil.apiLog;
+import static org.lwjgl.system.MemoryStack.stackPointers;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class MineXRaftClient implements ClientModInitializer {
 
@@ -31,14 +27,13 @@ public class MineXRaftClient implements ClientModInitializer {
     public static MineXRaftClient INSTANCE;
     public static XrInput XR_INPUT;
     public static VanillaCompatActionSet vanillaCompatActionSet;
-    public static Framebuffer guiFramebuffer = null;
     public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer();
+    public FlatGuiManager flatGuiManager = new FlatGuiManager();
 
     public static RenderPass renderPass = RenderPass.VANILLA;
     public static XrRect2Di viewportRect = null; //Unused since I'm not sure of any circumstances where it's needed
     public static XrFovf fov = null;
     public static int viewIndex = 0;
-    public static double guiScale;
 
     public static Pose eyePose = new Pose();
     public static final Pose viewSpacePose = new Pose();
@@ -79,20 +74,17 @@ public class MineXRaftClient implements ClientModInitializer {
                         properties.store(stream, "");
                     }
                 }
-                throw new IllegalStateException("Set path to org.lwjgl.openxr loader in " + configFile.getAbsolutePath());
+                throw new IllegalStateException("Set path to openxr loader in " + configFile.getAbsolutePath());
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        SharedLibrary defaultOpenXRLoader = loadNative(XR.class, loaderPath, "openxr_loader");
-        XR.create(defaultOpenXRLoader);
+        XR.create(loaderPath);
         OPEN_XR.createOpenXRInstance();
         OPEN_XR.initializeOpenXRSystem();
 
-        System.out.println("Hello Fabric world!");
-///execute in minecraft:overworld run tp @s 5804.48 137.00 -4601.16 3.23 72.30
         WorldRenderEvents.LAST.register(context -> {
             if (!MinecraftClient.getInstance().options.hudHidden) {
                 vrFirstPersonRenderer.renderHandsGui();
@@ -104,40 +96,26 @@ public class MineXRaftClient implements ClientModInitializer {
         });
     }
 
-    //TODO create a gui manager class
-    public static double calcGuiScale() {
-        int guiScale = 0;
-        boolean forceUnicodeFont = MinecraftClient.getInstance().forcesUnicodeFont();
+    public void postRenderManagerInit() {
+        OPEN_XR.eventDataBuffer = XrEventDataBuffer.calloc();
+        OPEN_XR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
 
-        int framebufferWidth = 1920;
-        int framebufferHeight = 1080;
+        OPEN_XR.createXRSwapchains();
+        XR_INPUT = new XrInput(OPEN_XR);
 
-        int i;
-        i = 1;
-        while (i != guiScale && i < framebufferWidth && i < framebufferHeight && framebufferWidth / (i + 1) >= 320 && framebufferHeight / (i + 1) >= 240) {
-            ++i;
-        }
+        vanillaCompatActionSet = XR_INPUT.makeGameplayActionSet();
+        // Attach the action set we just made to the session
+        XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
+                XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
+                NULL,
+                stackPointers(vanillaCompatActionSet.address())
+        );
+        OPEN_XR.check(XR10.xrAttachSessionActionSets(OPEN_XR.xrSession, attach_info));
 
-        if (forceUnicodeFont && i % 2 != 0) {
-            ++i;
-        }
-        return i;
+        flatGuiManager.init();
     }
 
     public static void resetView() {
         MineXRaftClient.xrOffset = new Vector3f(0, 0, 0).sub(MineXRaftClient.viewSpacePose.getPos()).mul(1, 0, 1);
-    }
-
-    private static SharedLibrary loadNative(Class<?> context, String path, String libName) {
-        apiLog("Loading library: " + path);
-
-        // METHOD 1: absolute path
-        if (Paths.get(path).isAbsolute()) {
-            SharedLibrary lib = apiCreateLibrary(path);
-            apiLog("\tSuccess");
-            return lib;
-        }
-
-        throw new UnsatisfiedLinkError("Failed to locate library: " + libName);
     }
 }

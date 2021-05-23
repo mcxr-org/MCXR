@@ -10,7 +10,10 @@ import net.minecraft.client.gui.screen.SplashScreen;
 import net.minecraft.client.options.CloudRenderMode;
 import net.minecraft.client.options.GameOptions;
 import net.minecraft.client.options.Option;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.BackgroundRenderer;
+import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.toast.ToastManager;
 import net.minecraft.client.util.Window;
@@ -23,19 +26,20 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.sorenon.minexraft.client.*;
-import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
+import net.sorenon.minexraft.client.FlatGuiManager;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.OpenXR;
+import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
 import net.sorenon.minexraft.client.input.XrInput;
-import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.openxr.XR10;
-import org.lwjgl.openxr.XrEventDataBuffer;
-import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
-import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -44,11 +48,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
-import static org.lwjgl.system.MemoryStack.stackPointers;
-import static org.lwjgl.system.MemoryUtil.NULL;
-
 @Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> implements MinecraftClientEXT {
+public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runnable> implements MinecraftClientExt {
 
     @Shadow
     private volatile boolean running;
@@ -182,26 +183,8 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
-        OpenXR openXR = MineXRaftClient.OPEN_XR;
-        openXR.eventDataBuffer = XrEventDataBuffer.calloc();
-        openXR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
-
-        openXR.createXRSwapchains();
-        MineXRaftClient.XR_INPUT = new XrInput(openXR);
-//        MineXRaftClient.XR_INPUT.makeActions();
-
-        VanillaCompatActionSet vanillaCompatActionSet = MineXRaftClient.XR_INPUT.makeGameplayActionSet();
-        // Attach the action set we just made to the session
-        XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
-                XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
-                NULL,
-                stackPointers(vanillaCompatActionSet.address())
-        );
-        openXR.check(XR10.xrAttachSessionActionSets(openXR.xrSession, attach_info));
-        MineXRaftClient.vanillaCompatActionSet = vanillaCompatActionSet;
-
-        MineXRaftClient.guiFramebuffer = new Framebuffer(1920, 1080, true, IS_SYSTEM_MAC);
-        MineXRaftClient.guiFramebuffer.setClearColor(0,0,0,0);
+        //I expect that for 1.17 it should be possible to move this to WindowMixin::postInit
+        MineXRaftClient.INSTANCE.postRenderManagerInit();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
@@ -225,21 +208,17 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "openScreen")
     void initScreen(Screen screen, MinecraftClient client, int widthIn, int heightIn) {
         if (world != null) {
-            //TODO move this code to some gui manager class
-            double guiScale = MineXRaftClient.guiScale;
-            int heightFloor = (int) (MineXRaftClient.guiFramebuffer.viewportHeight / guiScale);
-            int height = MineXRaftClient.guiFramebuffer.viewportHeight / guiScale > (double) heightFloor ? heightFloor + 1 : heightFloor;
-
-            int widthFloor = (int) (MineXRaftClient.guiFramebuffer.viewportWidth / guiScale);
-            int width = MineXRaftClient.guiFramebuffer.viewportWidth / guiScale > (double) widthFloor ? widthFloor + 1 : widthFloor;
-            screen.init(client, width, height);
+            FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
+            screen.init(client, FGM.scaledWidth, FGM.scaledHeight);
         } else {
             screen.init(client, widthIn, heightIn);
         }
     }
 
     /**
-     * I split render into 3 functions because it makes developing easier and I couldn't find any mixins that used it
+     * To help performance and make debugging easier, render(boolean) has been split into these three functions
+     * This could have some compatibility issues but I have only found one mixin (computercraft) which this may affect
+     * ASMR's more advanced transformers could help with this in the future
      */
     @Override
     public void preRenderXR(boolean tick, long time) {
@@ -303,8 +282,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
                 this.profiler.swap("toasts");
                 this.toastManager.draw(new MatrixStack());
                 this.profiler.pop();
-
-//                framebuffer.beginWrite(true);
             }
         }
 

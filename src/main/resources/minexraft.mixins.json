@@ -8,13 +8,12 @@
     "GameRendererMixin",
     "InGameHudMixin",
     "VrKeyboardInputMixin",
-    "MatMixin",
+    "Matrix4fMixin",
     "MinecraftClientMixin",
     "RenderSystemMixin",
     "WindowMixin",
-    "accessor.CameraExt",
-    "accessor.EntityExt",
-    "accessor.FramebufferExt"
+    "accessor.CameraAcc",
+    "accessor.FramebufferAcc"
   ],
   "injectors": {
     "defaultRequire": 1

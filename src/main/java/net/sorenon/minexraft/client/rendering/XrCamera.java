@@ -8,8 +8,7 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.world.BlockView;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
-import net.sorenon.minexraft.client.mixin.accessor.CameraExt;
-import net.sorenon.minexraft.client.mixin.accessor.EntityExt;
+import net.sorenon.minexraft.client.mixin.accessor.CameraAcc;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -30,7 +29,7 @@ public class XrCamera extends Camera {
      * Called just before each render tick, sets the camera to the center of the headset for updating the sound engine and updates the pitch yaw of the player
      */
     public void updateXR(BlockView area, Entity focusedEntity, Pose viewSpacePose) {
-        CameraExt thiz = (CameraExt) this;
+        CameraAcc thiz = (CameraAcc) this;
         thiz.ready(focusedEntity != null);
         thiz.area(area);
         thiz.focusedEntity(focusedEntity);
@@ -43,16 +42,15 @@ public class XrCamera extends Camera {
 
         if (focusedEntity != null && MinecraftClient.getInstance().player == focusedEntity) {
             Entity player = MinecraftClient.getInstance().player;
-            EntityExt ext = (EntityExt) player;
 
             float yawMc = MineXRaftClient.viewSpacePose.getYaw();
             float pitchMc = MineXRaftClient.viewSpacePose.getPitch();
-            float dYaw = yawMc - ext.yaw();
-            float dPitch = pitchMc - ext.pitch();
-            ext.yaw(yawMc);
-            ext.pitch(pitchMc);
-            ext.prevYaw(ext.prevYaw() + dYaw);
-            ext.prevPitch(MathHelper.clamp(ext.prevPitch() + dPitch, -90, 90));
+            float dYaw = yawMc - player.yaw;
+            float dPitch = pitchMc - player.pitch;
+            player.yaw = yawMc;
+            player.pitch = pitchMc;
+            player.prevYaw += dYaw;
+            player.prevPitch = MathHelper.clamp(player.prevPitch + dPitch, -90, 90);
             if (player.getVehicle() != null) {
                 player.getVehicle().onPassengerLookAround(player);
             }
@@ -79,7 +77,7 @@ public class XrCamera extends Camera {
     protected void setPose(Pose pose, float tickDelta) {
         rawRotation.set(pose.getOrientation());
 
-        CameraExt thiz = ((CameraExt) this);
+        CameraAcc thiz = ((CameraAcc) this);
 
         thiz.pitch(pose.getPitch());
         thiz.yaw(pose.getYaw());
@@ -112,7 +110,7 @@ public class XrCamera extends Camera {
 
     @Override
     public void update(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta) {
-        CameraExt thiz = (CameraExt) this;
+        CameraAcc thiz = (CameraAcc) this;
         thiz.ready(true);
         thiz.area(area);
         thiz.focusedEntity(focusedEntity);

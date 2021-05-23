@@ -26,27 +26,28 @@ public class XR {
     @Nullable
     private static GlobalCommands globalCommands;
 
-    /**
-     * Loads the OpenXR loader using the bundled library.
-     *
-     * @see #create(String)
-     */
+//    /**
+//     * Loads the OpenXR loader using the bundled library.
+//     *
+//     * @see #create(String)
+//     */
 //    public static void create() {
 //        SharedLibrary defaultOpenXRLoader = Library.loadNative(XR.class, "org.lwjgl.org.lwjgl.openxr", Configuration.OPENXR_LIBRARY_NAME.get(Platform.mapLibraryNameBundled("openxr_loader")), true);
 //        XR.create(defaultOpenXRLoader);
 //    }
 
     /**
-     * Loads the OpenXR loader, using the specified library name.
+     * Loads the OpenXR loader, using the specified library path.
      *
      * <p>The {@link FunctionProvider} instance created by this method can only be used to retrieve global commands and commands exposed statically by the loader.</p>
      *
-     * @param libName the shared library name
+     * @param libPath the absolute path to the shared library
      * @see #create(FunctionProvider)
      */
-//    public static void create(String libName) {
-//        create(Library.loadNative(XR.class, "org.lwjgl.org.lwjgl.openxr", libName));
-//    }
+    public static void create(String libPath) {
+        SharedLibrary defaultOpenXRLoader = LWJGLHAX.loadNative(XR.class, libPath, "openxr_loader");
+        XR.create(defaultOpenXRLoader);
+    }
 
     /**
      * Initializes OpenXR with the specified {@link FunctionProvider}. This method can be used to implement custom OpenXR library loading.

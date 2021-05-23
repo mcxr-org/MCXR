@@ -12,7 +12,7 @@ import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.rendering.XrCamera;
 import net.sorenon.minexraft.client.rendering.RenderPass;
-import net.sorenon.minexraft.client.accessor.MatAccessor;
+import net.sorenon.minexraft.client.accessor.Matrix4fExt;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -61,7 +61,7 @@ public abstract class GameRendererMixin {
             Matrix4f proj = new Matrix4f();
             proj.loadIdentity();
             //noinspection ConstantConditions
-            ((MatAccessor) (Object) proj).createProjectionFov(MineXRaftClient.fov, 0.05F, this.getViewDistance() * 4);
+            ((Matrix4fExt) (Object) proj).createProjectionFov(MineXRaftClient.fov, 0.05F, this.getViewDistance() * 4);
 
             cir.setReturnValue(proj);
         }
@@ -99,7 +99,7 @@ public abstract class GameRendererMixin {
     }
 
     /**
-     * If we are doing a world render pass skip rendering the gui
+     * If we are doing a world render pass, skip rendering the gui
      */
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {

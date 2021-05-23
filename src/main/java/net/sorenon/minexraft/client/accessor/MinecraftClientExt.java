@@ -1,6 +1,6 @@
 package net.sorenon.minexraft.client.accessor;
 
-public interface MinecraftClientEXT {
+public interface MinecraftClientExt {
 
     void preRenderXR(boolean tick, long frameStartTime);
 

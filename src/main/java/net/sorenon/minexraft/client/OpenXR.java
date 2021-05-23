@@ -4,20 +4,22 @@ import com.mojang.blaze3d.platform.FramebufferInfo;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Util;
-import net.sorenon.minexraft.client.accessor.MinecraftClientEXT;
+import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.XrCamera;
 import net.sorenon.minexraft.client.rendering.XrFramebuffer;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFWNativeWGL;
+import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.NativeType;
+import org.lwjgl.system.Platform;
 import org.lwjgl.system.Struct;
-import org.lwjgl.system.dyncall.DynCall;
+import org.lwjgl.system.windows.User32;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -63,7 +65,7 @@ public class OpenXR {
     public boolean sessionRunning;
 
     MinecraftClient client = MinecraftClient.getInstance();
-    MinecraftClientEXT clientExt = ((MinecraftClientEXT) MinecraftClient.getInstance());
+    MinecraftClientExt clientExt = ((MinecraftClientExt) MinecraftClient.getInstance());
 
     public static final XrPosef identityPose = XrPosef.malloc().set(
             XrQuaternionf.mallocStack().set(0, 0, 0, 1),
@@ -189,6 +191,53 @@ public class OpenXR {
             System.out.printf("%s: %s\n", memASCII(msg.functionName()), memASCII(msg.message()));
             return 0;
         }
+    }
+
+    public void bindToOpenGLAndCreateSession(long windowHandle) {
+        try (MemoryStack stack = stackPush()) {
+            //Initialize OpenXR's OpenGL compatability
+            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.mallocStack();
+            graphicsRequirements.set(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR, 0, 0, 0);
+            check(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(xrInstance, systemID, graphicsRequirements));
+
+            //Check if OpenGL ver is supported by OpenXR ver
+            if (graphicsRequirements.minApiVersionSupported() > XR10.XR_MAKE_VERSION(GL11.glGetInteger(GL30.GL_MAJOR_VERSION), GL11.glGetInteger(GL30.GL_MINOR_VERSION), 0)) {
+                System.err.println("Runtime does not support desired Graphics API and/or version");
+            }
+
+            //Bind the OpenGL context to the OpenXR instance and create the session
+            if (Platform.get() == Platform.WINDOWS) {
+                graphicsBinding = createWinBinding(windowHandle);
+            } else {
+                throw new IllegalStateException();
+            }
+
+            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.mallocStack();
+            sessionCreateInfo.set(
+                    XR10.XR_TYPE_SESSION_CREATE_INFO,
+                    graphicsBinding.address(),
+                    0,
+                    systemID
+            );
+
+            PointerBuffer pp = stack.mallocPointer(1);
+            check(XR10.xrCreateSession(xrInstance, sessionCreateInfo, pp));
+            System.out.println(pp.get(0));
+            xrSession = new XrSession(pp.get(0), xrInstance);
+        }
+
+        createXRReferenceSpaces();
+    }
+
+    private XrGraphicsBindingOpenGLWin32KHR createWinBinding(long windowHandle) {
+        XrGraphicsBindingOpenGLWin32KHR graphicsBinding = XrGraphicsBindingOpenGLWin32KHR.malloc();
+        graphicsBinding.set(
+                KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
+                NULL,
+                User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),
+                GLFWNativeWGL.glfwGetWGLContext(windowHandle)
+        );
+        return graphicsBinding;
     }
 
     public void initializeOpenXRSystem() {
@@ -529,9 +578,10 @@ public class OpenXR {
             long frameStartTime = Util.getMeasuringTimeNano();
             clientExt.preRenderXR(true, frameStartTime);
             {
+                FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
                 MineXRaftClient.renderPass = RenderPass.GUI;
-                mainRenderTarget.setFramebuffer(MineXRaftClient.guiFramebuffer);
-                MineXRaftClient.guiFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+                mainRenderTarget.setFramebuffer(FGM.framebuffer);
+                FGM.framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
                 clientExt.doRenderXR(true, frameStartTime);
                 mainRenderTarget.resetFramebuffer();
                 MineXRaftClient.renderPass = RenderPass.VANILLA;

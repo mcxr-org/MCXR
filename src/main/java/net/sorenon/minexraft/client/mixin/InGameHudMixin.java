@@ -14,6 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
 
+    /**
+     * Skip rendering the vignette then setup the GUI rendering state
+     */
     @Inject(method = "renderVignetteOverlay", at = @At("HEAD"), cancellable = true)
     void cancelRenderVignette(Entity entity, CallbackInfo ci) {
         if (MineXRaftClient.renderPass != RenderPass.VANILLA) {

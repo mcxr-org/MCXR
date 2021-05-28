@@ -14,13 +14,12 @@ import java.util.logging.Logger;
  * it is always the same framebuffer. This limits compat issues while still providing a simple interface for changing the size
  * and targets of the main framebuffer.
  */
-//TODO extend WindowFramebuffer for compat
 public class MainRenderTarget extends WindowFramebuffer {
 
     public static final Logger LOGGER = Logger.getLogger("MCXR");
 
     //The framebuffer used for rendering to the window
-    public final Framebuffer windowFramebuffer;
+    public final WindowFramebuffer windowFramebuffer;
 
     //The framebuffer that is affected by draw calls
     private Framebuffer currentFramebuffer;
@@ -63,7 +62,7 @@ public class MainRenderTarget extends WindowFramebuffer {
         if (framebuffer.textureWidth != gameWidth ||
             framebuffer.textureHeight != gameHeight) {
             MinecraftClient.getInstance().gameRenderer.onResized(framebuffer.textureWidth, framebuffer.textureHeight);
-            LOGGER.log(Level.INFO, "Resizing GameRenderer");
+            LOGGER.log(Level.FINE, "Resizing GameRenderer");
         }
     }
 

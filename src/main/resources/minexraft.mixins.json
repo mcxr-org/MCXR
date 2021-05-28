@@ -20,6 +20,6 @@
   },
   "mixins": [
     "GameRendererMixin",
-    "TMPWindowFramebufferMixin"
+    "rendering.WindowFramebufferMixin"
   ]
 }

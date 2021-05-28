@@ -1,10 +1,12 @@
 package net.sorenon.minexraft.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Matrix4f;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.rendering.RenderPass;
@@ -30,8 +32,8 @@ public class MineXRaftClient implements ClientModInitializer {
     public static MineXRaftClient INSTANCE;
     public static XrInput XR_INPUT;
     public static VanillaCompatActionSet vanillaCompatActionSet;
-    public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer();
     public FlatGuiManager flatGuiManager = new FlatGuiManager();
+    public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer(flatGuiManager);
 
     public static RenderPass renderPass = RenderPass.VANILLA;
     public static XrRect2Di viewportRect = null; //Unused since I'm not sure of any circumstances where it's needed
@@ -58,7 +60,7 @@ public class MineXRaftClient implements ClientModInitializer {
             File configFile = FabricLoader.getInstance().getConfigDir().resolve("mcxr.properties").toFile();
             if (!configFile.exists()) {
                 if (!configFile.createNewFile()) {
-                    LOGGER.warn("[MCXR] Could not create config file: " + configFile.getAbsolutePath());
+                    LOGGER.warn("Could not create config file: " + configFile.getAbsolutePath());
                 }
             }
             Properties properties = new Properties();
@@ -92,14 +94,26 @@ public class MineXRaftClient implements ClientModInitializer {
         OPEN_XR.createOpenXRInstance();
         OPEN_XR.initializeOpenXRSystem();
 
-//        WorldRenderEvents.LAST.register(context -> {
-//            if (!MinecraftClient.getInstance().options.hudHidden) {
-//                vrFirstPersonRenderer.renderHandsGui();
-//            }
-//        });
+        WorldRenderEvents.LAST.register(context -> {
+            if (!MinecraftClient.getInstance().options.hudHidden) {
+                vrFirstPersonRenderer.renderHandsGui();
+            }
+        });
+
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+            vrFirstPersonRenderer.renderAfterEntities(context);
+        });
+
+//        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> {
+//            MatrixStack matrixStack = RenderSystem.getModelViewStack();
+//            matrixStack.push();
+//            matrixStack.loadIdentity();
+//            RenderSystem.applyModelViewMatrix();
 //
-//        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-//            vrFirstPersonRenderer.renderHands(context);
+////            vrFirstPersonRenderer.renderBeforeTranslucent(context);
+//
+//            matrixStack.pop();
+//            RenderSystem.applyModelViewMatrix();
 //        });
     }
 

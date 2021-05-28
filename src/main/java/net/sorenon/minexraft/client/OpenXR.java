@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.HashMap;
-import java.util.logging.Level;
 
 import static org.lwjgl.opengl.GL30.GL_SRGB8_ALPHA8;
 import static org.lwjgl.system.MemoryStack.*;

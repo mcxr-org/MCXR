@@ -36,7 +36,6 @@ import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -177,11 +176,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Final
     public GameOptions options;
 
-//    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/WindowFramebuffer"))
-//    Framebuffer createFramebuffer(int width, int height, boolean useDepth, boolean getError) {
-//        return new MainRenderTarget(width, height, useDepth, getError);
-//    }
-
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/WindowFramebuffer"))
     WindowFramebuffer createFramebuffer(int width, int height) {
         return new MainRenderTarget(width, height);
@@ -189,7 +183,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
-        //I expect that for 1.17 it should be possible to move this to WindowMixin::postInit
         MineXRaftClient.INSTANCE.postRenderManagerInit();
     }
 

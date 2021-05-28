@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client.mixin;
+package net.sorenon.minexraft.client.mixin.rendering;
 
 import net.minecraft.client.gl.WindowFramebuffer;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(WindowFramebuffer.class)
-public class TMPWindowFramebufferMixin {
+public class WindowFramebufferMixin {
 
     @Inject(method = "initSize", at = @At("HEAD"), cancellable = true)
     void cancel(int width, int height, CallbackInfo ci){

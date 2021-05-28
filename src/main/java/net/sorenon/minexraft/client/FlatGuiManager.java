@@ -3,18 +3,25 @@ package net.sorenon.minexraft.client;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.SimpleFramebuffer;
+import net.minecraft.client.texture.AbstractTexture;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
+import net.sorenon.minexraft.client.rendering.ExistingTexture;
 
 public class FlatGuiManager {
 
-    public int framebufferWidth = 1920;
+    public int framebufferWidth = 1080;
     public int framebufferHeight = 1080;
+
+    public final Identifier texture = new Identifier("mcxr", "gui");
+    public Framebuffer framebuffer;
 
     public double guiScale;
 
     public int scaledWidth;
     public int scaledHeight;
 
-    public Framebuffer framebuffer;
+    public Vec3d pos = new Vec3d(30, 90, 10);
 
     public void init() {
         guiScale = calcGuiScale();
@@ -27,10 +34,11 @@ public class FlatGuiManager {
 
         framebuffer = new SimpleFramebuffer(framebufferWidth, framebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC);
         framebuffer.setClearColor(0, 0, 0, 0);
+        MinecraftClient.getInstance().getTextureManager().registerTexture(texture, new ExistingTexture(framebuffer.getColorAttachment()));
     }
 
     public double calcGuiScale() {
-        int guiScale = 0;
+        int guiScale = -1;
         boolean forceUnicodeFont = MinecraftClient.getInstance().forcesUnicodeFont();
 
         int scale;

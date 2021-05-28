@@ -87,14 +87,14 @@ public abstract class GameRendererMixin {
     }
 
     /**
-     * If we aren't doing a world render pass, always return null to skip rendering the world
+     * If we are doing a gui render pass => return null to skip rendering the world
      */
     @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;world:Lnet/minecraft/client/world/ClientWorld;", opcode = Opcodes.GETFIELD, ordinal = 0), method = "render")
     public ClientWorld getWorld(MinecraftClient client) {
-        if (MineXRaftClient.renderPass == RenderPass.WORLD || MineXRaftClient.renderPass == RenderPass.VANILLA) {
-            return client.world;
-        } else {
+        if (MineXRaftClient.renderPass == RenderPass.GUI) {
             return null;
+        } else {
+            return client.world;
         }
     }
 

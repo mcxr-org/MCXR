@@ -3,6 +3,7 @@ package net.sorenon.minexraft.client.mixin.rendering;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.client.FlatGuiManager;

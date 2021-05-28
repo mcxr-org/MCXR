@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class RenderSystemMixin {
 
     /**
-     * @see WindowMixin::onGlfwCreateWindow
+     * @see WindowMixin#onGlfwCreateWindow
      * GLFW has been set up as single buffer to avoid vsync, so calling glfwSwapBuffers does nothing
      * glFlush must be called instead
      */

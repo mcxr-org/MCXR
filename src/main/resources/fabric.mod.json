@@ -21,6 +21,7 @@
       "net.sorenon.minexraft.client.MineXRaftClient"
     ]
   },
+  "accessWidener": "mcxr.accesswidener",
   "mixins": [
     "minexraft.mixins.json"
   ],

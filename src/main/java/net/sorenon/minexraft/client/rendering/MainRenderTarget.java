@@ -6,6 +6,9 @@ import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.gl.WindowFramebuffer;
 import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * This class provides a system to change the main framebuffer that the game renders to while providing the illusion that
  * it is always the same framebuffer. This limits compat issues while still providing a simple interface for changing the size
@@ -13,6 +16,8 @@ import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
  */
 //TODO extend WindowFramebuffer for compat
 public class MainRenderTarget extends WindowFramebuffer {
+
+    public static final Logger LOGGER = Logger.getLogger("MCXR");
 
     //The framebuffer used for rendering to the window
     public final Framebuffer windowFramebuffer;
@@ -58,7 +63,7 @@ public class MainRenderTarget extends WindowFramebuffer {
         if (framebuffer.textureWidth != gameWidth ||
             framebuffer.textureHeight != gameHeight) {
             MinecraftClient.getInstance().gameRenderer.onResized(framebuffer.textureWidth, framebuffer.textureHeight);
-            System.out.println("Resizing GameRenderer");
+            LOGGER.log(Level.INFO, "Resizing GameRenderer");
         }
     }
 

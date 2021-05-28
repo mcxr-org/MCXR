@@ -9,6 +9,8 @@ import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.VrFirstPersonRenderer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.*;
 
@@ -17,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -45,16 +48,17 @@ public class MineXRaftClient implements ClientModInitializer {
     public static float handPitchAdjust = 15;
     public static int mainHand = 1;
 
+    private static final Logger LOGGER = LogManager.getLogger("MCXR");
+
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
-
         String loaderPath = "";
         try { //TODO bundle loader binaries with the mod
             File configFile = FabricLoader.getInstance().getConfigDir().resolve("mcxr.properties").toFile();
             if (!configFile.exists()) {
                 if (!configFile.createNewFile()) {
-                    System.err.println("[MCXR] Could not create config file: " + configFile.getAbsolutePath());
+                    LOGGER.warn("[MCXR] Could not create config file: " + configFile.getAbsolutePath());
                 }
             }
             Properties properties = new Properties();

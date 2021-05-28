@@ -8,6 +8,8 @@ import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.XrCamera;
 import net.sorenon.minexraft.client.rendering.XrFramebuffer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWNativeWGL;
 import org.lwjgl.glfw.GLFWNativeWin32;
@@ -24,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 import static org.lwjgl.opengl.GL30.GL_SRGB8_ALPHA8;
 import static org.lwjgl.system.MemoryStack.*;
@@ -65,6 +68,8 @@ public class OpenXR {
 
     MinecraftClient client = MinecraftClient.getInstance();
     MinecraftClientExt clientExt = ((MinecraftClientExt) MinecraftClient.getInstance());
+
+    public static Logger LOGGER = LogManager.getLogger("MCXR");
 
     public static final XrPosef identityPose = XrPosef.malloc().set(
             XrQuaternionf.mallocStack().set(0, 0, 0, 1),
@@ -115,21 +120,21 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
-            System.out.printf("OpenXR loaded with %d extensions:%n", numExtensions.get(0));
-            System.out.println("~~~~~~~~~~~~~~~~~~");
+            LOGGER.info(String.format("OpenXR loaded with %d extensions:", numExtensions.get(0)));
+            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
             PointerBuffer extensions = stack.mallocPointer(numExtensions.get(0));
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
-                System.out.println(extensionName);
+                LOGGER.debug(extensionName);
                 extensions.put(memASCII(extensionName));
                 if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
                 }
             }
             extensions.rewind();
-            System.out.println("~~~~~~~~~~~~~~~~~~");
+            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
 
             if (missingOpenGL) {
                 throw new IllegalStateException("OpenXR library does not provide required extension: " + KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
@@ -187,7 +192,7 @@ public class OpenXR {
             // add a breakpoint this line!
             XrDebugUtilsMessengerCallbackDataEXT msg = XrDebugUtilsMessengerCallbackDataEXT.create(msgPtr);
 
-            System.out.printf("%s: %s\n", memASCII(msg.functionName()), memASCII(msg.message()));
+            LOGGER.info(String.format("%s: %s", memASCII(msg.functionName()), memASCII(msg.message())));
             return 0;
         }
     }
@@ -201,7 +206,7 @@ public class OpenXR {
 
             //Check if OpenGL ver is supported by OpenXR ver
             if (graphicsRequirements.minApiVersionSupported() > XR10.XR_MAKE_VERSION(GL11.glGetInteger(GL30.GL_MAJOR_VERSION), GL11.glGetInteger(GL30.GL_MINOR_VERSION), 0)) {
-                System.err.println("Runtime does not support desired Graphics API and/or version");
+                LOGGER.warn("Runtime does not support desired Graphics API and/or version");
             }
 
             //Bind the OpenGL context to the OpenXR instance and create the session
@@ -221,7 +226,7 @@ public class OpenXR {
 
             PointerBuffer pp = stack.mallocPointer(1);
             check(XR10.xrCreateSession(xrInstance, sessionCreateInfo, pp));
-            System.out.println(pp.get(0));
+            LOGGER.info(String.valueOf(pp.get(0)));
             xrSession = new XrSession(pp.get(0), xrInstance);
         }
 
@@ -251,7 +256,7 @@ public class OpenXR {
             if (systemID == 0) {
                 throw new IllegalStateException("No compatible headset detected");
             }
-            System.out.printf("Headset found with System ID:%d\n", systemID);
+            LOGGER.info(String.format("Headset found with System ID:%d", systemID));
         }
     }
 
@@ -288,11 +293,11 @@ public class OpenXR {
             XrSystemProperties systemProperties = XrSystemProperties.callocStack();
             check(XR10.xrGetSystemProperties(xrInstance, systemID, systemProperties));
 
-            System.out.printf("Headset name:%s vendor:%d \n", memUTF8(systemProperties.systemName()), systemProperties.vendorId());
+            LOGGER.debug(String.format("Headset name:%s vendor:%d ", memUTF8(systemProperties.systemName()), systemProperties.vendorId()));
             XrSystemTrackingProperties trackingProperties = systemProperties.trackingProperties();
-            System.out.printf("Headset orientationTracking:%b positionTracking:%b \n", trackingProperties.orientationTracking(), trackingProperties.positionTracking());
+            LOGGER.debug(String.format("Headset orientationTracking:%b positionTracking:%b ", trackingProperties.orientationTracking(), trackingProperties.positionTracking()));
             XrSystemGraphicsProperties graphicsProperties = systemProperties.graphicsProperties();
-            System.out.printf("Headset MaxWidth:%d MaxHeight:%d MaxLayerCount:%d \n", graphicsProperties.maxSwapchainImageWidth(), graphicsProperties.maxSwapchainImageHeight(), graphicsProperties.maxLayerCount());
+            LOGGER.debug(String.format("Headset MaxWidth:%d MaxHeight:%d MaxLayerCount:%d ", graphicsProperties.maxSwapchainImageWidth(), graphicsProperties.maxSwapchainImageHeight(), graphicsProperties.maxLayerCount()));
 
             IntBuffer intBuf = stack.mallocInt(1);
             check(XR10.xrEnumerateViewConfigurationViews(xrInstance, systemID, viewConfigType, intBuf, null));
@@ -393,7 +398,7 @@ public class OpenXR {
             switch (event.type()) {
                 case XR10.XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
                     XrEventDataInstanceLossPending instanceLossPending = XrEventDataInstanceLossPending.create(event.address());
-                    System.err.printf("XrEventDataInstanceLossPending by %d\n", instanceLossPending.lossTime());
+                    LOGGER.warn("XrEventDataInstanceLossPending by " + instanceLossPending.lossTime());
 //            *requestRestart = true;
                     return true;
                 }
@@ -405,7 +410,7 @@ public class OpenXR {
                     break;
                 case XR10.XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:
                 default: {
-                    System.out.printf("Ignoring event type %d\n", event.type());
+                    LOGGER.debug(String.format("Ignoring event type %d", event.type()));
                     break;
                 }
             }
@@ -427,7 +432,7 @@ public class OpenXR {
         if (result == XR10.XR_SUCCESS) {
             if (eventDataBuffer.type() == XR10.XR_TYPE_EVENT_DATA_EVENTS_LOST) {
                 XrEventDataEventsLost dataEventsLost = XrEventDataEventsLost.create(eventDataBuffer.address());
-                System.out.printf("%d events lost\n", dataEventsLost.lostEventCount());
+                LOGGER.info(String.format("%d events lost", dataEventsLost.lostEventCount()));
             }
 
             return XrEventDataBaseHeader.create(eventDataBuffer.address());
@@ -442,10 +447,10 @@ public class OpenXR {
         int oldState = sessionState;
         sessionState = stateChangedEvent.state();
 
-        System.out.printf("XrEventDataSessionStateChanged: state %s->%s session=%d time=%d\n", oldState, sessionState, stateChangedEvent.session(), stateChangedEvent.time());
+        LOGGER.debug(String.format("XrEventDataSessionStateChanged: state %s->%s session=%d time=%d", oldState, sessionState, stateChangedEvent.session(), stateChangedEvent.time()));
 
         if ((stateChangedEvent.session() != NULL) && (stateChangedEvent.session() != xrSession.address())) {
-            System.err.println("XrEventDataSessionStateChanged for unknown session");
+            LOGGER.warn("XrEventDataSessionStateChanged for unknown session");
             return false;
         }
 

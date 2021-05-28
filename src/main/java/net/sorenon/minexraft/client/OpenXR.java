@@ -1,6 +1,5 @@
 package net.sorenon.minexraft.client;
 
-import com.mojang.blaze3d.platform.FramebufferInfo;
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Util;
@@ -613,7 +612,8 @@ public class OpenXR {
                     XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
 
                     viewSwapchain.framebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
-                    GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, 0);
+//                    GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, 0);
+                    GlStateManager._glBindFramebuffer(36160, 0);
                     mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
 
                     MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();

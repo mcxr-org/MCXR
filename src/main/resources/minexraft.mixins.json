@@ -2,7 +2,7 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.sorenon.minexraft.client.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_16",
   "client": [
     "VrClientPlayNetworkHandlerMixin",
     "VrKeyboardInputMixin",
@@ -19,6 +19,7 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "GameRendererMixin"
+    "GameRendererMixin",
+    "TMPWindowFramebufferMixin"
   ]
 }

@@ -56,7 +56,7 @@ public abstract class GameRendererMixin {
      * Replace the vanilla projection matrix
      */
     @Inject(method = "getBasicProjectionMatrix", at = @At("HEAD"), cancellable = true)
-    void getXrProjectionMatrix(Camera camera, float f, boolean bl, CallbackInfoReturnable<Matrix4f> cir) {
+    void getXrProjectionMatrix(double d, CallbackInfoReturnable<Matrix4f> cir) {
         if (MineXRaftClient.renderPass != RenderPass.VANILLA && MineXRaftClient.fov != null) {
             Matrix4f proj = new Matrix4f();
             proj.loadIdentity();

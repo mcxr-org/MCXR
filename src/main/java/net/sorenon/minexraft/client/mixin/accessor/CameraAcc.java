@@ -1,8 +1,8 @@
 package net.sorenon.minexraft.client.mixin.accessor;
 
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.BlockView;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -22,7 +22,7 @@ public interface CameraAcc {
     @Accessor("thirdPerson")
     void thirdPerson(boolean thirdPerson);
 
-    @Accessor("inverseView")
+    @Accessor("thirdPerson")
     void inverseView(boolean inverseView);
 
     @Accessor("pitch")
@@ -32,5 +32,5 @@ public interface CameraAcc {
     void yaw(float yaw);
 
     @Accessor("diagonalPlane")
-    Vector3f diagonalPlane();
+    Vec3f diagonalPlane();
 }

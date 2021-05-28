@@ -2,6 +2,8 @@ package net.sorenon.minexraft.client.rendering;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.SimpleFramebuffer;
+import net.minecraft.client.gl.WindowFramebuffer;
 import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
 
 /**
@@ -9,7 +11,8 @@ import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
  * it is always the same framebuffer. This limits compat issues while still providing a simple interface for changing the size
  * and targets of the main framebuffer.
  */
-public class MainRenderTarget extends Framebuffer {
+//TODO extend WindowFramebuffer for compat
+public class MainRenderTarget extends WindowFramebuffer {
 
     //The framebuffer used for rendering to the window
     public final Framebuffer windowFramebuffer;
@@ -21,9 +24,9 @@ public class MainRenderTarget extends Framebuffer {
     public int gameWidth;
     public int gameHeight;
 
-    public MainRenderTarget(int width, int height, boolean useDepth, boolean getError) {
-        super(width, height, useDepth, getError);
-        windowFramebuffer = new Framebuffer(width, height, useDepth, getError);
+    public MainRenderTarget(int width, int height) {
+        super(width, height);
+        windowFramebuffer = new WindowFramebuffer(width, height);
         setFramebuffer(windowFramebuffer);
         gameWidth = width;
         gameHeight = height;
@@ -39,10 +42,10 @@ public class MainRenderTarget extends Framebuffer {
         this.viewportWidth = framebuffer.viewportWidth;
         this.viewportHeight = framebuffer.viewportHeight;
         this.fbo = framebuffer.fbo;
-        this.clearColor[0] = framebuffer.clearColor[0];
-        this.clearColor[1] = framebuffer.clearColor[1];
-        this.clearColor[2] = framebuffer.clearColor[2];
-        this.clearColor[3] = framebuffer.clearColor[3];
+//        this.clearColor[0] = framebuffer.clearColor[0];
+//        this.clearColor[1] = framebuffer.clearColor[1];
+//        this.clearColor[2] = framebuffer.clearColor[2];
+//        this.clearColor[3] = framebuffer.clearColor[3];
         this.texFilter = framebuffer.texFilter;
 
         FramebufferAcc thiz = ((FramebufferAcc) this);
@@ -101,8 +104,8 @@ public class MainRenderTarget extends Framebuffer {
         currentFramebuffer.checkFramebufferStatus();
     }
 
-    public void beginRead() {
-        currentFramebuffer.beginRead();
+    public void method_35610() {
+        currentFramebuffer.method_35610();
     }
 
     public void endRead() {

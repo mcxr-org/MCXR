@@ -1,13 +1,15 @@
 package net.sorenon.minexraft.client.rendering;
 
-import com.mojang.blaze3d.platform.FramebufferInfo;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.texture.TextureUtil;
+import net.minecraft.client.gl.SimpleFramebuffer;
 import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
 import org.lwjgl.opengl.GL30;
+
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL30.*;
@@ -41,7 +43,7 @@ If method 3 has too great of a performance issue (which i doubt) i will look at 
  * XrFramebuffer is a framebuffer which accepts a color texture for rendering to rather than creating its own
  * In the future when anti aliasing is implemented this class will be removed and a default Framebuffer used instead
  */
-public class XrFramebuffer extends Framebuffer {
+public class XrFramebuffer extends SimpleFramebuffer {
 
     public XrFramebuffer(int width, int height) {
         super(width, height, true, MinecraftClient.IS_SYSTEM_MAC);
@@ -50,36 +52,42 @@ public class XrFramebuffer extends Framebuffer {
     @Override
     public void initFbo(int width, int height, boolean getError) {
         RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
-        this.viewportWidth = width;
-        this.viewportHeight = height;
-        this.textureWidth = width;
-        this.textureHeight = height;
-        this.fbo = GlStateManager.genFramebuffers();
-//        this.colorAttachment = TextureUtil.generateId();
-        if (this.useDepthAttachment) {
-            int depthAttachment = TextureUtil.generateId();
-            ((FramebufferAcc) this).depthAttachment(depthAttachment);
-            GlStateManager.bindTexture(depthAttachment);
-            GlStateManager.texParameter(3553, 10241, 9728);
-            GlStateManager.texParameter(3553, 10240, 9728);
-            GlStateManager.texParameter(3553, 10242, 10496);
-            GlStateManager.texParameter(3553, 10243, 10496);
-            GlStateManager.texParameter(3553, 34892, 0);
-            GlStateManager.texImage2D(3553, 0, 6402, this.textureWidth, this.textureHeight, 0, 6402, 5126, null);
-        }
+        int i = RenderSystem.maxSupportedTextureSize();
+        if (width > 0 && width <= i && height > 0 && height <= i) {
+            this.viewportWidth = width;
+            this.viewportHeight = height;
+            this.textureWidth = width;
+            this.textureHeight = height;
+            this.fbo = GlStateManager.glGenFramebuffers();
+//            this.colorAttachment = TextureUtil.generateTextureId();
+            if (this.useDepthAttachment) {
+                this.depthAttachment = TextureUtil.generateTextureId();
+                GlStateManager._bindTexture(this.depthAttachment);
+                GlStateManager._texParameter(3553, 10241, 9728);
+                GlStateManager._texParameter(3553, 10240, 9728);
+                GlStateManager._texParameter(3553, 34892, 0);
+                GlStateManager._texParameter(3553, 10242, 33071);
+                GlStateManager._texParameter(3553, 10243, 33071);
+                GlStateManager._texImage2D(3553, 0, 6402, this.textureWidth, this.textureHeight, 0, 6402, 5126, (IntBuffer)null);
+            }
 
-//        this.setTexFilter(9728);
-//        GlStateManager.bindTexture(this.colorAttachment);
-//        GlStateManager.texImage2D(3553, 0, 32856, this.textureWidth, this.textureHeight, 0, 6408, 5121, (IntBuffer)null);
-        GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, this.fbo);
-//        GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, 3553, this.colorAttachment, 0);
-        if (this.useDepthAttachment) {
-            GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.DEPTH_ATTACHMENT, 3553, this.getDepthAttachment(), 0);
-        }
+            this.setTexFilter(9728);
+//            GlStateManager._bindTexture(this.colorAttachment);
+//            GlStateManager._texParameter(3553, 10242, 33071);
+//            GlStateManager._texParameter(3553, 10243, 33071);
+//            GlStateManager._texImage2D(3553, 0, 32856, this.textureWidth, this.textureHeight, 0, 6408, 5121, (IntBuffer)null);
+            GlStateManager._glBindFramebuffer(36160, this.fbo);
+//            GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorAttachment, 0);
+            if (this.useDepthAttachment) {
+                GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthAttachment, 0);
+            }
 
-        this.checkFramebufferStatus();
-        this.clear(getError);
-        this.endRead();
+            this.checkFramebufferStatus();
+            this.clear(getError);
+            this.endRead();
+        } else {
+            throw new IllegalArgumentException("Window " + width + "x" + height + " size out of bounds (max. size: " + i + ")");
+        }
     }
 
     public void setColorAttachment(int colorAttachment) {

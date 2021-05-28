@@ -88,15 +88,15 @@ public class MineXRaftClient implements ClientModInitializer {
         OPEN_XR.createOpenXRInstance();
         OPEN_XR.initializeOpenXRSystem();
 
-        WorldRenderEvents.LAST.register(context -> {
-            if (!MinecraftClient.getInstance().options.hudHidden) {
-                vrFirstPersonRenderer.renderHandsGui();
-            }
-        });
-
-        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            vrFirstPersonRenderer.renderHands(context);
-        });
+//        WorldRenderEvents.LAST.register(context -> {
+//            if (!MinecraftClient.getInstance().options.hudHidden) {
+//                vrFirstPersonRenderer.renderHandsGui();
+//            }
+//        });
+//
+//        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+//            vrFirstPersonRenderer.renderHands(context);
+//        });
     }
 
     public void postRenderManagerInit() {

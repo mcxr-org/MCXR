@@ -2,6 +2,7 @@ package net.sorenon.minexraft.client;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.SimpleFramebuffer;
 
 public class FlatGuiManager {
 
@@ -24,7 +25,7 @@ public class FlatGuiManager {
         int heightFloor = (int) (framebufferHeight / guiScale);
         scaledHeight = framebufferHeight / guiScale > heightFloor ? heightFloor + 1 : heightFloor;
 
-        framebuffer = new Framebuffer(framebufferWidth, framebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC);
+        framebuffer = new SimpleFramebuffer(framebufferWidth, framebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC);
         framebuffer.setClearColor(0, 0, 0, 0);
     }
 

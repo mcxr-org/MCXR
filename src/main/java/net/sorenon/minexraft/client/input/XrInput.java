@@ -2,7 +2,7 @@ package net.sorenon.minexraft.client.input;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Pair;
 import net.sorenon.minexraft.client.MineXRaftClient;
@@ -102,7 +102,7 @@ public class XrInput {
                     actionSet.thumbstickMainHandActivated = true;
                 } else if (Math.abs(y) >= 0.45f) {
                     if (MinecraftClient.getInstance().player != null)
-                        MinecraftClient.getInstance().player.inventory.scrollInHotbar(-y);
+                        MinecraftClient.getInstance().player.getInventory().scrollInHotbar(-y);
 
                     actionSet.thumbstickMainHandActivated = true;
                 }

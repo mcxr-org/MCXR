@@ -22,7 +22,7 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | State                       | Released                        | Released                      | 🚧Pre-Alpha                  |
 | Platform                    | Bedrock                         | Java                          | Java                         |
 | Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric                       |
-| Performance                 | 🥇                              | 🥉                            | 🥈                           |
+| Performance                 | 🥇                              | 🥉                            | 🥈 (With Sodium)                          |
 | Supported Devices           | 👎 Only Oculus headsets and WMR | ✅OpenVR supported devices     | ✅OpenXR supported devices    |
 | Pretty Shader Support       | ⛔                               | ✅Optifine                     | 🚧Canvas or Iris             |
 | Vanilla Compatibility       | ✅                               | ✅                             | ✅                            |
@@ -31,7 +31,7 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | Immersive UI                | ⛔                               | ⛔                             | 🚧In development             |
 | Immersive Controls          | ⛔                               | ✅                             | 🚧In development             |
 | Open Source                 | ⛔                               | ✅                             | ✅                            |
-| Versions                    | N/A                             | 1.7.10, and 1.10 through 1.16 | 1.16                         |
+| Versions                    | N/A                             | 1.7.10, and 1.10 through 1.16 | 1.17                         |
 | Linkless Quest Support      | ✅                               | 🚧[In development](https://discord.com/invite/cRdBUaUzcx)      | 🚧In development             |
 | Vr Multiplayer              | ⛔                               | ✅                             | 🚧In development             |
 | Spigot Plugin               | N/A                             | ✅                             | ⛔                            |

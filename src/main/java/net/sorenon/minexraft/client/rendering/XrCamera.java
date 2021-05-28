@@ -5,6 +5,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.BlockView;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
@@ -45,10 +46,10 @@ public class XrCamera extends Camera {
 
             float yawMc = MineXRaftClient.viewSpacePose.getYaw();
             float pitchMc = MineXRaftClient.viewSpacePose.getPitch();
-            float dYaw = yawMc - player.yaw;
-            float dPitch = pitchMc - player.pitch;
-            player.yaw = yawMc;
-            player.pitch = pitchMc;
+            float dYaw = yawMc - player.getYaw();
+            float dPitch = pitchMc - player.getPitch();
+            player.setYaw(yawMc);
+            player.setPitch(pitchMc);
             player.prevYaw += dYaw;
             player.prevPitch = MathHelper.clamp(player.prevPitch + dPitch, -90, 90);
             if (player.getVehicle() != null) {
@@ -82,8 +83,8 @@ public class XrCamera extends Camera {
         thiz.pitch(pose.getPitch());
         thiz.yaw(pose.getYaw());
         this.getRotation().set(0.0F, 0.0F, 0.0F, 1.0F);
-        this.getRotation().hamiltonProduct(net.minecraft.client.util.math.Vector3f.POSITIVE_Y.getDegreesQuaternion(-pose.getYaw()));
-        this.getRotation().hamiltonProduct(net.minecraft.client.util.math.Vector3f.POSITIVE_X.getDegreesQuaternion(pose.getPitch()));
+        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_Y.getDegreesQuaternion(-pose.getYaw()));
+        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_X.getDegreesQuaternion(pose.getPitch()));
 
         Vector3f look = pose.getNormal();
         Vector3f up = rawRotation.transform(new Vector3f(0, 1, 0));

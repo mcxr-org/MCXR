@@ -63,6 +63,17 @@ public class WindowMixin {
         }
     }
 
+    @Inject(method = "getWidth", at = @At("HEAD"), cancellable = true)
+    void getWidth(CallbackInfoReturnable<Integer> cir) {
+        getFramebufferWidth(cir);
+    }
+
+    @Inject(method = "getHeight", at = @At("HEAD"), cancellable = true)
+    void getHeight(CallbackInfoReturnable<Integer> cir) {
+        getFramebufferHeight(cir);
+    }
+
+
     @Inject(method = "getScaledHeight", at = @At("HEAD"), cancellable = true)
     void getScaledHeight(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {

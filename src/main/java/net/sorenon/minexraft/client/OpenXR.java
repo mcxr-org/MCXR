@@ -2,15 +2,25 @@ package net.sorenon.minexraft.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
+import net.sorenon.minexraft.client.accessor.MouseExt;
+import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.XrCamera;
 import net.sorenon.minexraft.client.rendering.XrFramebuffer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWNativeWGL;
 import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.opengl.GL11;
@@ -141,7 +151,7 @@ public class OpenXR {
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.mallocStack();
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
-            applicationInfo.applicationName(stack.UTF8("HelloOpenXR"));
+            applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
 
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.mallocStack();
             createInfo.set(
@@ -580,10 +590,49 @@ public class OpenXR {
 
             long frameStartTime = Util.getMeasuringTimeNano();
             clientExt.preRenderXR(true, frameStartTime);
+            if (camera.getFocusedEntity() instanceof LivingEntity entity) {
+                Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[1];
+                FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
+                float tickDelta = MinecraftClient.getInstance().getTickDelta();
+                Vec3d pos = new Vec3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
+                        MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
+                        MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z);
+                Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+                Vec3d dir = new Vec3d(dir1.x, dir1.y, dir1.z);
+                Vec3d result = FGM.rayIntersectPlane(pos, dir);
+                if (result != null) {
+                    FGM.mousePos = result;
+                    Vec3d vec = result.subtract(FGM.pos);
+
+                    ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
+                            (int) (FGM.framebufferWidth * (0.5 - vec.x)),
+                            (int) (FGM.framebufferHeight * (1 - vec.y))
+                    );
+                }
+            }
+
             {
                 FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
                 MineXRaftClient.renderPass = RenderPass.GUI;
                 mainRenderTarget.setFramebuffer(FGM.framebuffer);
+                {
+                    VanillaCompatActionSet actionSet = MineXRaftClient.vanillaCompatActionSet;
+                    if (actionSet.attackState.changedSinceLastSync()) {
+                        MinecraftClient client = MinecraftClient.getInstance();
+                        InputUtil.Key key = client.options.keyAttack.getDefaultKey();
+                        MouseExt mouse = ((MouseExt) MinecraftClient.getInstance().mouse);
+
+                        if (actionSet.attackState.currentState()) {
+//                            KeyBinding.onKeyPressed(key);
+//                            KeyBinding.setKeyPressed(key, true);
+                            mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                        } else {
+//                            KeyBinding.setKeyPressed(key, false);
+                            mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+                        }
+                    }
+                }
+
                 FGM.framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
                 clientExt.doRenderXR(true, frameStartTime);
                 mainRenderTarget.resetFramebuffer();

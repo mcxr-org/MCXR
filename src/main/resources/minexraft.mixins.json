@@ -13,13 +13,14 @@
     "rendering.Matrix4fMixin",
     "rendering.MinecraftClientMixin",
     "rendering.RenderSystemMixin",
-    "rendering.WindowMixin"
+    "rendering.WindowMixin",
+    "rendering.WindowFramebufferMixin",
+    "hands.GameRendererMixin",
+    "hands.MouseMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
-    "GameRendererMixin",
-    "rendering.WindowFramebufferMixin"
   ]
 }

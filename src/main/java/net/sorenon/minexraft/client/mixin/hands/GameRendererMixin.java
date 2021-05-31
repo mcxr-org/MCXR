@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client.mixin;
+package net.sorenon.minexraft.client.mixin.hands;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.GameRenderer;
@@ -12,12 +12,18 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
+import net.sorenon.minexraft.client.rendering.RenderPass;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
@@ -28,7 +34,7 @@ public class GameRendererMixin {
 
     /**
      * @author Sorenon
-     * TODO split this up so we arn't overwriteing
+     * TODO split this up so we aren't overwriting
      */
     @Overwrite()
     public void updateTargetedEntity(float tickDelta) {

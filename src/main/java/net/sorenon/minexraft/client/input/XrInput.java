@@ -5,6 +5,7 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Pair;
+import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.OpenXR;
 import org.joml.Quaternionf;
@@ -140,16 +141,16 @@ public class XrInput {
             MinecraftClient client = MinecraftClient.getInstance();
             client.options.keySneak.setPressed(actionSet.sneakState.currentState());
         }
-        if (actionSet.attackState.changedSinceLastSync()) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            InputUtil.Key key = client.options.keyAttack.getDefaultKey();
-            if (actionSet.attackState.currentState()) {
-                KeyBinding.onKeyPressed(key);
-                KeyBinding.setKeyPressed(key, true);
-            } else {
-                KeyBinding.setKeyPressed(key, false);
-            }
-        }
+//        if (actionSet.attackState.changedSinceLastSync()) {
+//            MinecraftClient client = MinecraftClient.getInstance();
+//            InputUtil.Key key = client.options.keyAttack.getDefaultKey();
+//            if (actionSet.attackState.currentState()) {
+//                KeyBinding.onKeyPressed(key);
+//                KeyBinding.setKeyPressed(key, true);
+//            } else {
+//                KeyBinding.setKeyPressed(key, false);
+//            }
+//        }
         if (actionSet.useState.changedSinceLastSync()) {
             MinecraftClient client = MinecraftClient.getInstance();
             InputUtil.Key key = client.options.keyUse.getDefaultKey();
@@ -234,8 +235,10 @@ public class XrInput {
             }
             {
                 XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
-                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
-                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
+//                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
+//                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
+                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/aim/pose"));
+                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/aim/pose"));
                 bindings.get(2).set(actionSet.useAction, xr.getPath("/user/hand/left/input/trigger/value"));
                 bindings.get(3).set(actionSet.attackAction, xr.getPath("/user/hand/right/input/trigger/value"));
                 bindings.get(4).set(actionSet.thumbstickOffHand, xr.getPath("/user/hand/left/input/thumbstick"));

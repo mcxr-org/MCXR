@@ -1,12 +1,9 @@
 package net.sorenon.minexraft.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Matrix4f;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.rendering.RenderPass;
@@ -21,7 +18,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.logging.Level;
 
 import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -94,14 +90,14 @@ public class MineXRaftClient implements ClientModInitializer {
         OPEN_XR.createOpenXRInstance();
         OPEN_XR.initializeOpenXRSystem();
 
-        WorldRenderEvents.LAST.register(context -> {
-            if (!MinecraftClient.getInstance().options.hudHidden) {
-                vrFirstPersonRenderer.renderHandsGui();
-            }
-        });
-
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             vrFirstPersonRenderer.renderAfterEntities(context);
+        });
+
+        WorldRenderEvents.LAST.register(context -> {
+            if (!MinecraftClient.getInstance().options.hudHidden) {
+                vrFirstPersonRenderer.renderHud();
+            }
         });
 
 //        WorldRenderEvents.BEFORE_DEBUG_RENDER.register(context -> {

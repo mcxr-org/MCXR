@@ -2,6 +2,7 @@ package net.sorenon.minexraft.client.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.model.ModelData;
@@ -15,16 +16,20 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.Matrix3f;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.*;
 import net.minecraft.world.LightType;
 import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.jetbrains.annotations.Nullable;
+import org.joml.*;
 
+import java.lang.Math;
 import java.util.function.BiFunction;
 
 import static net.minecraft.client.render.RenderPhase.*;
@@ -67,18 +72,79 @@ public class VrFirstPersonRenderer {
     }
 
     public void renderAfterEntities(WorldRenderContext context) {
-        Entity camEntity = context.camera().getFocusedEntity();
+        Entity entity = context.camera().getFocusedEntity();
 
-        if (camEntity != null) {
-            renderShadow(context, camEntity);
+        if (FGM.pos != null) {
+            MatrixStack matrices = context.matrixStack();
 
-            if (camEntity instanceof LivingEntity entity) {
+            matrices.push();
+            Vec3d pos = FGM.pos.subtract(context.camera().getPos());
+            matrices.translate(pos.x, pos.y, pos.z);
+            renderGuiQuad(matrices.peek(), context.consumers());
+            matrices.pop();
+        }
+
+        if (entity != null) {
+            renderShadow(context, entity);
+
+            if (FGM.isScreenOpen()) {
+//                int hand = 1;
+//                float tickDelta = context.tickDelta();
+//                Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[hand];
+//                Vec3d pos = new Vec3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
+//                        MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
+//                        MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z);
+//                Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+//                Vec3d dir = new Vec3d(dir1.x, dir1.y, dir1.z);
+//
+//                Vec3d vec3d = FGM.rayIntersectPlane(pos, dir);
+//                if (vec3d != null) {
+//                    MatrixStack matrices = context.matrixStack();
+//                    matrices.push();
+//                    Vec3d camPos = vec3d.subtract(context.camera().getPos());
+//                    matrices.translate(camPos.x, camPos.y, camPos.z);
+//                    matrices.scale(0.1f, 0.1f, 0.1f);
+////                    MinecraftClient.getInstance().getItemRenderer().renderItem(
+////                            null,
+////                            new ItemStack(Blocks.STONE.asItem()),
+////                            ModelTransformation.Mode.GUI,
+////                            false,
+////                            matrices,
+////                            context.consumers(),
+////                            entity.world,
+////                            0,
+////                            OverlayTexture.DEFAULT_UV,
+////                            entity.getId() + ModelTransformation.Mode.GUI.ordinal()
+////                    );
+//
+//                    vec = vec3d.subtract(FGM.pos);
+//                    matrices.pop();
+//
+//                    matrices.push();
+//                    camPos = FGM.mousePos.subtract(context.camera().getPos());
+//                    matrices.translate(camPos.x, camPos.y, camPos.z);
+//                    matrices.scale(0.15f, 0.15f, 0.15f);
+////                    MinecraftClient.getInstance().getItemRenderer().renderItem(
+////                            null,
+////                            new ItemStack(Items.DIAMOND),
+////                            ModelTransformation.Mode.GUI,
+////                            false,
+////                            matrices,
+////                            context.consumers(),
+////                            entity.world,
+////                            0,
+////                            OverlayTexture.DEFAULT_UV,
+////                            entity.getId() + ModelTransformation.Mode.GUI.ordinal()
+////                    );
+//                    matrices.pop();
+//                }
+            } else if (entity instanceof LivingEntity livingEntity) {
                 for (int hand = 0; hand < 2; hand++) {
                     if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
                         continue;
                     }
 
-                    ItemStack stack = hand == 0 ? entity.getOffHandStack() : entity.getMainHandStack();
+                    ItemStack stack = hand == 0 ? livingEntity.getOffHandStack() : livingEntity.getMainHandStack();
 
                     if (!stack.isEmpty()) {
                         MatrixStack matrices = context.matrixStack();
@@ -86,15 +152,15 @@ public class VrFirstPersonRenderer {
                         matrices.push();
                         transformToHand(matrices, hand);
 
-                        int light = LightmapTextureManager.pack(entity.world.getLightLevel(LightType.BLOCK, entity.getBlockPos()), entity.world.getLightLevel(LightType.SKY, entity.getBlockPos()));
+                        int light = LightmapTextureManager.pack(livingEntity.world.getLightLevel(LightType.BLOCK, livingEntity.getBlockPos()), livingEntity.world.getLightLevel(LightType.SKY, livingEntity.getBlockPos()));
 
                         if (mainHand) {
-                            float swing = -0.4f * MathHelper.sin((float) (Math.sqrt(entity.getHandSwingProgress(context.tickDelta())) * Math.PI * 2));
+                            float swing = -0.4f * MathHelper.sin((float) (Math.sqrt(livingEntity.getHandSwingProgress(context.tickDelta())) * Math.PI * 2));
                             matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(swing));
                         }
 
                         MinecraftClient.getInstance().getHeldItemRenderer().renderItem(
-                                entity,
+                                livingEntity,
                                 stack,
                                 hand == 0 ? ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND : ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND,
                                 hand == 0,
@@ -127,18 +193,6 @@ public class VrFirstPersonRenderer {
 
             matrices.translate(-2 / 16f, -12 / 16f, 0);
 
-            if (hand == 0 && FGM.pos == null) {//TODO find a good way to render the hud
-                matrices.push();
-                matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
-                matrices.translate(-1 / 16f, 1 / 16f, 0);
-                float handGuiScale = 1f / 2000;
-                matrices.scale(handGuiScale, handGuiScale, handGuiScale);
-//                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75.0F));
-                matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(25f));
-                renderGuiQuad(matrices.peek(), context.consumers());
-                matrices.pop();
-            }
-
             //Draw hand
             if (context.camera().getFocusedEntity() instanceof ClientPlayerEntity player) {
                 matrices.push();
@@ -156,16 +210,6 @@ public class VrFirstPersonRenderer {
                 matrices.pop();
             }
 
-            matrices.pop();
-        }
-
-        if (FGM.pos != null) {
-            matrices.push();
-            Vec3d pos = FGM.pos.subtract(context.camera().getPos());
-            matrices.translate(pos.x, pos.y, pos.z);
-//            float s = 1 / 2000f;
-//            matrices.scale(s, s, s);
-            renderGuiQuad(matrices.peek(), context.consumers());
             matrices.pop();
         }
     }
@@ -211,9 +255,40 @@ public class VrFirstPersonRenderer {
         matrices.pop();
     }
 
-    public void renderHandsGui() {
+    public void renderHud() {
         MatrixStack matrices = RenderSystem.getModelViewStack();
         BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+
+        matrices.push();
+        matrices.loadIdentity();
+        RenderSystem.applyModelViewMatrix();
+        matrices.pop();
+
+        for (int hand = 0; hand < 2; hand++) {
+            if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
+                continue;
+            }
+            matrices.push();
+
+            transformToHand(matrices, hand);
+
+            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
+            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+
+            matrices.translate(-2 / 16f, -12 / 16f, 0);
+
+            if (hand == 0) {
+                matrices.push();
+                matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
+                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
+                //TODO
+                renderHudQuad(matrices.peek(), MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers());
+                RenderSystem.disableDepthTest();
+                MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers().draw();
+                matrices.pop();
+            }
+            matrices.pop();
+        }
 
         for (int hand = 0; hand < 2; hand++) {
             if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
@@ -277,36 +352,6 @@ public class VrFirstPersonRenderer {
             matrices.pop();
         }
 
-        matrices.push();
-        matrices.loadIdentity();
-        RenderSystem.applyModelViewMatrix();
-        matrices.pop();
-
-        for (int hand = 0; hand < 2; hand++) {
-            if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
-                continue;
-            }
-            matrices.push();
-
-            transformToHand(matrices, hand);
-
-            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
-            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
-
-            matrices.translate(-2 / 16f, -12 / 16f, 0);
-
-            if (hand == 0) {
-                matrices.push();
-                matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
-                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
-                RenderSystem.setShader(GameRenderer::getRenderTypeEntityTranslucentShader);
-                renderGuiQuad(matrices.peek(), MinecraftClient.getInstance().getBufferBuilders().getEffectVertexConsumers());
-                MinecraftClient.getInstance().getBufferBuilders().getEffectVertexConsumers().draw();
-                matrices.pop();
-            }
-            matrices.pop();
-        }
-
         RenderSystem.depthMask(true);
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
@@ -319,23 +364,35 @@ public class VrFirstPersonRenderer {
         float size = 1f;
         float x = size / 2;
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
-//        float x = guiFramebuffer.textureWidth / 2f;
-//        float y = guiFramebuffer.textureHeight;
 
         VertexConsumer consumer = consumers.getBuffer(RenderLayer.getWaterMask());
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
-//        consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-//        consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-//        consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-//        consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-        consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture, true));
-//        consumer = consumers.getBuffer(RenderLayer.getEntityTranslucent(MineXRaftClient.INSTANCE.flatGuiManager.texture));
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+        consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture, true));
+        consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+    }
 
+    private void renderHudQuad(MatrixStack.Entry transform, VertexConsumerProvider consumers) {
+        Framebuffer guiFramebuffer = FGM.framebuffer;
+
+        float size = 1f;
+        float x = size / 2;
+        float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
+
+        VertexConsumer consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture, true));
+        Matrix4f modelMatrix = transform.getModel();
+        Matrix3f normalMatrix = transform.getNormal();
+        consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
     }
 
     private static final BiFunction<Identifier, Boolean, RenderLayer> ENTITY_TRANSLUCENT_ALWAYS = Util.memoize((texture, affectsOutline) -> {

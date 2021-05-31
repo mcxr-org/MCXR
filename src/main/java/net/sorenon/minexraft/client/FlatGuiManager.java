@@ -7,6 +7,10 @@ import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.sorenon.minexraft.client.rendering.ExistingTexture;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Intersectiond;
+import org.joml.Vector3d;
+import org.joml.Vector3dc;
 
 public class FlatGuiManager {
 
@@ -21,7 +25,8 @@ public class FlatGuiManager {
     public int scaledWidth;
     public int scaledHeight;
 
-    public Vec3d pos = new Vec3d(30, 90, 10);
+    public Vec3d pos = null;
+    public Vec3d mousePos = Vec3d.ZERO;
 
     public void init() {
         guiScale = calcGuiScale();
@@ -51,5 +56,31 @@ public class FlatGuiManager {
             ++scale;
         }
         return scale;
+    }
+
+    public boolean isScreenOpen() {
+        return pos != null && MinecraftClient.getInstance().currentScreen != null;
+    }
+
+    @Nullable
+    public Vec3d rayIntersectPlane(Vec3d rayPos, Vec3d rayDir) {
+        if (pos == null) {
+            return null;
+        }
+        double distance = Intersectiond.intersectRayPlane(
+                joml(rayPos),
+                joml(rayDir),
+                joml(pos),
+                joml(new Vec3d(0, 0, -1)),
+                0.1f
+        );
+        if (distance >= 0) {
+            return rayDir.multiply(distance).add(rayPos);
+        }
+        return null;
+    }
+
+    private Vector3dc joml(Vec3d vec) {
+        return new Vector3d(vec.x, vec.y, vec.z);
     }
 }

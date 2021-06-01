@@ -8,19 +8,20 @@
     "VrKeyboardInputMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
+    "hands.GameRendererMixin",
+    "hands.MouseMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
     "rendering.Matrix4fMixin",
     "rendering.MinecraftClientMixin",
     "rendering.RenderSystemMixin",
-    "rendering.WindowMixin",
     "rendering.WindowFramebufferMixin",
-    "hands.GameRendererMixin",
-    "hands.MouseMixin"
+    "rendering.WindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
+    "hands.MinecraftClientMixin"
   ]
 }

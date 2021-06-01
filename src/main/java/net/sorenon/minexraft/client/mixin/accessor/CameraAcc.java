@@ -22,9 +22,6 @@ public interface CameraAcc {
     @Accessor("thirdPerson")
     void thirdPerson(boolean thirdPerson);
 
-    @Accessor("thirdPerson")
-    void inverseView(boolean inverseView);
-
     @Accessor("pitch")
     void pitch(float pitch);
 

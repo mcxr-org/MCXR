@@ -15,6 +15,8 @@ public class VrKeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
     void overwriteMovement(boolean slowDown, CallbackInfo ci) {
+        if (MineXRaftClient.INSTANCE.flatGuiManager.isScreenOpen()) return;
+
         XrVector2f thumbstick = MineXRaftClient.vanillaCompatActionSet.thumbstickOffHandState.currentState();
         this.movementForward = thumbstick.y();
         this.movementSideways = -thumbstick.x();

@@ -215,14 +215,14 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     }
 
     /**
-     * To help performance and make debugging easier, render(boolean) has been split into these three functions
+     * @see MinecraftClient#render
+     * To help performance and make debugging easier, render has been split into these three functions
      * This could have some compatibility issues but I have only found one mixin (computercraft) which this may affect
      * ASMR's more advanced transformers could help with this in the future
      */
     @Override
     public void preRenderXR(boolean tick, long time) {
         this.window.setPhase("Pre render");
-        long l = Util.getMeasuringTimeNano();
         if (this.window.shouldClose()) {
             this.scheduleStop();
         }
@@ -242,6 +242,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
         int k;
         if (tick) {
+            //TODO move this to OpenXR
             int i = this.renderTickCounter.beginRenderTick(Util.getMeasuringTimeMs());
             this.profiler.push("scheduledExecutables");
             this.runTasks();

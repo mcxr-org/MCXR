@@ -80,6 +80,7 @@ public class VrFirstPersonRenderer {
             matrices.push();
             Vec3d pos = FGM.pos.subtract(context.camera().getPos());
             matrices.translate(pos.x, pos.y, pos.z);
+            matrices.multiply(new Quaternion((float)FGM.rot.x, (float)FGM.rot.y, (float)FGM.rot.z, (float)FGM.rot.w));
             renderGuiQuad(matrices.peek(), context.consumers());
             matrices.pop();
         }
@@ -277,7 +278,7 @@ public class VrFirstPersonRenderer {
 
             matrices.translate(-2 / 16f, -12 / 16f, 0);
 
-            if (hand == 0) {
+            if (hand == 0 && !FGM.isScreenOpen()) {
                 matrices.push();
                 matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
                 matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
@@ -387,6 +388,7 @@ public class VrFirstPersonRenderer {
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
         VertexConsumer consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture, true));
+//        VertexConsumer consumer = consumers.getBuffer(RenderLayer.getEntityTranslucentCull(MineXRaftClient.INSTANCE.flatGuiManager.texture));
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();

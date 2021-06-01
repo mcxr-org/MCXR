@@ -5,7 +5,6 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Pair;
-import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.OpenXR;
 import org.joml.Quaternionf;
@@ -26,6 +25,8 @@ public class XrInput {
     public final XrSession xrSession;
     public final OpenXR xr;
 
+    private boolean menuButton = false;
+
     public XrInput(OpenXR openXR) {
         this.xrInstance = openXR.xrInstance;
         this.xrSession = openXR.xrSession;
@@ -39,49 +40,35 @@ public class XrInput {
 
         try (MemoryStack stack = stackPush()) {
             // Update our action set with up-to-date input data!
-            VanillaCompatActionSet actionSet = MineXRaftClient.vanillaCompatActionSet;
+            VanillaCompatActionSet vcActionSet = MineXRaftClient.vanillaCompatActionSet;
+            FlatGuiActionSet guiActionSet = MineXRaftClient.flatGuiActionSet;
+
+            XrActiveActionSet.Buffer set = XrActiveActionSet.callocStack(2);
+            set.get(0).actionSet(vcActionSet);
+            set.get(1).actionSet(guiActionSet);
 
             XrActionsSyncInfo sync_info = XrActionsSyncInfo.mallocStack().set(
                     XR10.XR_TYPE_ACTIONS_SYNC_INFO,
                     NULL,
-                    1,
-                    XrActiveActionSet.callocStack(1).actionSet(actionSet)
+                    2,
+                    set
             );
 
             xr.check(XR10.xrSyncActions(xrSession, sync_info));
 
-            // Now we'll get the current states of our actions, and store them for later use
-            XrActionStateGetInfo get_info = XrActionStateGetInfo.mallocStack().set(
-                    XR10.XR_TYPE_ACTION_STATE_GET_INFO,
-                    NULL,
-                    actionSet.jumpAction,
-                    0
-            );
+            vcActionSet.sync();
+            guiActionSet.sync();
+        }
 
-            xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, actionSet.jumpState));
-            get_info.action(actionSet.attackAction);
-            xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, actionSet.attackState));
-            get_info.action(actionSet.useAction);
-            xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, actionSet.useState));
-            get_info.action(actionSet.inventoryAction);
-            xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, actionSet.inventoryState));
-            get_info.action(actionSet.sprintAction);
-            xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, actionSet.sprintState));
-            get_info.action(actionSet.sneakAction);
-            xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, actionSet.sneakState));
-
-            get_info.action(actionSet.thumbstickMainHand);
-            xr.check(XR10.xrGetActionStateVector2f(xrSession, get_info, actionSet.thumbstickMainHandState));
-            get_info.action(actionSet.thumbstickOffHand);
-            xr.check(XR10.xrGetActionStateVector2f(xrSession, get_info, actionSet.thumbstickOffHandState));
-
-            for (int hand = 0; hand < 2; hand++) {
-                get_info.subactionPath(HandPath.subactionPaths.get(hand));
-                get_info.action(MineXRaftClient.vanillaCompatActionSet.poseGrip);
-                XrActionStatePose pose_state = XrActionStatePose.callocStack().type(XR10.XR_TYPE_ACTION_STATE_POSE);
-                xr.check(XR10.xrGetActionStatePose(xrSession, get_info, pose_state));
-                actionSet.isHandActive[hand] = pose_state.isActive();
+        if (MineXRaftClient.INSTANCE.flatGuiManager.isScreenOpen()) {
+            FlatGuiActionSet actionSet = MineXRaftClient.flatGuiActionSet;
+            if (actionSet.exitState.changedSinceLastSync()) {
+                if (actionSet.exitState.currentState()) {
+                    MinecraftClient.getInstance().currentScreen.keyPressed(256, 0, 0);
+                }
             }
+
+            return;
         }
 
         VanillaCompatActionSet actionSet = MineXRaftClient.vanillaCompatActionSet;
@@ -110,7 +97,9 @@ public class XrInput {
             }
         }
         if (actionSet.inventoryState.changedSinceLastSync()) {
-            if (!actionSet.inventoryState.currentState()) {
+            if (actionSet.inventoryState.currentState()) {
+                menuButton = true;
+            } else if (menuButton) {
                 MinecraftClient client = MinecraftClient.getInstance();
                 if (client.currentScreen == null) {
                     if (client.player != null && client.interactionManager != null) {
@@ -124,6 +113,7 @@ public class XrInput {
                 } else {
                     client.currentScreen.keyPressed(256, 0, 0);
                 }
+                menuButton = false;
             }
         }
         if (actionSet.sprintState.changedSinceLastSync()) {
@@ -163,106 +153,7 @@ public class XrInput {
         }
     }
 
-    public VanillaCompatActionSet makeGameplayActionSet() {
-        try (MemoryStack ignored = stackPush()) {
-            XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.mallocStack().set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
-                    NULL,
-                    memASCII("gameplay"),
-                    memASCII("Gameplay"),
-                    0
-            );
-            PointerBuffer pp = stackMallocPointer(1);
-            xr.check(XR10.xrCreateActionSet(xrInstance, actionSetCreateInfo, pp));
-            VanillaCompatActionSet actionSet = new VanillaCompatActionSet(pp.get(0), xrSession.getCapabilities());
-
-            actionSet.jumpAction = makeBoolAction("jump", "Jump", actionSet);
-            actionSet.attackAction = makeBoolAction("attack", "Attack", actionSet);
-            actionSet.useAction = makeBoolAction("use", "Use", actionSet);
-            actionSet.inventoryAction = makeBoolAction("inventory", "Inventory and Pause", actionSet);
-            actionSet.sprintAction = makeBoolAction("sprint", "Sprint", actionSet);
-            actionSet.sneakAction = makeBoolAction("sneak", "Sneak", actionSet);
-
-            actionSet.thumbstickMainHand = makeVec2fAction("thumbstick_main_hand", "Thumbstick Main Hand", actionSet);
-            actionSet.thumbstickOffHand = makeVec2fAction("thumbstick_off_hand", "Thumbstick Off Hand", actionSet);
-
-            Pair<XrAction, XrSpace[]> grip = makeDualPoseAction("pose_grip", "Pose Grip", actionSet);
-            actionSet.poseGrip = grip.getLeft();
-            actionSet.poseGripSpaces = grip.getRight();
-
-            {//TODO make these data-driven by json files
-                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
-                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
-                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
-                bindings.get(2).set(actionSet.useAction, xr.getPath("/user/hand/left/input/trigger/value"));
-                bindings.get(3).set(actionSet.attackAction, xr.getPath("/user/hand/right/input/trigger/value"));
-                bindings.get(4).set(actionSet.thumbstickOffHand, xr.getPath("/user/hand/left/input/thumbstick"));
-                bindings.get(5).set(actionSet.thumbstickMainHand, xr.getPath("/user/hand/right/input/thumbstick"));
-                bindings.get(6).set(actionSet.inventoryAction, xr.getPath("/user/hand/left/input/y/click"));
-                bindings.get(7).set(actionSet.jumpAction, xr.getPath("/user/hand/right/input/a/click"));
-                bindings.get(8).set(actionSet.sprintAction, xr.getPath("/user/hand/right/input/squeeze/value"));
-                bindings.get(9).set(actionSet.sneakAction, xr.getPath("/user/hand/left/input/squeeze/value"));
-
-                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
-                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
-                        NULL,
-                        xr.getPath("/interaction_profiles/oculus/touch_controller"),
-                        bindings
-                );
-
-                xr.check(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
-            }
-            {
-                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
-                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
-                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
-                bindings.get(2).set(actionSet.useAction, xr.getPath("/user/hand/left/input/trigger/value"));
-                bindings.get(3).set(actionSet.attackAction, xr.getPath("/user/hand/right/input/trigger/value"));
-                bindings.get(4).set(actionSet.thumbstickOffHand, xr.getPath("/user/hand/left/input/thumbstick"));
-                bindings.get(5).set(actionSet.thumbstickMainHand, xr.getPath("/user/hand/right/input/thumbstick"));
-                bindings.get(6).set(actionSet.inventoryAction, xr.getPath("/user/hand/left/input/b/click"));
-                bindings.get(7).set(actionSet.jumpAction, xr.getPath("/user/hand/right/input/a/click"));
-                bindings.get(8).set(actionSet.sprintAction, xr.getPath("/user/hand/right/input/squeeze/value"));
-                bindings.get(9).set(actionSet.sneakAction, xr.getPath("/user/hand/left/input/squeeze/value"));
-
-                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
-                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
-                        NULL,
-                        xr.getPath("/interaction_profiles/valve/index_controller"),
-                        bindings
-                );
-
-                xr.check(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
-            }
-            {
-                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
-//                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
-//                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
-                bindings.get(0).set(actionSet.poseGrip, xr.getPath("/user/hand/left/input/aim/pose"));
-                bindings.get(1).set(actionSet.poseGrip, xr.getPath("/user/hand/right/input/aim/pose"));
-                bindings.get(2).set(actionSet.useAction, xr.getPath("/user/hand/left/input/trigger/value"));
-                bindings.get(3).set(actionSet.attackAction, xr.getPath("/user/hand/right/input/trigger/value"));
-                bindings.get(4).set(actionSet.thumbstickOffHand, xr.getPath("/user/hand/left/input/thumbstick"));
-                bindings.get(5).set(actionSet.thumbstickMainHand, xr.getPath("/user/hand/right/input/thumbstick"));
-                bindings.get(6).set(actionSet.inventoryAction, xr.getPath("/user/hand/left/input/trackpad/click"));
-                bindings.get(7).set(actionSet.jumpAction, xr.getPath("/user/hand/right/input/trackpad/click"));
-                bindings.get(8).set(actionSet.sprintAction, xr.getPath("/user/hand/right/input/squeeze/click"));
-                bindings.get(9).set(actionSet.sneakAction, xr.getPath("/user/hand/left/input/squeeze/click"));
-
-                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
-                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
-                        NULL,
-                        xr.getPath("/interaction_profiles/microsoft/motion_controller"),
-                        bindings
-                );
-
-                xr.check(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
-            }
-
-            return actionSet;
-        }
-    }
-
-    private XrAction makeBoolAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
+    public XrAction makeBoolAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
         try (MemoryStack ignored = stackPush()) {
             XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
@@ -279,7 +170,7 @@ public class XrInput {
         }
     }
 
-    private XrAction makeVec2fAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
+    public XrAction makeVec2fAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
         try (MemoryStack ignored = stackPush()) {
             XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
@@ -297,7 +188,7 @@ public class XrInput {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private Pair<XrAction, XrSpace[]> makeDualPoseAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
+    public Pair<XrAction, XrSpace[]> makeDualPoseAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
         try (MemoryStack ignored = stackPush()) {
             //For each hand create actions for using poses as an input
             XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(

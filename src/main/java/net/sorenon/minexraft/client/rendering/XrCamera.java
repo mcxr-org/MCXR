@@ -35,7 +35,6 @@ public class XrCamera extends Camera {
         thiz.area(area);
         thiz.focusedEntity(focusedEntity);
         thiz.thirdPerson(false);
-        thiz.inverseView(false);
 
         this.viewSpacePose = viewSpacePose;
 
@@ -86,7 +85,7 @@ public class XrCamera extends Camera {
         this.getRotation().hamiltonProduct(Vec3f.POSITIVE_Y.getDegreesQuaternion(-pose.getYaw()));
         this.getRotation().hamiltonProduct(Vec3f.POSITIVE_X.getDegreesQuaternion(pose.getPitch()));
 
-        Vector3f look = pose.getNormal();
+        Vector3f look = rawRotation.transform(new Vector3f(0, 0, -1));
         Vector3f up = rawRotation.transform(new Vector3f(0, 1, 0));
         Vector3f right = rawRotation.transform(new Vector3f(1, 0, 0));
         this.getHorizontalPlane().set(look.x, look.y, look.z);
@@ -116,7 +115,6 @@ public class XrCamera extends Camera {
         thiz.area(area);
         thiz.focusedEntity(focusedEntity);
         thiz.thirdPerson(false);
-        thiz.inverseView(false);
     }
 
     public Quaternion getRawRotationInverted() {

@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.sorenon.minexraft.client.input.FlatGuiActionSet;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.rendering.RenderPass;
@@ -12,14 +13,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.*;
+import org.lwjgl.system.MemoryStack;
+import oshi.util.tuples.Pair;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 import static org.lwjgl.system.MemoryStack.stackPointers;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class MineXRaftClient implements ClientModInitializer {
@@ -28,6 +34,7 @@ public class MineXRaftClient implements ClientModInitializer {
     public static MineXRaftClient INSTANCE;
     public static XrInput XR_INPUT;
     public static VanillaCompatActionSet vanillaCompatActionSet;
+    public static FlatGuiActionSet flatGuiActionSet;
     public FlatGuiManager flatGuiManager = new FlatGuiManager();
     public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer(flatGuiManager);
 
@@ -120,14 +127,45 @@ public class MineXRaftClient implements ClientModInitializer {
         OPEN_XR.createXRSwapchains();
         XR_INPUT = new XrInput(OPEN_XR);
 
-        vanillaCompatActionSet = XR_INPUT.makeGameplayActionSet();
-        // Attach the action set we just made to the session
-        XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
-                XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
-                NULL,
-                stackPointers(vanillaCompatActionSet.address())
-        );
-        OPEN_XR.check(XR10.xrAttachSessionActionSets(OPEN_XR.xrSession, attach_info));
+        flatGuiActionSet = FlatGuiActionSet.init();
+        vanillaCompatActionSet = VanillaCompatActionSet.init();
+
+        HashMap<String, List<Pair<XrAction, String>>> bindingsMap = new HashMap<>();
+        vanillaCompatActionSet.getBindings(bindingsMap);
+        flatGuiActionSet.getBindings(bindingsMap);
+
+        try (MemoryStack stack = stackPush()) {
+            for (var entry : bindingsMap.entrySet()) {
+                var bindingsSet = entry.getValue();
+
+                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(bindingsSet.size());
+
+                for (int i = 0; i < bindingsSet.size(); i++) {
+                    var binding = bindingsSet.get(i);
+                    bindings.get(i).set(
+                            binding.getA(),
+                            OPEN_XR.getPath(binding.getB())
+                    );
+                }
+
+                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
+                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
+                        NULL,
+                        OPEN_XR.getPath(entry.getKey()),
+                        bindings
+                );
+
+                OPEN_XR.check(XR10.xrSuggestInteractionProfileBindings(OPEN_XR.xrInstance, suggested_binds));
+            }
+
+            XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
+                    XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
+                    NULL,
+                    stackPointers(vanillaCompatActionSet.address(), flatGuiActionSet.address())
+            );
+            // Attach the action set we just made to the session
+            OPEN_XR.check(XR10.xrAttachSessionActionSets(OPEN_XR.xrSession, attach_info));
+        }
 
         flatGuiManager.init();
     }

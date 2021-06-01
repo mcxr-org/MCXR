@@ -2,14 +2,16 @@ package net.sorenon.minexraft.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.sorenon.minexraft.JOMLUtil;
 import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
 import net.sorenon.minexraft.client.accessor.MouseExt;
+import net.sorenon.minexraft.client.input.FlatGuiActionSet;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
@@ -17,7 +19,9 @@ import net.sorenon.minexraft.client.rendering.XrCamera;
 import net.sorenon.minexraft.client.rendering.XrFramebuffer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Quaterniond;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
@@ -129,7 +133,7 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
-            LOGGER.info(String.format("OpenXR loaded with %d extensions:", numExtensions.get(0)));
+            LOGGER.info(String.format("OpenXR loaded with %d extensions", numExtensions.get(0)));
             LOGGER.debug("~~~~~~~~~~~~~~~~~~");
             PointerBuffer extensions = stack.mallocPointer(numExtensions.get(0));
             boolean missingOpenGL = true;
@@ -594,15 +598,15 @@ public class OpenXR {
                 Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[1];
                 FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
                 float tickDelta = MinecraftClient.getInstance().getTickDelta();
-                Vec3d pos = new Vec3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
+                Vector3d pos = new Vector3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
                         MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
                         MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z);
-                Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
-                Vec3d dir = new Vec3d(dir1.x, dir1.y, dir1.z);
-                Vec3d result = FGM.rayIntersectPlane(pos, dir);
+                Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+                Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
                 if (result != null) {
-                    FGM.mousePos = result;
-                    Vec3d vec = result.subtract(FGM.pos);
+                    Vector3d vec = result.sub(JOMLUtil.convert(FGM.pos));
+                    FGM.rot.invert(new Quaterniond()).transform(vec);
+                    vec.y *= ((double) FGM.framebufferWidth / FGM.framebufferHeight);
 
                     ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
                             (int) (FGM.framebufferWidth * (0.5 - vec.x)),
@@ -615,19 +619,29 @@ public class OpenXR {
                 FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
                 MineXRaftClient.renderPass = RenderPass.GUI;
                 mainRenderTarget.setFramebuffer(FGM.framebuffer);
-                {
-                    VanillaCompatActionSet actionSet = MineXRaftClient.vanillaCompatActionSet;
-                    if (actionSet.attackState.changedSinceLastSync()) {
-                        MinecraftClient client = MinecraftClient.getInstance();
-                        InputUtil.Key key = client.options.keyAttack.getDefaultKey();
-                        MouseExt mouse = ((MouseExt) MinecraftClient.getInstance().mouse);
-
-                        if (actionSet.attackState.currentState()) {
-//                            KeyBinding.onKeyPressed(key);
-//                            KeyBinding.setKeyPressed(key, true);
+                MouseExt mouse = ((MouseExt) MinecraftClient.getInstance().mouse);
+                if (FGM.isScreenOpen()) {
+                    FlatGuiActionSet actionSet = MineXRaftClient.flatGuiActionSet;
+                    if (actionSet.pickupState.changedSinceLastSync()){
+                        if (actionSet.pickupState.currentState()) {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                         } else {
-//                            KeyBinding.setKeyPressed(key, false);
+                            mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+                        }
+                    }
+                    if (actionSet.splitState.changedSinceLastSync()){
+                        if (actionSet.splitState.currentState()) {
+                            mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);
+                        } else {
+                            mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
+                        }
+                    }
+                } else {
+                    VanillaCompatActionSet actionSet = MineXRaftClient.vanillaCompatActionSet;
+                    if (actionSet.attackState.changedSinceLastSync()) {
+                        if (actionSet.attackState.currentState()) {
+                            mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                        } else {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
                         }
                     }
@@ -730,6 +744,7 @@ public class OpenXR {
 
             projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
 
+            //For some reason this has to be called between frame start and frame end or the OpenXR runtime crashes
             clientExt.render();
 
             // Render view to the appropriate part of the swapchain image.

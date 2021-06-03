@@ -221,7 +221,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
      * ASMR's more advanced transformers could help with this in the future
      */
     @Override
-    public void preRenderXR(boolean tick, long time) {
+    public void preRenderXR(boolean tick, Runnable afterTick) {
         this.window.setPhase("Pre render");
         if (this.window.shouldClose()) {
             this.scheduleStop();
@@ -242,7 +242,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
         int k;
         if (tick) {
-            //TODO move this to OpenXR
             int i = this.renderTickCounter.beginRenderTick(Util.getMeasuringTimeMs());
             this.profiler.push("scheduledExecutables");
             this.runTasks();
@@ -256,6 +255,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
             this.profiler.pop();
         }
+        afterTick.run();
 
         this.mouse.updateMouse();
         this.window.setPhase("Render");
@@ -320,7 +320,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     }
 
     @Override
-    public void postRenderXR(boolean tick, long frameStartTime) {
+    public void postRenderXR(boolean tick) {
         GLFW.glfwPollEvents();
 
         this.window.setPhase("Post render");

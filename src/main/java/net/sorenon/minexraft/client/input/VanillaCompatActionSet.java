@@ -1,14 +1,15 @@
 package net.sorenon.minexraft.client.input;
 
-import net.minecraft.util.Pair;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.OpenXR;
-import net.sorenon.minexraft.client.Pose;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
+import oshi.util.tuples.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.lwjgl.system.MemoryStack.stackMallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -32,10 +33,6 @@ public class VanillaCompatActionSet extends XrActionSet {
     public XrAction thumbstickMainHand;
     public XrAction thumbstickOffHand;
 
-    //Pose actions
-    public XrAction poseGrip;
-    public XrSpace[] poseGripSpaces;
-
     //States
     public XrActionStateBoolean jumpState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
     public XrActionStateBoolean inventoryState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
@@ -46,9 +43,6 @@ public class VanillaCompatActionSet extends XrActionSet {
 
     public XrActionStateVector2f thumbstickMainHandState = XrActionStateVector2f.calloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
     public XrActionStateVector2f thumbstickOffHandState = XrActionStateVector2f.calloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
-
-    public boolean[] isHandActive = {false, false};
-    public Pose[] poses = {new Pose(), new Pose()};
 
     public boolean thumbstickMainHandActivated = false;
 
@@ -79,26 +73,21 @@ public class VanillaCompatActionSet extends XrActionSet {
             actionSet.thumbstickMainHand = input.makeVec2fAction("thumbstick_main_hand", "Thumbstick Main Hand", actionSet);
             actionSet.thumbstickOffHand = input.makeVec2fAction("thumbstick_off_hand", "Thumbstick Off Hand", actionSet);
 
-            Pair<XrAction, XrSpace[]> grip = input.makeDualPoseAction("pose_grip", "Pose Grip", actionSet);
-            actionSet.poseGrip = grip.getLeft();
-            actionSet.poseGripSpaces = grip.getRight();
             return actionSet;
         }
     }
 
-    public void getBindings(HashMap<String, List<oshi.util.tuples.Pair<XrAction, String>>> map) {
+    public void getBindings(HashMap<String, List<Pair<XrAction, String>>> map) {
         map.computeIfAbsent("/interaction_profiles/oculus/touch_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
-                        new oshi.util.tuples.Pair<>(poseGrip, "/user/hand/left/input/grip/pose"),
-                        new oshi.util.tuples.Pair<>(poseGrip, "/user/hand/right/input/grip/pose"),
-                        new oshi.util.tuples.Pair<>(useAction, "/user/hand/left/input/trigger/value"),
-                        new oshi.util.tuples.Pair<>(attackAction, "/user/hand/right/input/trigger/value"),
-                        new oshi.util.tuples.Pair<>(thumbstickOffHand, "/user/hand/left/input/thumbstick"),
-                        new oshi.util.tuples.Pair<>(thumbstickMainHand, "/user/hand/right/input/thumbstick"),
-                        new oshi.util.tuples.Pair<>(inventoryAction, "/user/hand/left/input/y/click"),
-                        new oshi.util.tuples.Pair<>(jumpAction, "/user/hand/right/input/a/click"),
-                        new oshi.util.tuples.Pair<>(sprintAction, "/user/hand/right/input/squeeze/value"),
-                        new oshi.util.tuples.Pair<>(sneakAction, "/user/hand/left/input/squeeze/value")
+                        new Pair<>(useAction, "/user/hand/left/input/trigger/value"),
+                        new Pair<>(attackAction, "/user/hand/right/input/trigger/value"),
+                        new Pair<>(thumbstickOffHand, "/user/hand/left/input/thumbstick"),
+                        new Pair<>(thumbstickMainHand, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(inventoryAction, "/user/hand/left/input/y/click"),
+                        new Pair<>(jumpAction, "/user/hand/right/input/a/click"),
+                        new Pair<>(sprintAction, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/value")
                 )
         );
 //        {
@@ -171,13 +160,5 @@ public class VanillaCompatActionSet extends XrActionSet {
         xr.check(XR10.xrGetActionStateVector2f(xrSession, get_info, thumbstickMainHandState));
         get_info.action(thumbstickOffHand);
         xr.check(XR10.xrGetActionStateVector2f(xrSession, get_info, thumbstickOffHandState));
-
-        for (int hand = 0; hand < 2; hand++) {
-            get_info.subactionPath(XrInput.HandPath.subactionPaths.get(hand));
-            get_info.action(MineXRaftClient.vanillaCompatActionSet.poseGrip);
-            XrActionStatePose pose_state = XrActionStatePose.callocStack().type(XR10.XR_TYPE_ACTION_STATE_POSE);
-            xr.check(XR10.xrGetActionStatePose(xrSession, get_info, pose_state));
-            isHandActive[hand] = pose_state.isActive();
-        }
     }
 }

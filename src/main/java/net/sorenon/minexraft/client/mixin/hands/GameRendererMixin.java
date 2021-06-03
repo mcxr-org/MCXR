@@ -10,6 +10,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
+import net.sorenon.minexraft.JOMLUtil;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
 import net.sorenon.minexraft.client.rendering.RenderPass;
@@ -46,10 +47,11 @@ public class GameRendererMixin {
                 double d = this.client.interactionManager.getReachDistance();
 //                this.client.crosshairTarget = entity.raycast(d, tickDelta, false);
                 int hand = 1;
-                Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[hand];
-                Vec3d pos = new Vec3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
-                        MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
-                        MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z);
+                Pose pose = MineXRaftClient.handsActionSet.gripPoses[hand].getGamePose();
+//                Vec3d pos = new Vec3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
+//                        MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
+//                        MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z);
+                Vec3d pos = JOMLUtil.convert(pose.getPos());
                 Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
                 Vec3d dir = new Vec3d(dir1.x, dir1.y, dir1.z);
                 Vec3d endPos = pos.add(dir.multiply(d));

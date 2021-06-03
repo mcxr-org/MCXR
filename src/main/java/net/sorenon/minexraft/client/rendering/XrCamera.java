@@ -7,6 +7,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.BlockView;
+import net.sorenon.minexraft.JOMLUtil;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
 import net.sorenon.minexraft.client.mixin.accessor.CameraAcc;
@@ -21,9 +22,6 @@ import org.joml.Vector3f;
  */
 public class XrCamera extends Camera {
 
-    //The pose at the center of the viewspace
-    private Pose viewSpacePose;
-
     private final Quaternionf rawRotation = new Quaternionf();
 
     /**
@@ -36,19 +34,17 @@ public class XrCamera extends Camera {
         thiz.focusedEntity(focusedEntity);
         thiz.thirdPerson(false);
 
-        this.viewSpacePose = viewSpacePose;
-
-        setPose(viewSpacePose, 1.0f);
+        setPose(viewSpacePose);
 
         if (focusedEntity != null && MinecraftClient.getInstance().player == focusedEntity) {
             Entity player = MinecraftClient.getInstance().player;
 
-            float yawMc = MineXRaftClient.viewSpacePose.getYaw();
-            float pitchMc = MineXRaftClient.viewSpacePose.getPitch();
-            float dYaw = yawMc - player.getYaw();
-            float dPitch = pitchMc - player.getPitch();
-            player.setYaw(yawMc);
-            player.setPitch(pitchMc);
+            float yaw = MineXRaftClient.viewSpacePoses.getPhysicalPose().getMCYaw();
+            float pitch = MineXRaftClient.viewSpacePoses.getPhysicalPose().getMCPitch();
+            float dYaw = yaw - player.getYaw();
+            float dPitch = pitch - player.getPitch();
+            player.setYaw(yaw);
+            player.setPitch(pitch);
             player.prevYaw += dYaw;
             player.prevPitch = MathHelper.clamp(player.prevPitch + dPitch, -90, 90);
             if (player.getVehicle() != null) {
@@ -57,33 +53,16 @@ public class XrCamera extends Camera {
         }
     }
 
-    /**
-     * Called just before each frame
-     */
-    public void setEyePose(Pose pose, float tickDelta) {
-        setPose(
-                pose,
-                tickDelta
-        );
-    }
-
-    /**
-     * Called just after each frame
-     */
-    public void popEyePose() {
-        setPose(viewSpacePose, 1.0f);
-    }
-
-    protected void setPose(Pose pose, float tickDelta) {
+    public void setPose(Pose pose) {
         rawRotation.set(pose.getOrientation());
 
         CameraAcc thiz = ((CameraAcc) this);
 
-        thiz.pitch(pose.getPitch());
-        thiz.yaw(pose.getYaw());
+        thiz.pitch(pose.getMCPitch());
+        thiz.yaw(pose.getMCYaw());
         this.getRotation().set(0.0F, 0.0F, 0.0F, 1.0F);
-        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_Y.getDegreesQuaternion(-pose.getYaw()));
-        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_X.getDegreesQuaternion(pose.getPitch()));
+        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_Y.getDegreesQuaternion(-pose.getMCYaw()));
+        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_X.getDegreesQuaternion(pose.getMCPitch()));
 
         Vector3f look = rawRotation.transform(new Vector3f(0, 0, -1));
         Vector3f up = rawRotation.transform(new Vector3f(0, 1, 0));
@@ -92,20 +71,7 @@ public class XrCamera extends Camera {
         this.getVerticalPlane().set(up.x, up.y, up.z);
         thiz.diagonalPlane().set(right.x, right.y, right.z);
 
-        Entity focusedEntity = getFocusedEntity();
-        if (focusedEntity != null) {
-            this.setPos(
-                    MathHelper.lerp(tickDelta, focusedEntity.prevX, focusedEntity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
-                    MathHelper.lerp(tickDelta, focusedEntity.prevY, focusedEntity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
-                    MathHelper.lerp(tickDelta, focusedEntity.prevZ, focusedEntity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z
-            );
-        } else {
-            this.setPos(
-                    pose.getPos().x + MineXRaftClient.xrOffset.x,
-                    pose.getPos().y + MineXRaftClient.xrOffset.y,
-                    pose.getPos().z + MineXRaftClient.xrOffset.z
-            );
-        }
+        this.setPos(JOMLUtil.convert(pose.getPos()));
     }
 
     @Override

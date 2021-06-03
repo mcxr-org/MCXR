@@ -1,8 +1,6 @@
 package net.sorenon.minexraft.client;
 
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3d;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -11,50 +9,24 @@ import org.lwjgl.openxr.XrPosef;
 public class Pose {
 
     private final Quaternionf orientation = new Quaternionf();
-    private final Vector3f normal = new Vector3f(0, 0, -1);
     private final Vector3f pos = new Vector3f();
-    private float yaw = 180;
-    private float pitch = 0;
-    public Vector3f rawPos = new Vector3f();
 
     public void set(XrPosef pose) {
         pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
-        rawPos.set(pos);
         orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
-
-        orientation.transform(normal.set(0, 0, -1), normal);
-
-        float yaw = getYawFromNormal(normal);
-        float pitch = (float) Math.asin(MathHelper.clamp(normal.y, -0.999999999, 0.999999999));
-        this.yaw = (float) -Math.toDegrees(yaw) + 180;
-        this.pitch = (float) -Math.toDegrees(pitch);
     }
 
     public void set(XrPosef pose, float turnYaw) {
         pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
-        rawPos.set(pos);
         orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
         orientation.rotateLocalY(turnYaw);
 
         new Quaternionf().rotateLocalY(turnYaw).transform(pos);
-        orientation.transform(normal.set(0, 0, -1), normal);
-
-        float yaw = getYawFromNormal(normal);
-        float pitch = (float) Math.asin(MathHelper.clamp(normal.y, -0.999999999, 0.999999999));
-        this.yaw = (float) -Math.toDegrees(yaw) + 180;
-        this.pitch = (float) -Math.toDegrees(pitch);
     }
 
-    public Vec3d getNormalMc() {
-        return new Vec3d(normal.x, normal.y, normal.z);
-    }
-
-    public Vec3d getPosMc() {
-        return new Vec3d(pos.x, pos.y, pos.z);
-    }
-
-    public Vector3f getNormal() {
-        return normal;
+    public void set(Pose pose) {
+        pos.set(pose.pos);
+        orientation.set(pose.orientation);
     }
 
     public Vector3f getPos() {
@@ -65,28 +37,20 @@ public class Pose {
         return orientation;
     }
 
-    public Quaternion getOrientationMc() {
-        return new Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+    public float getMCYaw() {
+        Vector3f normal = orientation.transform(new Vector3f(0, 0, -1));
+        float yaw = getYawFromNormal(normal);
+        return (float) -Math.toDegrees(yaw) + 180;
     }
 
-    public float getYaw() {
-        return yaw;
+    public float getMCPitch() {
+        Vector3f normal = orientation.transform(new Vector3f(0, 0, -1));
+        float pitch = (float) Math.asin(MathHelper.clamp(normal.y, -0.999999999, 0.999999999));
+
+        return (float) -Math.toDegrees(pitch);
     }
 
-    public float getPitch() {
-        return pitch;
-    }
-
-    public static float getYawFromNormal(Vector3f normalIn) {
-        Vector3f normal = new Vector3f(normalIn);
-        if (normal.y != 0) {
-            if (Math.abs(normal.y) > 0.999999) {
-                return 0;
-            }
-            normal.y = 0;
-            normal.normalize();
-        }
-
+    public static float getYawFromNormal(Vector3f normal) {
         if (normal.z < 0) {
             return (float) java.lang.Math.atan(normal.x / normal.z);
         }

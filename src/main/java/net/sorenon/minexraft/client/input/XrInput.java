@@ -4,7 +4,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Pair;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.OpenXR;
 import org.joml.Quaternionf;
@@ -12,6 +11,7 @@ import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
+import oshi.util.tuples.Pair;
 
 import java.nio.LongBuffer;
 
@@ -42,20 +42,23 @@ public class XrInput {
             // Update our action set with up-to-date input data!
             VanillaCompatActionSet vcActionSet = MineXRaftClient.vanillaCompatActionSet;
             FlatGuiActionSet guiActionSet = MineXRaftClient.flatGuiActionSet;
+            HandsActionSet handsActionSet = MineXRaftClient.handsActionSet;
 
-            XrActiveActionSet.Buffer set = XrActiveActionSet.callocStack(2);
+            XrActiveActionSet.Buffer set = XrActiveActionSet.callocStack(3);
             set.get(0).actionSet(vcActionSet);
             set.get(1).actionSet(guiActionSet);
+            set.get(2).actionSet(handsActionSet);
 
             XrActionsSyncInfo sync_info = XrActionsSyncInfo.mallocStack().set(
                     XR10.XR_TYPE_ACTIONS_SYNC_INFO,
                     NULL,
-                    2,
+                    set.capacity(),
                     set
             );
 
             xr.check(XR10.xrSyncActions(xrSession, sync_info));
 
+            handsActionSet.sync();
             vcActionSet.sync();
             guiActionSet.sync();
         }
@@ -82,8 +85,8 @@ public class XrInput {
             } else {
                 if (Math.abs(x) >= 0.4f) {
                     MineXRaftClient.yawTurn += Math.toRadians(22) * -Math.signum(x);
-                    Vector3f rotatedPos = new Quaternionf().rotateLocalY(MineXRaftClient.yawTurn).transform(MineXRaftClient.viewSpacePose.rawPos, new Vector3f());
-                    Vector3f finalPos = MineXRaftClient.xrOffset.add(MineXRaftClient.viewSpacePose.getPos(), new Vector3f());
+                    Vector3f rotatedPos = new Quaternionf().rotateLocalY(MineXRaftClient.yawTurn).transform(MineXRaftClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f());
+                    Vector3f finalPos = MineXRaftClient.xrOffset.add(MineXRaftClient.viewSpacePoses.getPhysicalPose().getPos(), new Vector3f());
 
                     MineXRaftClient.xrOffset = finalPos.sub(rotatedPos).mul(1, 0, 1);
 

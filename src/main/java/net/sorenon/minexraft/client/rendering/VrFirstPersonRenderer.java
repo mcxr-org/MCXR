@@ -23,6 +23,7 @@ import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.*;
 import net.minecraft.world.LightType;
+import net.sorenon.minexraft.JOMLUtil;
 import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
@@ -141,7 +142,7 @@ public class VrFirstPersonRenderer {
 //                }
             } else if (entity instanceof LivingEntity livingEntity) {
                 for (int hand = 0; hand < 2; hand++) {
-                    if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
+                    if (!MineXRaftClient.handsActionSet.isHandActive[hand]) {
                         continue;
                     }
 
@@ -182,7 +183,7 @@ public class VrFirstPersonRenderer {
         MatrixStack matrices = context.matrixStack();
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
+            if (!MineXRaftClient.handsActionSet.isHandActive[hand]) {
                 continue;
             }
             matrices.push();
@@ -216,13 +217,13 @@ public class VrFirstPersonRenderer {
     }
 
     public void transformToHand(MatrixStack matrices, int hand) {
-        Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[hand];
-        Vec3d gripPos = pose.getPosMc();
-        Vector3f eyePos = MineXRaftClient.eyePose.getPos();
+        Pose pose = MineXRaftClient.handsActionSet.gripPoses[hand].getPhysicalPose();
+        Vec3d gripPos = JOMLUtil.convert(pose.getPos());
+        Vector3f eyePos = MineXRaftClient.eyePoses.getPhysicalPose().getPos();
 
         //Transform to controller
         matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
-        matrices.multiply(pose.getOrientationMc());
+        matrices.multiply(JOMLUtil.convert(pose.getOrientation()));
 
         //Apply adjustments
         matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
@@ -266,7 +267,7 @@ public class VrFirstPersonRenderer {
         matrices.pop();
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
+            if (!MineXRaftClient.handsActionSet.isHandActive[hand]) {
                 continue;
             }
             matrices.push();
@@ -292,7 +293,7 @@ public class VrFirstPersonRenderer {
         }
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[hand]) {
+            if (!MineXRaftClient.handsActionSet.isHandActive[hand]) {
                 continue;
             }
 
@@ -305,9 +306,9 @@ public class VrFirstPersonRenderer {
             RenderSystem.disableDepthTest();
 
             matrices.push();
-            Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[hand];
-            Vec3d gripPos = pose.getPosMc();
-            Vector3f eyePos = MineXRaftClient.eyePose.getPos();
+            Pose pose = MineXRaftClient.handsActionSet.gripPoses[hand].getPhysicalPose();
+            Vec3d gripPos = JOMLUtil.convert(pose.getPos());
+            Vector3f eyePos = MineXRaftClient.eyePoses.getPhysicalPose().getPos();
             matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
             matrices.push();
@@ -341,7 +342,7 @@ public class VrFirstPersonRenderer {
                 RenderSystem.renderCrosshair(1);
 
                 matrices.pop();
-                matrices.multiply(pose.getOrientationMc());
+                matrices.multiply(JOMLUtil.convert(pose.getOrientation()));
                 matrices.scale(0.1f, 0.1f, 0.1f);
                 RenderSystem.applyModelViewMatrix();
 

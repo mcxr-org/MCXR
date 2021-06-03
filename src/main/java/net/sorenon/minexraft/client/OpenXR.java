@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
@@ -11,6 +12,7 @@ import net.minecraft.util.math.Vec3d;
 import net.sorenon.minexraft.JOMLUtil;
 import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
 import net.sorenon.minexraft.client.accessor.MouseExt;
+import net.sorenon.minexraft.client.input.ControllerPosesImpl;
 import net.sorenon.minexraft.client.input.FlatGuiActionSet;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
@@ -55,7 +57,7 @@ import static org.lwjgl.system.MemoryUtil.*;
  */
 
 /**
- * This class is where most of the OpenXR stuff happens, ideally this will be split into classes over time
+ * This class is where most of the OpenXR stuff happens, this will be split up over time
  */
 public class OpenXR {
 
@@ -579,28 +581,41 @@ public class OpenXR {
             // should result in a more accurate location, and reduce perceived lag.
             if (sessionState == XR10.XR_SESSION_STATE_FOCUSED) {
                 for (int i = 0; i < 2; i++) {
-                    if (!MineXRaftClient.vanillaCompatActionSet.isHandActive[i]) {
+                    if (!MineXRaftClient.handsActionSet.isHandActive[i]) {
                         continue;
                     }
-                    setPoseFromSpace(MineXRaftClient.vanillaCompatActionSet.poseGripSpaces[i], predictedDisplayTime, MineXRaftClient.vanillaCompatActionSet.poses[i]);
+                    setPosesFromSpace(MineXRaftClient.handsActionSet.poseGripSpaces[i], predictedDisplayTime, MineXRaftClient.handsActionSet.gripPoses[i]);
+                    setPosesFromSpace(MineXRaftClient.handsActionSet.poseAimSpaces[i], predictedDisplayTime, MineXRaftClient.handsActionSet.aimPoses[i]);
                 }
             }
 
-            setPoseFromSpace(xrViewSpace, predictedDisplayTime, MineXRaftClient.viewSpacePose);
+            setPosesFromSpace(xrViewSpace, predictedDisplayTime, MineXRaftClient.viewSpacePoses);
 
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
-            camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.viewSpacePose);
+            camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MineXRaftClient.viewSpacePoses.getGamePose());
             MainRenderTarget mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
 
             long frameStartTime = Util.getMeasuringTimeNano();
-            clientExt.preRenderXR(true, frameStartTime);
-            if (camera.getFocusedEntity() instanceof LivingEntity entity) {
-                Pose pose = MineXRaftClient.vanillaCompatActionSet.poses[1];
+            clientExt.preRenderXR(true, () -> {
+                if (camera.getFocusedEntity() != null) {
+                    float tickDelta = client.getTickDelta();
+                    Entity entity = camera.getFocusedEntity();
+                    MineXRaftClient.xrOrigin.set(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + MineXRaftClient.xrOffset.x,
+                            MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + MineXRaftClient.xrOffset.y,
+                            MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + MineXRaftClient.xrOffset.z);
+                    MineXRaftClient.viewSpacePoses.updateGamePose();
+                    for (var poses : MineXRaftClient.handsActionSet.gripPoses) {
+                        poses.updateGamePose();
+                    }
+                    for (var poses : MineXRaftClient.handsActionSet.aimPoses) {
+                        poses.updateGamePose();
+                    }
+                }
+            });
+            if (MineXRaftClient.INSTANCE.flatGuiManager.isScreenOpen()) {
+                Pose pose = MineXRaftClient.handsActionSet.gripPoses[1].getGamePose();
                 FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
-                float tickDelta = MinecraftClient.getInstance().getTickDelta();
-                Vector3d pos = new Vector3d(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + pose.getPos().x + MineXRaftClient.xrOffset.x,
-                        MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + pose.getPos().y + MineXRaftClient.xrOffset.y,
-                        MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + pose.getPos().z + MineXRaftClient.xrOffset.z);
+                Vector3d pos = new Vector3d(pose.getPos());
                 Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
                 Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
                 if (result != null) {
@@ -622,14 +637,14 @@ public class OpenXR {
                 MouseExt mouse = ((MouseExt) MinecraftClient.getInstance().mouse);
                 if (FGM.isScreenOpen()) {
                     FlatGuiActionSet actionSet = MineXRaftClient.flatGuiActionSet;
-                    if (actionSet.pickupState.changedSinceLastSync()){
+                    if (actionSet.pickupState.changedSinceLastSync()) {
                         if (actionSet.pickupState.currentState()) {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                         } else {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
                         }
                     }
-                    if (actionSet.splitState.changedSinceLastSync()){
+                    if (actionSet.splitState.changedSinceLastSync()) {
                         if (actionSet.splitState.currentState()) {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);
                         } else {
@@ -677,37 +692,26 @@ public class OpenXR {
 
                 {
                     XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-
                     viewSwapchain.framebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
-//                    GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, 0);
-                    GlStateManager._glBindFramebuffer(36160, 0);
+                    viewSwapchain.framebuffer.endWrite();
                     mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
-
-                    MineXRaftClient.viewportRect = projectionLayerView.subImage().imageRect();
-                    MineXRaftClient.fov = projectionLayerView.fov();
-                    MineXRaftClient.eyePose.set(projectionLayerView.pose(), MineXRaftClient.yawTurn);
-//                    MineXRaftClient.eyePose.set(projectionLayerView.pose());
+                    MineXRaftClient.fov = views.get(viewIndex).fov();
+                    MineXRaftClient.eyePoses.updatePhysicalPose(views.get(viewIndex).pose(), MineXRaftClient.yawTurn);
                     MineXRaftClient.viewIndex = viewIndex;
-                    if (camera.isReady()) {
-                        camera.setEyePose(MineXRaftClient.eyePose, client.getTickDelta());
-                    }
+                    camera.setPose(MineXRaftClient.eyePoses.getGamePose());
                     MineXRaftClient.renderPass = RenderPass.WORLD;
                     clientExt.doRenderXR(true, frameStartTime);
                     MineXRaftClient.renderPass = RenderPass.VANILLA;
-                    if (camera.isReady()) {
-                        camera.popEyePose();
-                    }
                     MineXRaftClient.fov = null;
-                    MineXRaftClient.viewportRect = null;
-
-                    mainRenderTarget.resetFramebuffer();
                 }
 
                 XrSwapchainImageReleaseInfo releaseInfo = new XrSwapchainImageReleaseInfo(stack.calloc(XrSwapchainImageReleaseInfo.SIZEOF));
                 releaseInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO);
                 check(XR10.xrReleaseSwapchainImage(viewSwapchain.handle, releaseInfo));
             }
-            clientExt.postRenderXR(true, frameStartTime);
+            mainRenderTarget.resetFramebuffer();
+            camera.setPose(MineXRaftClient.viewSpacePoses.getGamePose());
+            clientExt.postRenderXR(true);
 
             layer.space(xrAppSpace);
             layer.views(projectionLayerViews);
@@ -812,6 +816,19 @@ public class OpenXR {
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
 
                 result.set(space_location.pose(), MineXRaftClient.yawTurn);
+            }
+        }
+    }
+
+    public void setPosesFromSpace(XrSpace handSpace, long time, ControllerPosesImpl result) {
+        try (MemoryStack ignored = stackPush()) {
+            XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
+            int res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+            if (res == XR10.XR_SUCCESS &&
+                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
+                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
+
+                result.updatePhysicalPose(space_location.pose(), MineXRaftClient.yawTurn);
             }
         }
     }

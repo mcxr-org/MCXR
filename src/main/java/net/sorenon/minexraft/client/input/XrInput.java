@@ -5,7 +5,7 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.OpenXR;
+import net.sorenon.minexraft.client.openxr.OpenXR;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;

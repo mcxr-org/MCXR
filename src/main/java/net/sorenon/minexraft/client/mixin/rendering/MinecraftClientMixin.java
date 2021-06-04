@@ -29,7 +29,7 @@ import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.OpenXR;
+import net.sorenon.minexraft.client.openxr.OpenXR;
 import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
 import net.sorenon.minexraft.client.input.XrInput;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;

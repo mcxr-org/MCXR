@@ -1,20 +1,19 @@
-package net.sorenon.minexraft.client;
+package net.sorenon.minexraft.client.openxr;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.sorenon.minexraft.JOMLUtil;
+import net.sorenon.minexraft.client.FlatGuiManager;
+import net.sorenon.minexraft.client.MineXRaftClient;
+import net.sorenon.minexraft.client.Pose;
 import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
 import net.sorenon.minexraft.client.accessor.MouseExt;
 import net.sorenon.minexraft.client.input.ControllerPosesImpl;
 import net.sorenon.minexraft.client.input.FlatGuiActionSet;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
+import net.sorenon.minexraft.client.openxr.Swapchain;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.XrCamera;
@@ -48,16 +47,7 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
- * Slightly tweaked combination of
- * https://github.com/maluoi/OpenXRSamples/blob/master/SingleFileExample
- * and
- * https://github.com/ReliaSolve/OpenXR-OpenGL-Example
- * Can only run on windows until glfw is updated
- * Requires a stereo headset and an install of the OpenXR runtime to run
- */
-
-/**
- * This class is where most of the OpenXR stuff happens, this will be split up over time
+ * This class is where most of the OpenXR stuff happens
  */
 public class OpenXR {
 
@@ -72,8 +62,7 @@ public class OpenXR {
     XrSpace xrViewSpace;
     long glColorFormat;
     XrView.Buffer views;       //Each view represents an eye in the headset with views[0] being left and views[1] being right
-    public Swapchain[] swapchains;  //One swapchain per view
-    XrViewConfigurationView.Buffer viewConfigs;
+    public Swapchain[] swapchains;  //One swapchain per view (for now, it could be optimal to use the same swapchain for both views)
     int viewConfigType = XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 
     //Runtime
@@ -90,14 +79,6 @@ public class OpenXR {
             XrQuaternionf.mallocStack().set(0, 0, 0, 1),
             XrVector3f.callocStack()
     );
-
-    public static class Swapchain {
-        XrSwapchain handle;
-        public int width;
-        public int height;
-        XrSwapchainImageOpenGLKHR.Buffer images;
-        XrFramebuffer framebuffer;
-    }
 
     /**
      * Creates an array of XrStructs with their types pre set to @param type
@@ -136,20 +117,20 @@ public class OpenXR {
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             LOGGER.info(String.format("OpenXR loaded with %d extensions", numExtensions.get(0)));
-            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
+            LOGGER.info("~~~~~~~~~~~~~~~~~~");
             PointerBuffer extensions = stack.mallocPointer(numExtensions.get(0));
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
-                LOGGER.debug(extensionName);
+                LOGGER.info(extensionName);
                 extensions.put(memASCII(extensionName));
                 if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
                 }
             }
             extensions.rewind();
-            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
+            LOGGER.info("~~~~~~~~~~~~~~~~~~");
 
             if (missingOpenGL) {
                 throw new IllegalStateException("OpenXR library does not provide required extension: " + KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
@@ -316,8 +297,8 @@ public class OpenXR {
 
             IntBuffer intBuf = stack.mallocInt(1);
             check(XR10.xrEnumerateViewConfigurationViews(xrInstance, systemID, viewConfigType, intBuf, null));
-            viewConfigs = new XrViewConfigurationView.Buffer(
-                    mallocAndFillBufferHeap(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
+            XrViewConfigurationView.Buffer viewConfigs = new XrViewConfigurationView.Buffer(
+                    mallocAndFillBufferStack(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
             );
             check(XR10.xrEnumerateViewConfigurationViews(xrInstance, systemID, viewConfigType, intBuf, viewConfigs));
             int viewCountNumber = intBuf.get(0);
@@ -502,7 +483,7 @@ public class OpenXR {
 
     public void renderFrameOpenXR() {
         try (MemoryStack stack = stackPush()) {
-            XrFrameWaitInfo frameWaitInfo = XrFrameWaitInfo.callocStack(); //TODO wait until max(nextFrame, nextTick) this will need multithreading and most likely wont be a real issue for a while anyway
+            XrFrameWaitInfo frameWaitInfo = XrFrameWaitInfo.callocStack();
             frameWaitInfo.type(XR10.XR_TYPE_FRAME_WAIT_INFO);
             XrFrameState frameState = XrFrameState.callocStack();
             frameState.type(XR10.XR_TYPE_FRAME_STATE);
@@ -571,7 +552,6 @@ public class OpenXR {
             }
             int viewCountOutput = intBuf.get(0);
             assert (viewCountOutput == views.capacity());
-            assert (viewCountOutput == viewConfigs.capacity());
             assert (viewCountOutput == swapchains.length);
             assert (viewCountOutput == 2);
 
@@ -612,23 +592,6 @@ public class OpenXR {
                     }
                 }
             });
-            if (MineXRaftClient.INSTANCE.flatGuiManager.isScreenOpen()) {
-                Pose pose = MineXRaftClient.handsActionSet.gripPoses[1].getGamePose();
-                FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
-                Vector3d pos = new Vector3d(pose.getPos());
-                Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
-                Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
-                if (result != null) {
-                    Vector3d vec = result.sub(JOMLUtil.convert(FGM.pos));
-                    FGM.rot.invert(new Quaterniond()).transform(vec);
-                    vec.y *= ((double) FGM.framebufferWidth / FGM.framebufferHeight);
-
-                    ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
-                            (int) (FGM.framebufferWidth * (0.5 - vec.x)),
-                            (int) (FGM.framebufferHeight * (1 - vec.y))
-                    );
-                }
-            }
 
             {
                 FlatGuiManager FGM = MineXRaftClient.INSTANCE.flatGuiManager;
@@ -636,6 +599,20 @@ public class OpenXR {
                 mainRenderTarget.setFramebuffer(FGM.framebuffer);
                 MouseExt mouse = ((MouseExt) MinecraftClient.getInstance().mouse);
                 if (FGM.isScreenOpen()) {
+                    Pose pose = MineXRaftClient.handsActionSet.gripPoses[MineXRaftClient.mainHand].getGamePose();
+                    Vector3d pos = new Vector3d(pose.getPos());
+                    Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MineXRaftClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+                    Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
+                    if (result != null) {
+                        Vector3d vec = result.sub(JOMLUtil.convert(FGM.pos));
+                        FGM.rot.invert(new Quaterniond()).transform(vec);
+                        vec.y *= ((double) FGM.framebufferWidth / FGM.framebufferHeight);
+
+                        ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
+                                (int) (FGM.framebufferWidth * (0.5 - vec.x)),
+                                (int) (FGM.framebufferHeight * (1 - vec.y))
+                        );
+                    }
                     FlatGuiActionSet actionSet = MineXRaftClient.flatGuiActionSet;
                     if (actionSet.pickupState.changedSinceLastSync()) {
                         if (actionSet.pickupState.currentState()) {
@@ -743,7 +720,7 @@ public class OpenXR {
             }
             int viewCountOutput = intBuf.get(0);
             assert (viewCountOutput == views.capacity());
-            assert (viewCountOutput == viewConfigs.capacity());
+//            assert (viewCountOutput == viewConfigs.capacity());
             assert (viewCountOutput == swapchains.length);
 
             projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));

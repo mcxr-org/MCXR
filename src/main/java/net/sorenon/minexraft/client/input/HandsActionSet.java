@@ -1,8 +1,7 @@
 package net.sorenon.minexraft.client.input;
 
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.OpenXR;
-import net.sorenon.minexraft.client.Pose;
+import net.sorenon.minexraft.client.openxr.OpenXR;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;

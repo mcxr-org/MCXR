@@ -10,6 +10,7 @@
     "accessor.FramebufferAcc",
     "hands.GameRendererMixin",
     "hands.MouseMixin",
+    "hands.MinecraftClientMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
     "rendering.Matrix4fMixin",
@@ -22,6 +23,5 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "hands.MinecraftClientMixin"
   ]
 }

@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.sorenon.minexraft.client.input.*;
+import net.sorenon.minexraft.client.openxr.OpenXR;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;

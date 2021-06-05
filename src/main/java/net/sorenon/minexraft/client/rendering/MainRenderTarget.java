@@ -2,7 +2,6 @@ package net.sorenon.minexraft.client.rendering;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.SimpleFramebuffer;
 import net.minecraft.client.gl.WindowFramebuffer;
 import net.sorenon.minexraft.client.mixin.accessor.FramebufferAcc;
 

@@ -1,4 +1,4 @@
-package net.sorenon.minexraft.client.mixin.hands;
+package net.sorenon.minexraft.client.mixin.flatgui;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;

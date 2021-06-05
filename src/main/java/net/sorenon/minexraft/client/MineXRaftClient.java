@@ -163,4 +163,8 @@ public class MineXRaftClient implements ClientModInitializer {
     public static void resetView() {
         MineXRaftClient.xrOffset = new Vector3f(0, 0, 0).sub(MineXRaftClient.viewSpacePoses.getPhysicalPose().getPos()).mul(1, 0, 1);
     }
+
+    public static boolean isXrMode() {
+        return MinecraftClient.getInstance().world != null;
+    }
 }

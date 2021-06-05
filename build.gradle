@@ -34,10 +34,11 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation("grondag:joml-mod:1.4.20") {
+	//TODO look at using iris' version of joml instead of using this 'hack'
+	include(modImplementation("grondag:joml-mod:1.4.20") {
 		exclude group: "grondag"
 		exclude group: "net.fabricmc"
-	}
+	})
 }
 
 processResources {

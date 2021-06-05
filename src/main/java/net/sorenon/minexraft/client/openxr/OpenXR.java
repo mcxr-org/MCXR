@@ -13,7 +13,6 @@ import net.sorenon.minexraft.client.accessor.MouseExt;
 import net.sorenon.minexraft.client.input.ControllerPosesImpl;
 import net.sorenon.minexraft.client.input.FlatGuiActionSet;
 import net.sorenon.minexraft.client.input.VanillaCompatActionSet;
-import net.sorenon.minexraft.client.openxr.Swapchain;
 import net.sorenon.minexraft.client.rendering.MainRenderTarget;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.XrCamera;
@@ -151,7 +150,14 @@ public class OpenXR {
             );
 
             PointerBuffer instancePtr = stack.mallocPointer(1);
-            check(XR10.xrCreateInstance(createInfo, instancePtr));
+
+            int xrResult = XR10.xrCreateInstance(createInfo, instancePtr);
+            if (xrResult == XR10.XR_ERROR_RUNTIME_FAILURE) {
+                throw new XrResultException("Failed to create xrInstance, are you sure your headset is plugged in?");
+            } else {
+                check(xrResult);
+            }
+
             xrInstance = new XrInstance(instancePtr.get(0), createInfo);
 
             if (xrInstance.getCapabilities().XR_EXT_debug_utils) {
@@ -498,7 +504,7 @@ public class OpenXR {
             PointerBuffer layers = stack.callocPointer(1);
 
             if (frameState.shouldRender()) {
-                if (client.world != null) {
+                if (MineXRaftClient.isXrMode()) {
                     if (renderLayerOpenXR(frameState.predictedDisplayTime(), layerProjection)) {
                         layers.put(layerProjection.address());
                     }
@@ -609,13 +615,13 @@ public class OpenXR {
                         vec.y *= ((double) FGM.framebufferWidth / FGM.framebufferHeight);
 
                         ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
-                                (int) (FGM.framebufferWidth * (0.5 - vec.x)),
-                                (int) (FGM.framebufferHeight * (1 - vec.y))
+                                FGM.framebufferWidth * (0.5 - vec.x),
+                                FGM.framebufferHeight * (1 - vec.y)
                         );
                     }
                     FlatGuiActionSet actionSet = MineXRaftClient.flatGuiActionSet;
-                    if (actionSet.pickupState.changedSinceLastSync()) {
-                        if (actionSet.pickupState.currentState()) {
+                    if (actionSet.pickupState.changedSinceLastSync() || actionSet.quickMoveState.changedSinceLastSync()) {
+                        if (actionSet.pickupState.currentState() || actionSet.quickMoveState.currentState()) {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                         } else {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
@@ -627,6 +633,11 @@ public class OpenXR {
                         } else {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
                         }
+                    }
+                    if (actionSet.scrollState.changedSinceLastSync()) {
+                        XrVector2f state = actionSet.scrollState.currentState();
+                        double sensitivity = 0.25;
+                        mouse.mouseScroll(-state.x() * sensitivity, state.y() * sensitivity);
                     }
                 } else {
                     VanillaCompatActionSet actionSet = MineXRaftClient.vanillaCompatActionSet;
@@ -720,7 +731,6 @@ public class OpenXR {
             }
             int viewCountOutput = intBuf.get(0);
             assert (viewCountOutput == views.capacity());
-//            assert (viewCountOutput == viewConfigs.capacity());
             assert (viewCountOutput == swapchains.length);
 
             projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));

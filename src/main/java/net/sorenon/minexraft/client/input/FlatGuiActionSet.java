@@ -30,11 +30,15 @@ public class FlatGuiActionSet extends XrActionSet {
     public XrAction exitAction;
 //    public XrAction middleClickAction;
 
+    //Vec2f actions
+    public XrAction scrollAction;
+
     //States
     public XrActionStateBoolean pickupState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
     public XrActionStateBoolean splitState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
     public XrActionStateBoolean quickMoveState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
     public XrActionStateBoolean exitState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
+    public XrActionStateVector2f scrollState = XrActionStateVector2f.calloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
 
 
     public FlatGuiActionSet(long handle, XRCapabilitiesSession session) {
@@ -62,6 +66,7 @@ public class FlatGuiActionSet extends XrActionSet {
             actionSet.splitAction = input.makeBoolAction("split", "Split", actionSet);
             actionSet.quickMoveAction = input.makeBoolAction("quick_move", "QuickMove", actionSet);
             actionSet.exitAction = input.makeBoolAction("close", "Close Screen", actionSet);
+            actionSet.scrollAction = input.makeVec2fAction("scroll", "Scroll", actionSet);
 
             return actionSet;
         }
@@ -73,7 +78,8 @@ public class FlatGuiActionSet extends XrActionSet {
                         new Pair<>(pickupAction, "/user/hand/right/input/a/click"),
                         new Pair<>(splitAction, "/user/hand/right/input/b/click"),
                         new Pair<>(quickMoveAction, "/user/hand/left/input/x/click"),
-                        new Pair<>(exitAction, "/user/hand/left/input/y/click")
+                        new Pair<>(exitAction, "/user/hand/left/input/y/click"),
+                        new Pair<>(scrollAction, "/user/hand/right/input/thumbstick")
                 )
         );
     }
@@ -91,5 +97,7 @@ public class FlatGuiActionSet extends XrActionSet {
         xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, quickMoveState));
         get_info.action(exitAction);
         xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, exitState));
+        get_info.action(scrollAction);
+        xr.check(XR10.xrGetActionStateVector2f(xrSession, get_info, scrollState));
     }
 }

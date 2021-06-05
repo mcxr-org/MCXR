@@ -59,7 +59,25 @@ public class HandsActionSet extends XrActionSet {
     }
 
     public void getBindings(HashMap<String, List<Pair<XrAction, String>>> map) {
+        map.computeIfAbsent("/interaction_profiles/khr/simple_controller", aLong -> new ArrayList<>()).addAll(
+                List.of(
+                        new Pair<>(poseGrip, "/user/hand/left/input/grip/pose"),
+                        new Pair<>(poseGrip, "/user/hand/right/input/grip/pose")
+                )
+        );
         map.computeIfAbsent("/interaction_profiles/oculus/touch_controller", aLong -> new ArrayList<>()).addAll(
+                List.of(
+                        new Pair<>(poseGrip, "/user/hand/left/input/grip/pose"),
+                        new Pair<>(poseGrip, "/user/hand/right/input/grip/pose")
+                )
+        );
+        map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
+                List.of(
+                        new Pair<>(poseGrip, "/user/hand/left/input/grip/pose"),
+                        new Pair<>(poseGrip, "/user/hand/right/input/grip/pose")
+                )
+        );
+        map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(poseGrip, "/user/hand/left/input/grip/pose"),
                         new Pair<>(poseGrip, "/user/hand/right/input/grip/pose")

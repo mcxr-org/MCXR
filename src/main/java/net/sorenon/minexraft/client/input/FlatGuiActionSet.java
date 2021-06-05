@@ -82,6 +82,24 @@ public class FlatGuiActionSet extends XrActionSet {
                         new Pair<>(scrollAction, "/user/hand/right/input/thumbstick")
                 )
         );
+        map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
+                List.of(
+                        new Pair<>(pickupAction, "/user/hand/right/input/a/click"),
+                        new Pair<>(splitAction, "/user/hand/right/input/b/click"),
+                        new Pair<>(quickMoveAction, "/user/hand/left/input/a/click"),
+                        new Pair<>(exitAction, "/user/hand/left/input/b/click"),
+                        new Pair<>(scrollAction, "/user/hand/right/input/thumbstick")
+                )
+        );
+        map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
+                List.of(
+                        new Pair<>(pickupAction, "/user/hand/right/input/trigger/value"),
+                        new Pair<>(splitAction, "/user/hand/right/input/trackpad/click"),
+                        new Pair<>(quickMoveAction, "/user/hand/left/input/trigger/value"),
+                        new Pair<>(exitAction, "/user/hand/left/input/trackpad/click"),
+                        new Pair<>(scrollAction, "/user/hand/right/input/thumbstick")
+                )
+        );
     }
 
     public void sync() {

@@ -6,6 +6,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.sorenon.minexraft.client.input.*;
 import net.sorenon.minexraft.client.openxr.OpenXR;
+import net.sorenon.minexraft.client.openxr.XrResultException;
 import net.sorenon.minexraft.client.rendering.RenderPass;
 import net.sorenon.minexraft.client.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;
@@ -145,7 +146,15 @@ public class MineXRaftClient implements ClientModInitializer {
                         bindings
                 );
 
-                OPEN_XR.check(XR10.xrSuggestInteractionProfileBindings(OPEN_XR.xrInstance, suggested_binds));
+                try {
+                    OPEN_XR.check(XR10.xrSuggestInteractionProfileBindings(OPEN_XR.xrInstance, suggested_binds));
+                } catch (XrResultException e) {
+                    StringBuilder out = new StringBuilder(e.getMessage() + "\ninteractionProfile: " + entry.getKey());
+                    for (var pair : bindingsSet) {
+                        out.append("\n").append(pair.getB());
+                    }
+                    throw new XrResultException(out.toString());
+                }
             }
 
             XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(

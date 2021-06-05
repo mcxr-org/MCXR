@@ -90,52 +90,30 @@ public class VanillaCompatActionSet extends XrActionSet {
                         new Pair<>(sneakAction, "/user/hand/left/input/squeeze/value")
                 )
         );
-//        {
-//            XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
-//            bindings.get(0).set(poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
-//            bindings.get(1).set(poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
-//            bindings.get(2).set(useAction, xr.getPath("/user/hand/left/input/trigger/value"));
-//            bindings.get(3).set(attackAction, xr.getPath("/user/hand/right/input/trigger/value"));
-//            bindings.get(4).set(thumbstickOffHand, xr.getPath("/user/hand/left/input/thumbstick"));
-//            bindings.get(5).set(thumbstickMainHand, xr.getPath("/user/hand/right/input/thumbstick"));
-//            bindings.get(6).set(inventoryAction, xr.getPath("/user/hand/left/input/b/click"));
-//            bindings.get(7).set(jumpAction, xr.getPath("/user/hand/right/input/a/click"));
-//            bindings.get(8).set(sprintAction, xr.getPath("/user/hand/right/input/squeeze/value"));
-//            bindings.get(9).set(sneakAction, xr.getPath("/user/hand/left/input/squeeze/value"));
-//
-//            XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
-//                    XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
-//                    NULL,
-//                    xr.getPath("/interaction_profiles/valve/index_controller"),
-//                    bindings
-//            );
-//
-//            xr.check(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
-//        }
-//        {
-//            XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(10);
-////                bindings.get(0).set(poseGrip, xr.getPath("/user/hand/left/input/grip/pose"));
-////                bindings.get(1).set(poseGrip, xr.getPath("/user/hand/right/input/grip/pose"));
-//            bindings.get(0).set(poseGrip, xr.getPath("/user/hand/left/input/aim/pose"));
-//            bindings.get(1).set(poseGrip, xr.getPath("/user/hand/right/input/aim/pose"));
-//            bindings.get(2).set(useAction, xr.getPath("/user/hand/left/input/trigger/value"));
-//            bindings.get(3).set(attackAction, xr.getPath("/user/hand/right/input/trigger/value"));
-//            bindings.get(4).set(thumbstickOffHand, xr.getPath("/user/hand/left/input/thumbstick"));
-//            bindings.get(5).set(thumbstickMainHand, xr.getPath("/user/hand/right/input/thumbstick"));
-//            bindings.get(6).set(inventoryAction, xr.getPath("/user/hand/left/input/trackpad/click"));
-//            bindings.get(7).set(jumpAction, xr.getPath("/user/hand/right/input/trackpad/click"));
-//            bindings.get(8).set(sprintAction, xr.getPath("/user/hand/right/input/squeeze/click"));
-//            bindings.get(9).set(sneakAction, xr.getPath("/user/hand/left/input/squeeze/click"));
-//
-//            XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
-//                    XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
-//                    NULL,
-//                    xr.getPath("/interaction_profiles/microsoft/motion_controller"),
-//                    bindings
-//            );
-//
-//            xr.check(XR10.xrSuggestInteractionProfileBindings(xrInstance, suggested_binds));
-//        }
+        map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
+                List.of(
+                        new Pair<>(useAction, "/user/hand/left/input/trigger/value"),
+                        new Pair<>(attackAction, "/user/hand/right/input/trigger/value"),
+                        new Pair<>(thumbstickOffHand, "/user/hand/left/input/thumbstick"),
+                        new Pair<>(thumbstickMainHand, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(inventoryAction, "/user/hand/left/input/b/click"),
+                        new Pair<>(jumpAction, "/user/hand/right/input/a/click"),
+                        new Pair<>(sprintAction, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/value")
+                )
+        );
+        map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
+                List.of(
+                        new Pair<>(useAction, "/user/hand/left/input/trigger/value"),
+                        new Pair<>(attackAction, "/user/hand/right/input/trigger/value"),
+                        new Pair<>(thumbstickOffHand, "/user/hand/left/input/thumbstick"),
+                        new Pair<>(thumbstickMainHand, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(inventoryAction, "/user/hand/left/input/trackpad/click"),
+                        new Pair<>(jumpAction, "/user/hand/right/input/trackpad/click"),
+                        new Pair<>(sprintAction, "/user/hand/right/input/squeeze/click"),
+                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/click")
+                )
+        );
     }
 
     public void sync() {

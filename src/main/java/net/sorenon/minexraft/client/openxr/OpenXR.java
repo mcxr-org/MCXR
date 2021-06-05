@@ -788,12 +788,6 @@ public class OpenXR {
         throw new XrResultException("XR method returned " + result);
     }
 
-    public static class XrResultException extends RuntimeException {
-        public XrResultException(String s) {
-            super(s);
-        }
-    }
-
     public void setPoseFromSpace(XrSpace handSpace, long time, Pose result) {
         try (MemoryStack ignored = stackPush()) {
             XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
@@ -826,7 +820,12 @@ public class OpenXR {
         return paths.computeIfAbsent(pathString, s -> {
             try (MemoryStack ignored = stackPush()) {
                 LongBuffer buf = stackMallocLong(1);
-                check(XR10.xrStringToPath(xrInstance, pathString, buf));
+                int xrResult = XR10.xrStringToPath(xrInstance, pathString, buf);
+                if (xrResult == XR10.XR_ERROR_PATH_FORMAT_INVALID) {
+                    throw new XrResultException("Invalid path:\"" + pathString + "\"");
+                } else {
+                    check(xrResult);
+                }
                 return buf.get();
             }
         });

@@ -25,7 +25,7 @@ public class XrInput {
     public final XrSession xrSession;
     public final OpenXR xr;
 
-    private boolean menuButton = false;
+    public boolean menuButton = false;
 
     public XrInput(OpenXR openXR) {
         this.xrInstance = openXR.xrInstance;

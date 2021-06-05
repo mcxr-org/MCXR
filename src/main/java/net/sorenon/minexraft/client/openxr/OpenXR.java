@@ -648,6 +648,13 @@ public class OpenXR {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
                         }
                     }
+                    if (actionSet.inventoryState.currentState()) {
+                        long heldTime = predictedDisplayTime - actionSet.inventoryState.lastChangeTime();
+                        if (heldTime * 1E-09 > 1) {
+                            client.openPauseMenu(false);
+                            MineXRaftClient.XR_INPUT.menuButton = false;
+                        }
+                    }
                 }
 
                 FGM.framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);

@@ -8,9 +8,9 @@
     "VrKeyboardInputMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
+    "flatgui.InputUtilMixin",
     "flatgui.MinecraftClientMixin",
     "flatgui.MouseMixin",
-    "flatgui.InputUtilMixin",
     "flatgui.ScreenMixin",
     "hands.GameRendererMixin",
     "rendering.GameRendererMixin",
@@ -25,5 +25,6 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "quickhax.MinecraftClientMixin"
   ]
 }

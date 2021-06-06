@@ -28,6 +28,7 @@ public class VanillaCompatActionSet extends XrActionSet {
     public XrAction useAction;
     public XrAction sprintAction;
     public XrAction sneakAction;
+    public XrAction clickThumbstick;
 
     //Vec2f actions
     public XrAction thumbstickMainHand;
@@ -40,6 +41,7 @@ public class VanillaCompatActionSet extends XrActionSet {
     public XrActionStateBoolean useState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
     public XrActionStateBoolean sprintState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
     public XrActionStateBoolean sneakState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
+    public XrActionStateBoolean clickThumbstickState = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);
 
     public XrActionStateVector2f thumbstickMainHandState = XrActionStateVector2f.calloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
     public XrActionStateVector2f thumbstickOffHandState = XrActionStateVector2f.calloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
@@ -69,6 +71,7 @@ public class VanillaCompatActionSet extends XrActionSet {
             actionSet.inventoryAction = input.makeBoolAction("inventory", "Inventory and Pause", actionSet);
             actionSet.sprintAction = input.makeBoolAction("sprint", "Sprint", actionSet);
             actionSet.sneakAction = input.makeBoolAction("sneak", "Sneak", actionSet);
+            actionSet.clickThumbstick = input.makeBoolAction("click_thumbstick", "Click Thumbstick", actionSet);
 
             actionSet.thumbstickMainHand = input.makeVec2fAction("thumbstick_main_hand", "Thumbstick Main Hand", actionSet);
             actionSet.thumbstickOffHand = input.makeVec2fAction("thumbstick_off_hand", "Thumbstick Off Hand", actionSet);
@@ -87,7 +90,8 @@ public class VanillaCompatActionSet extends XrActionSet {
                         new Pair<>(inventoryAction, "/user/hand/left/input/y/click"),
                         new Pair<>(jumpAction, "/user/hand/right/input/a/click"),
                         new Pair<>(sprintAction, "/user/hand/right/input/squeeze/value"),
-                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/value")
+                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(clickThumbstick, "/user/hand/right/input/thumbstick/click")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
@@ -99,7 +103,8 @@ public class VanillaCompatActionSet extends XrActionSet {
                         new Pair<>(inventoryAction, "/user/hand/left/input/b/click"),
                         new Pair<>(jumpAction, "/user/hand/right/input/a/click"),
                         new Pair<>(sprintAction, "/user/hand/right/input/squeeze/value"),
-                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/value")
+                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(clickThumbstick, "/user/hand/right/input/thumbstick/click")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
@@ -111,7 +116,8 @@ public class VanillaCompatActionSet extends XrActionSet {
                         new Pair<>(inventoryAction, "/user/hand/left/input/trackpad/click"),
                         new Pair<>(jumpAction, "/user/hand/right/input/trackpad/click"),
                         new Pair<>(sprintAction, "/user/hand/right/input/squeeze/click"),
-                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/click")
+                        new Pair<>(sneakAction, "/user/hand/left/input/squeeze/click"),
+                        new Pair<>(clickThumbstick, "/user/hand/right/input/thumbstick/click")
                 )
         );
     }
@@ -133,6 +139,8 @@ public class VanillaCompatActionSet extends XrActionSet {
         xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, sprintState));
         get_info.action(sneakAction);
         xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, sneakState));
+        get_info.action(clickThumbstick);
+        xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, clickThumbstickState));
 
         get_info.action(thumbstickMainHand);
         xr.check(XR10.xrGetActionStateVector2f(xrSession, get_info, thumbstickMainHandState));

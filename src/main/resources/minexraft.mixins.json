@@ -8,11 +8,11 @@
     "VrKeyboardInputMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
+    "flatgui.GameRendererMixin",
     "flatgui.InputUtilMixin",
     "flatgui.MinecraftClientMixin",
     "flatgui.MouseMixin",
     "flatgui.ScreenMixin",
-    "flatgui.GameRendererMixin",
     "hands.GameRendererMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
@@ -20,7 +20,8 @@
     "rendering.MinecraftClientMixin",
     "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
-    "rendering.WindowMixin"
+    "rendering.WindowMixin",
+    "Tuttoastmixin"
   ],
   "injectors": {
     "defaultRequire": 1

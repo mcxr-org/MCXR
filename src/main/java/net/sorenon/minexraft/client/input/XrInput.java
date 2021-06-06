@@ -76,6 +76,12 @@ public class XrInput {
 
         VanillaCompatActionSet actionSet = MineXRaftClient.vanillaCompatActionSet;
 
+        if (actionSet.clickThumbstickState.changedSinceLastSync()) {
+            if (actionSet.clickThumbstickState.currentState()) {
+                MineXRaftClient.resetView();
+            }
+        }
+
         if (actionSet.thumbstickMainHandState.changedSinceLastSync()) {
             XrVector2f vec = actionSet.thumbstickMainHandState.currentState();
             float x = vec.x();

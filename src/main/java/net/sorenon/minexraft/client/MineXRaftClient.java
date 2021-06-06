@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -59,42 +60,46 @@ public class MineXRaftClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
-        String loaderPath = "";
-        try { //TODO bundle loader binaries with the mod
-            File configFile = FabricLoader.getInstance().getConfigDir().resolve("mcxr.properties").toFile();
-            if (!configFile.exists()) {
-                if (!configFile.createNewFile()) {
-                    LOGGER.warn("Could not create config file: " + configFile.getAbsolutePath());
-                }
-            }
-            Properties properties = new Properties();
-
-            if (configFile.exists()) {
-                try (FileInputStream inputStream = new FileInputStream(configFile)) {
-                    properties.load(inputStream);
-                }
-            }
-
-            if (properties.containsKey("loader_path")) {
-                loaderPath = properties.getProperty("loader_path");
-            } else {
-                properties.put("loader_path", "");
-            }
-
-            if (loaderPath.length() == 0) {
-                if (configFile.exists()) {
-                    try (FileOutputStream stream = new FileOutputStream(configFile)) {
-                        properties.store(stream, "");
-                    }
-                }
-                throw new IllegalStateException("Set path to openxr loader in " + configFile.getAbsolutePath());
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
+//        String loaderPath = "";
+//        try { //TODO bundle loader binaries with the mod
+//            File configFile = FabricLoader.getInstance().getConfigDir().resolve("mcxr.properties").toFile();
+//            if (!configFile.exists()) {
+//                if (!configFile.createNewFile()) {
+//                    LOGGER.warn("Could not create config file: " + configFile.getAbsolutePath());
+//                }
+//            }
+//            Properties properties = new Properties();
+//
+//            if (configFile.exists()) {
+//                try (FileInputStream inputStream = new FileInputStream(configFile)) {
+//                    properties.load(inputStream);
+//                }
+//            }
+//
+//            if (properties.containsKey("loader_path")) {
+//                loaderPath = properties.getProperty("loader_path");
+//            } else {
+//                properties.put("loader_path", "");
+//            }
+//
+//            if (loaderPath.length() == 0) {
+//                if (configFile.exists()) {
+//                    try (FileOutputStream stream = new FileOutputStream(configFile)) {
+//                        properties.store(stream, "");
+//                    }
+//                }
+//                throw new IllegalStateException("Set path to openxr loader in " + configFile.getAbsolutePath());
+//            }
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        Path path = FabricLoader.getInstance().getGameDir().resolve("mods").resolve("openxr_loader.dll");
+        if (!path.toFile().exists()) {
+            throw new RuntimeException("Could not find OpenXR loader in mods folder");
         }
 
-        XR.create(loaderPath);
+        XR.create(path.toString());
         OPEN_XR.createOpenXRInstance();
         OPEN_XR.initializeOpenXRSystem();
 

@@ -1,5 +1,6 @@
 package net.sorenon.minexraft.client.rendering;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
@@ -10,6 +11,7 @@ import net.minecraft.client.model.ModelPartBuilder;
 import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.Shader;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -25,9 +27,11 @@ import net.sorenon.minexraft.JOMLUtil;
 import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.minexraft.client.Pose;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.joml.*;
 
 import java.lang.Math;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -365,9 +369,7 @@ public class VrFirstPersonRenderer {
         float x = size / 2;
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
-        //TODO improve this compromise with a custom shader
-        //ScreenMixin#renderTooltipFromComponents
-        VertexConsumer consumer = consumers.getBuffer(ENTITY_CUTOUT.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture));
+        VertexConsumer consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS_CUSTOM.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture, MineXRaftClient.INSTANCE.flatGuiManager.depthTexture));
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
@@ -388,7 +390,7 @@ public class VrFirstPersonRenderer {
         float x = size / 2;
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
-        VertexConsumer consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture, true));
+        VertexConsumer consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS_CUSTOM.apply(MineXRaftClient.INSTANCE.flatGuiManager.texture, MineXRaftClient.INSTANCE.flatGuiManager.depthTexture));
 //        VertexConsumer consumer = consumers.getBuffer(RenderLayer.getEntityTranslucentCull(MineXRaftClient.INSTANCE.flatGuiManager.texture));
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
@@ -398,18 +400,15 @@ public class VrFirstPersonRenderer {
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
     }
 
-    private static final BiFunction<Identifier, Boolean, RenderLayer> ENTITY_TRANSLUCENT_ALWAYS = Util.memoize((texture, affectsOutline) -> {
-        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder().shader(RenderPhase.ENTITY_TRANSLUCENT_SHADER).texture(new RenderPhase.Texture(texture, false, false)).transparency(TRANSLUCENT_TRANSPARENCY).cull(DISABLE_CULLING).lightmap(ENABLE_LIGHTMAP).overlay(ENABLE_OVERLAY_COLOR).depthTest(ALWAYS_DEPTH_TEST).build(affectsOutline);
-        return RenderLayer.of("gui_translucent", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, true, multiPhaseParameters);
-    });
-
-    public static final Function<Identifier, RenderLayer> ENTITY_CUTOUT = Util.memoize((texture) -> {
-        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()/*.writeMaskState(DEPTH_MASK)*/.shader(RenderPhase.ENTITY_CUTOUT_SHADER).texture(new RenderPhase.Texture(texture, false, false)).transparency(NO_TRANSPARENCY).lightmap(ENABLE_LIGHTMAP).overlay(ENABLE_OVERLAY_COLOR).depthTest(ALWAYS_DEPTH_TEST).build(true);
-        return RenderLayer.of("gui_cutout", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, false, multiPhaseParameters);
-    });
-
     public static final Function<Identifier, RenderLayer> ENTITY_CUTOUT_DEPTH = Util.memoize((texture) -> {
         RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder().writeMaskState(DEPTH_MASK).shader(RenderPhase.ENTITY_CUTOUT_SHADER).texture(new RenderPhase.Texture(texture, false, false)).transparency(NO_TRANSPARENCY).lightmap(ENABLE_LIGHTMAP).overlay(ENABLE_OVERLAY_COLOR)/*.depthTest(ALWAYS_DEPTH_TEST)*/.build(true);
         return RenderLayer.of("gui_cutout_depth", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, false, multiPhaseParameters);
+    });
+
+    public static Shader guiShader;
+
+    private static final BiFunction<Identifier, Identifier, RenderLayer> ENTITY_TRANSLUCENT_ALWAYS_CUSTOM = Util.memoize((texture0, texture1) -> {
+        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder().shader(new RenderPhase.Shader(() -> guiShader)).texture(RenderPhase.Textures.create().add(texture0, false, false).add(texture1,false,false).build()).transparency(TRANSLUCENT_TRANSPARENCY).cull(DISABLE_CULLING)/*.lightmap(ENABLE_LIGHTMAP)*//*.overlay(ENABLE_OVERLAY_COLOR)*/.depthTest(ALWAYS_DEPTH_TEST).build(true);
+        return RenderLayer.of("gui_translucent2", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, true, multiPhaseParameters);
     });
 }

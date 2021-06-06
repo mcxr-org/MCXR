@@ -1,6 +1,8 @@
 accessWidener	v1	named
 accessible class net/minecraft/client/render/RenderLayer$MultiPhaseParameters
 accessible class net/minecraft/client/render/RenderPhase$Texture
+accessible class net/minecraft/client/render/RenderPhase$Textures
+accessible class net/minecraft/client/render/RenderPhase$Shader
 accessible field net/minecraft/client/render/RenderPhase ENTITY_TRANSLUCENT_SHADER Lnet/minecraft/client/render/RenderPhase$Shader;
 accessible field net/minecraft/client/render/RenderPhase ENTITY_CUTOUT_SHADER Lnet/minecraft/client/render/RenderPhase$Shader;
 accessible field net/minecraft/client/render/RenderPhase TRANSLUCENT_TRANSPARENCY Lnet/minecraft/client/render/RenderPhase$Transparency;

@@ -12,6 +12,7 @@
     "flatgui.MinecraftClientMixin",
     "flatgui.MouseMixin",
     "flatgui.ScreenMixin",
+    "flatgui.GameRendererMixin",
     "hands.GameRendererMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
@@ -25,6 +26,5 @@
     "defaultRequire": 1
   },
   "mixins": [
-    "quickhax.MinecraftClientMixin"
   ]
 }

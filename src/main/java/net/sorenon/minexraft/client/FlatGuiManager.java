@@ -18,6 +18,7 @@ public class FlatGuiManager {
     public int framebufferHeight = 1080;
 
     public final Identifier texture = new Identifier("mcxr", "gui");
+    public final Identifier depthTexture = new Identifier("mcxr", "gui_depth");
     public Framebuffer framebuffer;
 
     public double guiScale;
@@ -40,6 +41,7 @@ public class FlatGuiManager {
         framebuffer = new SimpleFramebuffer(framebufferWidth, framebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC);
         framebuffer.setClearColor(0, 0, 0, 0);
         MinecraftClient.getInstance().getTextureManager().registerTexture(texture, new ExistingTexture(framebuffer.getColorAttachment()));
+        MinecraftClient.getInstance().getTextureManager().registerTexture(depthTexture, new ExistingTexture(framebuffer.getDepthAttachment()));
     }
 
     public double calcGuiScale() {

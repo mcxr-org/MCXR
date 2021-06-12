@@ -202,8 +202,7 @@ public class OpenXR {
     public void bindToOpenGLAndCreateSession(long windowHandle) {
         try (MemoryStack stack = stackPush()) {
             //Initialize OpenXR's OpenGL compatability
-            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.mallocStack();
-            graphicsRequirements.set(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR, 0, 0, 0);
+            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.callocStack().type(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
             check(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(xrInstance, systemID, graphicsRequirements));
 
             //Check if OpenGL ver is supported by OpenXR ver
@@ -218,8 +217,7 @@ public class OpenXR {
                 throw new IllegalStateException();
             }
 
-            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.mallocStack();
-            sessionCreateInfo.set(
+            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.mallocStack().set(
                     XR10.XR_TYPE_SESSION_CREATE_INFO,
                     graphicsBinding.address(),
                     0,

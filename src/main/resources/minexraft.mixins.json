@@ -6,6 +6,7 @@
   "client": [
     "VrClientPlayNetworkHandlerMixin",
     "VrKeyboardInputMixin",
+    "GameOptionsMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
     "flatgui.GameRendererMixin",
@@ -20,8 +21,7 @@
     "rendering.MinecraftClientMixin",
     "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
-    "rendering.WindowMixin",
-    "Tuttoastmixin"
+    "rendering.WindowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

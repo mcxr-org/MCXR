@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gui.screen.SplashScreen;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.minexraft.client.FlatGuiManager;
@@ -49,6 +50,11 @@ public class WindowMixin {
 
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
     void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
+        if (MineXRaftClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashScreen) {
+            cir.setReturnValue(MineXRaftClient.OPEN_XR.swapchains[0].width);
+            return;
+        }
+
         if (isCustomFramebuffer()) {
             MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
             cir.setReturnValue(mainRenderTarget.viewportWidth);
@@ -57,6 +63,11 @@ public class WindowMixin {
 
     @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
     void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
+        if (MineXRaftClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashScreen) {
+            cir.setReturnValue(MineXRaftClient.OPEN_XR.swapchains[0].height);
+            return;
+        }
+
         if (isCustomFramebuffer()) {
             MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
             cir.setReturnValue(mainRenderTarget.viewportHeight);

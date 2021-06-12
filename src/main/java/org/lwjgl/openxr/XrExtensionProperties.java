@@ -13,6 +13,7 @@ import org.lwjgl.system.*;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.openxr.XR10.XR_MAX_EXTENSION_NAME_SIZE;
+import static org.lwjgl.system.Checks.*;
 import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -87,6 +88,42 @@ public class XrExtensionProperties extends Struct implements NativeResource {
     /** Returns the value of the {@code extensionVersion} field. */
     @NativeType("uint32_t")
     public int extensionVersion() { return nextensionVersion(address()); }
+
+    /** Sets the specified value to the {@code type} field. */
+    public XrExtensionProperties type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the specified value to the {@code next} field. */
+    public XrExtensionProperties next(@NativeType("void *") long value) { nnext(address(), value); return this; }
+    /** Copies the specified encoded string to the {@code extensionName} field. */
+    public XrExtensionProperties extensionName(@NativeType("char[XR_MAX_EXTENSION_NAME_SIZE]") ByteBuffer value) { nextensionName(address(), value); return this; }
+    /** Sets the specified value to the {@code extensionVersion} field. */
+    public XrExtensionProperties extensionVersion(@NativeType("uint32_t") int value) { nextensionVersion(address(), value); return this; }
+
+    /** Initializes this struct with the specified values. */
+    public XrExtensionProperties set(
+        int type,
+        long next,
+        ByteBuffer extensionName,
+        int extensionVersion
+    ) {
+        type(type);
+        next(next);
+        extensionName(extensionName);
+        extensionVersion(extensionVersion);
+
+        return this;
+    }
+
+    /**
+     * Copies the specified struct data to this struct.
+     *
+     * @param src the source struct
+     *
+     * @return this struct
+     */
+    public XrExtensionProperties set(XrExtensionProperties src) {
+        memCopy(src.address(), address(), SIZEOF);
+        return this;
+    }
 
     // -----------------------------------
 
@@ -242,6 +279,21 @@ public class XrExtensionProperties extends Struct implements NativeResource {
     /** Unsafe version of {@link #extensionVersion}. */
     public static int nextensionVersion(long struct) { return UNSAFE.getInt(null, struct + XrExtensionProperties.EXTENSIONVERSION); }
 
+    /** Unsafe version of {@link #type(int) type}. */
+    public static void ntype(long struct, int value) { UNSAFE.putInt(null, struct + XrExtensionProperties.TYPE, value); }
+    /** Unsafe version of {@link #next(long) next}. */
+    public static void nnext(long struct, long value) { memPutAddress(struct + XrExtensionProperties.NEXT, value); }
+    /** Unsafe version of {@link #extensionName(ByteBuffer) extensionName}. */
+    public static void nextensionName(long struct, ByteBuffer value) {
+        if (CHECKS) {
+            checkNT1(value);
+            checkGT(value, XR_MAX_EXTENSION_NAME_SIZE);
+        }
+        memCopy(memAddress(value), struct + XrExtensionProperties.EXTENSIONNAME, value.remaining());
+    }
+    /** Unsafe version of {@link #extensionVersion(int) extensionVersion}. */
+    public static void nextensionVersion(long struct, int value) { UNSAFE.putInt(null, struct + XrExtensionProperties.EXTENSIONVERSION, value); }
+
     // -----------------------------------
 
     /** An array of {@link XrExtensionProperties} structs. */
@@ -295,6 +347,15 @@ public class XrExtensionProperties extends Struct implements NativeResource {
         /** Returns the value of the {@code extensionVersion} field. */
         @NativeType("uint32_t")
         public int extensionVersion() { return XrExtensionProperties.nextensionVersion(address()); }
+
+        /** Sets the specified value to the {@code type} field. */
+        public Buffer type(@NativeType("XrStructureType") int value) { XrExtensionProperties.ntype(address(), value); return this; }
+        /** Sets the specified value to the {@code next} field. */
+        public Buffer next(@NativeType("void *") long value) { XrExtensionProperties.nnext(address(), value); return this; }
+        /** Copies the specified encoded string to the {@code extensionName} field. */
+        public Buffer extensionName(@NativeType("char[XR_MAX_EXTENSION_NAME_SIZE]") ByteBuffer value) { XrExtensionProperties.nextensionName(address(), value); return this; }
+        /** Sets the specified value to the {@code extensionVersion} field. */
+        public Buffer extensionVersion(@NativeType("uint32_t") int value) { XrExtensionProperties.nextensionVersion(address(), value); return this; }
 
     }
 

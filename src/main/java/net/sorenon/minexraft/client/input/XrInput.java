@@ -175,7 +175,7 @@ public class XrInput {
             );
             PointerBuffer pp = stackMallocPointer(1);
             xr.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp));
-            return new XrAction(pp.get(), actionSet.getCapabilities());
+            return new XrAction(pp.get(), actionSet);
         }
     }
 
@@ -192,7 +192,7 @@ public class XrInput {
             );
             PointerBuffer pp = stackMallocPointer(1);
             xr.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp));
-            return new XrAction(pp.get(), actionSet.getCapabilities());
+            return new XrAction(pp.get(), actionSet);
         }
     }
 
@@ -211,7 +211,7 @@ public class XrInput {
             );
             PointerBuffer pp = stackMallocPointer(1);
             xr.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp));
-            XrAction action = new XrAction(pp.get(0), actionSet.getCapabilities());
+            XrAction action = new XrAction(pp.get(0), actionSet);
 
             //Then make the reference spaces to be able to access those poses
             XrSpace[] spaces = new XrSpace[2];

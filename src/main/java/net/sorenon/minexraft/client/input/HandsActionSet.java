@@ -17,7 +17,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memASCII;
 
 public class HandsActionSet extends XrActionSet {
-    public HandsActionSet(long handle, XRCapabilitiesSession capabilities) {
+    public HandsActionSet(long handle, XrSession capabilities) {
         super(handle, capabilities);
     }
 
@@ -46,7 +46,7 @@ public class HandsActionSet extends XrActionSet {
             );
             PointerBuffer pp = stackMallocPointer(1);
             xr.check(XR10.xrCreateActionSet(xrInstance, actionSetCreateInfo, pp));
-            HandsActionSet actionSet = new HandsActionSet(pp.get(0), xrSession.getCapabilities());
+            HandsActionSet actionSet = new HandsActionSet(pp.get(0), xrSession);
 
             Pair<XrAction, XrSpace[]> grip = input.makeDualPoseAction("pose_grip", "Pose Grip", actionSet);
             actionSet.poseGrip = grip.getA();

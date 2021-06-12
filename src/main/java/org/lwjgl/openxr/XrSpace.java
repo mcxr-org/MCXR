@@ -4,12 +4,8 @@
  */
 package org.lwjgl.openxr;
 
-public class XrSpace extends DispatchableHandleSession {
-    public XrSpace(long handle, DispatchableHandleSession session) {
-        super(handle, session.getCapabilities());
-    }
-
-    public XrSpace(long handle, XRCapabilitiesSession capabilities) {
-        super(handle, capabilities);
+public class XrSpace extends DispatchableHandle {
+    public XrSpace(long handle, DispatchableHandle xrInstance) {
+        super(handle, xrInstance.getCapabilities());
     }
 }

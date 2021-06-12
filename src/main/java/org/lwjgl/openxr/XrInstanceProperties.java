@@ -13,6 +13,7 @@ import org.lwjgl.system.*;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.openxr.XR10.XR_MAX_RUNTIME_NAME_SIZE;
+import static org.lwjgl.system.Checks.*;
 import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -87,6 +88,42 @@ public class XrInstanceProperties extends Struct implements NativeResource {
     /** Decodes the null-terminated string stored in the {@code runtimeName} field. */
     @NativeType("char[XR_MAX_RUNTIME_NAME_SIZE]")
     public String runtimeNameString() { return nruntimeNameString(address()); }
+
+    /** Sets the specified value to the {@code type} field. */
+    public XrInstanceProperties type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the specified value to the {@code next} field. */
+    public XrInstanceProperties next(@NativeType("void *") long value) { nnext(address(), value); return this; }
+    /** Sets the specified value to the {@code runtimeVersion} field. */
+    public XrInstanceProperties runtimeVersion(@NativeType("XrVersion") long value) { nruntimeVersion(address(), value); return this; }
+    /** Copies the specified encoded string to the {@code runtimeName} field. */
+    public XrInstanceProperties runtimeName(@NativeType("char[XR_MAX_RUNTIME_NAME_SIZE]") ByteBuffer value) { nruntimeName(address(), value); return this; }
+
+    /** Initializes this struct with the specified values. */
+    public XrInstanceProperties set(
+        int type,
+        long next,
+        long runtimeVersion,
+        ByteBuffer runtimeName
+    ) {
+        type(type);
+        next(next);
+        runtimeVersion(runtimeVersion);
+        runtimeName(runtimeName);
+
+        return this;
+    }
+
+    /**
+     * Copies the specified struct data to this struct.
+     *
+     * @param src the source struct
+     *
+     * @return this struct
+     */
+    public XrInstanceProperties set(XrInstanceProperties src) {
+        memCopy(src.address(), address(), SIZEOF);
+        return this;
+    }
 
     // -----------------------------------
 
@@ -242,6 +279,21 @@ public class XrInstanceProperties extends Struct implements NativeResource {
     /** Unsafe version of {@link #runtimeNameString}. */
     public static String nruntimeNameString(long struct) { return memUTF8(struct + XrInstanceProperties.RUNTIMENAME); }
 
+    /** Unsafe version of {@link #type(int) type}. */
+    public static void ntype(long struct, int value) { UNSAFE.putInt(null, struct + XrInstanceProperties.TYPE, value); }
+    /** Unsafe version of {@link #next(long) next}. */
+    public static void nnext(long struct, long value) { memPutAddress(struct + XrInstanceProperties.NEXT, value); }
+    /** Unsafe version of {@link #runtimeVersion(long) runtimeVersion}. */
+    public static void nruntimeVersion(long struct, long value) { UNSAFE.putLong(null, struct + XrInstanceProperties.RUNTIMEVERSION, value); }
+    /** Unsafe version of {@link #runtimeName(ByteBuffer) runtimeName}. */
+    public static void nruntimeName(long struct, ByteBuffer value) {
+        if (CHECKS) {
+            checkNT1(value);
+            checkGT(value, XR_MAX_RUNTIME_NAME_SIZE);
+        }
+        memCopy(memAddress(value), struct + XrInstanceProperties.RUNTIMENAME, value.remaining());
+    }
+
     // -----------------------------------
 
     /** An array of {@link XrInstanceProperties} structs. */
@@ -295,6 +347,15 @@ public class XrInstanceProperties extends Struct implements NativeResource {
         /** Decodes the null-terminated string stored in the {@code runtimeName} field. */
         @NativeType("char[XR_MAX_RUNTIME_NAME_SIZE]")
         public String runtimeNameString() { return XrInstanceProperties.nruntimeNameString(address()); }
+
+        /** Sets the specified value to the {@code type} field. */
+        public Buffer type(@NativeType("XrStructureType") int value) { XrInstanceProperties.ntype(address(), value); return this; }
+        /** Sets the specified value to the {@code next} field. */
+        public Buffer next(@NativeType("void *") long value) { XrInstanceProperties.nnext(address(), value); return this; }
+        /** Sets the specified value to the {@code runtimeVersion} field. */
+        public Buffer runtimeVersion(@NativeType("XrVersion") long value) { XrInstanceProperties.nruntimeVersion(address(), value); return this; }
+        /** Copies the specified encoded string to the {@code runtimeName} field. */
+        public Buffer runtimeName(@NativeType("char[XR_MAX_RUNTIME_NAME_SIZE]") ByteBuffer value) { XrInstanceProperties.nruntimeName(address(), value); return this; }
 
     }
 

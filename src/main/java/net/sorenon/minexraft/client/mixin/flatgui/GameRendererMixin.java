@@ -1,6 +1,5 @@
 package net.sorenon.minexraft.client.mixin.flatgui;
 
-import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Shader;
@@ -36,7 +35,7 @@ public class GameRendererMixin {
         }
         list2.forEach((pair) -> {
             Shader shader = pair.getFirst();
-            this.shaders.put(shader.method_35787(), shader);
+            this.shaders.put(shader.getName(), shader);
             pair.getSecond().accept(shader);
         });
     }

@@ -289,10 +289,7 @@ public class OpenXR {
 
     public void createXRSwapchains() {
         try (MemoryStack stack = stackPush()) {
-//            ByteBuffer buf = stack.calloc(XrSystemProperties.SIZEOF);
-//            buf.putInt(XR10.XR_TYPE_SYSTEM_PROPERTIES);
-//            buf.rewind();
-            XrSystemProperties systemProperties = XrSystemProperties.callocStack();
+            XrSystemProperties systemProperties = XrSystemProperties.callocStack().type(XR10.XR_TYPE_SYSTEM_PROPERTIES);
             check(XR10.xrGetSystemProperties(xrInstance, systemID, systemProperties));
 
             LOGGER.debug(String.format("Headset name:%s vendor:%d ", memUTF8(systemProperties.systemName()), systemProperties.vendorId()));

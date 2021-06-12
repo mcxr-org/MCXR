@@ -41,7 +41,7 @@ public class FlatGuiActionSet extends XrActionSet {
     public XrActionStateVector2f scrollState = XrActionStateVector2f.calloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
 
 
-    public FlatGuiActionSet(long handle, XRCapabilitiesSession session) {
+    public FlatGuiActionSet(long handle, XrSession session) {
         super(handle, session);
     }
 
@@ -60,7 +60,7 @@ public class FlatGuiActionSet extends XrActionSet {
             );
             PointerBuffer pp = stackMallocPointer(1);
             xr.check(XR10.xrCreateActionSet(xrInstance, actionSetCreateInfo, pp));
-            FlatGuiActionSet actionSet = new FlatGuiActionSet(pp.get(0), xrSession.getCapabilities());
+            FlatGuiActionSet actionSet = new FlatGuiActionSet(pp.get(0), xrSession);
 
             actionSet.pickupAction = input.makeBoolAction("pickup", "Pickup", actionSet);
             actionSet.splitAction = input.makeBoolAction("split", "Split", actionSet);

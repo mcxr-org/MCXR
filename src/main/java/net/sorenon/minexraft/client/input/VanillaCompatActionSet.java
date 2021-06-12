@@ -17,7 +17,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memASCII;
 
 public class VanillaCompatActionSet extends XrActionSet {
-    public VanillaCompatActionSet(long handle, XRCapabilitiesSession capabilities) {
+    public VanillaCompatActionSet(long handle, XrSession capabilities) {
         super(handle, capabilities);
     }
 
@@ -63,7 +63,7 @@ public class VanillaCompatActionSet extends XrActionSet {
             );
             PointerBuffer pp = stackMallocPointer(1);
             xr.check(XR10.xrCreateActionSet(xrInstance, actionSetCreateInfo, pp));
-            VanillaCompatActionSet actionSet = new VanillaCompatActionSet(pp.get(0), xrSession.getCapabilities());
+            VanillaCompatActionSet actionSet = new VanillaCompatActionSet(pp.get(0), xrSession);
 
             actionSet.jumpAction = input.makeBoolAction("jump", "Jump", actionSet);
             actionSet.attackAction = input.makeBoolAction("attack", "Attack", actionSet);

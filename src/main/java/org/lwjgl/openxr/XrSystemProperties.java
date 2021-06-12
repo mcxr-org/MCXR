@@ -13,6 +13,7 @@ import org.lwjgl.system.*;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.openxr.XR10.XR_MAX_SYSTEM_NAME_SIZE;
+import static org.lwjgl.system.Checks.*;
 import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -106,6 +107,58 @@ public class XrSystemProperties extends Struct implements NativeResource {
     public XrSystemGraphicsProperties graphicsProperties() { return ngraphicsProperties(address()); }
     /** Returns a {@link XrSystemTrackingProperties} view of the {@code trackingProperties} field. */
     public XrSystemTrackingProperties trackingProperties() { return ntrackingProperties(address()); }
+
+    /** Sets the specified value to the {@code type} field. */
+    public XrSystemProperties type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the specified value to the {@code next} field. */
+    public XrSystemProperties next(@NativeType("void *") long value) { nnext(address(), value); return this; }
+    /** Sets the specified value to the {@code systemId} field. */
+    public XrSystemProperties systemId(@NativeType("XrSystemId") long value) { nsystemId(address(), value); return this; }
+    /** Sets the specified value to the {@code vendorId} field. */
+    public XrSystemProperties vendorId(@NativeType("uint32_t") int value) { nvendorId(address(), value); return this; }
+    /** Copies the specified encoded string to the {@code systemName} field. */
+    public XrSystemProperties systemName(@NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]") ByteBuffer value) { nsystemName(address(), value); return this; }
+    /** Copies the specified {@link XrSystemGraphicsProperties} to the {@code graphicsProperties} field. */
+    public XrSystemProperties graphicsProperties(XrSystemGraphicsProperties value) { ngraphicsProperties(address(), value); return this; }
+    /** Passes the {@code graphicsProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
+    public XrSystemProperties graphicsProperties(java.util.function.Consumer<XrSystemGraphicsProperties> consumer) { consumer.accept(graphicsProperties()); return this; }
+    /** Copies the specified {@link XrSystemTrackingProperties} to the {@code trackingProperties} field. */
+    public XrSystemProperties trackingProperties(XrSystemTrackingProperties value) { ntrackingProperties(address(), value); return this; }
+    /** Passes the {@code trackingProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
+    public XrSystemProperties trackingProperties(java.util.function.Consumer<XrSystemTrackingProperties> consumer) { consumer.accept(trackingProperties()); return this; }
+
+    /** Initializes this struct with the specified values. */
+    public XrSystemProperties set(
+        int type,
+        long next,
+        long systemId,
+        int vendorId,
+        ByteBuffer systemName,
+        XrSystemGraphicsProperties graphicsProperties,
+        XrSystemTrackingProperties trackingProperties
+    ) {
+        type(type);
+        next(next);
+        systemId(systemId);
+        vendorId(vendorId);
+        systemName(systemName);
+        graphicsProperties(graphicsProperties);
+        trackingProperties(trackingProperties);
+
+        return this;
+    }
+
+    /**
+     * Copies the specified struct data to this struct.
+     *
+     * @param src the source struct
+     *
+     * @return this struct
+     */
+    public XrSystemProperties set(XrSystemProperties src) {
+        memCopy(src.address(), address(), SIZEOF);
+        return this;
+    }
 
     // -----------------------------------
 
@@ -267,6 +320,27 @@ public class XrSystemProperties extends Struct implements NativeResource {
     /** Unsafe version of {@link #trackingProperties}. */
     public static XrSystemTrackingProperties ntrackingProperties(long struct) { return XrSystemTrackingProperties.create(struct + XrSystemProperties.TRACKINGPROPERTIES); }
 
+    /** Unsafe version of {@link #type(int) type}. */
+    public static void ntype(long struct, int value) { UNSAFE.putInt(null, struct + XrSystemProperties.TYPE, value); }
+    /** Unsafe version of {@link #next(long) next}. */
+    public static void nnext(long struct, long value) { memPutAddress(struct + XrSystemProperties.NEXT, value); }
+    /** Unsafe version of {@link #systemId(long) systemId}. */
+    public static void nsystemId(long struct, long value) { UNSAFE.putLong(null, struct + XrSystemProperties.SYSTEMID, value); }
+    /** Unsafe version of {@link #vendorId(int) vendorId}. */
+    public static void nvendorId(long struct, int value) { UNSAFE.putInt(null, struct + XrSystemProperties.VENDORID, value); }
+    /** Unsafe version of {@link #systemName(ByteBuffer) systemName}. */
+    public static void nsystemName(long struct, ByteBuffer value) {
+        if (CHECKS) {
+            checkNT1(value);
+            checkGT(value, XR_MAX_SYSTEM_NAME_SIZE);
+        }
+        memCopy(memAddress(value), struct + XrSystemProperties.SYSTEMNAME, value.remaining());
+    }
+    /** Unsafe version of {@link #graphicsProperties(XrSystemGraphicsProperties) graphicsProperties}. */
+    public static void ngraphicsProperties(long struct, XrSystemGraphicsProperties value) { memCopy(value.address(), struct + XrSystemProperties.GRAPHICSPROPERTIES, XrSystemGraphicsProperties.SIZEOF); }
+    /** Unsafe version of {@link #trackingProperties(XrSystemTrackingProperties) trackingProperties}. */
+    public static void ntrackingProperties(long struct, XrSystemTrackingProperties value) { memCopy(value.address(), struct + XrSystemProperties.TRACKINGPROPERTIES, XrSystemTrackingProperties.SIZEOF); }
+
     // -----------------------------------
 
     /** An array of {@link XrSystemProperties} structs. */
@@ -327,6 +401,25 @@ public class XrSystemProperties extends Struct implements NativeResource {
         public XrSystemGraphicsProperties graphicsProperties() { return XrSystemProperties.ngraphicsProperties(address()); }
         /** Returns a {@link XrSystemTrackingProperties} view of the {@code trackingProperties} field. */
         public XrSystemTrackingProperties trackingProperties() { return XrSystemProperties.ntrackingProperties(address()); }
+
+        /** Sets the specified value to the {@code type} field. */
+        public Buffer type(@NativeType("XrStructureType") int value) { XrSystemProperties.ntype(address(), value); return this; }
+        /** Sets the specified value to the {@code next} field. */
+        public Buffer next(@NativeType("void *") long value) { XrSystemProperties.nnext(address(), value); return this; }
+        /** Sets the specified value to the {@code systemId} field. */
+        public Buffer systemId(@NativeType("XrSystemId") long value) { XrSystemProperties.nsystemId(address(), value); return this; }
+        /** Sets the specified value to the {@code vendorId} field. */
+        public Buffer vendorId(@NativeType("uint32_t") int value) { XrSystemProperties.nvendorId(address(), value); return this; }
+        /** Copies the specified encoded string to the {@code systemName} field. */
+        public Buffer systemName(@NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]") ByteBuffer value) { XrSystemProperties.nsystemName(address(), value); return this; }
+        /** Copies the specified {@link XrSystemGraphicsProperties} to the {@code graphicsProperties} field. */
+        public Buffer graphicsProperties(XrSystemGraphicsProperties value) { XrSystemProperties.ngraphicsProperties(address(), value); return this; }
+        /** Passes the {@code graphicsProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
+        public Buffer graphicsProperties(java.util.function.Consumer<XrSystemGraphicsProperties> consumer) { consumer.accept(graphicsProperties()); return this; }
+        /** Copies the specified {@link XrSystemTrackingProperties} to the {@code trackingProperties} field. */
+        public Buffer trackingProperties(XrSystemTrackingProperties value) { XrSystemProperties.ntrackingProperties(address(), value); return this; }
+        /** Passes the {@code trackingProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
+        public Buffer trackingProperties(java.util.function.Consumer<XrSystemTrackingProperties> consumer) { consumer.accept(trackingProperties()); return this; }
 
     }
 

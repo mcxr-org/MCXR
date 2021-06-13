@@ -4,9 +4,9 @@
   "package": "net.sorenon.minexraft.client.mixin",
   "compatibilityLevel": "JAVA_16",
   "client": [
+    "GameOptionsMixin",
     "VrClientPlayNetworkHandlerMixin",
     "VrKeyboardInputMixin",
-    "GameOptionsMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
     "flatgui.GameRendererMixin",

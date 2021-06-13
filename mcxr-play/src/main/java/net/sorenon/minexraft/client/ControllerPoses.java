@@ -1,4 +1,4 @@
-package net.sorenon.mcxr_core.api;
+package net.sorenon.minexraft.client;
 
 import net.sorenon.mcxr_core.Pose;
 

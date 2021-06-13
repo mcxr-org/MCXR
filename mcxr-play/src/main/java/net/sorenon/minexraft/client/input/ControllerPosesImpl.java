@@ -1,6 +1,6 @@
 package net.sorenon.minexraft.client.input;
 
-import net.sorenon.mcxr_core.api.ControllerPoses;
+import net.sorenon.minexraft.client.ControllerPoses;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.mcxr_core.Pose;
 import org.joml.Quaternionf;

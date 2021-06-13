@@ -5,6 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.sorenon.mcxr_core.JOMLUtil;
+import net.sorenon.mcxr_core.MCXRCore;
 import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
 import net.sorenon.mcxr_core.Pose;
@@ -577,6 +578,12 @@ public class OpenXR {
             MainRenderTarget mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
 
             long frameStartTime = Util.getMeasuringTimeNano();
+//            MCXRCore.pose.set(MineXRaftClient.viewSpacePoses.getPhysicalPose());
+            if (MinecraftClient.getInstance().player != null ) {
+                MCXRCore.INSTANCE.playerPose(
+                        MinecraftClient.getInstance().player,
+                        MineXRaftClient.viewSpacePoses.getPhysicalPose());
+            }
             clientExt.preRenderXR(true, () -> {
                 if (camera.getFocusedEntity() != null) {
                     float tickDelta = client.getTickDelta();

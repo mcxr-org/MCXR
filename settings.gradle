@@ -7,3 +7,8 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+//TODO generate run configs
+rootProject.name = 'mcxr'
+
+include "mcxr-core"
+include "mcxr-play"

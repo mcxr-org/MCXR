@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "mcxr",
   "version": "${version}",
-  "name": "Minecraft XR",
+  "name": "[MCXR] Minecraft VR",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
     "Sorenon"
@@ -14,11 +14,11 @@
   "icon": "assets/minexraft/icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "net.sorenon.minexraft.MineXRaft"
-    ],
     "client": [
       "net.sorenon.minexraft.client.MineXRaftClient"
+    ],
+    "server": [
+      "net.sorenon.minexraft.MineXRaftServer"
     ]
   },
   "accessWidener": "mcxr.accesswidener",

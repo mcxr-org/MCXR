@@ -1,4 +1,4 @@
-package net.sorenon.minexraft;
+package net.sorenon.mcxr_core;
 
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;

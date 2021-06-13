@@ -1,6 +1,5 @@
 package net.sorenon.minexraft.client.rendering;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
@@ -23,15 +22,13 @@ import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.*;
 import net.minecraft.world.LightType;
-import net.sorenon.minexraft.JOMLUtil;
+import net.sorenon.mcxr_core.JOMLUtil;
 import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.Pose;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
+import net.sorenon.mcxr_core.Pose;
 import org.joml.*;
 
 import java.lang.Math;
-import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 

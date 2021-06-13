@@ -1,8 +1,9 @@
 package net.sorenon.minexraft.client.input;
 
-import net.sorenon.minexraft.api.ControllerPoses;
+import net.sorenon.mcxr_core.api.ControllerPoses;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.Pose;
+import net.sorenon.mcxr_core.Pose;
+import org.joml.Quaternionf;
 import org.lwjgl.openxr.XrPosef;
 
 public class ControllerPosesImpl implements ControllerPoses {
@@ -32,13 +33,26 @@ public class ControllerPosesImpl implements ControllerPoses {
     }
 
     public void updatePhysicalPose(XrPosef pose, float yawTurn) {
-        rawPhysicalPose.set(pose);
-        physicalPose.set(pose, yawTurn);
+        setPose(rawPhysicalPose, pose);
+        setPose(physicalPose, pose, yawTurn);
         updateGamePose();
     }
 
     public void updateGamePose() {
         gamePose.set(physicalPose);
         gamePose.getPos().add((float) MineXRaftClient.xrOrigin.x, (float) MineXRaftClient.xrOrigin.y, (float) MineXRaftClient.xrOrigin.z);
+    }
+
+    public static void setPose(Pose pose, XrPosef xrPosef) {
+        pose.pos.set(xrPosef.position$().x(), xrPosef.position$().y(), xrPosef.position$().z());
+        pose.orientation.set(xrPosef.orientation().x(), xrPosef.orientation().y(), xrPosef.orientation().z(), xrPosef.orientation().w());
+    }
+
+    public static void setPose(Pose pose, XrPosef xrPosef, float turnYaw) {
+        pose.pos.set(xrPosef.position$().x(), xrPosef.position$().y(), xrPosef.position$().z());
+        pose.orientation.set(xrPosef.orientation().x(), xrPosef.orientation().y(), xrPosef.orientation().z(), xrPosef.orientation().w());
+        pose.orientation.rotateLocalY(turnYaw);
+
+        new Quaternionf().rotateLocalY(turnYaw).transform(pose.pos);
     }
 }

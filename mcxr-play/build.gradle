@@ -36,10 +36,10 @@ dependencies {
     implementation project(":mcxr-core")
 
     //TODO look at using iris' version of joml instead of using this 'hack'
-    include(modImplementation("grondag:joml-mod:1.4.20") {
+    modCompileOnly("grondag:joml-mod:1.4.20") {
         exclude group: "grondag"
         exclude group: "net.fabricmc"
-    })
+    }
 }
 
 processResources {

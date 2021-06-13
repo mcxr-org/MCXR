@@ -1,6 +1,6 @@
-package net.sorenon.minexraft.api;
+package net.sorenon.mcxr_core.api;
 
-import net.sorenon.minexraft.client.Pose;
+import net.sorenon.mcxr_core.Pose;
 
 public interface ControllerPoses {
 

@@ -1,28 +1,14 @@
-package net.sorenon.minexraft.client;
+package net.sorenon.mcxr_core;
 
 import net.minecraft.util.math.MathHelper;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.openxr.XrPosef;
 
 public class Pose {
 
-    private final Quaternionf orientation = new Quaternionf();
-    private final Vector3f pos = new Vector3f();
-
-    public void set(XrPosef pose) {
-        pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
-        orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
-    }
-
-    public void set(XrPosef pose, float turnYaw) {
-        pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
-        orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
-        orientation.rotateLocalY(turnYaw);
-
-        new Quaternionf().rotateLocalY(turnYaw).transform(pos);
-    }
+    public final Quaternionf orientation = new Quaternionf();
+    public final Vector3f pos = new Vector3f();
 
     public void set(Pose pose) {
         pos.set(pose.pos);

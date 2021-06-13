@@ -4,10 +4,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
-import net.sorenon.minexraft.JOMLUtil;
+import net.sorenon.mcxr_core.JOMLUtil;
 import net.sorenon.minexraft.client.FlatGuiManager;
 import net.sorenon.minexraft.client.MineXRaftClient;
-import net.sorenon.minexraft.client.Pose;
+import net.sorenon.mcxr_core.Pose;
 import net.sorenon.minexraft.client.accessor.MinecraftClientExt;
 import net.sorenon.minexraft.client.accessor.MouseExt;
 import net.sorenon.minexraft.client.input.ControllerPosesImpl;
@@ -788,19 +788,6 @@ public class OpenXR {
             }
         }
         throw new XrResultException("XR method returned " + result);
-    }
-
-    public void setPoseFromSpace(XrSpace handSpace, long time, Pose result) {
-        try (MemoryStack ignored = stackPush()) {
-            XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
-            int res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
-            if (res == XR10.XR_SUCCESS &&
-                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
-                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
-
-                result.set(space_location.pose(), MineXRaftClient.yawTurn);
-            }
-        }
     }
 
     public void setPosesFromSpace(XrSpace handSpace, long time, ControllerPosesImpl result) {

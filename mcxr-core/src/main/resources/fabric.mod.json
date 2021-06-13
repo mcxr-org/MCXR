@@ -19,7 +19,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sorenon.mcxr_core.ExampleMod"
+      "net.sorenon.mcxr_core.MCXRCore"
     ]
   },
   "mixins": [

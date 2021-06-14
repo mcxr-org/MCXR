@@ -855,7 +855,7 @@ public class XR10 {
 
     public static int nxrLocateSpace(XrSpace space, XrSpace baseSpace, long time, long location) {
         long __functionAddress = space.getCapabilities().xrLocateSpace;
-        return LWJGLHAX.callPPJPI(space.address(), baseSpace.address(), time, location, __functionAddress);
+        return LWJGLCompat.callPPJPI(space.address(), baseSpace.address(), time, location, __functionAddress);
     }
 
     @NativeType("XrResult")

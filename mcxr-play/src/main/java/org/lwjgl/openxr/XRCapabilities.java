@@ -9,8 +9,8 @@ import org.lwjgl.system.FunctionProvider;
 
 import java.util.Set;
 
-import static org.lwjgl.openxr.LWJGLHAX.checkFunctions;
-import static org.lwjgl.openxr.LWJGLHAX.reportMissing;
+import static org.lwjgl.openxr.LWJGLCompat.checkFunctions;
+import static org.lwjgl.openxr.LWJGLCompat.reportMissing;
 
 /** Defines the capabilities of a OpenXR {@code XRInstance}. */
 public class XRCapabilities {

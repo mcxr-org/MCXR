@@ -41,11 +41,12 @@ public class XR {
      *
      * <p>The {@link FunctionProvider} instance created by this method can only be used to retrieve global commands and commands exposed statically by the loader.</p>
      *
-     * @param libPath the absolute path to the shared library
+     * @param libName the shared library name (or absolute path)
      * @see #create(FunctionProvider)
      */
-    public static void create(String libPath) {
-        SharedLibrary defaultOpenXRLoader = LWJGLHAX.loadNative(XR.class, libPath, "openxr_loader");
+    public static void create(String libName) {
+        //TODO bundle loader on windows
+        SharedLibrary defaultOpenXRLoader = Library.loadNative(XR.class, libName, false);
         XR.create(defaultOpenXRLoader);
     }
 

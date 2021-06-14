@@ -19,7 +19,7 @@ public class MCXRCore implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        System.out.println("HELLO FROM CORE");
+        INSTANCE = this;
 
         ServerPlayNetworking.registerGlobalReceiver(POSES,
                 (server, player, handler, buf, responseSender) -> {
@@ -32,5 +32,23 @@ public class MCXRCore implements ModInitializer {
                         playerPose(player, pose);
                     });
                 });
+    }
+
+    public void playerPose(PlayerEntity player, Pose pose) {
+        PlayerEntityAcc acc = (PlayerEntityAcc) player;
+        if (acc.getHeadPose() == null) {
+            acc.markVR();
+        }
+        acc.getHeadPose().set(pose);
+
+        if (player instanceof ClientPlayerEntity) {
+            PacketByteBuf buf = PacketByteBufs.create();
+            Vector3f pos = pose.pos;
+            Quaternionf quat = pose.orientation;
+            buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
+            buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
+
+            ClientPlayNetworking.send(POSES, buf);
+        }
     }
 }

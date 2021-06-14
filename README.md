@@ -8,7 +8,7 @@ MCXR is in early pre-pre-alpha. We are not accepting PRs and issues will be igno
 # *Installation*
 Installing the mod requires an understanding of programming in Java and managing natives. If you don't know what that means I recommend waiting until we start releasing alpha builds.
 </br>
-Once built an OpenXR loader is needed, windows binaries of which can be retrieved from [here](https://www.nuget.org/packages/OpenXR.Loader/)
+Once built an OpenXR loader needs to be put in the mods/ folder, windows binaries of which can be retrieved from [here](https://www.nuget.org/packages/OpenXR.Loader/)
 
 ## *Related Links*
 Join the Discord server [here.](https://discord.gg/fyBye2ptkS) <br/>

@@ -4,6 +4,8 @@
   "package": "net.sorenon.mcxr_core.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "LivingEntityMixin",
+    "PlayerEntityMixin"
   ],
   "client": [
   ],

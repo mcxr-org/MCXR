@@ -1,31 +1,35 @@
 {
   "schemaVersion": 1,
   "id": "mcxr-core",
-  "version": "${version}",
-
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "version": "${core_version}",
+  "name": "[MCXR] Core",
+  "description": "Allows for advanced VR functionality. Optional but still recommended for non-vr players and servers.\nThis mod does NOT let you play on vr by itself, mcxr-play is needed too.",
   "authors": [
-    "Me!"
+    "Sorenon"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/Sorenon/MCXR",
+    "sources": "https://github.com/Sorenon/MCXR",
+    "issues": "https://github.com/Sorenon/MCXR/issues"
   },
-
-  "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
-
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/CqEZbJwWx4"
+      }
+    }
+  },
+  "license": "MIT",
+  "icon": "assets/mcxr-core/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sorenon.mcxr_core.MCXRCore"
+      "net.sorenon.mcxr.core.MCXRCore"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "mcxr-core.mixins.json"
   ],
-
   "depends": {
     "fabricloader": ">=0.11.3",
     "fabric": "*",
@@ -33,6 +37,6 @@
     "java": ">=16"
   },
   "suggests": {
-    "another-mod": "*"
+    "mcxr-play": "${play_version}"
   }
 }

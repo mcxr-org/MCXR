@@ -6,6 +6,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.client.MCXRCoreClient;
 import net.sorenon.mcxr.play.client.FlatGuiManager;
 import net.sorenon.mcxr.play.client.MCXRPlayClient;
 import net.sorenon.mcxr.core.Pose;
@@ -579,7 +580,7 @@ public class OpenXR {
 
             long frameStartTime = Util.getMeasuringTimeNano();
 //            MCXRCore.pose.set(MineXRaftClient.viewSpacePoses.getPhysicalPose());
-            if (MinecraftClient.getInstance().player != null ) {
+            if (MinecraftClient.getInstance().player != null && MCXRCoreClient.INSTANCE.fullFunc) {
                 MCXRCore.INSTANCE.playerPose(
                         MinecraftClient.getInstance().player,
                         MCXRPlayClient.viewSpacePoses.getPhysicalPose());

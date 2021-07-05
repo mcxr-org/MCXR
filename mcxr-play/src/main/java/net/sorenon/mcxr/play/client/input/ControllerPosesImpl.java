@@ -1,10 +1,13 @@
 package net.sorenon.mcxr.play.client.input;
 
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
+import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.client.ControllerPoses;
 import net.sorenon.mcxr.play.client.MCXRPlayClient;
-import net.sorenon.mcxr.core.Pose;
 import org.joml.Quaternionf;
 import org.lwjgl.openxr.XrPosef;
+import virtuoel.pehkui.api.ScaleType;
 
 public class ControllerPosesImpl implements ControllerPoses {
 
@@ -40,6 +43,14 @@ public class ControllerPosesImpl implements ControllerPoses {
 
     public void updateGamePose() {
         gamePose.set(physicalPose);
+
+        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+            var camEntity = MinecraftClient.getInstance().getCameraEntity();
+            var scaleData = ScaleType.BASE.getScaleData(camEntity);
+            float scale = scaleData.getScale(1);
+            gamePose.getPos().mul(scale);
+        }
+
         gamePose.getPos().add((float) MCXRPlayClient.xrOrigin.x, (float) MCXRPlayClient.xrOrigin.y, (float) MCXRPlayClient.xrOrigin.z);
     }
 

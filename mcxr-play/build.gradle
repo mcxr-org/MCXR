@@ -40,7 +40,7 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modRuntime("com.github.Virtuoel:Pehkui:2.2.1") {
+    modImplementation("com.github.Virtuoel:Pehkui:2.2.1") {
         exclude(group: "net.fabricmc.fabric-api")
     }
 

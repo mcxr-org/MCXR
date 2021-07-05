@@ -25,6 +25,9 @@
   "entrypoints": {
     "main": [
       "net.sorenon.mcxr.core.MCXRCore"
+    ],
+    "client": [
+      "net.sorenon.mcxr.core.client.MCXRCoreClient"
     ]
   },
   "mixins": [

@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.core.mixin;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
@@ -14,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import virtuoel.pehkui.api.ScaleType;
 
 @Mixin(PlayerEntity.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityAcc {
@@ -32,19 +34,18 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
     void overrideDims(EntityPose _pose, CallbackInfoReturnable<EntityDimensions> cir) {
-        //TODO
-        //		info.setReturnValue(info.getReturnValue().scaled(ScaleUtils.getWidthScale((Entity) (Object) this), ScaleUtils.getHeightScale((Entity) (Object) this)));
-
-//        Pose pose = MCXRCore.pose;
-//        Vector3f headHalfBounds = new Vector3f(0, 0.125f, 0);
-//        cir.setReturnValue(
-//                EntityDimensions.changing(0.6F, pose.pos.y + Math.abs(pose.orientation.transform(headHalfBounds).y))
-//        );
-
         if (headPose != null) {
-            cir.setReturnValue(
-                    EntityDimensions.changing(0.6F, headPose.pos.y + 0.125f)
-            );
+            if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+                var scaleData = ScaleType.BASE.getScaleData(this);
+                float scale = scaleData.getScale(1);
+                cir.setReturnValue(
+                        EntityDimensions.changing(0.6F * scale, (headPose.pos.y + 0.125f) * scale)
+                );
+            } else {
+                cir.setReturnValue(
+                        EntityDimensions.changing(0.6F, headPose.pos.y + 0.125f)
+                );
+            }
         }
     }
 

@@ -19,6 +19,7 @@ repositories {
             password ""
         }
     }
+    maven { url 'https://jitpack.io' }
 }
 
 /*
@@ -38,6 +39,10 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modRuntime("com.github.Virtuoel:Pehkui:2.2.1") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
 
     //TODO look at using iris' version of joml instead of using this 'hack'
     modCompileOnly("grondag:joml-mod:1.4.20") {
@@ -66,7 +71,7 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}"}
+        rename { "${it}_${project.archivesBaseName}" }
     }
 }
 

@@ -6,6 +6,7 @@ import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.client.ControllerPoses;
 import net.sorenon.mcxr.play.client.MCXRPlayClient;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.lwjgl.openxr.XrPosef;
 import virtuoel.pehkui.api.ScaleType;
 
@@ -38,20 +39,13 @@ public class ControllerPosesImpl implements ControllerPoses {
     public void updatePhysicalPose(XrPosef pose, float yawTurn) {
         setPose(rawPhysicalPose, pose);
         setPose(physicalPose, pose, yawTurn);
-        updateGamePose();
     }
 
-    public void updateGamePose() {
+    public void updateGamePose(Vector3d origin, float scale) {
         gamePose.set(physicalPose);
 
-        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-            var camEntity = MinecraftClient.getInstance().getCameraEntity();
-            var scaleData = ScaleType.BASE.getScaleData(camEntity);
-            float scale = scaleData.getScale(1);
-            gamePose.getPos().mul(scale);
-        }
-
-        gamePose.getPos().add((float) MCXRPlayClient.xrOrigin.x, (float) MCXRPlayClient.xrOrigin.y, (float) MCXRPlayClient.xrOrigin.z);
+        gamePose.getPos().mul(scale);
+        gamePose.getPos().add((float) origin.x, (float) origin.y, (float) origin.z);
     }
 
     public static void setPose(Pose pose, XrPosef xrPosef) {

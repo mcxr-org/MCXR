@@ -70,7 +70,7 @@ public class MCXRPlayClient implements ClientModInitializer {
 
         WorldRenderEvents.LAST.register(context -> {
             if (!MinecraftClient.getInstance().options.hudHidden) {
-                vrFirstPersonRenderer.renderHud();
+                vrFirstPersonRenderer.renderHud(context);
             }
         });
     }

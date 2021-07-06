@@ -2,6 +2,7 @@ package net.sorenon.mcxr.play.client.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.model.ModelData;
@@ -27,6 +28,7 @@ import net.sorenon.mcxr.play.client.FlatGuiManager;
 import net.sorenon.mcxr.play.client.MCXRPlayClient;
 import net.sorenon.mcxr.core.Pose;
 import org.joml.*;
+import virtuoel.pehkui.api.ScaleType;
 
 import java.lang.Math;
 import java.util.function.BiFunction;
@@ -35,7 +37,8 @@ import java.util.function.Function;
 import static net.minecraft.client.render.RenderPhase.*;
 
 /**
- * Work in progress
+ * TODO Split up and dehackify
+ * TODO fix iris issue
  */
 public class VrFirstPersonRenderer {
 
@@ -151,7 +154,7 @@ public class VrFirstPersonRenderer {
                         MatrixStack matrices = context.matrixStack();
                         boolean mainHand = hand == MCXRPlayClient.mainHand;
                         matrices.push();
-                        transformToHand(matrices, hand);
+                        transformToHand(matrices, hand, context.tickDelta());
 
                         int light = LightmapTextureManager.pack(livingEntity.world.getLightLevel(LightType.BLOCK, livingEntity.getBlockPos()), livingEntity.world.getLightLevel(LightType.SKY, livingEntity.getBlockPos()));
 
@@ -187,7 +190,7 @@ public class VrFirstPersonRenderer {
             }
             matrices.push();
 
-            transformToHand(matrices, hand);
+            transformToHand(matrices, hand, context.tickDelta());
 
             matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
             matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
@@ -215,10 +218,10 @@ public class VrFirstPersonRenderer {
         }
     }
 
-    public void transformToHand(MatrixStack matrices, int hand) {
-        Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getPhysicalPose();
+    public void transformToHand(MatrixStack matrices, int hand, float tickDelta) {
+        Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getGamePose();
         Vec3d gripPos = JOMLUtil.convert(pose.getPos());
-        Vector3f eyePos = MCXRPlayClient.eyePoses.getPhysicalPose().getPos();
+        Vector3f eyePos = MCXRPlayClient.eyePoses.getGamePose().getPos();
 
         //Transform to controller
         matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
@@ -227,6 +230,14 @@ public class VrFirstPersonRenderer {
         //Apply adjustments
         matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
         matrices.scale(0.4f, 0.4f, 0.4f);
+
+        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+            var camEntity = MinecraftClient.getInstance().cameraEntity;
+            var scaleData = ScaleType.BASE.getScaleData(camEntity);
+            float scale = scaleData.getScale(tickDelta);
+            matrices.scale(scale, scale, scale);
+        }
+
         matrices.translate(0, 1 / 16f, -1.5f / 16f);
         matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(MCXRPlayClient.handPitchAdjust));
     }
@@ -256,7 +267,7 @@ public class VrFirstPersonRenderer {
         matrices.pop();
     }
 
-    public void renderHud() {
+    public void renderHud(WorldRenderContext context) {
         MatrixStack matrices = RenderSystem.getModelViewStack();
         BufferBuilder buffer = Tessellator.getInstance().getBuffer();
 
@@ -271,7 +282,7 @@ public class VrFirstPersonRenderer {
             }
             matrices.push();
 
-            transformToHand(matrices, hand);
+            transformToHand(matrices, hand, context.tickDelta());
 
             matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
             matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
@@ -305,15 +316,21 @@ public class VrFirstPersonRenderer {
             RenderSystem.disableDepthTest();
 
             matrices.push();
-            Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getPhysicalPose();
+            Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getGamePose();
             Vec3d gripPos = JOMLUtil.convert(pose.getPos());
-            Vector3f eyePos = MCXRPlayClient.eyePoses.getPhysicalPose().getPos();
+            Vector3f eyePos = MCXRPlayClient.eyePoses.getGamePose().getPos();
             matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
             matrices.push();
             Quaternionf quat = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf());
             matrices.multiply(new Quaternion(quat.x, quat.y, quat.z, quat.w));
 
+            if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+                var camEntity = MinecraftClient.getInstance().cameraEntity;
+                var scaleData = ScaleType.BASE.getScaleData(camEntity);
+                float scale = scaleData.getScale(context.tickDelta());
+                matrices.scale(scale, scale, scale);
+            }
 
             if (hand == MCXRPlayClient.mainHand) {
                 RenderSystem.disableTexture();

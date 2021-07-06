@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.client.openxr;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
@@ -37,6 +38,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Platform;
 import org.lwjgl.system.Struct;
 import org.lwjgl.system.windows.User32;
+import virtuoel.pehkui.api.ScaleType;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -588,16 +590,23 @@ public class OpenXR {
             clientExt.preRenderXR(true, () -> {
                 if (camera.getFocusedEntity() != null) {
                     float tickDelta = client.getTickDelta();
-                    Entity entity = camera.getFocusedEntity();
-                    MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, entity.prevX, entity.getX()) + MCXRPlayClient.xrOffset.x,
-                            MathHelper.lerp(tickDelta, entity.prevY, entity.getY()) + MCXRPlayClient.xrOffset.y,
-                            MathHelper.lerp(tickDelta, entity.prevZ, entity.getZ()) + MCXRPlayClient.xrOffset.z);
-                    MCXRPlayClient.viewSpacePoses.updateGamePose();
+                    Entity camEntity = camera.getFocusedEntity();
+                    MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()) + MCXRPlayClient.xrOffset.x,
+                            MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()) + MCXRPlayClient.xrOffset.y,
+                            MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()) + MCXRPlayClient.xrOffset.z);
+
+                    float scale = 1;
+                    if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+                        var scaleData = ScaleType.BASE.getScaleData(camEntity);
+                        scale = scaleData.getScale(tickDelta);
+                    }
+
+                    MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
                     for (var poses : MCXRPlayClient.handsActionSet.gripPoses) {
-                        poses.updateGamePose();
+                        poses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
                     }
                     for (var poses : MCXRPlayClient.handsActionSet.aimPoses) {
-                        poses.updateGamePose();
+                        poses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
                     }
                 }
             });
@@ -695,6 +704,12 @@ public class OpenXR {
                     mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
                     MCXRPlayClient.fov = views.get(viewIndex).fov();
                     MCXRPlayClient.eyePoses.updatePhysicalPose(views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
+                    float scale = 1;
+                    if (FabricLoader.getInstance().isModLoaded("pehkui") && camera.getFocusedEntity() != null) {
+                        var scaleData = ScaleType.BASE.getScaleData(camera.getFocusedEntity());
+                        scale = scaleData.getScale(MinecraftClient.getInstance().getTickDelta());
+                    }
+                    MCXRPlayClient.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
                     MCXRPlayClient.viewIndex = viewIndex;
                     camera.setPose(MCXRPlayClient.eyePoses.getGamePose());
                     MCXRPlayClient.renderPass = RenderPass.WORLD;

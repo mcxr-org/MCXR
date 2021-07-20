@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.8-SNAPSHOT'
+    id 'fabric-loom' version '0.9.25'
     id 'io.github.juuxel.loom-quiltflower' version '1.1.1'
     id 'maven-publish'
 }
@@ -34,10 +34,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    include(modImplementation("grondag:joml-mod:1.4.20") {
-        exclude group: "grondag"
-        exclude group: "net.fabricmc"
-    })
+    include(implementation("org.joml:joml:1.10.1"))
 }
 
 processResources {

@@ -298,8 +298,16 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.framebuffer.endWrite();
         matrixStack.pop();
 
-        RenderSystem.replayQueue();
-        Tessellator.getInstance().getBuffer().clear();
+//        RenderSystem.replayQueue();
+//        Tessellator.getInstance().getBuffer().clear();
+
+        {
+            GLFW.glfwPollEvents();
+            RenderSystem.replayQueue();
+            Tessellator.getInstance().getBuffer().clear();
+            GLFW.glfwSwapBuffers(window.getHandle());
+            GLFW.glfwPollEvents();
+        }
 
         /*d
         matrixStack.push();

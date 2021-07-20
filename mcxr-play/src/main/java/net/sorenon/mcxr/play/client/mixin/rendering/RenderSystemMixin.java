@@ -14,8 +14,8 @@ public class RenderSystemMixin {
      * GLFW has been set up as single buffer to avoid vsync, so calling glfwSwapBuffers does nothing
      * glFlush must be called instead
      */
-    @Redirect(method = "flipFrame", at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwSwapBuffers(J)V"))
-    private static void glfwSwapBuffers(long window) {
-        GL11.glFlush();
-    }
+//    @Redirect(method = "flipFrame", at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwSwapBuffers(J)V"))
+//    private static void glfwSwapBuffers(long window) {
+//        GL11.glFlush();
+//    }
 }

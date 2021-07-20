@@ -36,11 +36,11 @@ public class WindowMixin {
      * Disables any sort of VSync or double buffering since we don't want the refresh rate of the monitor affecting the draw cycle
      * Maybe there is a way to switch buffers on a different thread to the XR rendering?
      */
-    @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
-    private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
-        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE);
-        return GLFW.glfwCreateWindow(width, height, title, monitor, share);
-    }
+//    @Redirect(at = @At(value = "INVOKE", target = "Lorg/lwjgl/glfw/GLFW;glfwCreateWindow(IILjava/lang/CharSequence;JJ)J"), method = "<init>")
+//    private long onGlfwCreateWindow(int width, int height, CharSequence title, long monitor, long share) {
+//        GLFW.glfwWindowHint(GLFW.GLFW_DOUBLEBUFFER, GLFW.GLFW_FALSE);
+//        return GLFW.glfwCreateWindow(width, height, title, monitor, share);
+//    }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void postInit(WindowEventHandler eventHandler, MonitorTracker monitorTracker, WindowSettings settings, String videoMode, String title, CallbackInfo ci) {

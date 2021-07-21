@@ -3,7 +3,7 @@ package net.sorenon.mcxr.play.client.mixin.rendering;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.WindowEventHandler;
 import net.minecraft.client.WindowSettings;
-import net.minecraft.client.gui.screen.SplashScreen;
+import net.minecraft.client.gui.screen.SplashOverlay;
 import net.minecraft.client.util.MonitorTracker;
 import net.minecraft.client.util.Window;
 import net.sorenon.mcxr.play.client.FlatGuiManager;
@@ -44,13 +44,15 @@ public class WindowMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void postInit(WindowEventHandler eventHandler, MonitorTracker monitorTracker, WindowSettings settings, String videoMode, String title, CallbackInfo ci) {
-        MCXRPlayClient.OPEN_XR.bindToOpenGLAndCreateSession(handle);
+//        MCXRPlayClient.OPEN_XR.createOpenXRInstance();
+//        MCXRPlayClient.OPEN_XR.initializeOpenXRSystem();
+//        MCXRPlayClient.OPEN_XR.bindToOpenGLAndCreateSession(handle);
     }
 
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
     void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
-        if (MCXRPlayClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashScreen) {
-            cir.setReturnValue(MCXRPlayClient.OPEN_XR.swapchains[0].width);
+        if (MCXRPlayClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashOverlay) {
+            cir.setReturnValue(MCXRPlayClient.OPEN_XR.xrSession.swapchains[0].width);
             return;
         }
 
@@ -62,8 +64,8 @@ public class WindowMixin {
 
     @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
     void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
-        if (MCXRPlayClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashScreen) {
-            cir.setReturnValue(MCXRPlayClient.OPEN_XR.swapchains[0].height);
+        if (MCXRPlayClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashOverlay) {
+            cir.setReturnValue(MCXRPlayClient.OPEN_XR.xrSession.swapchains[0].height);
             return;
         }
 

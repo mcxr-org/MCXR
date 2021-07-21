@@ -34,8 +34,8 @@ public class HandsActionSet extends XrActionSet {
     public static HandsActionSet init() {
         OpenXR xr = MCXRPlayClient.OPEN_XR;
         XrInput input = MCXRPlayClient.XR_INPUT;
-        XrInstance xrInstance = xr.xrInstance;
-        XrSession xrSession = xr.xrSession;
+        XrInstance xrInstance = xr.xrInstance.handle;
+        XrSession xrSession = xr.xrSession.handle;
 
         try (MemoryStack ignored = stackPush()) {
             XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.mallocStack().set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
@@ -88,7 +88,7 @@ public class HandsActionSet extends XrActionSet {
     public void sync() {
         XrActionStateGetInfo get_info = XrActionStateGetInfo.callocStack().type(XR10.XR_TYPE_ACTION_STATE_GET_INFO);
         OpenXR xr = MCXRPlayClient.OPEN_XR;
-        XrSession xrSession = xr.xrSession;
+        XrSession xrSession = xr.xrSession.handle;
 
         for (int hand = 0; hand < 2; hand++) {
             get_info.subactionPath(XrInput.HandPath.subactionPaths.get(hand));

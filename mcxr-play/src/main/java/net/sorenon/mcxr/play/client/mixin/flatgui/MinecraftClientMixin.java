@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftClient.class)
 public class MinecraftClientMixin {
 
-    @Inject(method = "openScreen", at = @At("HEAD"))
+    @Inject(method = "setScreen", at = @At("HEAD"))
     void openScreen(Screen screen, CallbackInfo ci) {
         MCXRPlayClient.INSTANCE.flatGuiManager.openScreen(screen);
     }

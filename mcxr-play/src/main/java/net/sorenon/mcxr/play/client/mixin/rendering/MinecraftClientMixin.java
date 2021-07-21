@@ -7,7 +7,7 @@ import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.WindowFramebuffer;
 import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.SplashScreen;
+import net.minecraft.client.gui.screen.SplashOverlay;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.Option;
@@ -176,6 +176,8 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Final
     public GameOptions options;
 
+    @Shadow private int trackingTick;
+
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/WindowFramebuffer"))
     WindowFramebuffer createFramebuffer(int width, int height) {
         return new MainRenderTarget(width, height);
@@ -183,28 +185,35 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
-        MCXRPlayClient.INSTANCE.postRenderManagerInit();
+        MCXRPlayClient.OPEN_XR.tryInitialize();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
     void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
         OpenXR openXR = MCXRPlayClient.OPEN_XR;
+
+        if (openXR.xrSession == null) {
+            if (!openXR.tryInitialize()) {
+                Thread.sleep(1000);
+                return;
+            }
+        }
+
         XrInput xrInput = MCXRPlayClient.XR_INPUT;
         if (openXR.pollEvents()) {
             running = false;
             return;
         }
 
-        if (openXR.sessionRunning) {
+        if (openXR.xrSession.running) {
             xrInput.pollActions();
             openXR.renderFrameOpenXR();
         } else {
-            // Throttle loop since xrWaitFrame won't be called.
-            Thread.sleep(250);
+            render(tick);
         }
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "openScreen")
+    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "setScreen")
     void initScreen(Screen screen, MinecraftClient client, int widthIn, int heightIn) {
         if (world != null) {
             FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
@@ -227,7 +236,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             this.scheduleStop();
         }
 
-        if (this.resourceReloadFuture != null && !(this.overlay instanceof SplashScreen)) {
+        if (this.resourceReloadFuture != null && !(this.overlay instanceof SplashOverlay)) {
             CompletableFuture<Void> completableFuture = this.resourceReloadFuture;
             this.resourceReloadFuture = null;
             this.reloadResources().thenRun(() -> {

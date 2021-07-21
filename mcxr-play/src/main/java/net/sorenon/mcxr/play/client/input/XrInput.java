@@ -28,13 +28,13 @@ public class XrInput {
     public boolean menuButton = false;
 
     public XrInput(OpenXR openXR) {
-        this.xrInstance = openXR.xrInstance;
-        this.xrSession = openXR.xrSession;
+        this.xrInstance = openXR.xrInstance.handle;
+        this.xrSession = openXR.xrSession.handle;
         this.xr = openXR;
     }
 
     public void pollActions() {
-        if (MCXRPlayClient.OPEN_XR.sessionState != XR10.XR_SESSION_STATE_FOCUSED) {
+        if (MCXRPlayClient.OPEN_XR.xrSession.state != XR10.XR_SESSION_STATE_FOCUSED) {
             return;
         }
 
@@ -116,7 +116,7 @@ public class XrInput {
                             client.player.openRidingInventory();
                         } else {
                             client.getTutorialManager().onInventoryOpened();
-                            client.openScreen(new InventoryScreen(client.player));
+                            client.setScreen(new InventoryScreen(client.player));
                         }
                     }
                 } else {

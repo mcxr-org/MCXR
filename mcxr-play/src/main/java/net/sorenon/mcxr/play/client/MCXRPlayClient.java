@@ -6,7 +6,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.sorenon.mcxr.play.client.input.*;
 import net.sorenon.mcxr.play.client.openxr.OpenXR;
-import net.sorenon.mcxr.play.client.openxr.XrResultException;
+import net.sorenon.mcxr.play.client.openxr.XrRuntimeException;
 import net.sorenon.mcxr.play.client.rendering.RenderPass;
 import net.sorenon.mcxr.play.client.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;
@@ -61,8 +61,6 @@ public class MCXRPlayClient implements ClientModInitializer {
         }
 
         XR.create(path.toString());
-        OPEN_XR.createOpenXRInstance();
-        OPEN_XR.initializeOpenXRSystem();
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             vrFirstPersonRenderer.renderAfterEntities(context);
@@ -76,10 +74,6 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public void postRenderManagerInit() {
-        OPEN_XR.eventDataBuffer = XrEventDataBuffer.calloc();
-        OPEN_XR.eventDataBuffer.type(XR10.XR_TYPE_EVENT_DATA_BUFFER);
-
-        OPEN_XR.createXRSwapchains();
         XR_INPUT = new XrInput(OPEN_XR);
 
         handsActionSet = HandsActionSet.init();
@@ -113,13 +107,13 @@ public class MCXRPlayClient implements ClientModInitializer {
                 );
 
                 try {
-                    OPEN_XR.check(XR10.xrSuggestInteractionProfileBindings(OPEN_XR.xrInstance, suggested_binds));
-                } catch (XrResultException e) {
+                    OPEN_XR.check(XR10.xrSuggestInteractionProfileBindings(OPEN_XR.xrInstance.handle, suggested_binds));
+                } catch (XrRuntimeException e) {
                     StringBuilder out = new StringBuilder(e.getMessage() + "\ninteractionProfile: " + entry.getKey());
                     for (var pair : bindingsSet) {
                         out.append("\n").append(pair.getB());
                     }
-                    throw new XrResultException(out.toString());
+                    throw new XrRuntimeException(out.toString());
                 }
             }
 
@@ -129,7 +123,7 @@ public class MCXRPlayClient implements ClientModInitializer {
                     stackPointers(vanillaCompatActionSet.address(), flatGuiActionSet.address(), handsActionSet.address())
             );
             // Attach the action set we just made to the session
-            OPEN_XR.check(XR10.xrAttachSessionActionSets(OPEN_XR.xrSession, attach_info));
+            OPEN_XR.check(XR10.xrAttachSessionActionSets(OPEN_XR.xrSession.handle, attach_info));
         }
 
         flatGuiManager.init();
@@ -140,6 +134,6 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static boolean isXrMode() {
-        return MinecraftClient.getInstance().world != null;
+        return MinecraftClient.getInstance().world != null || OPEN_XR.xrInstance == null;
     }
 }

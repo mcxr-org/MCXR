@@ -48,8 +48,8 @@ public class FlatGuiActionSet extends XrActionSet {
     public static FlatGuiActionSet init() {
         OpenXR xr = MCXRPlayClient.OPEN_XR;
         XrInput input = MCXRPlayClient.XR_INPUT;
-        XrInstance xrInstance = xr.xrInstance;
-        XrSession xrSession = xr.xrSession;
+        XrInstance xrInstance = xr.xrInstance.handle;
+        XrSession xrSession = xr.xrSession.handle;
 
         try (MemoryStack ignored = stackPush()) {
             XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.mallocStack().set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
@@ -105,7 +105,7 @@ public class FlatGuiActionSet extends XrActionSet {
     public void sync() {
         XrActionStateGetInfo get_info = XrActionStateGetInfo.callocStack().type(XR10.XR_TYPE_ACTION_STATE_GET_INFO);
         OpenXR xr = MCXRPlayClient.OPEN_XR;
-        XrSession xrSession = xr.xrSession;
+        XrSession xrSession = xr.xrSession.handle;
 
         get_info.action(pickupAction);
         xr.check(XR10.xrGetActionStateBoolean(xrSession, get_info, pickupState));

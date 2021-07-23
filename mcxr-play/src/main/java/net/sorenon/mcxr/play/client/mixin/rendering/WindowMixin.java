@@ -9,14 +9,12 @@ import net.minecraft.client.util.Window;
 import net.sorenon.mcxr.play.client.FlatGuiManager;
 import net.sorenon.mcxr.play.client.MCXRPlayClient;
 import net.sorenon.mcxr.play.client.rendering.MainRenderTarget;
-import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -52,7 +50,7 @@ public class WindowMixin {
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
     void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
         if (MCXRPlayClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashOverlay) {
-            cir.setReturnValue(MCXRPlayClient.OPEN_XR.xrSession.swapchains[0].width);
+            cir.setReturnValue(MCXRPlayClient.OPEN_XR.session.swapchains[0].width);
             return;
         }
 
@@ -65,7 +63,7 @@ public class WindowMixin {
     @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
     void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
         if (MCXRPlayClient.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashOverlay) {
-            cir.setReturnValue(MCXRPlayClient.OPEN_XR.xrSession.swapchains[0].height);
+            cir.setReturnValue(MCXRPlayClient.OPEN_XR.session.swapchains[0].height);
             return;
         }
 

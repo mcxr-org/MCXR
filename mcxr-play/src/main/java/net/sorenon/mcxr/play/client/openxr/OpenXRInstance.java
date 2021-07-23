@@ -9,14 +9,16 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
+import java.util.HashMap;
 
-import static org.lwjgl.system.MemoryStack.stackMalloc;
-import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 public class OpenXRInstance implements AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger();
+
+    private final HashMap<String, Long> paths = new HashMap<>();
 
     public final XrInstance handle;
     public final XrEventDataBuffer eventDataBuffer;
@@ -83,6 +85,21 @@ public class OpenXRInstance implements AutoCloseable {
         }
     }
 
+    public long getPath(String pathString) {
+        return paths.computeIfAbsent(pathString, s -> {
+            try (MemoryStack ignored = stackPush()) {
+                LongBuffer buf = stackMallocLong(1);
+                int xrResult = XR10.xrStringToPath(handle, pathString, buf);
+                if (xrResult == XR10.XR_ERROR_PATH_FORMAT_INVALID) {
+                    throw new XrRuntimeException("Invalid path:\"" + pathString + "\"");
+                } else {
+                    check(xrResult, "xrStringToPath");
+                }
+                return buf.get();
+            }
+        });
+    }
+
     public void check(int result, String method) {
         if (result >= 0) return;
 
@@ -96,7 +113,7 @@ public class OpenXRInstance implements AutoCloseable {
     public void close() {
         XR10.xrDestroyInstance(handle);
         eventDataBuffer.close();
-        var session = MCXRPlayClient.OPEN_XR.xrSession;
+        var session = MCXRPlayClient.OPEN_XR.session;
         if (session != null) {
             session.close();
         }

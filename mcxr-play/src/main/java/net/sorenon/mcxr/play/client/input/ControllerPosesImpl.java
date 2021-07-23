@@ -1,14 +1,10 @@
 package net.sorenon.mcxr.play.client.input;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.client.ControllerPoses;
-import net.sorenon.mcxr.play.client.MCXRPlayClient;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.lwjgl.openxr.XrPosef;
-import virtuoel.pehkui.api.ScaleType;
 
 public class ControllerPosesImpl implements ControllerPoses {
 

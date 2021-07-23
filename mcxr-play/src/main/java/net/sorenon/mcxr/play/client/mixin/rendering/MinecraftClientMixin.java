@@ -192,7 +192,8 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
         OpenXR openXR = MCXRPlayClient.OPEN_XR;
 
-        if (openXR.xrSession == null) {
+        if (openXR.session == null) {
+            //TODO have a button and message in-game for this
             if (!openXR.tryInitialize()) {
                 Thread.sleep(1000);
                 return;
@@ -205,11 +206,12 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             return;
         }
 
-        if (openXR.xrSession.running) {
+        if (openXR.session.running) {
             xrInput.pollActions();
-            openXR.renderFrameOpenXR();
+            openXR.renderFrame();
         } else {
             render(tick);
+//            Thread.sleep(1000);
         }
     }
 

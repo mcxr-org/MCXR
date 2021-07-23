@@ -144,7 +144,7 @@ public class VrFirstPersonRenderer {
 //                }
             } else if (entity instanceof LivingEntity livingEntity) {
                 for (int hand = 0; hand < 2; hand++) {
-                    if (!MCXRPlayClient.handsActionSet.isHandActive[hand]) {
+                    if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
                         continue;
                     }
 
@@ -185,7 +185,7 @@ public class VrFirstPersonRenderer {
         MatrixStack matrices = context.matrixStack();
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MCXRPlayClient.handsActionSet.isHandActive[hand]) {
+            if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
                 continue;
             }
             matrices.push();
@@ -277,7 +277,7 @@ public class VrFirstPersonRenderer {
         matrices.pop();
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MCXRPlayClient.handsActionSet.isHandActive[hand]) {
+            if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
                 continue;
             }
             matrices.push();
@@ -303,7 +303,7 @@ public class VrFirstPersonRenderer {
         }
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MCXRPlayClient.handsActionSet.isHandActive[hand]) {
+            if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
                 continue;
             }
 

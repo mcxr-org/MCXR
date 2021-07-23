@@ -5,6 +5,9 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.sorenon.mcxr.play.client.MCXRPlayClient;
+import net.sorenon.mcxr.play.client.input.actionsets.GuiActionSet;
+import net.sorenon.mcxr.play.client.input.actionsets.HandsActionSet;
+import net.sorenon.mcxr.play.client.input.actionsets.VanillaGameplayActionSet;
 import net.sorenon.mcxr.play.client.openxr.OpenXR;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -28,45 +31,42 @@ public class XrInput {
     public boolean menuButton = false;
 
     public XrInput(OpenXR openXR) {
-        this.xrInstance = openXR.xrInstance.handle;
-        this.xrSession = openXR.xrSession.handle;
+        this.xrInstance = openXR.instance.handle;
+        this.xrSession = openXR.session.handle;
         this.xr = openXR;
     }
 
     public void pollActions() {
-        if (MCXRPlayClient.OPEN_XR.xrSession.state != XR10.XR_SESSION_STATE_FOCUSED) {
+        if (MCXRPlayClient.OPEN_XR.session.state != XR10.XR_SESSION_STATE_FOCUSED) {
             return;
         }
 
         try (MemoryStack stack = stackPush()) {
             // Update our action set with up-to-date input data!
-            VanillaCompatActionSet vcActionSet = MCXRPlayClient.vanillaCompatActionSet;
-            FlatGuiActionSet guiActionSet = MCXRPlayClient.flatGuiActionSet;
+            VanillaGameplayActionSet vcActionSet = MCXRPlayClient.vanillaGameplayActionSet;
+            GuiActionSet guiActionSet = MCXRPlayClient.guiActionSet;
             HandsActionSet handsActionSet = MCXRPlayClient.handsActionSet;
 
-            XrActiveActionSet.Buffer set = XrActiveActionSet.callocStack(3);
-            set.get(0).actionSet(vcActionSet);
-            set.get(1).actionSet(guiActionSet);
-            set.get(2).actionSet(handsActionSet);
+            XrActiveActionSet.Buffer sets = XrActiveActionSet.callocStack(3);
+            sets.get(0).actionSet(handsActionSet.getHandle());
+            sets.get(1).actionSet(vcActionSet.getHandle());
+            sets.get(2).actionSet(guiActionSet.getHandle());
 
-            XrActionsSyncInfo sync_info = XrActionsSyncInfo.mallocStack().set(
-                    XR10.XR_TYPE_ACTIONS_SYNC_INFO,
-                    NULL,
-                    set.capacity(),
-                    set
-            );
+            XrActionsSyncInfo sync_info = XrActionsSyncInfo.calloc()
+                    .type(XR10.XR_TYPE_ACTIONS_SYNC_INFO)
+                    .activeActionSets(sets);
 
             xr.check(XR10.xrSyncActions(xrSession, sync_info));
 
-            handsActionSet.sync();
-            vcActionSet.sync();
-            guiActionSet.sync();
+            handsActionSet.sync(xr.session);
+            vcActionSet.sync(xr.session);
+            guiActionSet.sync(xr.session);
         }
 
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
-            FlatGuiActionSet actionSet = MCXRPlayClient.flatGuiActionSet;
-            if (actionSet.exitState.changedSinceLastSync()) {
-                if (actionSet.exitState.currentState()) {
+            GuiActionSet actionSet = MCXRPlayClient.guiActionSet;
+            if (actionSet.exit.changedSinceLastSync) {
+                if (actionSet.exit.currentState) {
                     MinecraftClient.getInstance().currentScreen.keyPressed(256, 0, 0);
                 }
             }
@@ -74,39 +74,41 @@ public class XrInput {
             return;
         }
 
-        VanillaCompatActionSet actionSet = MCXRPlayClient.vanillaCompatActionSet;
+        VanillaGameplayActionSet actionSet = MCXRPlayClient.vanillaGameplayActionSet;
 
-        if (actionSet.clickThumbstickState.changedSinceLastSync()) {
-            if (actionSet.clickThumbstickState.currentState()) {
+        if (actionSet.resetPos.changedSinceLastSync) {
+            if (actionSet.resetPos.currentState) {
                 MCXRPlayClient.resetView();
             }
         }
 
-        if (actionSet.thumbstickMainHandState.changedSinceLastSync()) {
-            XrVector2f vec = actionSet.thumbstickMainHandState.currentState();
-            float x = vec.x();
-            float y = vec.y();
-            if (actionSet.thumbstickMainHandActivated) {
-                actionSet.thumbstickMainHandActivated = !(Math.abs(x) <= 0.15 && Math.abs(y) <= 0.15);
-            } else {
-                if (Math.abs(x) >= 0.4f) {
-                    MCXRPlayClient.yawTurn += Math.toRadians(22) * -Math.signum(x);
-                    Vector3f rotatedPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f());
-                    Vector3f finalPos = MCXRPlayClient.xrOffset.add(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos(), new Vector3f());
+        if (actionSet.turn.changedSinceLastSync) {
+            float value = actionSet.turn.currentState;
+            if (actionSet.turnActivated) {
+                actionSet.turnActivated = Math.abs(value) > 0.15f;
+            } else if (Math.abs(value) > 0.6f) {
+                MCXRPlayClient.yawTurn += Math.toRadians(22) * -Math.signum(value);
+                Vector3f rotatedPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f());
+                Vector3f finalPos = MCXRPlayClient.xrOffset.add(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos(), new Vector3f());
 
-                    MCXRPlayClient.xrOffset = finalPos.sub(rotatedPos).mul(1, 0, 1);
+                MCXRPlayClient.xrOffset = finalPos.sub(rotatedPos).mul(1, 0, 1);
 
-                    actionSet.thumbstickMainHandActivated = true;
-                } else if (Math.abs(y) >= 0.45f) {
-                    if (MinecraftClient.getInstance().player != null)
-                        MinecraftClient.getInstance().player.getInventory().scrollInHotbar(-y);
-
-                    actionSet.thumbstickMainHandActivated = true;
-                }
+                actionSet.turnActivated = true;
             }
         }
-        if (actionSet.inventoryState.changedSinceLastSync()) {
-            if (actionSet.inventoryState.currentState()) {
+
+        if (actionSet.hotbar.changedSinceLastSync) {
+            var value = actionSet.hotbar.currentState;
+            if (actionSet.hotbarActivated) {
+                actionSet.hotbarActivated = Math.abs(value) > 0.15;
+            } else if (Math.abs(value) >= 0.45f) {
+                if (MinecraftClient.getInstance().player != null)
+                    MinecraftClient.getInstance().player.getInventory().scrollInHotbar(-value);
+                actionSet.hotbarActivated = true;
+            }
+        }
+        if (actionSet.inventory.changedSinceLastSync) {
+            if (actionSet.inventory.currentState) {
                 menuButton = true;
             } else if (menuButton) {
                 MinecraftClient client = MinecraftClient.getInstance();
@@ -125,9 +127,9 @@ public class XrInput {
                 menuButton = false;
             }
         }
-        if (actionSet.sprintState.changedSinceLastSync()) {
+        if (actionSet.sprint.changedSinceLastSync) {
             MinecraftClient client = MinecraftClient.getInstance();
-            if (actionSet.sprintState.currentState()) {
+            if (actionSet.sprint.currentState) {
                 client.options.keySprint.setPressed(true);
             } else {
                 client.options.keySprint.setPressed(false);
@@ -136,9 +138,9 @@ public class XrInput {
                 }
             }
         }
-        if (actionSet.sneakState.changedSinceLastSync()) {
+        if (actionSet.sneak.changedSinceLastSync) {
             MinecraftClient client = MinecraftClient.getInstance();
-            client.options.keySneak.setPressed(actionSet.sneakState.currentState());
+            client.options.keySneak.setPressed(actionSet.sneak.currentState);
         }
 //        if (actionSet.attackState.changedSinceLastSync()) {
 //            MinecraftClient client = MinecraftClient.getInstance();
@@ -150,96 +152,15 @@ public class XrInput {
 //                KeyBinding.setKeyPressed(key, false);
 //            }
 //        }
-        if (actionSet.useState.changedSinceLastSync()) {
+        if (actionSet.use.changedSinceLastSync) {
             MinecraftClient client = MinecraftClient.getInstance();
             InputUtil.Key key = client.options.keyUse.getDefaultKey();
-            if (actionSet.useState.currentState()) {
+            if (actionSet.use.currentState) {
                 KeyBinding.onKeyPressed(key);
                 KeyBinding.setKeyPressed(key, true);
             } else {
                 KeyBinding.setKeyPressed(key, false);
             }
-        }
-    }
-
-    public XrAction makeBoolAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
-        try (MemoryStack ignored = stackPush()) {
-            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
-                    XR10.XR_TYPE_ACTION_CREATE_INFO,
-                    NULL,
-                    memASCII(actionName),
-                    XR10.XR_ACTION_TYPE_BOOLEAN_INPUT,
-                    0,
-                    null,
-                    memASCII(actionNameLocalised)
-            );
-            PointerBuffer pp = stackMallocPointer(1);
-            xr.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp));
-            return new XrAction(pp.get(), actionSet);
-        }
-    }
-
-    public XrAction makeVec2fAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
-        try (MemoryStack ignored = stackPush()) {
-            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
-                    XR10.XR_TYPE_ACTION_CREATE_INFO,
-                    NULL,
-                    memASCII(actionName),
-                    XR10.XR_ACTION_TYPE_VECTOR2F_INPUT,
-                    0,
-                    null,
-                    memASCII(actionNameLocalised)
-            );
-            PointerBuffer pp = stackMallocPointer(1);
-            xr.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp));
-            return new XrAction(pp.get(), actionSet);
-        }
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    public Pair<XrAction, XrSpace[]> makeDualPoseAction(String actionName, String actionNameLocalised, XrActionSet actionSet) {
-        try (MemoryStack ignored = stackPush()) {
-            //For each hand create actions for using poses as an input
-            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
-                    XR10.XR_TYPE_ACTION_CREATE_INFO,
-                    NULL,
-                    memASCII(actionName),
-                    XR10.XR_ACTION_TYPE_POSE_INPUT,
-                    2,
-                    HandPath.subactionPaths,
-                    memASCII(actionNameLocalised)
-            );
-            PointerBuffer pp = stackMallocPointer(1);
-            xr.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp));
-            XrAction action = new XrAction(pp.get(0), actionSet);
-
-            //Then make the reference spaces to be able to access those poses
-            XrSpace[] spaces = new XrSpace[2];
-            for (int i = 0; i < 2; i++) {
-                XrActionSpaceCreateInfo action_space_info = XrActionSpaceCreateInfo.mallocStack().set(
-                        XR10.XR_TYPE_ACTION_SPACE_CREATE_INFO,
-                        NULL,
-                        action,
-                        HandPath.subactionPaths.get(i),
-                        OpenXR.identityPose
-                );
-                xr.check(XR10.xrCreateActionSpace(xrSession, action_space_info, pp));
-                spaces[i] = new XrSpace(pp.get(0), xrSession);
-            }
-
-            return new Pair<>(action, spaces);
-        }
-    }
-
-    public enum HandPath {
-        LEFT("/user/hand/left"),
-        RIGHT("/user/hand/right");
-
-        public static final LongBuffer subactionPaths = memAllocLong(2).put(0, MCXRPlayClient.OPEN_XR.getPath("/user/hand/left")).put(1, MCXRPlayClient.OPEN_XR.getPath("/user/hand/right"));
-        public final long subactionPath;
-
-        HandPath(String pathString) {
-            subactionPath = MCXRPlayClient.OPEN_XR.getPath(pathString);
         }
     }
 }

@@ -14,8 +14,8 @@ import net.sorenon.mcxr.play.client.MCXRPlayClient;
 import net.sorenon.mcxr.play.client.accessor.MinecraftClientExt;
 import net.sorenon.mcxr.play.client.accessor.MouseExt;
 import net.sorenon.mcxr.play.client.input.ControllerPosesImpl;
-import net.sorenon.mcxr.play.client.input.FlatGuiActionSet;
-import net.sorenon.mcxr.play.client.input.VanillaCompatActionSet;
+import net.sorenon.mcxr.play.client.input.actionsets.GuiActionSet;
+import net.sorenon.mcxr.play.client.input.actionsets.VanillaGameplayActionSet;
 import net.sorenon.mcxr.play.client.rendering.MainRenderTarget;
 import net.sorenon.mcxr.play.client.rendering.RenderPass;
 import net.sorenon.mcxr.play.client.rendering.XrCamera;
@@ -44,8 +44,8 @@ import static org.lwjgl.system.MemoryUtil.*;
  */
 public class OpenXR {
 
-    public OpenXRInstance xrInstance;
-    public OpenXRSession xrSession;
+    public OpenXRInstance instance;
+    public OpenXRSession session;
     int formFactor = XR10.XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
     int viewConfigType = XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 
@@ -86,23 +86,23 @@ public class OpenXR {
 
     public boolean tryInitialize() {
         try {
-            if (xrInstance == null) {
-                createOpenXRInstance();
+            if (instance == null) {
+                instance = createOpenXRInstance();
             }
-            xrSession = xrInstance.createSession(viewConfigType, xrInstance.getSystem(formFactor));
-            xrSession.createXRReferenceSpaces();
-            xrSession.createSwapchains();
+            session = instance.createSession(viewConfigType, instance.getSystem(formFactor));
+            session.createXRReferenceSpaces();
+            session.createSwapchains();
             MCXRPlayClient.INSTANCE.postRenderManagerInit();
             return true;
         } catch (XrException e) {
-            if (xrInstance != null) xrInstance.close();
-            xrInstance = null;
+            if (instance != null) instance.close();
+            instance = null;
             LOGGER.error(e.getMessage());
             return false;
         }
     }
 
-    public void createOpenXRInstance() throws XrException {
+    public OpenXRInstance createOpenXRInstance() throws XrException {
         try (MemoryStack stack = stackPush()) {
             IntBuffer numExtensions = stack.mallocInt(1);
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
@@ -154,29 +154,29 @@ public class OpenXR {
                 throw new XrException("Failed to create xrInstance, are you sure your headset is plugged in?");
             } else if (xrResult == XR10.XR_ERROR_INSTANCE_LOST) {
                 throw new XrException("Failed to create xrInstance due to runtime updating");
-            } else {
-                checkSafe(xrResult);
+            } else if (xrResult < 0) {
+                throw new XrException("XR method returned " + xrResult);
             }
 
-            xrInstance = new OpenXRInstance(new XrInstance(instancePtr.get(0), createInfo));
+            return new OpenXRInstance(new XrInstance(instancePtr.get(0), createInfo));
         }
     }
 
     public boolean pollEvents() {
-        XrEventDataBaseHeader event = xrInstance.nextEvent();
+        XrEventDataBaseHeader event = instance.nextEvent();
         while (event != null) {
             switch (event.type()) {
                 case XR10.XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
                     XrEventDataInstanceLossPending instanceLossPending = XrEventDataInstanceLossPending.create(event.address());
                     LOGGER.warn("XrEventDataInstanceLossPending by " + instanceLossPending.lossTime());
 
-                    xrInstance.close();
-                    xrInstance = null;
+                    instance.close();
+                    instance = null;
                     return true;
                 }
                 case XR10.XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
                     XrEventDataSessionStateChanged sessionStateChangedEvent = XrEventDataSessionStateChanged.create(event.address());
-                    return xrSession.handleSessionStateChangedEvent(sessionStateChangedEvent/*, requestRestart*/);
+                    return session.handleSessionStateChangedEvent(sessionStateChangedEvent/*, requestRestart*/);
                 }
                 case XR10.XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED:
                     break;
@@ -186,23 +186,23 @@ public class OpenXR {
                     break;
                 }
             }
-            event = xrInstance.nextEvent();
+            event = instance.nextEvent();
         }
 
         return false;
     }
 
-    public void renderFrameOpenXR() {
+    public void renderFrame() {
         try (MemoryStack stack = stackPush()) {
             XrFrameWaitInfo frameWaitInfo = XrFrameWaitInfo.callocStack();
             frameWaitInfo.type(XR10.XR_TYPE_FRAME_WAIT_INFO);
             XrFrameState frameState = XrFrameState.callocStack();
             frameState.type(XR10.XR_TYPE_FRAME_STATE);
-            check(XR10.xrWaitFrame(xrSession.handle, frameWaitInfo, frameState));
+            check(XR10.xrWaitFrame(session.handle, frameWaitInfo, frameState));
 
             XrFrameBeginInfo frameBeginInfo = XrFrameBeginInfo.callocStack();
             frameBeginInfo.type(XR10.XR_TYPE_FRAME_BEGIN_INFO);
-            check(XR10.xrBeginFrame(xrSession.handle, frameBeginInfo));
+            check(XR10.xrBeginFrame(session.handle, frameBeginInfo));
 
             XrCompositionLayerProjection layerProjection = XrCompositionLayerProjection.callocStack();
             layerProjection.type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION);
@@ -221,17 +221,12 @@ public class OpenXR {
             }
             layers.flip();
 
-            XrFrameEndInfo frameEndInfo = XrFrameEndInfo.mallocStack();
-            frameEndInfo.set(
-                    XR10.XR_TYPE_FRAME_END_INFO,
-                    0,
-                    frameState.predictedDisplayTime(),
-                    XR10.XR_ENVIRONMENT_BLEND_MODE_OPAQUE,
-                    layers.limit(),
-                    layers
-            );
-
-            check(XR10.xrEndFrame(xrSession.handle, frameEndInfo));
+            XrFrameEndInfo frameEndInfo = XrFrameEndInfo.callocStack()
+                    .type(XR10.XR_TYPE_FRAME_END_INFO)
+                    .displayTime(frameState.predictedDisplayTime())
+                    .environmentBlendMode(XR10.XR_ENVIRONMENT_BLEND_MODE_OPAQUE)
+                    .layers(layers);
+            check(XR10.xrEndFrame(session.handle, frameEndInfo));
 
             if (layers.limit() > 0) {
                 layerProjection.views().free(); //These values were allocated in a child function so they must be freed manually as we could not use the stack
@@ -252,10 +247,10 @@ public class OpenXR {
                     0,
                     viewConfigType,
                     predictedDisplayTime,
-                    xrSession.xrAppSpace
+                    session.xrAppSpace
             );
 
-            check(XR10.xrLocateViews(xrSession.handle, viewLocateInfo, viewState, intBuf, xrSession.views));
+            check(XR10.xrLocateViews(session.handle, viewLocateInfo, viewState, intBuf, session.views));
 
             if ((viewState.viewStateFlags() & XR10.XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
                     (viewState.viewStateFlags() & XR10.XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0) {
@@ -271,17 +266,17 @@ public class OpenXR {
 
             // Update hand position based on the predicted time of when the frame will be rendered! This
             // should result in a more accurate location, and reduce perceived lag.
-            if (xrSession.state == XR10.XR_SESSION_STATE_FOCUSED) {
+            if (session.state == XR10.XR_SESSION_STATE_FOCUSED) {
                 for (int i = 0; i < 2; i++) {
-                    if (!MCXRPlayClient.handsActionSet.isHandActive[i]) {
+                    if (!MCXRPlayClient.handsActionSet.grip.isActive[i]) {
                         continue;
                     }
-                    setPosesFromSpace(MCXRPlayClient.handsActionSet.poseGripSpaces[i], predictedDisplayTime, MCXRPlayClient.handsActionSet.gripPoses[i]);
-                    setPosesFromSpace(MCXRPlayClient.handsActionSet.poseAimSpaces[i], predictedDisplayTime, MCXRPlayClient.handsActionSet.aimPoses[i]);
+                    setPosesFromSpace(MCXRPlayClient.handsActionSet.grip.spaces[i], predictedDisplayTime, MCXRPlayClient.handsActionSet.gripPoses[i]);
+                    setPosesFromSpace(MCXRPlayClient.handsActionSet.aim.spaces[i], predictedDisplayTime, MCXRPlayClient.handsActionSet.aimPoses[i]);
                 }
             }
 
-            setPosesFromSpace(xrSession.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses);
+            setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses);
 
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
             camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MCXRPlayClient.viewSpacePoses.getGamePose());
@@ -338,37 +333,37 @@ public class OpenXR {
                                 FGM.framebufferHeight * (1 - vec.y)
                         );
                     }
-                    FlatGuiActionSet actionSet = MCXRPlayClient.flatGuiActionSet;
-                    if (actionSet.pickupState.changedSinceLastSync() || actionSet.quickMoveState.changedSinceLastSync()) {
-                        if (actionSet.pickupState.currentState() || actionSet.quickMoveState.currentState()) {
+                    GuiActionSet actionSet = MCXRPlayClient.guiActionSet;
+                    if (actionSet.pickup.changedSinceLastSync || actionSet.quickMove.changedSinceLastSync) {
+                        if (actionSet.pickup.currentState || actionSet.quickMove.currentState) {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                         } else {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
                         }
                     }
-                    if (actionSet.splitState.changedSinceLastSync()) {
-                        if (actionSet.splitState.currentState()) {
+                    if (actionSet.split.changedSinceLastSync) {
+                        if (actionSet.split.currentState) {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);
                         } else {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
                         }
                     }
-                    if (actionSet.scrollState.changedSinceLastSync()) {
-                        XrVector2f state = actionSet.scrollState.currentState();
+                    if (actionSet.scroll.changedSinceLastSync) {
+                        var state = actionSet.scroll.currentState;
                         double sensitivity = 0.25;
                         mouse.mouseScroll(-state.x() * sensitivity, state.y() * sensitivity);
                     }
                 } else {
-                    VanillaCompatActionSet actionSet = MCXRPlayClient.vanillaCompatActionSet;
-                    if (actionSet.attackState.changedSinceLastSync()) {
-                        if (actionSet.attackState.currentState()) {
+                    VanillaGameplayActionSet actionSet = MCXRPlayClient.vanillaGameplayActionSet;
+                    if (actionSet.attack.changedSinceLastSync) {
+                        if (actionSet.attack.currentState) {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                         } else {
                             mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
                         }
                     }
-                    if (actionSet.inventoryState.currentState()) {
-                        long heldTime = predictedDisplayTime - actionSet.inventoryState.lastChangeTime();
+                    if (actionSet.inventory.currentState) {
+                        long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
                         if (heldTime * 1E-09 > 1) {
                             client.openPauseMenu(false);
                             MCXRPlayClient.XR_INPUT.menuButton = false;
@@ -384,7 +379,7 @@ public class OpenXR {
             // Render view to the appropriate part of the swapchain image.
             for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
                 // Each view has a separate swapchain which is acquired, rendered to, and released.
-                OpenXRSwapchain viewSwapchain = xrSession.swapchains[viewIndex];
+                OpenXRSwapchain viewSwapchain = session.swapchains[viewIndex];
 
                 XrSwapchainImageAcquireInfo acquireInfo = new XrSwapchainImageAcquireInfo(stack.calloc(XrSwapchainImageAcquireInfo.SIZEOF));
                 acquireInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO);
@@ -399,8 +394,8 @@ public class OpenXR {
 
                 XrCompositionLayerProjectionView projectionLayerView = projectionLayerViews.get(viewIndex);
                 projectionLayerView.type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW);
-                projectionLayerView.pose(xrSession.views.get(viewIndex).pose());
-                projectionLayerView.fov(xrSession.views.get(viewIndex).fov());
+                projectionLayerView.pose(session.views.get(viewIndex).pose());
+                projectionLayerView.fov(session.views.get(viewIndex).fov());
                 projectionLayerView.subImage().swapchain(viewSwapchain.handle);
                 projectionLayerView.subImage().imageRect().offset().set(0, 0);
                 projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
@@ -410,8 +405,8 @@ public class OpenXR {
                     viewSwapchain.framebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
                     viewSwapchain.framebuffer.endWrite();
                     mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
-                    MCXRPlayClient.fov = xrSession.views.get(viewIndex).fov();
-                    MCXRPlayClient.eyePoses.updatePhysicalPose(xrSession.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
+                    MCXRPlayClient.fov = session.views.get(viewIndex).fov();
+                    MCXRPlayClient.eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
                     float scale = 1;
                     if (FabricLoader.getInstance().isModLoaded("pehkui") && camera.getFocusedEntity() != null) {
                         var scaleData = ScaleType.BASE.getScaleData(camera.getFocusedEntity());
@@ -434,7 +429,7 @@ public class OpenXR {
             camera.setPose(MCXRPlayClient.viewSpacePoses.getGamePose());
             clientExt.postRenderXR(true);
 
-            layer.space(xrSession.xrAppSpace);
+            layer.space(session.xrAppSpace);
             layer.views(projectionLayerViews);
             return true;
         }
@@ -453,10 +448,10 @@ public class OpenXR {
                     0,
                     viewConfigType,
                     predictedDisplayTime,
-                    xrSession.xrAppSpace
+                    session.xrAppSpace
             );
 
-            check(XR10.xrLocateViews(xrSession.handle, viewLocateInfo, viewState, intBuf, xrSession.views));
+            check(XR10.xrLocateViews(session.handle, viewLocateInfo, viewState, intBuf, session.views));
 
             if ((viewState.viewStateFlags() & XR10.XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
                     (viewState.viewStateFlags() & XR10.XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0) {
@@ -475,7 +470,7 @@ public class OpenXR {
             // Render view to the appropriate part of the swapchain image.
             for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
                 // Each view has a separate swapchain which is acquired, rendered to, and released.
-                OpenXRSwapchain viewSwapchain = xrSession.swapchains[viewIndex];
+                OpenXRSwapchain viewSwapchain = session.swapchains[viewIndex];
 
                 XrSwapchainImageAcquireInfo acquireInfo = new XrSwapchainImageAcquireInfo(stack.calloc(XrSwapchainImageAcquireInfo.SIZEOF));
                 acquireInfo.type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO);
@@ -490,8 +485,8 @@ public class OpenXR {
 
                 XrCompositionLayerProjectionView projectionLayerView = projectionLayerViews.get(viewIndex);
                 projectionLayerView.type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW);
-                projectionLayerView.pose(xrSession.views.get(viewIndex).pose());
-                projectionLayerView.fov(xrSession.views.get(viewIndex).fov());
+                projectionLayerView.pose(session.views.get(viewIndex).pose());
+                projectionLayerView.fov(session.views.get(viewIndex).fov());
                 projectionLayerView.subImage().swapchain(viewSwapchain.handle);
                 projectionLayerView.subImage().imageRect().offset().set(0, 0);
                 projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
@@ -505,30 +500,18 @@ public class OpenXR {
                 check(XR10.xrReleaseSwapchainImage(viewSwapchain.handle, releaseInfo));
             }
 
-            layer.space(xrSession.xrAppSpace);
+            layer.space(session.xrAppSpace);
             layer.views(projectionLayerViews);
             return true;
         }
     }
 
-    public void checkSafe(int result) throws XrException {
-        if (result >= 0) return;
-
-        if (xrInstance != null) {
-            ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
-            if (XR10.xrResultToString(xrInstance.handle, result, str) >= 0) {
-                throw new XrException(memUTF8Safe(str));
-            }
-        }
-        throw new XrException("XR method returned " + result);
-    }
-
     public void check(int result) throws XrRuntimeException {
         if (result >= 0) return;
 
-        if (xrInstance != null) {
+        if (instance != null) {
             ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
-            if (XR10.xrResultToString(xrInstance.handle, result, str) >= 0) {
+            if (XR10.xrResultToString(instance.handle, result, str) >= 0) {
                 throw new XrRuntimeException(memUTF8Safe(str));
             }
         }
@@ -538,7 +521,7 @@ public class OpenXR {
     public void setPosesFromSpace(XrSpace handSpace, long time, ControllerPosesImpl result) {
         try (MemoryStack ignored = stackPush()) {
             XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
-            int res = XR10.xrLocateSpace(handSpace, xrSession.xrAppSpace, time, space_location);
+            int res = XR10.xrLocateSpace(handSpace, session.xrAppSpace, time, space_location);
             if (res == XR10.XR_SUCCESS &&
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
@@ -546,22 +529,5 @@ public class OpenXR {
                 result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn);
             }
         }
-    }
-
-    private final HashMap<String, Long> paths = new HashMap<>();
-
-    public long getPath(String pathString) {
-        return paths.computeIfAbsent(pathString, s -> {
-            try (MemoryStack ignored = stackPush()) {
-                LongBuffer buf = stackMallocLong(1);
-                int xrResult = XR10.xrStringToPath(xrInstance.handle, pathString, buf);
-                if (xrResult == XR10.XR_ERROR_PATH_FORMAT_INVALID) {
-                    throw new XrRuntimeException("Invalid path:\"" + pathString + "\"");
-                } else {
-                    check(xrResult);
-                }
-                return buf.get();
-            }
-        });
     }
 }

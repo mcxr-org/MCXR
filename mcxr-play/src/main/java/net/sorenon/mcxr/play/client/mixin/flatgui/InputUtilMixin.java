@@ -15,7 +15,7 @@ public class InputUtilMixin {
     private static void isKeyPressed(long handle, int code, CallbackInfoReturnable<Boolean> cir) {
         if (code == GLFW.GLFW_KEY_LEFT_SHIFT || code == GLFW.GLFW_KEY_RIGHT_SHIFT) {
             if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
-                if (MCXRPlayClient.flatGuiActionSet.quickMoveState.currentState()) {
+                if (MCXRPlayClient.guiActionSet.quickMove.currentState) {
                     cir.setReturnValue(true);
                 }
             }

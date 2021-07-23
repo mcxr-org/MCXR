@@ -231,11 +231,11 @@ public class OpenXR {
                     layers
             );
 
+            check(XR10.xrEndFrame(xrSession.handle, frameEndInfo));
+
             if (layers.limit() > 0) {
                 layerProjection.views().free(); //These values were allocated in a child function so they must be freed manually as we could not use the stack
             }
-
-            check(XR10.xrEndFrame(xrSession.handle, frameEndInfo));
         }
     }
 
@@ -266,7 +266,8 @@ public class OpenXR {
 //            assert (viewCountOutput == swapchains.length);
 //            assert (viewCountOutput == 2);
 
-            projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
+//            projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
+            projectionLayerViews = XrCompositionLayerProjectionView.calloc(viewCountOutput);
 
             // Update hand position based on the predicted time of when the frame will be rendered! This
             // should result in a more accurate location, and reduce perceived lag.
@@ -397,6 +398,7 @@ public class OpenXR {
                 check(XR10.xrWaitSwapchainImage(viewSwapchain.handle, waitInfo));
 
                 XrCompositionLayerProjectionView projectionLayerView = projectionLayerViews.get(viewIndex);
+                projectionLayerView.type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW);
                 projectionLayerView.pose(xrSession.views.get(viewIndex).pose());
                 projectionLayerView.fov(xrSession.views.get(viewIndex).fov());
                 projectionLayerView.subImage().swapchain(viewSwapchain.handle);
@@ -464,7 +466,8 @@ public class OpenXR {
 //            assert (viewCountOutput == views.capacity());
 //            assert (viewCountOutput == swapchains.length);
 
-            projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
+//            projectionLayerViews = new XrCompositionLayerProjectionView.Buffer(mallocAndFillBufferHeap(viewCountOutput, XrCompositionLayerProjectionView.SIZEOF, XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW));
+            projectionLayerViews = XrCompositionLayerProjectionView.calloc(viewCountOutput);
 
             //For some reason this has to be called between frame start and frame end or the OpenXR runtime crashes
             clientExt.render();
@@ -486,6 +489,7 @@ public class OpenXR {
                 check(XR10.xrWaitSwapchainImage(viewSwapchain.handle, waitInfo));
 
                 XrCompositionLayerProjectionView projectionLayerView = projectionLayerViews.get(viewIndex);
+                projectionLayerView.type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW);
                 projectionLayerView.pose(xrSession.views.get(viewIndex).pose());
                 projectionLayerView.fov(xrSession.views.get(viewIndex).fov());
                 projectionLayerView.subImage().swapchain(viewSwapchain.handle);

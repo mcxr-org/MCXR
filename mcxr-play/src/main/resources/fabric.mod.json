@@ -24,10 +24,7 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "net.sorenon.mcxr.play.client.MCXRPlayClient"
-    ],
-    "server": [
-      "net.sorenon.mcxr.play.MCXRPlayServer"
+      "net.sorenon.mcxr.play.MCXRPlayClient"
     ]
   },
   "accessWidener": "mcxr-play.accesswidener",

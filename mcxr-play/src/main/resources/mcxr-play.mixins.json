@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.sorenon.mcxr.play.client.mixin",
+  "package": "net.sorenon.mcxr.play.mixin",
   "compatibilityLevel": "JAVA_16",
   "client": [
     "GameOptionsMixin",
@@ -25,7 +25,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-  ]
+  }
 }

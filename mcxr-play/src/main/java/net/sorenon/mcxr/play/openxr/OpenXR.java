@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.play.openxr;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
@@ -29,12 +28,12 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
-import virtuoel.pehkui.api.ScaleType;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryStack.stackMalloc;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -295,12 +294,7 @@ public class OpenXR {
                             MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()) + MCXRPlayClient.xrOffset.y,
                             MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()) + MCXRPlayClient.xrOffset.z);
 
-                    float scale = 1;
-                    if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-                        var scaleData = ScaleType.BASE.getScaleData(camEntity);
-                        scale = scaleData.getScale(tickDelta);
-                    }
-
+                    float scale = MCXRPlayClient.getScale();
                     MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
                     for (var poses : MCXRPlayClient.handsActionSet.gripPoses) {
                         poses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
@@ -317,7 +311,7 @@ public class OpenXR {
                 mainRenderTarget.setFramebuffer(FGM.framebuffer);
                 MouseExt mouse = ((MouseExt) MinecraftClient.getInstance().mouse);
                 if (FGM.isScreenOpen()) {
-                    Pose pose = MCXRPlayClient.handsActionSet.gripPoses[MCXRPlayClient.mainHand].getGamePose();
+                    Pose pose = MCXRPlayClient.handsActionSet.gripPoses[MCXRPlayClient.mainHand].getPhysicalPose();
                     Vector3d pos = new Vector3d(pose.getPos());
                     Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
                     Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
@@ -405,12 +399,7 @@ public class OpenXR {
                     mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
                     MCXRPlayClient.fov = session.views.get(viewIndex).fov();
                     MCXRPlayClient.eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
-                    float scale = 1;
-                    if (FabricLoader.getInstance().isModLoaded("pehkui") && camera.getFocusedEntity() != null) {
-                        var scaleData = ScaleType.BASE.getScaleData(camera.getFocusedEntity());
-                        scale = scaleData.getScale(MinecraftClient.getInstance().getTickDelta());
-                    }
-                    MCXRPlayClient.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
+                    MCXRPlayClient.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin, MCXRPlayClient.getScale());
                     MCXRPlayClient.viewIndex = viewIndex;
                     camera.setPose(MCXRPlayClient.eyePoses.getGamePose());
                     MCXRPlayClient.renderPass = RenderPass.WORLD;

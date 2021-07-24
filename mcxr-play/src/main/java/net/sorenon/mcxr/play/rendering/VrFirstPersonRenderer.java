@@ -2,7 +2,6 @@ package net.sorenon.mcxr.play.rendering;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.model.ModelData;
@@ -10,8 +9,8 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.model.ModelPartBuilder;
 import net.minecraft.client.model.ModelTransform;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.*;
 import net.minecraft.client.render.Shader;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -19,22 +18,20 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.Matrix3f;
-import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.*;
 import net.minecraft.world.LightType;
 import net.sorenon.mcxr.core.JOMLUtil;
+import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.core.Pose;
-import org.joml.*;
-import virtuoel.pehkui.api.ScaleType;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
-import java.lang.Math;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static net.minecraft.client.render.RenderPhase.*;
+import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
 /**
  * TODO Split up and dehackify
@@ -81,9 +78,9 @@ public class VrFirstPersonRenderer {
             MatrixStack matrices = context.matrixStack();
 
             matrices.push();
-            Vec3d pos = FGM.pos.subtract(context.camera().getPos());
+            Vec3d pos = FGM.pos.subtract(context.camera().getPos()).add(convert(MCXRPlayClient.xrOrigin));
             matrices.translate(pos.x, pos.y, pos.z);
-            matrices.multiply(new Quaternion((float)FGM.rot.x, (float)FGM.rot.y, (float)FGM.rot.z, (float)FGM.rot.w));
+            matrices.multiply(new Quaternion((float) FGM.rot.x, (float) FGM.rot.y, (float) FGM.rot.z, (float) FGM.rot.w));
             renderGuiQuad(matrices.peek(), context.consumers());
             matrices.pop();
         }
@@ -220,23 +217,19 @@ public class VrFirstPersonRenderer {
 
     public void transformToHand(MatrixStack matrices, int hand, float tickDelta) {
         Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getGamePose();
-        Vec3d gripPos = JOMLUtil.convert(pose.getPos());
+        Vec3d gripPos = convert(pose.getPos());
         Vector3f eyePos = MCXRPlayClient.eyePoses.getGamePose().getPos();
 
         //Transform to controller
         matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
-        matrices.multiply(JOMLUtil.convert(pose.getOrientation()));
+        matrices.multiply(convert(pose.getOrientation()));
 
         //Apply adjustments
         matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
         matrices.scale(0.4f, 0.4f, 0.4f);
 
-        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-            var camEntity = MinecraftClient.getInstance().cameraEntity;
-            var scaleData = ScaleType.BASE.getScaleData(camEntity);
-            float scale = scaleData.getScale(tickDelta);
-            matrices.scale(scale, scale, scale);
-        }
+        float scale = MCXRPlayClient.getScale();
+        matrices.scale(scale, scale, scale);
 
         matrices.translate(0, 1 / 16f, -1.5f / 16f);
         matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(MCXRPlayClient.handPitchAdjust));
@@ -317,7 +310,7 @@ public class VrFirstPersonRenderer {
 
             matrices.push();
             Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getGamePose();
-            Vec3d gripPos = JOMLUtil.convert(pose.getPos());
+            Vec3d gripPos = convert(pose.getPos());
             Vector3f eyePos = MCXRPlayClient.eyePoses.getGamePose().getPos();
             matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
@@ -325,12 +318,8 @@ public class VrFirstPersonRenderer {
             Quaternionf quat = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf());
             matrices.multiply(new Quaternion(quat.x, quat.y, quat.z, quat.w));
 
-            if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-                var camEntity = MinecraftClient.getInstance().cameraEntity;
-                var scaleData = ScaleType.BASE.getScaleData(camEntity);
-                float scale = scaleData.getScale(context.tickDelta());
-                matrices.scale(scale, scale, scale);
-            }
+            float scale = MCXRPlayClient.getScale();
+            matrices.scale(scale, scale, scale);
 
             if (hand == MCXRPlayClient.mainHand) {
                 RenderSystem.disableTexture();
@@ -358,7 +347,7 @@ public class VrFirstPersonRenderer {
                 RenderSystem.renderCrosshair(1);
 
                 matrices.pop();
-                matrices.multiply(JOMLUtil.convert(pose.getOrientation()));
+                matrices.multiply(convert(pose.getOrientation()));
                 matrices.scale(0.1f, 0.1f, 0.1f);
                 RenderSystem.applyModelViewMatrix();
 
@@ -422,7 +411,7 @@ public class VrFirstPersonRenderer {
     public static Shader guiShader;
 
     private static final BiFunction<Identifier, Identifier, RenderLayer> ENTITY_TRANSLUCENT_ALWAYS_CUSTOM = Util.memoize((texture0, texture1) -> {
-        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder().shader(new RenderPhase.Shader(() -> guiShader)).texture(RenderPhase.Textures.create().add(texture0, false, false).add(texture1,false,false).build()).transparency(TRANSLUCENT_TRANSPARENCY).cull(DISABLE_CULLING)/*.lightmap(ENABLE_LIGHTMAP)*//*.overlay(ENABLE_OVERLAY_COLOR)*/.depthTest(ALWAYS_DEPTH_TEST).build(true);
+        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder().shader(new RenderPhase.Shader(() -> guiShader)).texture(RenderPhase.Textures.create().add(texture0, false, false).add(texture1, false, false).build()).transparency(TRANSLUCENT_TRANSPARENCY).cull(DISABLE_CULLING)/*.lightmap(ENABLE_LIGHTMAP)*//*.overlay(ENABLE_OVERLAY_COLOR)*/.depthTest(ALWAYS_DEPTH_TEST).build(true);
         return RenderLayer.of("gui_translucent2", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, true, multiPhaseParameters);
     });
 }

@@ -4,23 +4,17 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.sorenon.mcxr.play.client.MCXRPlayClient;
-import net.sorenon.mcxr.play.client.input.actionsets.GuiActionSet;
-import net.sorenon.mcxr.play.client.input.actionsets.HandsActionSet;
-import net.sorenon.mcxr.play.client.input.actionsets.VanillaGameplayActionSet;
-import net.sorenon.mcxr.play.client.openxr.OpenXR;
+import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
+import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
+import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
+import net.sorenon.mcxr.play.openxr.OpenXR;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
-import oshi.util.tuples.Pair;
 
-import java.nio.LongBuffer;
-
-import static org.lwjgl.system.MemoryStack.stackMallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.*;
 
 public class XrInput {
 
@@ -88,8 +82,9 @@ public class XrInput {
                 actionSet.turnActivated = Math.abs(value) > 0.15f;
             } else if (Math.abs(value) > 0.6f) {
                 MCXRPlayClient.yawTurn += Math.toRadians(22) * -Math.signum(value);
-                Vector3f rotatedPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f());
-                Vector3f finalPos = MCXRPlayClient.xrOffset.add(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos(), new Vector3f());
+                var scale = MCXRPlayClient.getScale();
+                Vector3f rotatedPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f()).mul(scale);
+                Vector3f finalPos = MCXRPlayClient.xrOffset.add(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().mul(scale, new Vector3f()), new Vector3f());
 
                 MCXRPlayClient.xrOffset = finalPos.sub(rotatedPos).mul(1, 0, 1);
 

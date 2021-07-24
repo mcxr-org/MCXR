@@ -12,7 +12,7 @@ public class ExistingTexture extends AbstractTexture {
     }
 
     @Override
-    public void load(ResourceManager manager) throws IOException {
+    public void load(ResourceManager manager) {
 
     }
 

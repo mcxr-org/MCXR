@@ -3,6 +3,7 @@ package net.sorenon.mcxr.core.mixin;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
+import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +16,7 @@ public class LivingEntityMixin {
     @Inject(method = "getEyeHeight(Lnet/minecraft/entity/EntityPose;Lnet/minecraft/entity/EntityDimensions;)F", at = @At("HEAD"), cancellable = true)
     void overrideEyeHeight(EntityPose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
         if (this instanceof PlayerEntityAcc acc && acc.getHeadPose() != null) {
-            cir.setReturnValue(acc.getHeadPose().pos.y);
+            cir.setReturnValue(acc.getHeadPose().pos.y * MCXRCore.getScale((LivingEntity) (Object) this));
         }
     }
 }

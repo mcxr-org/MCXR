@@ -14,8 +14,8 @@ import org.joml.*;
 
 public class FlatGuiManager {
 
-    public int framebufferWidth = 1440;
-    public int framebufferHeight = 1080;
+    public final int framebufferWidth = 1440;
+    public final int framebufferHeight = 1080;
 
     public final Identifier texture = new Identifier("mcxr", "gui");
     public final Identifier depthTexture = new Identifier("mcxr", "gui_depth");
@@ -26,6 +26,9 @@ public class FlatGuiManager {
     public int scaledWidth;
     public int scaledHeight;
 
+    /**
+     * The position of the GUI relative in physical space
+     */
     public Vec3d pos = null;
     public Quaterniond rot = new Quaterniond(0, 0, 0, 1);
 
@@ -71,7 +74,7 @@ public class FlatGuiManager {
         } else if (MinecraftClient.getInstance().currentScreen == null) {
             XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
             Quaterniond orientation = JOMLUtil.convertd(camera.getRotation());
-            pos = camera.getPos().add(JOMLUtil.convert(orientation.transform(new Vector3d(0, -0.5, 1))));
+            pos = camera.getPos().add(JOMLUtil.convert(orientation.transform(new Vector3d(0, -0.5, 1)))).subtract(JOMLUtil.convert(MCXRPlayClient.xrOrigin));
             rot = orientation;
         }
     }

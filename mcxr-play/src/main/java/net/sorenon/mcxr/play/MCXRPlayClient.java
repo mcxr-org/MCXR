@@ -4,15 +4,17 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.sorenon.mcxr.play.client.input.*;
-import net.sorenon.mcxr.play.client.input.actions.Action;
-import net.sorenon.mcxr.play.client.input.actions.SessionAwareAction;
-import net.sorenon.mcxr.play.client.input.actionsets.GuiActionSet;
-import net.sorenon.mcxr.play.client.input.actionsets.HandsActionSet;
-import net.sorenon.mcxr.play.client.input.actionsets.VanillaGameplayActionSet;
-import net.sorenon.mcxr.play.client.openxr.*;
-import net.sorenon.mcxr.play.client.rendering.RenderPass;
-import net.sorenon.mcxr.play.client.rendering.VrFirstPersonRenderer;
+import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.play.input.ControllerPosesImpl;
+import net.sorenon.mcxr.play.input.XrInput;
+import net.sorenon.mcxr.play.input.actions.Action;
+import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
+import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
+import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
+import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
+import net.sorenon.mcxr.play.openxr.*;
+import net.sorenon.mcxr.play.rendering.RenderPass;
+import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3d;
@@ -30,6 +32,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class MCXRPlayClient implements ClientModInitializer {
+    private static final Logger LOGGER = LogManager.getLogger("MCXR");
 
     public static final OpenXR OPEN_XR = new OpenXR();
     public static MCXRPlayClient INSTANCE;
@@ -47,14 +50,30 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static final ControllerPosesImpl eyePoses = new ControllerPosesImpl();
     public static final ControllerPosesImpl viewSpacePoses = new ControllerPosesImpl();
 
-    public static Vector3d xrOrigin = new Vector3d(0, 0, 0); //The center of the STAGE set at the same height of the PlayerEntity's feet
+    /**
+     * The center of the STAGE set at the same height of the PlayerEntity's feet in in-game space
+     * This value is added to translate a physical position to an in-game position
+     */
+    public static Vector3d xrOrigin = new Vector3d(0, 0, 0);
+
+    /**
+     * Used when room-space movement is disabled
+     * Allows the player to rotate around a central point or 'reset' their position to the center of the PlayerEntity
+     */
     public static Vector3f xrOffset = new Vector3f(0, 0, 0);
+
+    /**
+     * Allows the player to turn in-game without turning IRL
+     */
     public static float yawTurn = 0;
 
-    public static float handPitchAdjust = 15;
-    public static int mainHand = 1;
+    /**
+     * The angle to rotate the player's in-game hand for a more comfortable experience
+     * May be different for different controllers -> needs testing
+     */
+    public static float handPitchAdjust = 30;
 
-    private static final Logger LOGGER = LogManager.getLogger("MCXR");
+    public static int mainHand = 1;
 
     @Override
     public void onInitializeClient() {
@@ -143,10 +162,19 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static void resetView() {
-        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos()).mul(1, 0, 1);
+        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().mul(getScale(), new Vector3f())).mul(1, 0, 1);
     }
 
     public static boolean isXrMode() {
         return MinecraftClient.getInstance().world != null || OPEN_XR.instance == null;
+    }
+
+    public static float getScale() {
+        var player = MinecraftClient.getInstance().player;
+        if (player == null) {
+            return 1;
+        } else {
+            return MCXRCore.getScale(player);
+        }
     }
 }

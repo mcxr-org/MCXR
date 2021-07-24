@@ -6,7 +6,9 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
@@ -16,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import virtuoel.pehkui.api.ScaleType;
 
 public class MCXRCore implements ModInitializer {
 
@@ -33,7 +36,7 @@ public class MCXRCore implements ModInitializer {
         ServerLoginNetworking.registerGlobalReceiver(S2C_CONFIG, (server, handler, understood, buf, synchronizer, responseSender) -> {
             if (understood) {
                 boolean xr = buf.readBoolean();
-                var profile = ((ServerLoginNetworkHandlerAcc)handler).getProfile();
+                var profile = ((ServerLoginNetworkHandlerAcc) handler).getProfile();
                 if (xr) {
                     LOGGER.info("Received XR login packet from " + profile);
                 } else {
@@ -76,6 +79,15 @@ public class MCXRCore implements ModInitializer {
             buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
 
             ClientPlayNetworking.send(POSES, buf);
+        }
+    }
+
+    public static float getScale(LivingEntity entity) {
+        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+            var scaleData = ScaleType.BASE.getScaleData(entity);
+            return scaleData.getScale(1);
+        } else {
+            return 1;
         }
     }
 }

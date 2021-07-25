@@ -1,5 +1,7 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Matrix4f;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.rendering.RenderPass;
@@ -11,6 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import virtuoel.pehkui.util.ScaleUtils;
 
 @Mixin(Matrix4f.class)
 public abstract class Matrix4fMixin implements Matrix4fExt {
@@ -65,10 +68,14 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
 
     @Override
     public void createProjectionFov(XrFovf fov, float nearZ, float farZ) {
-        float tanLeft = (float) Math.tan(MCXRPlayClient.fov.angleLeft());
-        float tanRight = (float) Math.tan(MCXRPlayClient.fov.angleRight());
-        float tanDown = (float) Math.tan(MCXRPlayClient.fov.angleDown());
-        float tanUp = (float) Math.tan(MCXRPlayClient.fov.angleUp());
+        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+            var client = MinecraftClient.getInstance();
+            nearZ = ScaleUtils.modifyProjectionMatrixDepth(MCXRPlayClient.getCameraScale(), nearZ, client.getCameraEntity(), client.getTickDelta());
+        }
+        float tanLeft = Math.tan(MCXRPlayClient.fov.angleLeft());
+        float tanRight = Math.tan(MCXRPlayClient.fov.angleRight());
+        float tanDown = Math.tan(MCXRPlayClient.fov.angleDown());
+        float tanUp = Math.tan(MCXRPlayClient.fov.angleUp());
         float tanAngleWidth = tanRight - tanLeft;
         float tanAngleHeight = tanUp - tanDown;
         a00 = 2.0f / tanAngleWidth;
@@ -91,6 +98,7 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
 
     /**
      * why does yarn have viewboxMatrix and projectionMatrix mixed up?
+     * mojmap time?
      */
     @Inject(method = "viewboxMatrix", cancellable = true, at = @At("HEAD"))
     private static void overwriteProjectionMatrix(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {

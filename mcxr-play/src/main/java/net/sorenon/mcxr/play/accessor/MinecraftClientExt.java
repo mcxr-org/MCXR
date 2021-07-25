@@ -1,12 +1,12 @@
 package net.sorenon.mcxr.play.accessor;
 
+import net.sorenon.mcxr.play.rendering.RenderPass;
+
 public interface MinecraftClientExt {
 
-    void preRenderXR(boolean tick, Runnable afterTick);
+    void preRender(boolean tick);
 
-    void doRenderXR(boolean tick, long frameStartTime);
+    void doRender(boolean tick, long frameStartTime, RenderPass renderPass);
 
-    void postRenderXR(boolean tick);
-
-    void render();
+    void postRender();
 }

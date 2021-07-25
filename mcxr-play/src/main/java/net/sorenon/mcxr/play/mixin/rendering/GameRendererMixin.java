@@ -99,7 +99,7 @@ public abstract class GameRendererMixin {
     }
 
     /**
-     * If we are doing a world render pass, skip rendering the gui
+     * If we are doing a world render pass => return early to skip rendering the gui
      */
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {

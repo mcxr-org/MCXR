@@ -1,6 +1,6 @@
 package net.sorenon.mcxr.play.input.actionsets;
 
-import net.sorenon.mcxr.play.input.ControllerPosesImpl;
+import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.MultiPoseAction;
 import oshi.util.tuples.Pair;
@@ -14,8 +14,8 @@ public class HandsActionSet extends ActionSet {
     public MultiPoseAction grip = new MultiPoseAction("grip", new String[]{"/user/hand/left", "/user/hand/right"});
     public MultiPoseAction aim = new MultiPoseAction("aim", new String[]{"/user/hand/left", "/user/hand/right"});
 
-    public final ControllerPosesImpl[] gripPoses = {new ControllerPosesImpl(), new ControllerPosesImpl()};
-    public final ControllerPosesImpl[] aimPoses = {new ControllerPosesImpl(), new ControllerPosesImpl()};
+    public final ControllerPoses[] gripPoses = {new ControllerPoses(), new ControllerPoses()};
+    public final ControllerPoses[] aimPoses = {new ControllerPoses(), new ControllerPoses()};
 
     public HandsActionSet() {
         super("hands");

@@ -87,13 +87,10 @@ public class MultiPoseAction extends Action implements SessionAwareAction {
 
     @Override
     public void sync(OpenXRSession session) {
-        OpenXR xr = MCXRPlayClient.OPEN_XR;
-        XrSession xrSession = xr.session.handle;
-
         for (int i = 0; i < amount; i++) {
             getInfo.subactionPath(subactionPaths.get(i));
             getInfo.action(handle);
-            xr.check(XR10.xrGetActionStatePose(xrSession, getInfo, state));
+            session.instance.check(XR10.xrGetActionStatePose(session.handle, getInfo, state), "xrGetActionStatePose");
             isActive[i] = state.isActive();
         }
     }

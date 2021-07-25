@@ -20,7 +20,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.*;
 import net.minecraft.world.LightType;
-import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -78,7 +77,7 @@ public class VrFirstPersonRenderer {
             MatrixStack matrices = context.matrixStack();
 
             matrices.push();
-            Vec3d pos = FGM.pos.subtract(context.camera().getPos()).add(convert(MCXRPlayClient.xrOrigin));
+            Vec3d pos = FGM.pos.subtract(convert(MCXRPlayClient.eyePoses.getPhysicalPose().getPos()));
             matrices.translate(pos.x, pos.y, pos.z);
             matrices.multiply(new Quaternion((float) FGM.rot.x, (float) FGM.rot.y, (float) FGM.rot.z, (float) FGM.rot.w));
             renderGuiQuad(matrices.peek(), context.consumers());
@@ -228,7 +227,7 @@ public class VrFirstPersonRenderer {
         matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
         matrices.scale(0.4f, 0.4f, 0.4f);
 
-        float scale = MCXRPlayClient.getScale();
+        float scale = MCXRPlayClient.getCameraScale(tickDelta);
         matrices.scale(scale, scale, scale);
 
         matrices.translate(0, 1 / 16f, -1.5f / 16f);
@@ -318,7 +317,7 @@ public class VrFirstPersonRenderer {
             Quaternionf quat = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf());
             matrices.multiply(new Quaternion(quat.x, quat.y, quat.z, quat.w));
 
-            float scale = MCXRPlayClient.getScale();
+            float scale = MCXRPlayClient.getCameraScale();
             matrices.scale(scale, scale, scale);
 
             if (hand == MCXRPlayClient.mainHand) {

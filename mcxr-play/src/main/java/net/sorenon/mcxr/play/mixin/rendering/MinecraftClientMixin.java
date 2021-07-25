@@ -29,9 +29,8 @@ import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
-import net.sorenon.mcxr.play.input.XrInput;
+import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.rendering.MainRenderTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
@@ -176,8 +175,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Final
     public GameOptions options;
 
-    @Shadow private int trackingTick;
-
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/WindowFramebuffer"))
     WindowFramebuffer createFramebuffer(int width, int height) {
         return new MainRenderTarget(width, height);
@@ -185,43 +182,16 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
+        MCXRPlayClient.INSTANCE.flatGuiManager.init();
         MCXRPlayClient.OPEN_XR.tryInitialize();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
     void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
         OpenXR openXR = MCXRPlayClient.OPEN_XR;
-
-        if (openXR.session == null) {
-            //TODO have a button and message in-game for this
-            if (!openXR.tryInitialize()) {
-                Thread.sleep(1000);
-                return;
-            }
-        }
-
-        XrInput xrInput = MCXRPlayClient.XR_INPUT;
-        if (openXR.pollEvents()) {
-            running = false;
-            return;
-        }
-
-        if (openXR.session.running) {
-            xrInput.pollActions();
-            openXR.renderFrame();
-        } else {
+        if (openXR.loop()) {
+            //Just render normally
             render(tick);
-//            Thread.sleep(1000);
-        }
-    }
-
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;init(Lnet/minecraft/client/MinecraftClient;II)V"), method = "setScreen")
-    void initScreen(Screen screen, MinecraftClient client, int widthIn, int heightIn) {
-        if (world != null) {
-            FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
-            screen.init(client, FGM.scaledWidth, FGM.scaledHeight);
-        } else {
-            screen.init(client, widthIn, heightIn);
         }
     }
 
@@ -232,7 +202,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
      * ASMR's more advanced transformers could help with this in the future
      */
     @Override
-    public void preRenderXR(boolean tick, Runnable afterTick) {
+    public void preRender(boolean tick) {
         this.window.setPhase("Pre render");
         if (this.window.shouldClose()) {
             this.scheduleStop();
@@ -251,7 +221,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             runnable.run();
         }
 
-        int k;
         if (tick) {
             int i = this.renderTickCounter.beginRenderTick(Util.getMeasuringTimeMs());
             this.profiler.push("scheduledExecutables");
@@ -259,24 +228,24 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             this.profiler.pop();
             this.profiler.push("tick");
 
-            for (k = 0; k < Math.min(10, i); ++k) {
+            for (int j = 0; j < Math.min(10, i); ++j) {
                 this.profiler.visit("clientTick");
                 this.tick();
             }
 
             this.profiler.pop();
         }
-        afterTick.run();
 
-        this.mouse.updateMouse();
-        this.window.setPhase("Render");
-        this.profiler.push("sound");
-        this.soundManager.updateListenerPosition(this.gameRenderer.getCamera());
-        this.profiler.pop();
+//        this.mouse.updateMouse();
+//        this.window.setPhase("Render");
+//        this.profiler.push("sound");
+//        this.soundManager.updateListenerPosition(this.gameRenderer.getCamera());
+//        this.profiler.pop();
     }
 
     @Override
-    public void doRenderXR(boolean tick, long frameStartTime) {
+    public void doRender(boolean tick, long frameStartTime, RenderPass renderPass) {
+        MCXRPlayClient.renderPass = renderPass;
         this.profiler.push("render");
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
@@ -336,10 +305,12 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         Thread.yield();
         this.profiler.pop();
          */
+
+        MCXRPlayClient.renderPass = RenderPass.VANILLA;
     }
 
     @Override
-    public void postRenderXR(boolean tick) {
+    public void postRender() {
         GLFW.glfwPollEvents();
 
         this.window.setPhase("Post render");
@@ -372,130 +343,5 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         }
 
         this.profiler.pop();
-    }
-
-    private void render2(boolean tick) {
-//        this.window.setPhase("Pre render");
-//        long l = Util.getMeasuringTimeNano();
-//        if (this.window.shouldClose()) {
-//            this.scheduleStop();
-//        }
-//
-//        if (this.resourceReloadFuture != null && !(this.overlay instanceof SplashScreen)) {
-//            CompletableFuture<Void> completableFuture = this.resourceReloadFuture;
-//            this.resourceReloadFuture = null;
-//            this.reloadResources().thenRun(() -> {
-//                completableFuture.complete(null);
-//            });
-//        }
-//
-//        Runnable runnable;
-//        while((runnable = (Runnable)this.renderTaskQueue.poll()) != null) {
-//            runnable.run();
-//        }
-//
-//        int k;
-//        if (tick) {
-//            int i = this.renderTickCounter.beginRenderTick(Util.getMeasuringTimeMs());
-//            this.profiler.push("scheduledExecutables");
-//            this.runTasks();
-//            this.profiler.pop();
-//            this.profiler.push("tick");
-//
-//            for(k = 0; k < Math.min(10, i); ++k) {
-//                this.profiler.visit("clientTick");
-//                this.tick();
-//            }
-//
-//            this.profiler.pop();
-//        }
-//
-//        this.mouse.updateMouse();
-//        this.window.setPhase("Render");
-//        this.profiler.push("sound");
-//        this.soundManager.updateListenerPosition(this.gameRenderer.getCamera());
-//        this.profiler.pop();
-
-        //#####################
-//        this.profiler.push("render");
-//        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-//        matrixStack.push();
-//        RenderSystem.applyModelViewMatrix();
-//        RenderSystem.clear(16640, IS_SYSTEM_MAC);
-//        this.framebuffer.beginWrite(true);
-//        BackgroundRenderer.method_23792();
-//        this.profiler.push("display");
-//        RenderSystem.enableTexture();
-//        RenderSystem.enableCull();
-//        this.profiler.pop();
-//        if (!this.skipGameRender) {
-//            this.profiler.swap("gameRenderer");
-//            this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, l, tick);
-//            this.profiler.swap("toasts");
-//            this.toastManager.draw(new MatrixStack());
-//            this.profiler.pop();
-//        }
-//
-//        if (this.tickProfilerResult != null) {
-//            this.profiler.push("fpsPie");
-//            this.drawProfilerResults(new MatrixStack(), this.tickProfilerResult);
-//            this.profiler.pop();
-//        }
-//
-//        this.profiler.push("blit");
-//        this.framebuffer.endWrite();
-//        matrixStack.pop();
-
-        //######################
-//        matrixStack.push();
-//        RenderSystem.applyModelViewMatrix();
-//        this.framebuffer.draw(this.window.getFramebufferWidth(), this.window.getFramebufferHeight());
-//        matrixStack.pop();
-//        RenderSystem.applyModelViewMatrix();
-//        this.profiler.swap("updateDisplay");
-//        this.window.swapBuffers();
-//        k = this.getFramerateLimit();
-//        if ((double)k < Option.FRAMERATE_LIMIT.getMax()) {
-//            RenderSystem.limitDisplayFPS(k);
-//        }
-        //######################
-
-//        this.profiler.swap("yield");
-//        Thread.yield();
-//        this.profiler.pop();
-//        this.window.setPhase("Post render");
-//        ++this.fpsCounter;
-//        boolean bl = this.isIntegratedServerRunning() && (this.currentScreen != null && this.currentScreen.isPauseScreen() || this.overlay != null && this.overlay.pausesGame()) && !this.server.isRemote();
-//        if (this.paused != bl) {
-//            if (this.paused) {
-//                this.pausedTickDelta = this.renderTickCounter.tickDelta;
-//            } else {
-//                this.renderTickCounter.tickDelta = this.pausedTickDelta;
-//            }
-//
-//            this.paused = bl;
-//        }
-//
-//        long m = Util.getMeasuringTimeNano();
-//        this.metricsData.pushSample(m - this.lastMetricsSampleTime);
-//        this.lastMetricsSampleTime = m;
-//        this.profiler.push("fpsUpdate");
-//
-//        while(Util.getMeasuringTimeMs() >= this.nextDebugInfoUpdateTime + 1000L) {
-//            currentFps = this.fpsCounter;
-//            this.fpsDebugString = String.format("%d fps T: %s%s%s%s B: %d", currentFps, (double)this.options.maxFps == Option.FRAMERATE_LIMIT.getMax() ? "inf" : this.options.maxFps, this.options.enableVsync ? " vsync" : "", this.options.graphicsMode.toString(), this.options.cloudRenderMode == CloudRenderMode.OFF ? "" : (this.options.cloudRenderMode == CloudRenderMode.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius);
-//            this.nextDebugInfoUpdateTime += 1000L;
-//            this.fpsCounter = 0;
-//            this.snooper.update();
-//            if (!this.snooper.isActive()) {
-//                this.snooper.method_5482();
-//            }
-//        }
-//
-//        this.profiler.pop();
-    }
-
-    public void render() {
-        this.render(true);
     }
 }

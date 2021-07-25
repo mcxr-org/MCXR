@@ -58,6 +58,37 @@ public class OpenXRInstance implements AutoCloseable {
         }
     }
 
+    public boolean pollEvents() {
+        XrEventDataBaseHeader event = nextEvent();
+        while (event != null) {
+            switch (event.type()) {
+                case XR10.XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
+                    XrEventDataInstanceLossPending instanceLossPending = XrEventDataInstanceLossPending.create(event.address());
+                    LOGGER.warn("XrEventDataInstanceLossPending by " + instanceLossPending.lossTime());
+
+                    close();
+                    MCXRPlayClient.OPEN_XR.instance = null;
+                    return true;
+                }
+                case XR10.XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
+                    XrEventDataSessionStateChanged sessionStateChangedEvent = XrEventDataSessionStateChanged.create(event.address());
+                    return MCXRPlayClient.OPEN_XR.session.handleSessionStateChangedEvent(sessionStateChangedEvent/*, requestRestart*/);
+                }
+                case XR10.XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED:
+                    break;
+                case XR10.XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:
+                default: {
+                    LOGGER.debug(String.format("Ignoring event type %d", event.type()));
+                    break;
+                }
+            }
+            event = nextEvent();
+        }
+
+        return false;
+    }
+
+
     public XrEventDataBaseHeader nextEvent() {
         // It is sufficient to just clear the XrEventDataBuffer header to
         // XR_TYPE_EVENT_DATA_BUFFER rather than recreate it every time

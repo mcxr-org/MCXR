@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
@@ -82,10 +83,14 @@ public class MCXRCore implements ModInitializer {
         }
     }
 
-    public static float getScale(LivingEntity entity) {
+    public static float getScale(Entity entity) {
+        return getScale(entity, 1.0f);
+    }
+
+    public static float getScale(Entity entity, float delta) {
         if (FabricLoader.getInstance().isModLoaded("pehkui")) {
             var scaleData = ScaleType.BASE.getScaleData(entity);
-            return scaleData.getScale(1);
+            return scaleData.getScale(delta);
         } else {
             return 1;
         }

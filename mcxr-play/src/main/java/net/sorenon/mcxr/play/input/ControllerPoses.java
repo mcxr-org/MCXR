@@ -1,34 +1,37 @@
 package net.sorenon.mcxr.play.input;
 
 import net.sorenon.mcxr.core.Pose;
-import net.sorenon.mcxr.play.ControllerPoses;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.lwjgl.openxr.XrPosef;
 
 //TODO find a better system for this
-public class ControllerPosesImpl implements ControllerPoses {
+public class ControllerPoses {
 
     private final Pose rawPhysicalPose = new Pose();
     private final Pose physicalPose = new Pose();
     private final Pose gamePose = new Pose();
 
-    @Override
+    /**
+     * It's unlikely you will want to use this
+     * @return The un-rotated pose in physical space
+     */
     public Pose getRawPhysicalPose() {
         return rawPhysicalPose;
     }
 
-    @Override
+    /**
+     * Mostly used for GUI interactions
+     * The rotated pose in physical space
+     */
     public Pose getPhysicalPose() {
         return physicalPose;
     }
 
-    @Override
-    public Pose getRawGamePose() {
-        return gamePose;
-    }
-
-    @Override
+    /**
+     * Used for the majority of gameplay related interactions
+     * @return The rotated and scaled pose in in-game space
+     */
     public Pose getGamePose() {
         return gamePose;
     }

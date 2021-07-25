@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.play.input.ControllerPosesImpl;
+import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
@@ -47,8 +47,8 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static XrFovf fov = null;
     public static int viewIndex = 0;
 
-    public static final ControllerPosesImpl eyePoses = new ControllerPosesImpl();
-    public static final ControllerPosesImpl viewSpacePoses = new ControllerPosesImpl();
+    public static final ControllerPoses eyePoses = new ControllerPoses();
+    public static final ControllerPoses viewSpacePoses = new ControllerPoses();
 
     /**
      * The center of the STAGE set at the same height of the PlayerEntity's feet in in-game space
@@ -85,10 +85,16 @@ public class MCXRPlayClient implements ClientModInitializer {
 
         XR.create(path.toString());
 
-        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            vrFirstPersonRenderer.renderAfterEntities(context);
-        });
+        /**
+         * For the majority of rendering
+         * HUD, Hands, Shadow, Items
+         */
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> vrFirstPersonRenderer.renderAfterEntities(context));
 
+        /**
+         * For rendering things that need access to the completed depth buffer
+         * GUI, 'Crosshair', Debug lines
+         */
         WorldRenderEvents.LAST.register(context -> {
             if (!MinecraftClient.getInstance().options.hudHidden) {
                 vrFirstPersonRenderer.renderHud(context);
@@ -117,7 +123,7 @@ public class MCXRPlayClient implements ClientModInitializer {
             }
         }
 
-        try (MemoryStack stack = stackPush()) {
+        try (var ignored = stackPush()) {
             for (var entry : bindingsMap.entrySet()) {
                 var bindingsSet = entry.getValue();
 
@@ -157,24 +163,26 @@ public class MCXRPlayClient implements ClientModInitializer {
             // Attach the action set we just made to the session
             instance.check(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
         }
-
-        flatGuiManager.init();
     }
 
     public static void resetView() {
-        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().mul(getScale(), new Vector3f())).mul(1, 0, 1);
+        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().mul(getCameraScale(), new Vector3f())).mul(1, 0, 1);
     }
 
     public static boolean isXrMode() {
         return MinecraftClient.getInstance().world != null || OPEN_XR.instance == null;
     }
 
-    public static float getScale() {
-        var player = MinecraftClient.getInstance().player;
-        if (player == null) {
+    public static float getCameraScale() {
+        return getCameraScale(1.0f);
+    }
+
+    public static float getCameraScale(float delta) {
+        var cam = MinecraftClient.getInstance().cameraEntity;
+        if (cam == null) {
             return 1;
         } else {
-            return MCXRCore.getScale(player);
+            return MCXRCore.getScale(cam, delta);
         }
     }
 }

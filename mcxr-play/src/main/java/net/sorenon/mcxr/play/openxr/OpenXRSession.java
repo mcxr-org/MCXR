@@ -1,7 +1,17 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
+import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
+import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -182,6 +192,34 @@ public class OpenXRSession implements AutoCloseable {
             default:
                 return false;
         }
+    }
+
+    public void pollActions() {
+        if (state != XR10.XR_SESSION_STATE_FOCUSED) {
+            return;
+        }
+
+        try (var ignored = stackPush()) {
+            VanillaGameplayActionSet vcActionSet = MCXRPlayClient.vanillaGameplayActionSet;
+            GuiActionSet guiActionSet = MCXRPlayClient.guiActionSet;
+            HandsActionSet handsActionSet = MCXRPlayClient.handsActionSet;
+
+            XrActiveActionSet.Buffer sets = XrActiveActionSet.callocStack(3);
+            sets.get(0).actionSet(handsActionSet.getHandle());
+            sets.get(1).actionSet(vcActionSet.getHandle());
+            sets.get(2).actionSet(guiActionSet.getHandle());
+
+            XrActionsSyncInfo sync_info = XrActionsSyncInfo.calloc()
+                    .type(XR10.XR_TYPE_ACTIONS_SYNC_INFO)
+                    .activeActionSets(sets);
+
+            instance.check(XR10.xrSyncActions(handle, sync_info), "xrSyncActions");
+
+            handsActionSet.sync(this);
+            vcActionSet.sync(this);
+            guiActionSet.sync(this);
+        }
+        MCXRPlayClient.XR_INPUT.pollActions();
     }
 
     @Override

@@ -32,7 +32,7 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | Immersive Controls          | ⛔                               | ✅                             | 🚧In development             |
 | Open Source                 | ⛔                               | ✅                             | ✅                            |
 | Versions                    | N/A                             | 1.7.10, and 1.10 through 1.16 | 1.17                         |
-| Linkless Quest Support      | ✅                               | 🚧[In development](https://discord.com/invite/cRdBUaUzcx)      | 🚧In development             |
+| Linkless Quest Support      | ✅                               | 🚧[Heavily delayed](https://discord.com/invite/cRdBUaUzcx)      | 🚧In development             |
 | Vr Multiplayer              | ⛔                               | ✅                             | 🚧In development             |
 | Spigot Plugin               | N/A                             | ✅                             | ⛔                            |
 | Patch Method                | N/A                             | Jar mod                       | Mixins                       |

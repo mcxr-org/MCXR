@@ -27,18 +27,15 @@ import net.minecraft.util.profiler.ProfileResult;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
-import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
 import net.sorenon.mcxr.play.openxr.OpenXR;
+import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.MainRenderTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -175,6 +172,9 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Final
     public GameOptions options;
 
+    @Unique
+    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/WindowFramebuffer"))
     WindowFramebuffer createFramebuffer(int width, int height) {
         return new MainRenderTarget(width, height);
@@ -183,7 +183,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
         MCXRPlayClient.INSTANCE.flatGuiManager.init();
-        MCXRPlayClient.OPEN_XR.tryInitialize();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
@@ -217,7 +216,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         }
 
         Runnable runnable;
-        while ((runnable = (Runnable) this.renderTaskQueue.poll()) != null) {
+        while ((runnable = this.renderTaskQueue.poll()) != null) {
             runnable.run();
         }
 
@@ -235,17 +234,11 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
             this.profiler.pop();
         }
-
-//        this.mouse.updateMouse();
-//        this.window.setPhase("Render");
-//        this.profiler.push("sound");
-//        this.soundManager.updateListenerPosition(this.gameRenderer.getCamera());
-//        this.profiler.pop();
     }
 
     @Override
     public void doRender(boolean tick, long frameStartTime, RenderPass renderPass) {
-        MCXRPlayClient.renderPass = renderPass;
+        XR_RENDERER.renderPass = renderPass;
         this.profiler.push("render");
         MatrixStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.push();
@@ -261,7 +254,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
             this.profiler.swap("gameRenderer");
             this.gameRenderer.render(this.paused ? this.pausedTickDelta : this.renderTickCounter.tickDelta, frameStartTime, tick);
 
-            if (MCXRPlayClient.renderPass == RenderPass.GUI || MCXRPlayClient.renderPass == RenderPass.VANILLA) {
+            if (XR_RENDERER.renderPass == RenderPass.GUI || XR_RENDERER.renderPass == RenderPass.VANILLA) {
                 this.profiler.swap("toasts");
                 this.toastManager.draw(new MatrixStack());
                 this.profiler.pop();
@@ -306,7 +299,7 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.profiler.pop();
          */
 
-        MCXRPlayClient.renderPass = RenderPass.VANILLA;
+        XR_RENDERER.renderPass = RenderPass.VANILLA;
     }
 
     @Override

@@ -61,9 +61,4 @@ public abstract class MouseMixin implements MouseExt {
     public void mouseScroll(double horizontalDistance, double verticalDistance) {
         this.onMouseScroll(-1, horizontalDistance, verticalDistance);
     }
-
-    @Inject(method = "onMouseScroll", at = @At("HEAD"))
-    void print(long window, double horizontal, double vertical, CallbackInfo ci) {
-        System.out.println("x:" + horizontal + "!y:" + vertical);
-    }
 }

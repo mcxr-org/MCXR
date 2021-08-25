@@ -23,8 +23,14 @@ import net.minecraft.world.LightType;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.XrInput;
+import net.sorenon.mcxr.play.openxr.XrRenderer;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.openxr.XR10;
+import org.lwjgl.openxr.XrBoundSourcesForActionEnumerateInfo;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -37,6 +43,8 @@ import static net.sorenon.mcxr.core.JOMLUtil.convert;
  * TODO fix iris issue
  */
 public class VrFirstPersonRenderer {
+
+    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
 
     private final FlatGuiManager FGM;
 
@@ -72,17 +80,6 @@ public class VrFirstPersonRenderer {
 
     public void renderAfterEntities(WorldRenderContext context) {
         Entity entity = context.camera().getFocusedEntity();
-
-        if (FGM.pos != null) {
-            MatrixStack matrices = context.matrixStack();
-
-            matrices.push();
-            Vec3d pos = FGM.pos.subtract(convert(MCXRPlayClient.eyePoses.getPhysicalPose().getPos()));
-            matrices.translate(pos.x, pos.y, pos.z);
-            matrices.multiply(new Quaternion((float) FGM.rot.x, (float) FGM.rot.y, (float) FGM.rot.z, (float) FGM.rot.w));
-            renderGuiQuad(matrices.peek(), context.consumers());
-            matrices.pop();
-        }
 
         if (entity != null) {
             renderShadow(context, entity);
@@ -140,7 +137,7 @@ public class VrFirstPersonRenderer {
 //                }
             } else if (entity instanceof LivingEntity livingEntity) {
                 for (int hand = 0; hand < 2; hand++) {
-                    if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
+                    if (!XrInput.handsActionSet.grip.isActive[hand]) {
                         continue;
                     }
 
@@ -181,7 +178,7 @@ public class VrFirstPersonRenderer {
         MatrixStack matrices = context.matrixStack();
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
+            if (!XrInput.handsActionSet.grip.isActive[hand]) {
                 continue;
             }
             matrices.push();
@@ -215,9 +212,9 @@ public class VrFirstPersonRenderer {
     }
 
     public void transformToHand(MatrixStack matrices, int hand, float tickDelta) {
-        Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getGamePose();
+        Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
         Vec3d gripPos = convert(pose.getPos());
-        Vector3f eyePos = MCXRPlayClient.eyePoses.getGamePose().getPos();
+        Vector3f eyePos = XR_RENDERER.eyePoses.getGamePose().getPos();
 
         //Transform to controller
         matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
@@ -262,14 +259,29 @@ public class VrFirstPersonRenderer {
     public void renderHud(WorldRenderContext context) {
         MatrixStack matrices = RenderSystem.getModelViewStack();
         BufferBuilder buffer = Tessellator.getInstance().getBuffer();
+        VertexConsumerProvider.Immediate consumers = (VertexConsumerProvider.Immediate) context.consumers();
+        assert consumers != null;
 
         matrices.push();
         matrices.loadIdentity();
         RenderSystem.applyModelViewMatrix();
         matrices.pop();
 
+        //Reset render state
+        RenderSystem.disableDepthTest();
+
+        if (FGM.pos != null) {
+            matrices.push();
+            Vec3d pos = FGM.pos.subtract(convert(XR_RENDERER.eyePoses.getPhysicalPose().getPos()));
+            matrices.translate(pos.x, pos.y, pos.z);
+            matrices.multiply(new Quaternion((float) FGM.rot.x, (float) FGM.rot.y, (float) FGM.rot.z, (float) FGM.rot.w));
+            renderGuiQuad(matrices.peek(), consumers);
+            matrices.pop();
+            consumers.drawCurrentLayer();
+        }
+
         for (int hand = 0; hand < 2; hand++) {
-            if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
+            if (!XrInput.handsActionSet.grip.isActive[hand]) {
                 continue;
             }
             matrices.push();
@@ -286,16 +298,16 @@ public class VrFirstPersonRenderer {
                 matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
                 matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
                 //TODO
-                renderHudQuad(matrices.peek(), MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers());
-                RenderSystem.disableDepthTest();
-                MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers().draw();
+                renderHudQuad(matrices.peek(), consumers);
+//                MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers().draw();
+                consumers.drawCurrentLayer();
                 matrices.pop();
             }
             matrices.pop();
         }
 
         for (int hand = 0; hand < 2; hand++) {
-            if (!MCXRPlayClient.handsActionSet.grip.isActive[hand]) {
+            if (!XrInput.handsActionSet.grip.isActive[hand]) {
                 continue;
             }
 
@@ -308,9 +320,9 @@ public class VrFirstPersonRenderer {
             RenderSystem.disableDepthTest();
 
             matrices.push();
-            Pose pose = MCXRPlayClient.handsActionSet.gripPoses[hand].getGamePose();
+            Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
             Vec3d gripPos = convert(pose.getPos());
-            Vector3f eyePos = MCXRPlayClient.eyePoses.getGamePose().getPos();
+            Vector3f eyePos = XR_RENDERER.eyePoses.getGamePose().getPos();
             matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
             matrices.push();
@@ -371,7 +383,7 @@ public class VrFirstPersonRenderer {
         float x = size / 2;
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
-        VertexConsumer consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS_CUSTOM.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture, MCXRPlayClient.INSTANCE.flatGuiManager.depthTexture));
+        VertexConsumer consumer = consumers.getBuffer(GUI_TRANSLUCENT_ALWAYS_CUSTOM.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture, MCXRPlayClient.INSTANCE.flatGuiManager.depthTexture));
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
@@ -392,7 +404,7 @@ public class VrFirstPersonRenderer {
         float x = size / 2;
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
-        VertexConsumer consumer = consumers.getBuffer(ENTITY_TRANSLUCENT_ALWAYS_CUSTOM.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture, MCXRPlayClient.INSTANCE.flatGuiManager.depthTexture));
+        VertexConsumer consumer = consumers.getBuffer(GUI_TRANSLUCENT_ALWAYS_CUSTOM.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture, MCXRPlayClient.INSTANCE.flatGuiManager.depthTexture));
 //        VertexConsumer consumer = consumers.getBuffer(RenderLayer.getEntityTranslucentCull(MineXRaftClient.INSTANCE.flatGuiManager.texture));
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
@@ -407,9 +419,10 @@ public class VrFirstPersonRenderer {
         return RenderLayer.of("gui_cutout_depth", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, false, multiPhaseParameters);
     });
 
+    //TODO create a library for custom shaders
     public static Shader guiShader;
 
-    private static final BiFunction<Identifier, Identifier, RenderLayer> ENTITY_TRANSLUCENT_ALWAYS_CUSTOM = Util.memoize((texture0, texture1) -> {
+    private static final BiFunction<Identifier, Identifier, RenderLayer> GUI_TRANSLUCENT_ALWAYS_CUSTOM = Util.memoize((texture0, texture1) -> {
         RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder().shader(new RenderPhase.Shader(() -> guiShader)).texture(RenderPhase.Textures.create().add(texture0, false, false).add(texture1, false, false).build()).transparency(TRANSLUCENT_TRANSPARENCY).cull(DISABLE_CULLING)/*.lightmap(ENABLE_LIGHTMAP)*//*.overlay(ENABLE_OVERLAY_COLOR)*/.depthTest(ALWAYS_DEPTH_TEST).build(true);
         return RenderLayer.of("gui_translucent2", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, true, multiPhaseParameters);
     });

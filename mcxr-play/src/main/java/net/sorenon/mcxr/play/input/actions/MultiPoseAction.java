@@ -17,7 +17,7 @@ import static org.lwjgl.system.MemoryStack.stackMallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
-public class MultiPoseAction extends Action implements SessionAwareAction {
+public class MultiPoseAction extends Action implements SessionAwareAction, InputAction {
 
     private static final XrActionStateGetInfo getInfo = XrActionStateGetInfo.calloc().type(XR10.XR_TYPE_ACTION_STATE_GET_INFO);
     private static final XrActionStatePose state = XrActionStatePose.calloc().type(XR10.XR_TYPE_ACTION_STATE_POSE);
@@ -46,7 +46,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction {
                 subactionPaths.put(i, instance.getPath(str));
             }
 
-            String localizedName = "mcxr.action." + name;
+            String localizedName = "mcxr.action." + this.name;
             if (I18n.hasTranslation(localizedName)) {
                 localizedName = I18n.translate(localizedName);
             }
@@ -54,7 +54,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction {
             XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
                     NULL,
-                    memUTF8(name),
+                    memUTF8("mcxr." + this.name),
                     type,
                     amount,
                     subactionPaths,

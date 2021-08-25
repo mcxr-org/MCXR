@@ -91,8 +91,8 @@ public class XrFramebuffer extends SimpleFramebuffer {
 
     public void setColorAttachment(int colorAttachment) {
         ((FramebufferAcc) this).colorAttachment(colorAttachment);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
+        GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
     }
 
     @Override

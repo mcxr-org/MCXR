@@ -4,31 +4,116 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.sorenon.mcxr.core.JOMLUtil;
+import net.sorenon.mcxr.core.Pose;
+import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.accessor.MouseExt;
+import net.sorenon.mcxr.play.input.actions.Action;
+import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
+import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
 import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
-import net.sorenon.mcxr.play.openxr.OpenXR;
+import net.sorenon.mcxr.play.openxr.OpenXRInstance;
+import net.sorenon.mcxr.play.openxr.OpenXRSession;
+import net.sorenon.mcxr.play.openxr.XrException;
+import net.sorenon.mcxr.play.openxr.XrRuntimeException;
+import org.joml.Quaterniond;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
-import org.lwjgl.openxr.*;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.openxr.XR10;
+import org.lwjgl.openxr.XrActionSuggestedBinding;
+import org.lwjgl.openxr.XrInteractionProfileSuggestedBinding;
+import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
+import oshi.util.tuples.Pair;
 
-public class XrInput {
+import java.util.HashMap;
+import java.util.List;
 
-    public final XrInstance xrInstance;
-    public final XrSession xrSession;
-    public final OpenXR xr;
+import static org.lwjgl.system.MemoryStack.stackPointers;
+import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
-    public boolean menuButton = false;
+public final class XrInput {
+    public static final HandsActionSet handsActionSet = new HandsActionSet();
+    public static final VanillaGameplayActionSet vanillaGameplayActionSet = new VanillaGameplayActionSet();
+    public static final GuiActionSet guiActionSet = new GuiActionSet();
 
-    public XrInput(OpenXR openXR) {
-        this.xrInstance = openXR.instance.handle;
-        this.xrSession = openXR.session.handle;
-        this.xr = openXR;
+    //TODO find a way to remove this
+    public static boolean menuButton = false;
+
+    private XrInput() {
     }
 
-    public void pollActions() {
+    //TODO registryify this
+    public static void trySetSession(OpenXRSession session) throws XrException {
+        OpenXRInstance instance = session.instance;
+
+        handsActionSet.createHandle(instance);
+        vanillaGameplayActionSet.createHandle(instance);
+        guiActionSet.createHandle(instance);
+
+        HashMap<String, List<Pair<Action, String>>> bindingsMap = new HashMap<>();
+        handsActionSet.getBindings(bindingsMap);
+        vanillaGameplayActionSet.getBindings(bindingsMap);
+        guiActionSet.getBindings(bindingsMap);
+
+        for (var action : handsActionSet.actions()) {
+            if (action instanceof SessionAwareAction sessionAwareAction) {
+                sessionAwareAction.createHandleSession(session);
+            }
+        }
+
+        try (var ignored = stackPush()) {
+            for (var entry : bindingsMap.entrySet()) {
+                var bindingsSet = entry.getValue();
+
+                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(bindingsSet.size());
+
+                for (int i = 0; i < bindingsSet.size(); i++) {
+                    var binding = bindingsSet.get(i);
+                    bindings.get(i).set(
+                            binding.getA().getHandle(),
+                            instance.getPath(binding.getB())
+                    );
+                }
+
+                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
+                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
+                        NULL,
+                        instance.getPath(entry.getKey()),
+                        bindings
+                );
+
+                try {
+                    instance.check(XR10.xrSuggestInteractionProfileBindings(instance.handle, suggested_binds), "xrSuggestInteractionProfileBindings");
+                } catch (XrRuntimeException e) {
+                    StringBuilder out = new StringBuilder(e.getMessage() + "\ninteractionProfile: " + entry.getKey());
+                    for (var pair : bindingsSet) {
+                        out.append("\n").append(pair.getB());
+                    }
+                    throw new XrRuntimeException(out.toString());
+                }
+            }
+
+            XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
+                    XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
+                    NULL,
+                    stackPointers(vanillaGameplayActionSet.getHandle().address(), guiActionSet.getHandle().address(), handsActionSet.getHandle().address())
+            );
+            // Attach the action set we just made to the session
+            instance.check(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
+        }
+    }
+
+    /**
+     * Pre-tick + Pre-render, called once every frame
+     */
+    public static void pollActions() {
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
-            GuiActionSet actionSet = MCXRPlayClient.guiActionSet;
+            GuiActionSet actionSet = guiActionSet;
             if (actionSet.exit.changedSinceLastSync) {
                 if (actionSet.exit.currentState) {
                     MinecraftClient.getInstance().currentScreen.keyPressed(256, 0, 0);
@@ -38,7 +123,7 @@ public class XrInput {
             return;
         }
 
-        VanillaGameplayActionSet actionSet = MCXRPlayClient.vanillaGameplayActionSet;
+        VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
 
         if (actionSet.resetPos.changedSinceLastSync) {
             if (actionSet.resetPos.currentState) {
@@ -125,6 +210,66 @@ public class XrInput {
                 KeyBinding.setKeyPressed(key, true);
             } else {
                 KeyBinding.setKeyPressed(key, false);
+            }
+        }
+    }
+
+    /**
+     * Post-tick + Pre-render, called once every frame
+     */
+    public static void postTick(long predictedDisplayTime) {
+        FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
+        MouseExt mouse = (MouseExt) MinecraftClient.getInstance().mouse;
+        if (FGM.isScreenOpen()) {
+            Pose pose = handsActionSet.gripPoses[MCXRPlayClient.mainHand].getPhysicalPose();
+            Vector3d pos = new Vector3d(pose.getPos());
+            Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+            Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
+            if (result != null) {
+                Vector3d vec = result.sub(JOMLUtil.convert(FGM.pos));
+                FGM.rot.invert(new Quaterniond()).transform(vec);
+                vec.y *= ((double) FGM.framebufferWidth / FGM.framebufferHeight);
+
+                ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
+                        FGM.framebufferWidth * (0.5 - vec.x),
+                        FGM.framebufferHeight * (1 - vec.y)
+                );
+            }
+            GuiActionSet actionSet = guiActionSet;
+            if (actionSet.pickup.changedSinceLastSync || actionSet.quickMove.changedSinceLastSync) {
+                if (actionSet.pickup.currentState || actionSet.quickMove.currentState) {
+                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                } else {
+                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+                }
+            }
+            if (actionSet.split.changedSinceLastSync) {
+                if (actionSet.split.currentState) {
+                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_PRESS, 0);
+                } else {
+                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
+                }
+            }
+            if (actionSet.scroll.changedSinceLastSync) {
+                var state = actionSet.scroll.currentState;
+                double sensitivity = 0.25;
+                mouse.mouseScroll(-state.x() * sensitivity, state.y() * sensitivity);
+            }
+        } else {
+            VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
+            if (actionSet.attack.changedSinceLastSync) {
+                if (actionSet.attack.currentState) {
+                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                } else {
+                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+                }
+            }
+            if (actionSet.inventory.currentState) {
+                long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
+                if (heldTime * 1E-09 > 1) {
+                    MinecraftClient.getInstance().openPauseMenu(false);
+                    menuButton = false;
+                }
             }
         }
     }

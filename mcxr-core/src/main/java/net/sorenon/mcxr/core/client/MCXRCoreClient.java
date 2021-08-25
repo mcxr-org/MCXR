@@ -18,7 +18,7 @@ public class MCXRCoreClient implements ClientModInitializer {
 
     private static final Logger LOGGER = LogManager.getLogger("MCXR Core");
 
-    public boolean fullFunc = false;
+    public boolean playInstalled = false;
 
     @Override
     public void onInitializeClient() {
@@ -27,7 +27,7 @@ public class MCXRCoreClient implements ClientModInitializer {
         ClientLoginNetworking.registerGlobalReceiver(MCXRCore.S2C_CONFIG, (client, handler, bufIn, listenerAdder) -> {
             var buf = PacketByteBufs.create();
             LOGGER.info("Received login packet");
-            fullFunc = true;
+            playInstalled = true;
             buf.writeBoolean(FabricLoader.getInstance().isModLoaded("mcxr-play"));
 
             return CompletableFuture.completedFuture(buf);

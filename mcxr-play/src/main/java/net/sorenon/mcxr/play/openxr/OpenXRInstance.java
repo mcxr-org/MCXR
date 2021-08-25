@@ -142,12 +142,12 @@ public class OpenXRInstance implements AutoCloseable {
 
     @Override
     public void close() {
-        XR10.xrDestroyInstance(handle);
-        eventDataBuffer.close();
         var session = MCXRPlayClient.OPEN_XR.session;
         if (session != null) {
             session.close();
         }
+        XR10.xrDestroyInstance(handle);
+        eventDataBuffer.close();
         //TODO sessions
     }
 }

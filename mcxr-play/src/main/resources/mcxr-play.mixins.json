@@ -5,8 +5,10 @@
   "compatibilityLevel": "JAVA_16",
   "client": [
     "GameOptionsMixin",
+    "SplashOverlayMixin",
     "VrClientPlayNetworkHandlerMixin",
     "VrKeyboardInputMixin",
+    "SystemDetailsMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
     "flatgui.GameRendererMixin",

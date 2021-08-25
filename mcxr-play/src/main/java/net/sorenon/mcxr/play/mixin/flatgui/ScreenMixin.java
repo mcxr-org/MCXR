@@ -43,7 +43,7 @@ public class ScreenMixin extends DrawableHelper {
 
     @Inject(method = "renderBackground(Lnet/minecraft/client/util/math/MatrixStack;I)V", at = @At("HEAD"), cancellable = true)
     void cancelBackground(MatrixStack matrices, int vOffset, CallbackInfo ci) {
-        if (MCXRPlayClient.isXrMode()) {
+        if (MCXRPlayClient.RENDERER.isXrMode()) {
             ci.cancel();
         }
     }

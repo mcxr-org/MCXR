@@ -1,17 +1,12 @@
 package net.sorenon.mcxr.play.openxr;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
 import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
 import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -23,6 +18,7 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 
 import static org.lwjgl.opengl.GL21.GL_SRGB8_ALPHA8;
+import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -200,9 +196,9 @@ public class OpenXRSession implements AutoCloseable {
         }
 
         try (var ignored = stackPush()) {
-            VanillaGameplayActionSet vcActionSet = MCXRPlayClient.vanillaGameplayActionSet;
-            GuiActionSet guiActionSet = MCXRPlayClient.guiActionSet;
-            HandsActionSet handsActionSet = MCXRPlayClient.handsActionSet;
+            VanillaGameplayActionSet vcActionSet = XrInput.vanillaGameplayActionSet;
+            GuiActionSet guiActionSet = XrInput.guiActionSet;
+            HandsActionSet handsActionSet = XrInput.handsActionSet;
 
             XrActiveActionSet.Buffer sets = XrActiveActionSet.callocStack(3);
             sets.get(0).actionSet(handsActionSet.getHandle());
@@ -219,17 +215,18 @@ public class OpenXRSession implements AutoCloseable {
             vcActionSet.sync(this);
             guiActionSet.sync(this);
         }
-        MCXRPlayClient.XR_INPUT.pollActions();
+
+        XrInput.pollActions();
     }
 
     @Override
     public void close() {
-        XR10.xrDestroySession(handle);
         for (var swapchain : swapchains) {
             swapchain.close();
         }
         views.close();
         XR10.xrDestroySpace(xrAppSpace);
         XR10.xrDestroySpace(xrViewSpace);
+        XR10.xrDestroySession(handle);
     }
 }

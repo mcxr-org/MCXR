@@ -4,6 +4,8 @@ import net.sorenon.mcxr.play.openxr.OpenXRSession;
 import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrActionStateBoolean;
 
+import static org.lwjgl.system.MemoryStack.stackPush;
+
 public class BoolAction extends SingleInputAction<Boolean> {
 
     private static final XrActionStateBoolean state = XrActionStateBoolean.calloc().type(XR10.XR_TYPE_ACTION_STATE_BOOLEAN);

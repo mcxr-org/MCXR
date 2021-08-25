@@ -12,7 +12,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
 
-public abstract class SingleInputAction<T> extends Action {
+public abstract class SingleInputAction<T> extends Action implements InputAction {
 
     protected static final XrActionStateGetInfo getInfo = XrActionStateGetInfo.calloc().type(XR10.XR_TYPE_ACTION_STATE_GET_INFO);
 
@@ -28,7 +28,7 @@ public abstract class SingleInputAction<T> extends Action {
     @Override
     public void createHandle(XrActionSet actionSet, OpenXRInstance instance) throws XrException {
         try (MemoryStack ignored = stackPush()) {
-            String localizedName = "mcxr.action." + name;
+            String localizedName = "mcxr.action." + this.name;
             if (I18n.hasTranslation(localizedName)) {
                 localizedName = I18n.translate(localizedName);
             }
@@ -36,7 +36,7 @@ public abstract class SingleInputAction<T> extends Action {
             XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
                     NULL,
-                    memUTF8(name),
+                    memUTF8("mcxr." + this.name),
                     type,
                     0,
                     null,

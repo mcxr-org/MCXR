@@ -7,47 +7,29 @@ import net.minecraft.client.MinecraftClient;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
-import net.sorenon.mcxr.play.input.actions.Action;
-import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
-import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
-import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
-import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
-import net.sorenon.mcxr.play.openxr.*;
-import net.sorenon.mcxr.play.rendering.RenderPass;
+import net.sorenon.mcxr.play.openxr.OpenXR;
+import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import org.lwjgl.openxr.*;
-import org.lwjgl.system.MemoryStack;
-import oshi.util.tuples.Pair;
+import org.lwjgl.openxr.XR;
 
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-
-import static org.lwjgl.system.MemoryStack.stackPointers;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class MCXRPlayClient implements ClientModInitializer {
+
+    public static boolean resourcesInitialized = false;
+
     private static final Logger LOGGER = LogManager.getLogger("MCXR");
 
     public static final OpenXR OPEN_XR = new OpenXR();
+    public static final XrRenderer RENDERER = new XrRenderer();
+
     public static MCXRPlayClient INSTANCE;
-    public static XrInput XR_INPUT;
-    public static HandsActionSet handsActionSet = new HandsActionSet();
-    public static VanillaGameplayActionSet vanillaGameplayActionSet = new VanillaGameplayActionSet();
-    public static GuiActionSet guiActionSet = new GuiActionSet();
     public FlatGuiManager flatGuiManager = new FlatGuiManager();
     public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer(flatGuiManager);
-
-    public static RenderPass renderPass = RenderPass.VANILLA;
-    public static XrFovf fov = null;
-    public static int viewIndex = 0;
-
-    public static final ControllerPoses eyePoses = new ControllerPoses();
     public static final ControllerPoses viewSpacePoses = new ControllerPoses();
 
     /**
@@ -85,15 +67,16 @@ public class MCXRPlayClient implements ClientModInitializer {
 
         XR.create(path.toString());
 
-        /**
+        /*
          * For the majority of rendering
-         * HUD, Hands, Shadow, Items
+         * Hands, Shadow, Items
          */
         WorldRenderEvents.AFTER_ENTITIES.register(context -> vrFirstPersonRenderer.renderAfterEntities(context));
 
-        /**
+        /*
          * For rendering things that need access to the completed depth buffer
-         * GUI, 'Crosshair', Debug lines
+         * HUD, GUI, 'Crosshair', Debug lines
+         * This has major issues with Iris
          */
         WorldRenderEvents.LAST.register(context -> {
             if (!MinecraftClient.getInstance().options.hudHidden) {
@@ -102,75 +85,8 @@ public class MCXRPlayClient implements ClientModInitializer {
         });
     }
 
-    public void postRenderManagerInit() throws XrException {
-        XR_INPUT = new XrInput(OPEN_XR);
-
-        OpenXRInstance instance = OPEN_XR.instance;
-        OpenXRSession session = OPEN_XR.session;
-
-        handsActionSet.createHandle(instance);
-        vanillaGameplayActionSet.createHandle(instance);
-        guiActionSet.createHandle(instance);
-
-        HashMap<String, List<Pair<Action, String>>> bindingsMap = new HashMap<>();
-        handsActionSet.getBindings(bindingsMap);
-        vanillaGameplayActionSet.getBindings(bindingsMap);
-        guiActionSet.getBindings(bindingsMap);
-
-        for (var action : handsActionSet.actions()) {
-            if (action instanceof SessionAwareAction saa) {
-                saa.createHandleSession(session);
-            }
-        }
-
-        try (var ignored = stackPush()) {
-            for (var entry : bindingsMap.entrySet()) {
-                var bindingsSet = entry.getValue();
-
-                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(bindingsSet.size());
-
-                for (int i = 0; i < bindingsSet.size(); i++) {
-                    var binding = bindingsSet.get(i);
-                    bindings.get(i).set(
-                            binding.getA().getHandle(),
-                            instance.getPath(binding.getB())
-                    );
-                }
-
-                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
-                        XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
-                        NULL,
-                        instance.getPath(entry.getKey()),
-                        bindings
-                );
-
-                try {
-                    instance.check(XR10.xrSuggestInteractionProfileBindings(instance.handle, suggested_binds), "xrSuggestInteractionProfileBindings");
-                } catch (XrRuntimeException e) {
-                    StringBuilder out = new StringBuilder(e.getMessage() + "\ninteractionProfile: " + entry.getKey());
-                    for (var pair : bindingsSet) {
-                        out.append("\n").append(pair.getB());
-                    }
-                    throw new XrRuntimeException(out.toString());
-                }
-            }
-
-            XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
-                    XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
-                    NULL,
-                    stackPointers(vanillaGameplayActionSet.getHandle().address(), guiActionSet.getHandle().address(), handsActionSet.getHandle().address())
-            );
-            // Attach the action set we just made to the session
-            instance.check(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
-        }
-    }
-
     public static void resetView() {
         MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().mul(getCameraScale(), new Vector3f())).mul(1, 0, 1);
-    }
-
-    public static boolean isXrMode() {
-        return MinecraftClient.getInstance().world != null || OPEN_XR.instance == null;
     }
 
     public static float getCameraScale() {

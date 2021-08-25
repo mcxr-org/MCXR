@@ -2,6 +2,7 @@ package net.sorenon.mcxr.play.input.actionsets;
 
 import net.minecraft.client.resource.language.I18n;
 import net.sorenon.mcxr.play.input.actions.Action;
+import net.sorenon.mcxr.play.input.actions.InputAction;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRSession;
 import net.sorenon.mcxr.play.openxr.XrException;
@@ -38,20 +39,22 @@ public abstract class ActionSet implements AutoCloseable {
 
     public void sync(OpenXRSession session) {
         for (var action : actions()) {
-            action.sync(session);
+            if (action instanceof InputAction inputAction) {
+                inputAction.sync(session);
+            }
         }
     }
 
     public final void createHandle(OpenXRInstance instance) throws XrException {
         try (MemoryStack ignored = stackPush()) {
-            String localizedName = "mcxr.actionset." + name;
+            String localizedName = "mcxr.actionset." + this.name;
             if (I18n.hasTranslation(localizedName)) {
                 localizedName = I18n.translate(localizedName);
             }
 
             XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.mallocStack().set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
                     NULL,
-                    memUTF8(name),
+                    memUTF8("mcxr." + this.name),
                     memUTF8(I18n.translate(localizedName)),
                     0
             );

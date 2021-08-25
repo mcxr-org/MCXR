@@ -23,6 +23,7 @@ public class GameRendererMixin {
 
     @Shadow @Final private Map<String, Shader> shaders;
 
+    //TODO create a library for handling things like this
     @Inject(method = "loadShaders", at = @At(value = "TAIL"))
     void loadGuiShader(ResourceManager manager, CallbackInfo ci) {
         ArrayList<Pair<Shader, Consumer<Shader>>> loadingShaders = new ArrayList<>();

@@ -1,7 +1,6 @@
 package net.sorenon.mcxr.play.input.actions;
 
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
-import net.sorenon.mcxr.play.openxr.OpenXRSession;
 import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrAction;
@@ -23,8 +22,6 @@ public abstract class Action implements AutoCloseable {
     public XrAction getHandle() {
         return handle;
     }
-
-    public void sync(OpenXRSession session) { }
 
     public void destroyHandle() {
         XR10.xrDestroyAction(handle);

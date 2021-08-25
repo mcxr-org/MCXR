@@ -10,8 +10,8 @@ import java.util.logging.Logger;
 
 /**
  * This class provides a system to change the main framebuffer that the game renders to while providing the illusion that
- * it is always the same framebuffer. This limits compat issues while still providing a simple interface for changing the size
- * and targets of the main framebuffer.
+ * it is always the same framebuffer. This limits compat issues while still providing a simple interface for changing the
+ * size and target of the main framebuffer.
  */
 public class MainRenderTarget extends WindowFramebuffer {
 

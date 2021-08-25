@@ -9,6 +9,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.MainRenderTarget;
 import net.sorenon.mcxr.play.rendering.XrCamera;
 import net.sorenon.mcxr.play.rendering.RenderPass;
@@ -17,6 +18,7 @@ import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -25,6 +27,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = GameRenderer.class, priority = 10_000)
 public abstract class GameRendererMixin {
+
+    @Unique
+    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
 
     @Shadow
     @Final
@@ -57,11 +62,11 @@ public abstract class GameRendererMixin {
      */
     @Inject(method = "getBasicProjectionMatrix", at = @At("HEAD"), cancellable = true)
     void getXrProjectionMatrix(double d, CallbackInfoReturnable<Matrix4f> cir) {
-        if (MCXRPlayClient.renderPass != RenderPass.VANILLA && MCXRPlayClient.fov != null) {
+        if (XR_RENDERER.fov != null) {
             Matrix4f proj = new Matrix4f();
             proj.loadIdentity();
             //noinspection ConstantConditions
-            ((Matrix4fExt) (Object) proj).createProjectionFov(MCXRPlayClient.fov, 0.05F, this.getViewDistance() * 4);
+            ((Matrix4fExt) (Object) proj).createProjectionFov(XR_RENDERER.fov, 0.05F, this.getViewDistance() * 4);
 
             cir.setReturnValue(proj);
         }
@@ -91,7 +96,7 @@ public abstract class GameRendererMixin {
      */
     @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;world:Lnet/minecraft/client/world/ClientWorld;", opcode = Opcodes.GETFIELD, ordinal = 0), method = "render")
     public ClientWorld getWorld(MinecraftClient client) {
-        if (MCXRPlayClient.renderPass == RenderPass.GUI) {
+        if (XR_RENDERER.renderPass == RenderPass.GUI) {
             return null;
         } else {
             return client.world;
@@ -103,7 +108,7 @@ public abstract class GameRendererMixin {
      */
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if (MCXRPlayClient.renderPass == RenderPass.WORLD) {
+        if (XR_RENDERER.renderPass == RenderPass.WORLD) {
             ci.cancel();
         }
     }

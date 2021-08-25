@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.mixin;
 import net.minecraft.client.input.Input;
 import net.minecraft.client.input.KeyboardInput;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.XrInput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,7 +17,7 @@ public class VrKeyboardInputMixin extends Input {
     void overwriteMovement(boolean slowDown, CallbackInfo ci) {
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) return;
 
-        var thumbstick = MCXRPlayClient.vanillaGameplayActionSet.move.currentState;
+        var thumbstick = XrInput.vanillaGameplayActionSet.move.currentState;
         this.movementForward = thumbstick.y();
         this.movementSideways = -thumbstick.x();
 
@@ -25,6 +26,6 @@ public class VrKeyboardInputMixin extends Input {
         this.pressingRight = thumbstick.x() > 0;
         this.pressingLeft = thumbstick.y() < 0;
 
-        this.jumping = MCXRPlayClient.vanillaGameplayActionSet.jump.currentState;
+        this.jumping = XrInput.vanillaGameplayActionSet.jump.currentState;
     }
 }

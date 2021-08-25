@@ -39,9 +39,9 @@ public class MCXRCore implements ModInitializer {
                 boolean xr = buf.readBoolean();
                 var profile = ((ServerLoginNetworkHandlerAcc) handler).getProfile();
                 if (xr) {
-                    LOGGER.info("Received XR login packet from " + profile);
+                    LOGGER.info("Received XR login packet from " + profile.getId());
                 } else {
-                    LOGGER.info("Received login packet from " + profile);
+                    LOGGER.info("Received login packet from " + profile.getId());
                 }
             }
         });

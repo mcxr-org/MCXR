@@ -4,12 +4,14 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Matrix4f;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.accessor.Matrix4fExt;
 import org.joml.Math;
 import org.lwjgl.openxr.XrFovf;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -17,6 +19,9 @@ import virtuoel.pehkui.util.ScaleUtils;
 
 @Mixin(Matrix4f.class)
 public abstract class Matrix4fMixin implements Matrix4fExt {
+
+    @Unique
+    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
 
     @Shadow
     protected float a00;
@@ -72,10 +77,10 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
             var client = MinecraftClient.getInstance();
             nearZ = ScaleUtils.modifyProjectionMatrixDepth(MCXRPlayClient.getCameraScale(), nearZ, client.getCameraEntity(), client.getTickDelta());
         }
-        float tanLeft = Math.tan(MCXRPlayClient.fov.angleLeft());
-        float tanRight = Math.tan(MCXRPlayClient.fov.angleRight());
-        float tanDown = Math.tan(MCXRPlayClient.fov.angleDown());
-        float tanUp = Math.tan(MCXRPlayClient.fov.angleUp());
+        float tanLeft = Math.tan(fov.angleLeft());
+        float tanRight = Math.tan(fov.angleRight());
+        float tanDown = Math.tan(fov.angleDown());
+        float tanUp = Math.tan(fov.angleUp());
         float tanAngleWidth = tanRight - tanLeft;
         float tanAngleHeight = tanUp - tanDown;
         a00 = 2.0f / tanAngleWidth;
@@ -102,10 +107,10 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
      */
     @Inject(method = "viewboxMatrix", cancellable = true, at = @At("HEAD"))
     private static void overwriteProjectionMatrix(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
-        if (MCXRPlayClient.renderPass != RenderPass.VANILLA && MCXRPlayClient.fov != null) {
+        if (XR_RENDERER.fov != null) {
             Matrix4f mat = new Matrix4f();
             mat.loadIdentity();
-            ((Matrix4fExt) (Object) mat).createProjectionFov(MCXRPlayClient.fov, cameraDepth, viewDistance);
+            ((Matrix4fExt) (Object) mat).createProjectionFov(XR_RENDERER.fov, cameraDepth, viewDistance);
             cir.setReturnValue(mat);
         }
     }

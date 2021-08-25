@@ -34,7 +34,7 @@ public class OpenXRSystem {
         this.formFactor = formFactor;
         this.handle = handle;
 
-        try (MemoryStack stack = stackPush()) {
+        try (var ignored = stackPush()) {
             XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.callocStack().type(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
             instance.check(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
 
@@ -51,10 +51,10 @@ public class OpenXRSystem {
             maxHeight = graphicsProperties.maxSwapchainImageHeight();
             maxLayerCount = graphicsProperties.maxLayerCount();
 
-            LOGGER.debug(String.format("Found device with id: %d", handle));
-            LOGGER.debug(String.format("Headset name:%s vendor:%d ", systemName, vendor));
-            LOGGER.debug(String.format("Headset orientationTracking:%b positionTracking:%b ", orientationTracking, positionTracking));
-            LOGGER.debug(String.format("Headset MaxWidth:%d MaxHeight:%d MaxLayerCount:%d ", maxWidth, maxHeight, maxLayerCount));
+            LOGGER.info(String.format("Found device with id: %d", handle));
+            LOGGER.info(String.format("Headset Name:%s Vendor:%d ", systemName, vendor));
+            LOGGER.info(String.format("Headset Orientation Tracking:%b Position Tracking:%b ", orientationTracking, positionTracking));
+            LOGGER.info(String.format("Headset Max Width:%d Max Height:%d Max Layer Count:%d ", maxWidth, maxHeight, maxLayerCount));
         }
     }
 

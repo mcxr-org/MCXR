@@ -2,6 +2,7 @@ package net.sorenon.mcxr.play.mixin.flatgui;
 
 import net.minecraft.client.util.InputUtil;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.XrInput;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +16,7 @@ public class InputUtilMixin {
     private static void isKeyPressed(long handle, int code, CallbackInfoReturnable<Boolean> cir) {
         if (code == GLFW.GLFW_KEY_LEFT_SHIFT || code == GLFW.GLFW_KEY_RIGHT_SHIFT) {
             if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
-                if (MCXRPlayClient.guiActionSet.quickMove.currentState) {
+                if (XrInput.guiActionSet.quickMove.currentState) {
                     cir.setReturnValue(true);
                 }
             }

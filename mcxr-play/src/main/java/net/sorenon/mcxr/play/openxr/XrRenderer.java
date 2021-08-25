@@ -1,9 +1,14 @@
 package net.sorenon.mcxr.play.openxr;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.*;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Matrix4f;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.client.MCXRCoreClient;
 import net.sorenon.mcxr.play.FlatGuiManager;
@@ -36,6 +41,8 @@ public class XrRenderer {
     public XrFovf fov = null;
     public int viewIndex = 0;
     public final ControllerPoses eyePoses = new ControllerPoses();
+
+    public Shader blitShader;
 
     public void setSession(OpenXRSession session) {
         this.session = session;
@@ -144,6 +151,7 @@ public class XrRenderer {
         clientExt.preRender(true);
         if (camera.getFocusedEntity() != null) {
             float tickDelta = client.getTickDelta();
+            if (client.isPaused()) tickDelta = 0.0f;
             Entity camEntity = camera.getFocusedEntity();
             MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()) + MCXRPlayClient.xrOffset.x,
                     MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()) + MCXRPlayClient.xrOffset.y,
@@ -202,8 +210,8 @@ public class XrRenderer {
 
             {
                 XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                viewSwapchain.framebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
-                viewSwapchain.framebuffer.endWrite();
+                viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
+                viewSwapchain.innerFramebuffer.endWrite();
                 mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
                 fov = session.views.get(viewIndex).fov();
                 eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
@@ -212,6 +220,55 @@ public class XrRenderer {
                 camera.setPose(eyePoses.getGamePose());
                 clientExt.doRender(true, frameStartTime, RenderPass.WORLD);
                 fov = null;
+            }
+
+            { //Blit
+                MatrixStack matrixStack = RenderSystem.getModelViewStack();
+                matrixStack.push();
+                matrixStack.loadIdentity();
+                RenderSystem.applyModelViewMatrix();
+                viewSwapchain.innerFramebuffer.beginWrite(true);
+
+                {
+                    int width = viewSwapchain.framebuffer.textureWidth;
+                    int height = viewSwapchain.framebuffer.textureHeight;
+
+                    GlStateManager._colorMask(true, true, true, false);
+                    GlStateManager._disableDepthTest();
+                    GlStateManager._depthMask(false);
+                    GlStateManager._viewport(0, 0, width, height);
+                    GlStateManager._disableBlend();
+
+                    Shader shader = this.blitShader;
+                    shader.addSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorAttachment());
+                    Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) (-height), 1000.0F, 3000.0F);
+                    RenderSystem.setProjectionMatrix(matrix4f);
+                    if (shader.modelViewMat != null) {
+                        shader.modelViewMat.set(Matrix4f.translate(0.0F, 0.0F, -2000.0F));
+                    }
+
+                    if (shader.projectionMat != null) {
+                        shader.projectionMat.set(matrix4f);
+                    }
+
+                    shader.bind();
+                    float u = (float) viewSwapchain.framebuffer.viewportWidth / (float) viewSwapchain.framebuffer.textureWidth;
+                    float v = (float) viewSwapchain.framebuffer.viewportHeight / (float) viewSwapchain.framebuffer.textureHeight;
+                    Tessellator tessellator = RenderSystem.renderThreadTesselator();
+                    BufferBuilder bufferBuilder = tessellator.getBuffer();
+                    bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+                    bufferBuilder.vertex(0.0, height, 0.0).texture(0.0F, 0.0F).color(255, 255, 255, 255).next();
+                    bufferBuilder.vertex(width, height, 0.0).texture(u, 0.0F).color(255, 255, 255, 255).next();
+                    bufferBuilder.vertex(width, 0.0, 0.0).texture(u, v).color(255, 255, 255, 255).next();
+                    bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, v).color(255, 255, 255, 255).next();
+                    bufferBuilder.end();
+                    BufferRenderer.postDraw(bufferBuilder);
+                    shader.unbind();
+                    GlStateManager._depthMask(true);
+                    GlStateManager._colorMask(true, true, true, true);
+                }
+                viewSwapchain.innerFramebuffer.endWrite();
+                matrixStack.pop();
             }
 
             instance.check(XR10.xrReleaseSwapchainImage(
@@ -278,8 +335,8 @@ public class XrRenderer {
         }
 
         XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-        viewSwapchain.framebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
-        viewSwapchain.framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+        viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
+        viewSwapchain.innerFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
 
         instance.check(XR10.xrReleaseSwapchainImage(
                 viewSwapchain.handle,

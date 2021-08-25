@@ -49,11 +49,6 @@ public class WindowMixin {
 
     @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
     void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
-        if (MCXRPlayClient.RENDERER.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashOverlay) {
-            cir.setReturnValue(MCXRPlayClient.OPEN_XR.session.swapchains[0].width);
-            return;
-        }
-
         if (isCustomFramebuffer()) {
             MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
             cir.setReturnValue(mainRenderTarget.viewportWidth);
@@ -62,11 +57,6 @@ public class WindowMixin {
 
     @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
     void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
-        if (MCXRPlayClient.RENDERER.isXrMode() && MinecraftClient.getInstance().getOverlay() instanceof SplashOverlay) {
-            cir.setReturnValue(MCXRPlayClient.OPEN_XR.session.swapchains[0].height);
-            return;
-        }
-
         if (isCustomFramebuffer()) {
             MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
             cir.setReturnValue(mainRenderTarget.viewportHeight);

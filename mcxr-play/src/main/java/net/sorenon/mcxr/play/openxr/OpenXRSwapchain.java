@@ -1,6 +1,8 @@
 package net.sorenon.mcxr.play.openxr;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.SimpleFramebuffer;
 import net.sorenon.mcxr.play.rendering.XrFramebuffer;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
@@ -17,7 +19,8 @@ public class OpenXRSwapchain implements AutoCloseable {
     public int width;
     public int height;
     public XrSwapchainImageOpenGLKHR.Buffer images;
-    public XrFramebuffer framebuffer;
+    public XrFramebuffer innerFramebuffer;
+    public SimpleFramebuffer framebuffer;
 
     public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session) {
         this.handle = handle;
@@ -26,7 +29,7 @@ public class OpenXRSwapchain implements AutoCloseable {
     }
 
     public void createImages() {
-        try (MemoryStack stack = stackPush()) {
+        try (MemoryStack ignored = stackPush()) {
             IntBuffer intBuf = stackInts(0);
 
             instance.check(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
@@ -40,8 +43,19 @@ public class OpenXRSwapchain implements AutoCloseable {
             instance.check(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
 
             images = swapchainImageBuffer;
-            framebuffer = new XrFramebuffer(width, height);
+            innerFramebuffer = new XrFramebuffer(width, height);
+            innerFramebuffer.setClearColor(sRGBToLinear(239 / 255f), sRGBToLinear(50 / 255f), sRGBToLinear(61 / 255f), 255 / 255f);
+
+            framebuffer = new SimpleFramebuffer(width, height, true, MinecraftClient.IS_SYSTEM_MAC);
             framebuffer.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
+        }
+    }
+
+    float sRGBToLinear(float f) {
+        if (f < 0.04045f) {
+            return f / 12.92f;
+        } else {
+            return (float) Math.pow((f + 0.055f) / 1.055f, 2.4f);
         }
     }
 
@@ -49,6 +63,9 @@ public class OpenXRSwapchain implements AutoCloseable {
     public void close() {
         XR10.xrDestroySwapchain(handle);
         images.close();
-        RenderSystem.recordRenderCall(() -> framebuffer.delete());
+        RenderSystem.recordRenderCall(() -> {
+            innerFramebuffer.delete();
+            framebuffer.delete();
+        });
     }
 }

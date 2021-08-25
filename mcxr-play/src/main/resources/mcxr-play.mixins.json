@@ -4,8 +4,8 @@
   "package": "net.sorenon.mcxr.play.mixin",
   "compatibilityLevel": "JAVA_16",
   "client": [
-    "GameOptionsMixin",
     "SplashOverlayMixin",
+    "FramebufferMixin",
     "VrClientPlayNetworkHandlerMixin",
     "VrKeyboardInputMixin",
     "SystemDetailsMixin",
@@ -23,7 +23,8 @@
     "rendering.MinecraftClientMixin",
     "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
-    "rendering.WindowMixin"
+    "rendering.WindowMixin",
+    "rendering.WorldRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

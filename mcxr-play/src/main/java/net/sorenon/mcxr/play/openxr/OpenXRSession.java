@@ -95,17 +95,15 @@ public class OpenXRSession implements AutoCloseable {
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
 
             long[] desiredSwapchainFormats = {
-                    GL_SRGB8_ALPHA8,
-                    //SRGB formats perform automatic inverse gamma correction inside the driver
-                    //but all SRGB formats are linear so in the future we want to do inverse gamma correction ourselves
-                    //and use GL_RGBA16F instead
                     GL11.GL_RGB10_A2,
                     GL30.GL_RGBA16F,
-                    // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
-                    // depth, thus leading to banding.
+                    GL30.GL_RGB16F,
+//                    // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
+//                    // depth, thus leading to banding.
                     GL11.GL_RGBA8,
                     GL31.GL_RGBA8_SNORM
             };
+
             for (long glFormatIter : desiredSwapchainFormats) {
                 swapchainFormats.rewind();
                 while (swapchainFormats.hasRemaining()) {
@@ -118,8 +116,9 @@ public class OpenXRSession implements AutoCloseable {
                     break;
                 }
             }
+
             if (glColorFormat == 0) {
-                throw new IllegalStateException("No compatable swapchain / framebuffer format availible");
+                throw new IllegalStateException("No compatible swapchain / framebuffer format availible");
             }
 
             swapchains = new OpenXRSwapchain[viewCountNumber];

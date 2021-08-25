@@ -56,7 +56,7 @@ public class MainRenderTarget extends WindowFramebuffer {
         thiz.depthAttachment(framebuffer.getDepthAttachment());
     }
 
-    public void setXrFramebuffer(XrFramebuffer framebuffer) {
+    public void setXrFramebuffer(Framebuffer framebuffer) {
         setFramebuffer(framebuffer);
         if (framebuffer.textureWidth != gameWidth ||
             framebuffer.textureHeight != gameHeight) {

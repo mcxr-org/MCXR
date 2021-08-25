@@ -5,6 +5,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Shader;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.resource.ResourceManager;
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,6 +31,9 @@ public class GameRendererMixin {
         try {
             loadingShaders.add(Pair.of(new Shader(manager, "rendertype_gui_translucent", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL), (shader) -> {
                 VrFirstPersonRenderer.guiShader = shader;
+            }));
+            loadingShaders.add(Pair.of(new Shader(manager, "blit_screen_mcxr", VertexFormats.BLIT_SCREEN), (shader) -> {
+                MCXRPlayClient.RENDERER.blitShader = shader;
             }));
         } catch (IOException e) {
             throw new RuntimeException("[MCXR] Could not load custom shaders");

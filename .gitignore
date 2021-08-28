@@ -31,3 +31,7 @@ bin/
 # fabric
 
 run/
+
+# mcxr
+
+mcxr-play/loader/**

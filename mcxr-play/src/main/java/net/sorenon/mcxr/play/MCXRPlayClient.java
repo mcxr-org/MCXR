@@ -68,12 +68,7 @@ public class MCXRPlayClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
-        Path path = FabricLoader.getInstance().getGameDir().resolve("mods").resolve("openxr_loader.dll");
-        if (!path.toFile().exists()) {
-            throw new RuntimeException("Could not find OpenXR loader in mods folder");
-        }
-
-        XR.create(path.toString());
+        XR.create("openxr_loader");
         FartRenderEvents.LAST.register(context -> {
             if (RENDERER.renderPass instanceof RenderPass.World) {
                 if (!MinecraftClient.getInstance().options.hudHidden) {

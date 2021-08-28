@@ -3,7 +3,9 @@ package net.sorenon.mcxr.play.openxr;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
+import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
@@ -14,11 +16,12 @@ import net.sorenon.mcxr.core.client.MCXRCoreClient;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
-import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.rendering.MainRenderTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.XrCamera;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
@@ -31,6 +34,7 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class XrRenderer {
     private static final OpenXR OPEN_XR = MCXRPlayClient.OPEN_XR;
+    private static final Logger LOGGER = LogManager.getLogger();
     private MinecraftClient client;
     private MinecraftClientExt clientExt;
 
@@ -38,11 +42,9 @@ public class XrRenderer {
     private OpenXRSession session;
 
     public RenderPass renderPass = RenderPass.VANILLA;
-    public XrFovf fov = null;
-    public int viewIndex = 0;
-    public final ControllerPoses eyePoses = new ControllerPoses();
 
     public Shader blitShader;
+    public Shader guiBlitShader;
 
     public void setSession(OpenXRSession session) {
         this.session = session;
@@ -117,11 +119,12 @@ public class XrRenderer {
 
         if ((viewState.viewStateFlags() & XR10.XR_VIEW_STATE_POSITION_VALID_BIT) == 0 ||
                 (viewState.viewStateFlags() & XR10.XR_VIEW_STATE_ORIENTATION_VALID_BIT) == 0) {
+            LOGGER.error("Invalid headset position, try restarting your device");
             return null;  // There is no valid tracking poses for the views.
         }
         int viewCountOutput = intBuf.get(0);
 
-        var projectionLayerViews = XrCompositionLayerProjectionView.calloc(viewCountOutput);
+        var projectionLayerViews = XrCompositionLayerProjectionView.callocStack(viewCountOutput);
 
         // Update hand position based on the predicted time of when the frame will be rendered! This
         // should result in a more accurate location, and reduce perceived lag.
@@ -174,11 +177,20 @@ public class XrRenderer {
 
         //Render GUI
         FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
-        mainRenderTarget.setFramebuffer(FGM.framebuffer);
+        mainRenderTarget.setFramebuffer(FGM.backFramebuffer);
         XrInput.postTick(predictedDisplayTime);
-        FGM.framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+        FGM.backFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
         clientExt.doRender(true, frameStartTime, RenderPass.GUI);
+
+        FGM.frontFramebuffer.beginWrite(true);
+        this.guiBlitShader.addSampler("DiffuseSampler", FGM.backFramebuffer.getColorAttachment());
+        this.guiBlitShader.addSampler("DepthSampler", FGM.backFramebuffer.getDepthAttachment());
+        this.blit(FGM.frontFramebuffer, guiBlitShader);
+        FGM.frontFramebuffer.endWrite();
+
         mainRenderTarget.resetFramebuffer();
+
+        RenderPass.World worldRenderPass = RenderPass.World.create();
 
         // Render view to the appropriate part of the swapchain image.
         for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
@@ -213,63 +225,18 @@ public class XrRenderer {
                 viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
                 viewSwapchain.innerFramebuffer.endWrite();
                 mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
-                fov = session.views.get(viewIndex).fov();
-                eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
-                eyePoses.updateGamePose(MCXRPlayClient.xrOrigin, MCXRPlayClient.getCameraScale());
-                this.viewIndex = viewIndex;
-                camera.setPose(eyePoses.getGamePose());
-                clientExt.doRender(true, frameStartTime, RenderPass.WORLD);
-                fov = null;
+                worldRenderPass.fov = session.views.get(viewIndex).fov();
+                worldRenderPass.eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
+                worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin, MCXRPlayClient.getCameraScale());
+                worldRenderPass.viewIndex = viewIndex;
+                camera.setPose(worldRenderPass.eyePoses.getGamePose());
+                clientExt.doRender(true, frameStartTime, worldRenderPass);
             }
 
-            { //Blit
-                MatrixStack matrixStack = RenderSystem.getModelViewStack();
-                matrixStack.push();
-                matrixStack.loadIdentity();
-                RenderSystem.applyModelViewMatrix();
-                viewSwapchain.innerFramebuffer.beginWrite(true);
-
-                {
-                    int width = viewSwapchain.framebuffer.textureWidth;
-                    int height = viewSwapchain.framebuffer.textureHeight;
-
-                    GlStateManager._colorMask(true, true, true, false);
-                    GlStateManager._disableDepthTest();
-                    GlStateManager._depthMask(false);
-                    GlStateManager._viewport(0, 0, width, height);
-                    GlStateManager._disableBlend();
-
-                    Shader shader = this.blitShader;
-                    shader.addSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorAttachment());
-                    Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) (-height), 1000.0F, 3000.0F);
-                    RenderSystem.setProjectionMatrix(matrix4f);
-                    if (shader.modelViewMat != null) {
-                        shader.modelViewMat.set(Matrix4f.translate(0.0F, 0.0F, -2000.0F));
-                    }
-
-                    if (shader.projectionMat != null) {
-                        shader.projectionMat.set(matrix4f);
-                    }
-
-                    shader.bind();
-                    float u = (float) viewSwapchain.framebuffer.viewportWidth / (float) viewSwapchain.framebuffer.textureWidth;
-                    float v = (float) viewSwapchain.framebuffer.viewportHeight / (float) viewSwapchain.framebuffer.textureHeight;
-                    Tessellator tessellator = RenderSystem.renderThreadTesselator();
-                    BufferBuilder bufferBuilder = tessellator.getBuffer();
-                    bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-                    bufferBuilder.vertex(0.0, height, 0.0).texture(0.0F, 0.0F).color(255, 255, 255, 255).next();
-                    bufferBuilder.vertex(width, height, 0.0).texture(u, 0.0F).color(255, 255, 255, 255).next();
-                    bufferBuilder.vertex(width, 0.0, 0.0).texture(u, v).color(255, 255, 255, 255).next();
-                    bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, v).color(255, 255, 255, 255).next();
-                    bufferBuilder.end();
-                    BufferRenderer.postDraw(bufferBuilder);
-                    shader.unbind();
-                    GlStateManager._depthMask(true);
-                    GlStateManager._colorMask(true, true, true, true);
-                }
-                viewSwapchain.innerFramebuffer.endWrite();
-                matrixStack.pop();
-            }
+            viewSwapchain.innerFramebuffer.beginWrite(true);
+            this.blitShader.addSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorAttachment());
+            this.blit(viewSwapchain.innerFramebuffer, blitShader);
+            viewSwapchain.innerFramebuffer.endWrite();
 
             instance.check(XR10.xrReleaseSwapchainImage(
                     viewSwapchain.handle,
@@ -307,7 +274,7 @@ public class XrRenderer {
 
         int viewCountOutput = intBuf.get(0);
 
-        var projectionLayerViews = XrCompositionLayerProjectionView.calloc(viewCountOutput);
+        var projectionLayerViews = XrCompositionLayerProjectionView.callocStack(viewCountOutput);
 
         OpenXRSwapchain viewSwapchain = session.swapchains[0];
         instance.check(XR10.xrAcquireSwapchainImage(
@@ -348,5 +315,49 @@ public class XrRenderer {
         layer.views(projectionLayerViews);
         return layer;
 //        }
+    }
+
+    public void blit(Framebuffer framebuffer, Shader shader) {
+        MatrixStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.push();
+        matrixStack.loadIdentity();
+        RenderSystem.applyModelViewMatrix();
+
+        int width = framebuffer.textureWidth;
+        int height = framebuffer.textureHeight;
+
+        GlStateManager._colorMask(true, true, true, true);
+        GlStateManager._disableDepthTest();
+        GlStateManager._depthMask(false);
+        GlStateManager._viewport(0, 0, width, height);
+        GlStateManager._disableBlend();
+
+        Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) (-height), 1000.0F, 3000.0F);
+        RenderSystem.setProjectionMatrix(matrix4f);
+        if (shader.modelViewMat != null) {
+            shader.modelViewMat.set(Matrix4f.translate(0.0F, 0.0F, -2000.0F));
+        }
+
+        if (shader.projectionMat != null) {
+            shader.projectionMat.set(matrix4f);
+        }
+
+        shader.bind();
+        float u = (float) framebuffer.viewportWidth / (float) framebuffer.textureWidth;
+        float v = (float) framebuffer.viewportHeight / (float) framebuffer.textureHeight;
+        Tessellator tessellator = RenderSystem.renderThreadTesselator();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.vertex(0.0, height, 0.0).texture(0.0F, 0.0F).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(width, height, 0.0).texture(u, 0.0F).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(width, 0.0, 0.0).texture(u, v).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, v).color(255, 255, 255, 255).next();
+        bufferBuilder.end();
+        BufferRenderer.postDraw(bufferBuilder);
+        shader.unbind();
+        GlStateManager._depthMask(true);
+        GlStateManager._colorMask(true, true, true, true);
+        
+        matrixStack.pop();
     }
 }

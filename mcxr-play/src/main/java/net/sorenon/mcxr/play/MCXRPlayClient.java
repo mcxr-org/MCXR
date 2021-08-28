@@ -4,19 +4,27 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.util.Identifier;
+import net.sorenon.fart.FartRenderEvents;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.XR;
+import org.lwjgl.system.SharedLibrary;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.lwjgl.system.APIUtil.apiCreateLibrary;
+import static org.lwjgl.system.APIUtil.apiLog;
 
 public class MCXRPlayClient implements ClientModInitializer {
 
@@ -66,23 +74,18 @@ public class MCXRPlayClient implements ClientModInitializer {
         }
 
         XR.create(path.toString());
-
-        /*
-         * For the majority of rendering
-         * Hands, Shadow, Items
-         */
-        WorldRenderEvents.AFTER_ENTITIES.register(context -> vrFirstPersonRenderer.renderAfterEntities(context));
-
-        /*
-         * For rendering things that need access to the completed depth buffer
-         * HUD, GUI, 'Crosshair', Debug lines
-         * This has major issues with Iris
-         */
-        WorldRenderEvents.LAST.register(context -> {
-            if (!MinecraftClient.getInstance().options.hudHidden) {
-                vrFirstPersonRenderer.renderHud(context);
+        FartRenderEvents.LAST.register(context -> {
+            if (RENDERER.renderPass instanceof RenderPass.World) {
+                if (!MinecraftClient.getInstance().options.hudHidden) {
+                    vrFirstPersonRenderer.renderHud(context);
+                    vrFirstPersonRenderer.renderAfterEntities(context);
+                }
             }
         });
+    }
+
+    public static Identifier id(String name) {
+        return new Identifier("mcxr-play", name);
     }
 
     public static void resetView() {

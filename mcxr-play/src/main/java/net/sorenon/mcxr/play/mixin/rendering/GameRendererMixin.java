@@ -43,6 +43,7 @@ public abstract class GameRendererMixin {
     /**
      * Replace the default camera with an XrCamera
      */
+    @SuppressWarnings("UnresolvedMixinReference")
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/render/Camera"))
     Camera createCamera() {
         return new XrCamera();
@@ -62,11 +63,11 @@ public abstract class GameRendererMixin {
      */
     @Inject(method = "getBasicProjectionMatrix", at = @At("HEAD"), cancellable = true)
     void getXrProjectionMatrix(double d, CallbackInfoReturnable<Matrix4f> cir) {
-        if (XR_RENDERER.fov != null) {
+        if (XR_RENDERER.renderPass instanceof RenderPass.World renderPass) {
             Matrix4f proj = new Matrix4f();
             proj.loadIdentity();
             //noinspection ConstantConditions
-            ((Matrix4fExt) (Object) proj).createProjectionFov(XR_RENDERER.fov, 0.05F, this.getViewDistance() * 4);
+            ((Matrix4fExt) (Object) proj).createProjectionFov(renderPass.fov, 0.05F, this.getViewDistance() * 4);
 
             cir.setReturnValue(proj);
         }
@@ -108,7 +109,7 @@ public abstract class GameRendererMixin {
      */
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if (XR_RENDERER.renderPass == RenderPass.WORLD) {
+        if (XR_RENDERER.renderPass instanceof RenderPass.World) {
             ci.cancel();
         }
     }

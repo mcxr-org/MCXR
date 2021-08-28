@@ -40,7 +40,7 @@ If method 3 has too great of a performance issue (which i doubt) i will look at 
 
 /**
  * XrFramebuffer is a framebuffer which accepts a color texture for rendering to rather than creating its own
- * In the future when anti aliasing is implemented this class will be removed and a default Framebuffer used instead
+ * TODO accept depth textures as well
  */
 public class XrFramebuffer extends SimpleFramebuffer {
 
@@ -93,10 +93,5 @@ public class XrFramebuffer extends SimpleFramebuffer {
         ((FramebufferAcc) this).colorAttachment(colorAttachment);
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
         GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
-    }
-
-    @Override
-    public void beginWrite(boolean setViewport) {
-        super.beginWrite(setViewport);
     }
 }

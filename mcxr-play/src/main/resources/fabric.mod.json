@@ -27,7 +27,6 @@
       "net.sorenon.mcxr.play.MCXRPlayClient"
     ]
   },
-  "accessWidener": "mcxr-play.accesswidener",
   "mixins": [
     "mcxr-play.mixins.json"
   ],

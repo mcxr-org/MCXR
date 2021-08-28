@@ -29,14 +29,17 @@ public class GameRendererMixin {
     void loadGuiShader(ResourceManager manager, CallbackInfo ci) {
         ArrayList<Pair<Shader, Consumer<Shader>>> loadingShaders = new ArrayList<>();
         try {
-            loadingShaders.add(Pair.of(new Shader(manager, "rendertype_gui_translucent", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL), (shader) -> {
-                VrFirstPersonRenderer.guiShader = shader;
+            loadingShaders.add(Pair.of(new Shader(manager, "rendertype_gui_translucent", VertexFormats.POSITION_TEXTURE), (shader) -> {
+//                VrFirstPersonRenderer.guiShader = shader;
             }));
             loadingShaders.add(Pair.of(new Shader(manager, "blit_screen_mcxr", VertexFormats.BLIT_SCREEN), (shader) -> {
                 MCXRPlayClient.RENDERER.blitShader = shader;
             }));
+            loadingShaders.add(Pair.of(new Shader(manager, "gui_blit_screen_mcxr", VertexFormats.BLIT_SCREEN), (shader) -> {
+                MCXRPlayClient.RENDERER.guiBlitShader = shader;
+            }));
         } catch (IOException e) {
-            throw new RuntimeException("[MCXR] Could not load custom shaders");
+            throw new RuntimeException("[MCXR] Could not load custom shaders", e);
         }
         loadingShaders.forEach((pair) -> {
             Shader shader = pair.getFirst();

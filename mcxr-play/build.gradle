@@ -15,15 +15,6 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
-/*
- * TODO properly deal with the issue that this causes
- * Since this generates a second minecraft lib for mcxr-play it results in 'usages' of minecraft symbols showing twice
- * ATM its possible to fix this by tinkering with libs after gradle has initialized
- */
-minecraft {
-    accessWidener = file("src/main/resources/mcxr-play.accesswidener")
-}
-
 dependencies {
     implementation project(":mcxr-core")
 
@@ -37,7 +28,8 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    include(implementation("org.joml:joml:1.10.1"))
+    implementation("org.joml:joml:1.10.1")
+    include(modImplementation("com.github.Sorenon:fart:3987d44750"))
 }
 
 processResources {

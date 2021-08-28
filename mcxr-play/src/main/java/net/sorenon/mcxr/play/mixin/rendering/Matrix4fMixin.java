@@ -107,10 +107,10 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
      */
     @Inject(method = "viewboxMatrix", cancellable = true, at = @At("HEAD"))
     private static void overwriteProjectionMatrix(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
-        if (XR_RENDERER.fov != null) {
+        if (XR_RENDERER.renderPass instanceof RenderPass.World renderPass) {
             Matrix4f mat = new Matrix4f();
             mat.loadIdentity();
-            ((Matrix4fExt) (Object) mat).createProjectionFov(XR_RENDERER.fov, cameraDepth, viewDistance);
+            ((Matrix4fExt) (Object) mat).createProjectionFov(renderPass.fov, cameraDepth, viewDistance);
             cir.setReturnValue(mat);
         }
     }

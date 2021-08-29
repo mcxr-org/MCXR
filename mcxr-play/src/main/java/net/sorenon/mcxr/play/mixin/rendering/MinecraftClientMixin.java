@@ -29,6 +29,7 @@ import net.minecraft.util.snooper.Snooper;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
+import net.sorenon.mcxr.play.mixin.accessor.WindowAcc;
 import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.MainRenderTarget;
@@ -175,6 +176,9 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Unique
     private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
 
+    @Unique
+    private XrRenderer.OffThreadSwapper swapper;
+
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/WindowFramebuffer"))
     WindowFramebuffer createFramebuffer(int width, int height) {
         return new MainRenderTarget(width, height);
@@ -183,10 +187,23 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
         MCXRPlayClient.INSTANCE.flatGuiManager.init();
+
+        swapper = new XrRenderer.OffThreadSwapper(window.getHandle(), MCXRPlayClient.RENDERER);
+        swapper.setName("MCXR Swapper Thread");
+        swapper.start();
+    }
+
+    @Inject(method = "close", at = @At("RETURN"))
+    void end(CallbackInfo ci) {
+        swapper.interrupt();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
-    void loop(MinecraftClient minecraftClient, boolean tick) throws InterruptedException {
+    void loop(MinecraftClient minecraftClient, boolean tick) {
+        if (!swapper.isAlive()) {
+            throw new RuntimeException("MCXR Swapper thread has died");
+        }
+
         OpenXR openXR = MCXRPlayClient.OPEN_XR;
         if (openXR.loop()) {
             //Just render normally
@@ -275,11 +292,11 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 //        Tessellator.getInstance().getBuffer().clear();
 
         {
-            GLFW.glfwPollEvents();
-            RenderSystem.replayQueue();
-            Tessellator.getInstance().getBuffer().clear();
-            GLFW.glfwSwapBuffers(window.getHandle());
-            GLFW.glfwPollEvents();
+//            GLFW.glfwPollEvents();
+//            RenderSystem.replayQueue();
+//            Tessellator.getInstance().getBuffer().clear();
+//            GLFW.glfwSwapBuffers(window.getHandle());
+//            GLFW.glfwPollEvents();
         }
 
         /*d
@@ -304,6 +321,15 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
 
     @Override
     public void postRender() {
+        GLFW.glfwPollEvents();
+        RenderSystem.replayQueue();
+        Tessellator.getInstance().getBuffer().clear();
+//        GLFW.glfwSwapBuffers(window.getHandle());
+        WindowAcc windowAcc = ((WindowAcc) (Object) window);
+        if (window.isFullscreen() != windowAcc.getCurrentFullscreen()) {
+            windowAcc.setCurrentFullscreen(window.isFullscreen());
+            windowAcc.invokeUpdateFullscreen(windowAcc.getVsync());
+        }
         GLFW.glfwPollEvents();
 
         this.window.setPhase("Post render");

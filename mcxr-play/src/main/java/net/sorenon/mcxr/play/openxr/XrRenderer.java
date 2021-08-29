@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
-import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Util;
@@ -23,11 +22,14 @@ import net.sorenon.mcxr.play.rendering.XrCamera;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
 
 import java.nio.IntBuffer;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.lwjgl.system.MemoryStack.stackCallocInt;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -37,6 +39,8 @@ public class XrRenderer {
     private static final Logger LOGGER = LogManager.getLogger();
     private MinecraftClient client;
     private MinecraftClientExt clientExt;
+    private MainRenderTarget mainRenderTarget;
+
 
     private OpenXRInstance instance;
     private OpenXRSession session;
@@ -46,6 +50,13 @@ public class XrRenderer {
     public Shader blitShader;
     public Shader guiBlitShader;
 
+    public boolean readyForSwap = false;
+    public final ReentrantLock renderLock = new ReentrantLock();
+
+    public XrRenderer() {
+        renderLock.lock();
+    }
+
     public void setSession(OpenXRSession session) {
         this.session = session;
         this.instance = session.instance;
@@ -53,6 +64,7 @@ public class XrRenderer {
         if (this.client == null) {
             client = MinecraftClient.getInstance();
             clientExt = ((MinecraftClientExt) MinecraftClient.getInstance());
+            mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
         }
     }
 
@@ -64,11 +76,13 @@ public class XrRenderer {
         try (MemoryStack stack = stackPush()) {
             var frameState = XrFrameState.callocStack().type(XR10.XR_TYPE_FRAME_STATE);
 
+            renderLock.unlock();
             instance.check(XR10.xrWaitFrame(
                     session.handle,
                     XrFrameWaitInfo.callocStack().type(XR10.XR_TYPE_FRAME_WAIT_INFO),
                     frameState
             ), "xrWaitFrame");
+            renderLock.lock();
 
             instance.check(XR10.xrBeginFrame(
                     session.handle,
@@ -83,12 +97,15 @@ public class XrRenderer {
                     if (layer != null) {
                         layers.put(layer.address());
                     }
+                    readyForSwap = true;
                 } else {
                     var layer = renderLayerBlankOpenXR(frameState.predictedDisplayTime());
                     layers.put(layer.address());
                 }
             }
             layers.flip();
+
+            GL11.glFinish(); //TODO check if we can just let the runtime worry about this
 
             instance.check(XR10.xrEndFrame(
                     session.handle,
@@ -142,7 +159,6 @@ public class XrRenderer {
 
         XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
         camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MCXRPlayClient.viewSpacePoses.getGamePose());
-        MainRenderTarget mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
 
         long frameStartTime = Util.getMeasuringTimeNano();
 //            MCXRCore.pose.set(MineXRaftClient.viewSpacePoses.getPhysicalPose());
@@ -237,6 +253,10 @@ public class XrRenderer {
             this.blitShader.addSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorAttachment());
             this.blit(viewSwapchain.innerFramebuffer, blitShader);
             viewSwapchain.innerFramebuffer.endWrite();
+
+            if (viewIndex == viewCountOutput - 1) {
+                blitToBackbuffer(viewSwapchain.framebuffer);
+            }
 
             instance.check(XR10.xrReleaseSwapchainImage(
                     viewSwapchain.handle,
@@ -357,7 +377,80 @@ public class XrRenderer {
         shader.unbind();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);
-        
+
         matrixStack.pop();
+    }
+
+    public void blitToBackbuffer(Framebuffer framebuffer) {
+        //TODO render alyx-like gui over this
+        Shader shader = MinecraftClient.getInstance().gameRenderer.blitScreenShader;
+        shader.addSampler("DiffuseSampler", framebuffer.getColorAttachment());
+
+        MatrixStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.push();
+        matrixStack.loadIdentity();
+        RenderSystem.applyModelViewMatrix();
+
+        int width = mainRenderTarget.windowFramebuffer.textureWidth;
+        int height = mainRenderTarget.windowFramebuffer.textureHeight;
+
+        GlStateManager._colorMask(true, true, true, true);
+        GlStateManager._disableDepthTest();
+        GlStateManager._depthMask(false);
+        GlStateManager._viewport(0, 0, width, height);
+        GlStateManager._disableBlend();
+
+        Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) (-height), 1000.0F, 3000.0F);
+        RenderSystem.setProjectionMatrix(matrix4f);
+        if (shader.modelViewMat != null) {
+            shader.modelViewMat.set(Matrix4f.translate(0, 0, -2000.0F));
+        }
+
+        if (shader.projectionMat != null) {
+            shader.projectionMat.set(matrix4f);
+        }
+
+        shader.bind();
+        float widthNormalized = (float) framebuffer.textureWidth / (float) width;
+        float heightNormalized = (float) framebuffer.textureHeight / (float) height;
+        float v = (widthNormalized / heightNormalized) / 2;
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
+        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.vertex(0.0, height, 0.0).texture(0.0F, v).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(width, height, 0.0).texture(1, v).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(width, 0.0, 0.0).texture(1, 1 - v).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, 1 - v).color(255, 255, 255, 255).next();
+        bufferBuilder.end();
+        BufferRenderer.postDraw(bufferBuilder);
+        shader.unbind();
+        GlStateManager._depthMask(true);
+        GlStateManager._colorMask(true, true, true, true);
+
+        matrixStack.pop();
+    }
+
+    public static class OffThreadSwapper extends Thread {
+        final long windowHandle;
+        final XrRenderer xrRenderer;
+
+        public OffThreadSwapper(long windowHandle, XrRenderer xrRenderer) {
+            this.windowHandle = windowHandle;
+            this.xrRenderer = xrRenderer;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            while (MinecraftClient.getInstance().isRunning()) {
+                xrRenderer.renderLock.lock();
+                if (xrRenderer.readyForSwap) {
+                    xrRenderer.readyForSwap = false;
+                    GLFW.glfwSwapBuffers(windowHandle);
+                }
+                xrRenderer.renderLock.unlock();
+            }
+        }
     }
 }

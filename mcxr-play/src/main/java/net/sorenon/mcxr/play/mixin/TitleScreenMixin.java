@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.mixin;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawableHelper;
@@ -63,6 +64,11 @@ public class TitleScreenMixin extends Screen {
         int x = this.width / 2 + 104;
 
         OpenXR OPEN_XR = MCXRPlayClient.OPEN_XR;
+
+        if (!FabricLoader.getInstance().isModLoaded("sodium")) {
+            DrawableHelper.drawStringWithShadow(matrices, textRenderer, "Sodium Missing!", x + 1, y + 12, 16733525 | l);
+            y += 12;
+        }
 
         if (OPEN_XR.session != null) {
             OpenXRSystem system = OPEN_XR.session.system;

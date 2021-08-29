@@ -3,7 +3,7 @@
   "id": "mcxr-core",
   "version": "${core_version}",
   "name": "[MCXR] Core",
-  "description": "Allows for advanced VR functionality. Optional but still recommended for non-vr players and servers.\nThis mod does NOT let you play on vr by itself, mcxr-play is needed too.",
+  "description": "Lightweight XR friendly framework. Allows VR-players to use all vr features.\nThis mod does NOT let you play on vr by itself [MCXR] Play is needed too.",
   "authors": [
     "Sorenon"
   ],
@@ -16,7 +16,8 @@
     "modmenu": {
       "links": {
         "modmenu.discord": "https://discord.gg/CqEZbJwWx4"
-      }
+      },
+      "parent": "mcxr-play"
     }
   },
   "license": "MIT",

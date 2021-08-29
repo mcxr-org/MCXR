@@ -1,4 +1,13 @@
 {
+  "mcxr.menu.reload": "Reload Headset",
+  "mcxr.menu.session_created": "Headset found:",
+  "mcxr.menu.session_not_created": "No headset found:",
+
+  "openxr.form_factor.1": "Head mounted display",
+  "openxr.form_factor.2": "Head held display",
+
+  "mcxr.error.form_factor_unavailable": "The device is currently not available, e.g. not plugged in or powered off",
+
   "mcxr.actionset.vanilla_gameplay": "Vanilla Gameplay",
   "mcxr.action.attack": "Attack",
   "mcxr.action.use": "Use",

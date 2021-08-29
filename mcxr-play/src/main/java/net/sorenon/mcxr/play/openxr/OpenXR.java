@@ -1,33 +1,12 @@
 package net.sorenon.mcxr.play.openxr;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
-import net.sorenon.mcxr.core.JOMLUtil;
-import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.Pose;
-import net.sorenon.mcxr.core.client.MCXRCoreClient;
-import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
-import net.sorenon.mcxr.play.accessor.MouseExt;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
-import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
-import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
-import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
-import net.sorenon.mcxr.play.rendering.MainRenderTarget;
-import net.sorenon.mcxr.play.rendering.RenderPass;
-import net.sorenon.mcxr.play.rendering.XrCamera;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Quaterniond;
-import org.joml.Quaternionf;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 
@@ -45,6 +24,8 @@ public class OpenXR {
 
     public OpenXRInstance instance;
     public OpenXRSession session;
+
+    public XrException createException;
 
     public static Logger LOGGER = LogManager.getLogger("MCXR");
 
@@ -78,10 +59,14 @@ public class OpenXR {
         return b;
     }
 
-    public boolean tryInitialize() {
+    public void tryInitialize() {
         if (!MCXRPlayClient.resourcesInitialized) {
-            return false;
+            return;
         }
+
+        if (instance != null) instance.close();
+        instance = null;
+        MCXRPlayClient.OPEN_XR.session = null;
 
         try {
             instance = createOpenXRInstance();
@@ -90,12 +75,14 @@ public class OpenXR {
             session.createSwapchains();
             XrInput.trySetSession(session);
             MCXRPlayClient.RENDERER.setSession(session);
-            return true;
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error("Exception caught while initializing OpenXR", e);
+            if (e instanceof XrException xrException) {
+                createException = xrException;
+            }
             if (instance != null) instance.close();
             instance = null;
-            return false;
+            MCXRPlayClient.OPEN_XR.session = null;
         }
     }
 
@@ -110,24 +97,24 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
-//            LOGGER.info(String.format("OpenXR loaded with %d extensions", numExtensions.get(0)));
-//            LOGGER.info("~~~~~~~~~~~~~~~~~~");
+            LOGGER.debug(String.format("OpenXR loaded with %d extensions", numExtensions.get(0)));
+            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
             PointerBuffer extensions = stack.mallocPointer(numExtensions.get(0));
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
-//                LOGGER.info(extensionName);
+                LOGGER.debug(extensionName);
                 extensions.put(memASCII(extensionName));
                 if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
                 }
             }
             extensions.rewind();
-//            LOGGER.info("~~~~~~~~~~~~~~~~~~");
+            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
 
             if (missingOpenGL) {
-                throw new XrException("OpenXR library does not provide required extension: " + KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
+                throw new XrException(0, "OpenXR runtime does not provide required extension: " + KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
             }
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.mallocStack();
@@ -151,11 +138,11 @@ public class OpenXR {
 
             int xrResult = XR10.xrCreateInstance(createInfo, instancePtr);
             if (xrResult == XR10.XR_ERROR_RUNTIME_FAILURE) {
-                throw new XrException("Failed to create xrInstance, are you sure your headset is plugged in?");
+                throw new XrException(xrResult, "Failed to create xrInstance, are you sure your headset is plugged in?");
             } else if (xrResult == XR10.XR_ERROR_INSTANCE_LOST) {
-                throw new XrException("Failed to create xrInstance due to runtime updating");
+                throw new XrException(xrResult, "Failed to create xrInstance due to runtime updating");
             } else if (xrResult < 0) {
-                throw new XrException("XR method returned " + xrResult);
+                throw new XrException(xrResult, "XR method returned " + xrResult);
             }
 
             return new OpenXRInstance(new XrInstance(instancePtr.get(0), createInfo));
@@ -167,10 +154,11 @@ public class OpenXR {
      */
     public boolean loop() {
         if (session == null) {
-            //TODO have a button and message in-game for this
-            if (!tryInitialize()) {
-                return true;
-            }
+//            //TODO have a button and message in-game for this
+//            if (!tryInitialize()) {
+//                return true;
+//            }
+            return true;
         }
 
         if (instance.pollEvents()) {

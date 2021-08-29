@@ -13,7 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SplashOverlay.class)
 public class SplashOverlayMixin {
 
-    @Shadow @Final private boolean reloading;
+    @Shadow
+    @Final
+    private boolean reloading;
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;setOverlay(Lnet/minecraft/client/gui/screen/Overlay;)V"))
     void finishedLoadingResources(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {

@@ -37,7 +37,7 @@ public class OpenXRInstance implements AutoCloseable {
             checkSafe(XR10.xrGetSystem(handle, systemInfo, lBuf), "xrGetSystem");
             long systemID = lBuf.get();
             if (systemID == 0) {
-                throw new XrException("No compatible headset detected");
+                throw new XrException(0, "No compatible headset detected");
             }
             return new OpenXRSystem(this, formFactor, systemID);
         }
@@ -112,7 +112,7 @@ public class OpenXRInstance implements AutoCloseable {
 
         ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
         if (XR10.xrResultToString(handle, result, str) >= 0) {
-            throw new XrException(method + " returned " + memUTF8(memAddress(str)));
+            throw new XrException(result, method + " returned " + memUTF8(memAddress(str)));
         }
     }
 
@@ -148,6 +148,5 @@ public class OpenXRInstance implements AutoCloseable {
         }
         XR10.xrDestroyInstance(handle);
         eventDataBuffer.close();
-        //TODO sessions
     }
 }

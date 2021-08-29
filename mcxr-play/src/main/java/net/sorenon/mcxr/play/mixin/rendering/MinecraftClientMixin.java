@@ -288,34 +288,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
         this.framebuffer.endWrite();
         matrixStack.pop();
 
-//        RenderSystem.replayQueue();
-//        Tessellator.getInstance().getBuffer().clear();
-
-        {
-//            GLFW.glfwPollEvents();
-//            RenderSystem.replayQueue();
-//            Tessellator.getInstance().getBuffer().clear();
-//            GLFW.glfwSwapBuffers(window.getHandle());
-//            GLFW.glfwPollEvents();
-        }
-
-        /*d
-        matrixStack.push();
-        RenderSystem.applyModelViewMatrix();
-        this.framebuffer.draw(this.window.getFramebufferWidth(), this.window.getFramebufferHeight());
-        matrixStack.pop();
-        RenderSystem.applyModelViewMatrix();
-        this.profiler.swap("updateDisplay");
-        this.window.swapBuffers();
-        k = this.getFramerateLimit();
-        if ((double)k < Option.FRAMERATE_LIMIT.getMax()) {
-            RenderSystem.limitDisplayFPS(k);
-        }
-        this.profiler.swap("yield");
-        Thread.yield();
-        this.profiler.pop();
-         */
-
         XR_RENDERER.renderPass = RenderPass.VANILLA;
     }
 

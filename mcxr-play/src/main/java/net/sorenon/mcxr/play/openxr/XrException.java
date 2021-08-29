@@ -1,7 +1,11 @@
 package net.sorenon.mcxr.play.openxr;
 
 public class XrException extends Exception {
-    public XrException(String message) {
+
+    public final int result;
+
+    public XrException(int result, String message) {
         super(message);
+        this.result = result;
     }
 }

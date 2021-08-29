@@ -12,14 +12,19 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import net.sorenon.mcxr.core.mixin.ServerLoginNetworkHandlerAcc;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import virtuoel.pehkui.api.ScaleType;
+
+import java.util.List;
 
 public class MCXRCore implements ModInitializer {
 

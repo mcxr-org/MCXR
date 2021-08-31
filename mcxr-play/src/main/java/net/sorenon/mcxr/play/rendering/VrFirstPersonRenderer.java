@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play.rendering;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.model.ModelData;
@@ -22,6 +23,7 @@ import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
 import net.sorenon.mcxr.core.JOMLUtil;
+import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -31,12 +33,13 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
 /**
  * TODO Split up and dehackify
- * TODO fix iris issue
+ * TODO rip apart this class then put it back together again
  */
 public class VrFirstPersonRenderer {
 
@@ -75,12 +78,38 @@ public class VrFirstPersonRenderer {
     }
 
     public void renderAfterEntities(WorldRenderContext context) {
-        Entity entity = context.camera().getFocusedEntity();
+        Entity camEntity = context.camera().getFocusedEntity();
 
-        if (entity != null) {
-            renderShadow(context, entity);
+        if (camEntity != null) {
+            renderShadow(context, camEntity);
+            if (!FGM.isScreenOpen() && !MCXRCore.getCoreConfig().controllerRaytracing()) {
+                MatrixStack matrices = context.matrixStack();
+                Vec3d camPos = context.camera().getPos();
+                matrices.push();
 
-            if (!FGM.isScreenOpen() && entity instanceof LivingEntity livingEntity) {
+                double x = MathHelper.lerp(context.tickDelta(), camEntity.lastRenderX, camEntity.getX());
+                double y = MathHelper.lerp(context.tickDelta(), camEntity.lastRenderY, camEntity.getY()) + camEntity.getStandingEyeHeight();
+                double z = MathHelper.lerp(context.tickDelta(), camEntity.lastRenderZ, camEntity.getZ());
+                matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
+
+                matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-camEntity.getYaw() + 180.0F));
+                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90-camEntity.getPitch()));
+
+                Matrix4f model = matrices.peek().getModel();
+                Matrix3f normal = matrices.peek().getNormal();
+
+                VertexConsumer consumer = context.consumers().getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
+                consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
+                consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
+
+                consumer = context.consumers().getBuffer(LINE_CUSTOM.apply(2.0));
+                consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
+                consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).next();
+
+                matrices.pop();
+            }
+
+            if (!FGM.isScreenOpen() && camEntity instanceof LivingEntity livingEntity) {
                 for (int hand = 0; hand < 2; hand++) {
                     if (!XrInput.handsActionSet.grip.isActive[hand]) {
                         continue;
@@ -125,7 +154,6 @@ public class VrFirstPersonRenderer {
                 continue;
             }
 
-            VertexConsumer consumer = context.consumers().getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
             matrices.push(); //1
 
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
@@ -144,10 +172,11 @@ public class VrFirstPersonRenderer {
                     )
             );
 
-            if (hand == MCXRPlayClient.mainHand) {
+            if (hand == MCXRPlayClient.mainHand && (MCXRCore.getCoreConfig().controllerRaytracing() || FGM.isScreenOpen())) {
                 Matrix4f model = matrices.peek().getModel();
                 Matrix3f normal = matrices.peek().getNormal();
 
+                VertexConsumer consumer = context.consumers().getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
                 consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
                 consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
 
@@ -293,7 +322,6 @@ public class VrFirstPersonRenderer {
                 matrices.push();
                 matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
                 matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
-                //TODO
                 renderHudQuad(matrices.peek(), consumers);
                 consumers.drawCurrentLayer();
                 matrices.pop();
@@ -309,14 +337,14 @@ public class VrFirstPersonRenderer {
         float x = size / 2;
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
-        VertexConsumer consumer = consumers.getBuffer(ENTITY_CUTOUT_ALWAYS.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
+        VertexConsumer consumer = consumers.getBuffer(GUI_NO_DEPTH_TEST.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-        consumer = consumers.getBuffer(ENTITY_CUTOUT_DEPTH.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
+        consumer = consumers.getBuffer(DEPTH_ONLY.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
@@ -339,8 +367,8 @@ public class VrFirstPersonRenderer {
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
     }
 
-    public static final Function<Identifier, RenderLayer> ENTITY_CUTOUT_DEPTH = Util.memoize((texture) -> {
-        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("gui_cutout_depth"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, false);
+    public static final Function<Identifier, RenderLayer> DEPTH_ONLY = Util.memoize((texture) -> {
+        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("depth_only"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, false);
         renderTypeBuilder.innerBuilder
                 .writeMaskState(RenderStateShards.DEPTH_WRITE)
                 .shader(RenderStateShards.shader(GameRenderer::getRenderTypeEntityCutoutShader))
@@ -351,10 +379,15 @@ public class VrFirstPersonRenderer {
         return renderTypeBuilder.build(true);
     });
 
-    public static final Function<Identifier, RenderLayer> ENTITY_CUTOUT_ALWAYS = Util.memoize((texture) -> {
-        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("gui_cutout_always"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, true);
+    public static final Function<Identifier, RenderLayer> GUI_NO_DEPTH_TEST = Util.memoize((texture) -> {
+        Supplier<Shader> shader = GameRenderer::getNewEntityShader;
+        if (FabricLoader.getInstance().isModLoaded("iris")) {
+            shader = GameRenderer::getRenderTypeEntityTranslucentShader;
+        }
+
+        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("gui_no_depth_test"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, true);
         renderTypeBuilder.innerBuilder.
-                shader(RenderStateShards.shader(GameRenderer::getRenderTypeEntityTranslucentShader))
+                shader(RenderStateShards.shader(shader))
                 .texture(RenderStateShards.texture(texture, false, false))
                 .transparency(RenderStateShards.TRANSLUCENT_TRANSPARENCY)
                 .cull(RenderStateShards.NO_CULL)

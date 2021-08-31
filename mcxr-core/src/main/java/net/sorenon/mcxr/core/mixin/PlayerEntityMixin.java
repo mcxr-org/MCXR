@@ -42,6 +42,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
     void overrideDims(EntityPose _pose, CallbackInfoReturnable<EntityDimensions> cir) {
+        if (!MCXRCore.getCoreConfig().dynamicPlayerHeight()) {
+            return;
+        }
+
         if (headPose != null) {
             final float scale = MCXRCore.getScale(this);
 

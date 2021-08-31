@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.core;
 
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -9,22 +10,18 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.config.MCXRCoreConfig;
+import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
 import net.sorenon.mcxr.core.mixin.ServerLoginNetworkHandlerAcc;
-import org.apache.commons.lang3.text.WordUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import virtuoel.pehkui.api.ScaleType;
-
-import java.util.List;
 
 public class MCXRCore implements ModInitializer {
 
@@ -35,9 +32,14 @@ public class MCXRCore implements ModInitializer {
 
     private static final Logger LOGGER = LogManager.getLogger("MCXR Core");
 
+    public final MCXRCoreConfigImpl config = new MCXRCoreConfigImpl();
+
     @Override
     public void onInitialize() {
         INSTANCE = this;
+        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
+            config.xrAllowed = true;
+        }
 
         ServerLoginNetworking.registerGlobalReceiver(S2C_CONFIG, (server, handler, understood, buf, synchronizer, responseSender) -> {
             if (understood) {
@@ -86,6 +88,10 @@ public class MCXRCore implements ModInitializer {
 
             ClientPlayNetworking.send(POSES, buf);
         }
+    }
+
+    public static MCXRCoreConfig getCoreConfig() {
+        return INSTANCE.config;
     }
 
     public static float getScale(Entity entity) {

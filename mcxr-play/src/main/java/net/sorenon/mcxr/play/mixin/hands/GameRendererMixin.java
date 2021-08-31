@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import net.sorenon.mcxr.core.JOMLUtil;
+import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.input.XrInput;
@@ -26,7 +27,7 @@ public class GameRendererMixin {
 
     @Inject(method = "updateTargetedEntity", at = @At(value = "INVOKE_ASSIGN", shift = At.Shift.AFTER, target = "Lnet/minecraft/entity/Entity;raycast(DFZ)Lnet/minecraft/util/hit/HitResult;"))
     private void overrideEntity$raycast(float tickDelta, CallbackInfo ci) {
-        if (MCXRPlayClient.RENDERER.isXrMode()) {
+        if (enabled()) {
             Entity entity = this.client.getCameraEntity();
             int hand = 1;
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
@@ -42,7 +43,7 @@ public class GameRendererMixin {
             at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/entity/Entity;getCameraPosVec(F)Lnet/minecraft/util/math/Vec3d;")
     )
     private Vec3d alterStartPosVec(Vec3d value) {
-        if (MCXRPlayClient.RENDERER.isXrMode()) {
+        if (enabled()) {
             int hand = 1;
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
             return JOMLUtil.convert(pose.getPos());
@@ -55,7 +56,7 @@ public class GameRendererMixin {
             at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/entity/Entity;getRotationVec(F)Lnet/minecraft/util/math/Vec3d;")
     )
     private Vec3d alterDirVec(Vec3d value) {
-        if (MCXRPlayClient.RENDERER.isXrMode()) {
+        if (enabled()) {
             int hand = 1;
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
             return JOMLUtil.convert(
@@ -66,5 +67,10 @@ public class GameRendererMixin {
         } else {
             return value;
         }
+    }
+
+    @Unique
+    private boolean enabled() {
+        return MCXRCore.getCoreConfig().controllerRaytracing() && MCXRPlayClient.RENDERER.isXrMode();
     }
 }

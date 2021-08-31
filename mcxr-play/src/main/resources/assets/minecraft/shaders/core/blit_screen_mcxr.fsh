@@ -1,8 +1,11 @@
 #version 150
 
+#moj_import <mcxr_fxaa.glsl>
+
 uniform sampler2D DiffuseSampler;
 
 uniform vec4 ColorModulator;
+uniform vec2 InverseScreenSize;
 
 in vec2 texCoord;
 in vec4 vertexColor;
@@ -17,15 +20,12 @@ float sRGBToLinear(float f) {
     }
 }
 
-//TODO depth sampler
-//TODO anti-aliasing
 void main() {
-    vec4 color = texture(DiffuseSampler, texCoord) * vertexColor;
-    vec4 mcColor = color * ColorModulator;
+    //TODO use a more modern aa alg (smaa?)
+    //TODO make aa configuarable
+    vec3 color = sample_fxaa(DiffuseSampler, texCoord, InverseScreenSize);
+    vec4 mcColor = vec4(color, texture(DiffuseSampler, texCoord).a) * vertexColor * ColorModulator;
 
-    // blit final output of compositor into displayed back buffer
-
-    // apply inverse gamma correction since minecraft renders in sRGB space
-    // and sRGB texture formats have limited precision
+    // apply inverse gamma correction since minecraft renders in sRGB space but we want our output to be linear
     fragColor = vec4(sRGBToLinear(mcColor.r), sRGBToLinear(mcColor.g), sRGBToLinear(mcColor.b), mcColor.a);
 }

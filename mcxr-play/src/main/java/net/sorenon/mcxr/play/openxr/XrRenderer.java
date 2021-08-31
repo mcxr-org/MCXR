@@ -1,9 +1,11 @@
 package net.sorenon.mcxr.play.openxr;
 
+import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.GlUniform;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
@@ -251,6 +253,11 @@ public class XrRenderer {
 
             viewSwapchain.innerFramebuffer.beginWrite(true);
             this.blitShader.addSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorAttachment());
+            GlUniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
+            if (inverseScreenSize != null) {
+                inverseScreenSize.set(1f / viewSwapchain.innerFramebuffer.textureWidth, 1f / viewSwapchain.innerFramebuffer.textureHeight);
+            }
+            viewSwapchain.framebuffer.setTexFilter(GlConst.GL_LINEAR);
             this.blit(viewSwapchain.innerFramebuffer, blitShader);
             viewSwapchain.innerFramebuffer.endWrite();
 
@@ -352,7 +359,7 @@ public class XrRenderer {
         GlStateManager._viewport(0, 0, width, height);
         GlStateManager._disableBlend();
 
-        Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) (-height), 1000.0F, 3000.0F);
+        Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) -height, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
         if (shader.modelViewMat != null) {
             shader.modelViewMat.set(Matrix4f.translate(0.0F, 0.0F, -2000.0F));
@@ -367,11 +374,10 @@ public class XrRenderer {
         float v = (float) framebuffer.viewportHeight / (float) framebuffer.textureHeight;
         Tessellator tessellator = RenderSystem.renderThreadTesselator();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(0.0, height, 0.0).texture(0.0F, 0.0F).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(width, height, 0.0).texture(u, 0.0F).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(width, 0.0, 0.0).texture(u, v).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, v).color(255, 255, 255, 255).next();
+        bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
+        bufferBuilder.vertex(0.0, height * 2, 0.0).texture(0.0F, 1 - v * 2).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(width * 2, 0.0, 0.0).texture(u * 2, 1).color(255, 255, 255, 255).next();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, 1).color(255, 255, 255, 255).next();
         bufferBuilder.end();
         BufferRenderer.postDraw(bufferBuilder);
         shader.unbind();

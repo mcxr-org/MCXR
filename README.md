@@ -38,5 +38,5 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | Patch Method                | N/A                             | Jar mod                       | Mixins                       |
 | Sponsored by Facebook       | Yes                             | No                            | No                           |
 | Initial Release Year        | 2016                            | 2013 / 2016                   | 2021                         |
-| Linux Support                 | ⛔                               | ✅                            | 🚧In development             |
+| Linux Support                 | ⛔                               | ✅                            | ✅                            |
 | Mac Support                 | ⛔                               | ✅?                            | ⛔                            |

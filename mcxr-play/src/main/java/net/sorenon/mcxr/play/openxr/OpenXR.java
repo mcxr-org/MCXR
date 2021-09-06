@@ -13,8 +13,7 @@ import org.lwjgl.system.MemoryStack;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackMalloc;
-import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -97,21 +96,14 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
-            LOGGER.debug(String.format("OpenXR loaded with %d extensions", numExtensions.get(0)));
-            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
-            PointerBuffer extensions = stack.mallocPointer(numExtensions.get(0));
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
-                LOGGER.debug(extensionName);
-                extensions.put(memASCII(extensionName));
                 if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
                 }
             }
-            extensions.rewind();
-            LOGGER.debug("~~~~~~~~~~~~~~~~~~");
 
             if (missingOpenGL) {
                 throw new XrException(0, "OpenXR runtime does not provide required extension: " + KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
@@ -131,7 +123,7 @@ public class OpenXR {
                     0,
                     applicationInfo,
                     null,
-                    extensions
+                    stackPointers(memAddress(stackUTF8(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)))
             );
 
             PointerBuffer instancePtr = stack.mallocPointer(1);
@@ -154,10 +146,6 @@ public class OpenXR {
      */
     public boolean loop() {
         if (session == null) {
-//            //TODO have a button and message in-game for this
-//            if (!tryInitialize()) {
-//                return true;
-//            }
             return true;
         }
 

@@ -38,6 +38,7 @@ sourceSets {
     main {
         resources {
             srcDir 'loader'
+            srcDir 'natives'
         }
     }
 }
@@ -50,13 +51,20 @@ processResources {
         expand "play_version": project.play_version, "core_version": project.core_version
     }
 
+    //TODO fetch latest openxr loader automatically
     File openxr_dll = file("loader/openxr_loader.dll")
     if (!openxr_dll.exists()) {
         throw new FileNotFoundException("openxr_loader.dll is missing! place it -> ${openxr_dll.absolutePath}")
     }
+    File glfw_so = file("natives/libglfw.so")
+    if (!openxr_dll.exists()) {
+        throw new FileNotFoundException("libglfw.so is missing! place it -> ${glfw_so.absolutePath}")
+    }
 }
 
-//downloadAssets {
+downloadAssets {
+    mkdir("loader")
+    mkdir("natives")
 //    boolean offline = project.getGradle().getStartParameter().isOffline()
 //    if (!offline) {
 //        File openxr_dll = file("loader/openxr_loader.dll")
@@ -78,7 +86,7 @@ processResources {
 //            throw new RuntimeException(e)
 //        }
 //    }
-//}
+}
 
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"

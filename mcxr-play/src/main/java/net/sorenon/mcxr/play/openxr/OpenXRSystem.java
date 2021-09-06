@@ -3,14 +3,20 @@ package net.sorenon.mcxr.play.openxr;
 import net.minecraft.client.MinecraftClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFWNativeWGL;
-import org.lwjgl.glfw.GLFWNativeWin32;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GLX13;
 import org.lwjgl.openxr.*;
-import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.NativeType;
 import org.lwjgl.system.Platform;
 import org.lwjgl.system.Struct;
 import org.lwjgl.system.windows.User32;
 
+import java.util.Objects;
+
+import static org.lwjgl.system.APIUtil.apiGetFunctionAddress;
+import static org.lwjgl.system.Checks.CHECKS;
+import static org.lwjgl.system.Checks.check;
+import static org.lwjgl.system.JNI.invokePP;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -60,16 +66,39 @@ public class OpenXRSystem {
 
     public Struct createOpenGLBinding() {
         //Bind the OpenGL context to the OpenXR instance and create the session
+        long windowHandle = MinecraftClient.getInstance().getWindow().getHandle();
         if (Platform.get() == Platform.WINDOWS) {
-            long windowHandle = MinecraftClient.getInstance().getWindow().getHandle();
             return XrGraphicsBindingOpenGLWin32KHR.mallocStack().set(
                     KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
                     NULL,
                     User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),
                     GLFWNativeWGL.glfwGetWGLContext(windowHandle)
             );
+        } else if (Platform.get() == Platform.LINUX) {
+            //Possible TODO Wayland + XCB (look at https://github.com/Admicos/minecraft-wayland)
+            long xDisplay = GLFWNativeX11.glfwGetX11Display();
+            long fbConfig = glfwGetGLXFBConfig(windowHandle);
+            return XrGraphicsBindingOpenGLXlibKHR.callocStack().set(
+                    KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
+                    NULL,
+                    xDisplay,
+                    (int) Objects.requireNonNull(GLX13.glXGetVisualFromFBConfig(xDisplay, fbConfig)).visualid(),
+                    fbConfig,
+                    GLFWNativeGLX.glfwGetGLXWindow(windowHandle),
+                    GLFWNativeGLX.glfwGetGLXContext(windowHandle)
+            );
         } else {
-            throw new IllegalStateException("Non-windows operating systems are not yet supported");
+            throw new IllegalStateException("Macos not supported");
         }
+    }
+
+    //TODO document this and the hack enabling it + disable sha1 warning from LWJGL
+    @NativeType("GLXFBConfig")
+    public static long glfwGetGLXFBConfig(@NativeType("GLFWwindow *") long window) {
+        long __functionAddress = apiGetFunctionAddress(GLFW.getLibrary(), "glfwGetGLXFBConfig");
+        if (CHECKS) {
+            check(window);
+        }
+        return invokePP(window, __functionAddress);
     }
 }

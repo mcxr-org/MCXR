@@ -1,12 +1,11 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Matrix4f;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.accessor.Matrix4fExt;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.RenderPass;
-import net.sorenon.mcxr.play.accessor.Matrix4fExt;
 import org.joml.Math;
 import org.lwjgl.openxr.XrFovf;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,7 +14,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import virtuoel.pehkui.util.ScaleUtils;
 
 @Mixin(Matrix4f.class)
 public abstract class Matrix4fMixin implements Matrix4fExt {
@@ -73,10 +71,8 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
 
     @Override
     public void createProjectionFov(XrFovf fov, float nearZ, float farZ) {
-        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-            var client = MinecraftClient.getInstance();
-            nearZ = ScaleUtils.modifyProjectionMatrixDepth(MCXRPlayClient.getCameraScale(), nearZ, client.getCameraEntity(), client.getTickDelta());
-        }
+        MinecraftClient client = MinecraftClient.getInstance();
+        nearZ = MCXRPlayClient.modifyProjectionMatrixDepth(nearZ, client.getCameraEntity(), client.getTickDelta());
         float tanLeft = Math.tan(fov.angleLeft());
         float tanRight = Math.tan(fov.angleRight());
         float tanDown = Math.tan(fov.angleDown());

@@ -1,14 +1,13 @@
 package net.sorenon.mcxr.play;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.sorenon.fart.FartRenderEvents;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.play.input.ControllerPoses;
-import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.RenderPass;
@@ -18,13 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.XR;
-import org.lwjgl.system.SharedLibrary;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static org.lwjgl.system.APIUtil.apiCreateLibrary;
-import static org.lwjgl.system.APIUtil.apiLog;
+import virtuoel.pehkui.util.ScaleUtils;
 
 public class MCXRPlayClient implements ClientModInitializer {
 
@@ -98,5 +91,12 @@ public class MCXRPlayClient implements ClientModInitializer {
         } else {
             return MCXRCore.getScale(cam, delta);
         }
+    }
+
+    public static float modifyProjectionMatrixDepth(float depth, Entity entity, float tickDelta) {
+        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
+            return ScaleUtils.modifyProjectionMatrixDepth(MCXRPlayClient.getCameraScale(tickDelta), depth, entity, tickDelta);
+        }
+        return depth;
     }
 }

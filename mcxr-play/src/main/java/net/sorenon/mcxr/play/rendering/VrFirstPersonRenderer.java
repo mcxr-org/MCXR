@@ -291,13 +291,12 @@ public class VrFirstPersonRenderer {
 
     public void renderHud(WorldRenderContext context) {
         MatrixStack matrices = context.matrixStack();
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
         VertexConsumerProvider.Immediate consumers = (VertexConsumerProvider.Immediate) context.consumers();
         assert consumers != null;
 
         if (FGM.pos != null) {
             matrices.push();
-            Vec3d pos = FGM.pos.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getPhysicalPose().getPos()));
+            Vec3d pos = FGM.pos.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getScaledPhysicalPose().getPos()));
             matrices.translate(pos.x, pos.y, pos.z);
             matrices.multiply(new Quaternion((float) FGM.rot.x, (float) FGM.rot.y, (float) FGM.rot.z, (float) FGM.rot.w));
             renderGuiQuad(matrices.peek(), consumers);

@@ -40,10 +40,14 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static Vector3d xrOrigin = new Vector3d(0, 0, 0);
 
     /**
-     * Used when room-space movement is disabled
      * Allows the player to rotate around a central point or 'reset' their position to the center of the PlayerEntity
      */
     public static Vector3f xrOffset = new Vector3f(0, 0, 0);
+
+    /**
+     * The inverse position of the player entity in physical space if roomscale movement is enabled
+     */
+    public static Vector3d roomscalePlayerOffset = new Vector3d();
 
     /**
      * Allows the player to turn in-game without turning IRL
@@ -77,7 +81,10 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static void resetView() {
-        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().mul(getCameraScale(), new Vector3f())).mul(1, 0, 1);
+        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos()/*.mul(getCameraScale(), new Vector3f())*/).mul(1, 0, 1);
+        if (MCXRCore.getCoreConfig().roomscaleMovement()) {
+            xrOffset.zero();
+        }
     }
 
     public static float getCameraScale() {

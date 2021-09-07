@@ -13,7 +13,6 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.client.MCXRCoreClient;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
@@ -145,6 +144,8 @@ public class XrRenderer {
 
         var projectionLayerViews = XrCompositionLayerProjectionView.callocStack(viewCountOutput);
 
+        float scalePreTick = MCXRPlayClient.getCameraScale();
+
         // Update hand position based on the predicted time of when the frame will be rendered! This
         // should result in a more accurate location, and reduce perceived lag.
         if (session.state == XR10.XR_SESSION_STATE_FOCUSED) {
@@ -152,42 +153,51 @@ public class XrRenderer {
                 if (!XrInput.handsActionSet.grip.isActive[i]) {
                     continue;
                 }
-                OPEN_XR.setPosesFromSpace(XrInput.handsActionSet.grip.spaces[i], predictedDisplayTime, XrInput.handsActionSet.gripPoses[i]);
-                OPEN_XR.setPosesFromSpace(XrInput.handsActionSet.aim.spaces[i], predictedDisplayTime, XrInput.handsActionSet.aimPoses[i]);
+                session.setPosesFromSpace(XrInput.handsActionSet.grip.spaces[i], predictedDisplayTime, XrInput.handsActionSet.gripPoses[i], scalePreTick);
+                session.setPosesFromSpace(XrInput.handsActionSet.aim.spaces[i], predictedDisplayTime, XrInput.handsActionSet.aimPoses[i], scalePreTick);
             }
         }
 
-        OPEN_XR.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses);
+        session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, scalePreTick);
 
         XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
         camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MCXRPlayClient.viewSpacePoses.getGamePose());
 
         long frameStartTime = Util.getMeasuringTimeNano();
-//            MCXRCore.pose.set(MineXRaftClient.viewSpacePoses.getPhysicalPose());
-        if (MinecraftClient.getInstance().player != null && MCXRCoreClient.INSTANCE.playInstalled) {
-            MCXRCore.INSTANCE.playerPose(
+        if (MinecraftClient.getInstance().player != null && MCXRCore.getCoreConfig().xrAllowed()) {
+            MCXRCore.INSTANCE.setPlayerHeadPose(
                     MinecraftClient.getInstance().player,
-                    MCXRPlayClient.viewSpacePoses.getPhysicalPose());
+                    MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose()
+            );
         }
         clientExt.preRender(true);
         if (camera.getFocusedEntity() != null) {
             float tickDelta = client.getTickDelta();
-            if (client.isPaused()) tickDelta = 0.0f;
             Entity camEntity = camera.getFocusedEntity();
-            MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()) + MCXRPlayClient.xrOffset.x,
-                    MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()) + MCXRPlayClient.xrOffset.y,
-                    MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()) + MCXRPlayClient.xrOffset.z);
 
-            float scale = MCXRPlayClient.getCameraScale();
-            MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
+            if (client.isPaused()) {
+                tickDelta = 0.0f;
+            }
+
+            if (MCXRCore.getCoreConfig().roomscaleMovement()) {
+                MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()) - MCXRPlayClient.roomscalePlayerOffset.x,
+                        MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()),
+                        MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()) - MCXRPlayClient.roomscalePlayerOffset.z);
+            } else {
+                MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()),
+                        MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()),
+                        MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()));
+            }
+
+            MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);
             for (var poses : XrInput.handsActionSet.gripPoses) {
-                poses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
+                poses.updateGamePose(MCXRPlayClient.xrOrigin);
             }
             for (var poses : XrInput.handsActionSet.aimPoses) {
-                poses.updateGamePose(MCXRPlayClient.xrOrigin, scale);
+                poses.updateGamePose(MCXRPlayClient.xrOrigin);
             }
         }
-//            client.mouse.updateMouse();
+
         client.getWindow().setPhase("Render");
         client.getProfiler().push("sound");
         client.getSoundManager().updateListenerPosition(client.gameRenderer.getCamera());
@@ -244,8 +254,8 @@ public class XrRenderer {
                 viewSwapchain.innerFramebuffer.endWrite();
                 mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
                 worldRenderPass.fov = session.views.get(viewIndex).fov();
-                worldRenderPass.eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn);
-                worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin, MCXRPlayClient.getCameraScale());
+                worldRenderPass.eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn, scalePreTick);
+                worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin);
                 worldRenderPass.viewIndex = viewIndex;
                 camera.setPose(worldRenderPass.eyePoses.getGamePose());
                 clientExt.doRender(true, frameStartTime, worldRenderPass);

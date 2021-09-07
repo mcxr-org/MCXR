@@ -9,6 +9,8 @@
     "SystemDetailsMixin",
     "VrClientPlayNetworkHandlerMixin",
     "VrKeyboardInputMixin",
+    "ClientPlayerEntityMixin",
+    "TitleScreenMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
     "accessor.WindowAcc",
@@ -29,8 +31,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-    "TitleScreenMixin"
-  ]
+  }
 }

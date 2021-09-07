@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play.input;
 
 import net.sorenon.mcxr.core.Pose;
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.lwjgl.openxr.XrPosef;
@@ -21,10 +22,9 @@ public class ControllerPoses {
     }
 
     /**
-     * Mostly used for GUI interactions
-     * The rotated pose in physical space
+     * The rotated + scaled pose in physical space
      */
-    public Pose getPhysicalPose() {
+    public Pose getScaledPhysicalPose() {
         return physicalPose;
     }
 
@@ -36,28 +36,21 @@ public class ControllerPoses {
         return gamePose;
     }
 
-    public void updatePhysicalPose(XrPosef pose, float yawTurn) {
-        setPose(rawPhysicalPose, pose);
-        setPose(physicalPose, pose, yawTurn);
+    public void updatePhysicalPose(XrPosef pose, float yawTurn, float scale) {
+        rawPhysicalPose.pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
+        rawPhysicalPose.orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
+
+        physicalPose.set(rawPhysicalPose);
+        physicalPose.orientation.rotateLocalY(yawTurn);
+
+        new Quaternionf().rotateLocalY(yawTurn).transform(physicalPose.pos);
+
+        physicalPose.pos.mul(scale);
+        physicalPose.pos.add(MCXRPlayClient.xrOffset);
     }
 
-    public void updateGamePose(Vector3d origin, float scale) {
+    public void updateGamePose(Vector3d origin) {
         gamePose.set(physicalPose);
-
-        gamePose.getPos().mul(scale);
         gamePose.getPos().add((float) origin.x, (float) origin.y, (float) origin.z);
-    }
-
-    public static void setPose(Pose pose, XrPosef xrPosef) {
-        pose.pos.set(xrPosef.position$().x(), xrPosef.position$().y(), xrPosef.position$().z());
-        pose.orientation.set(xrPosef.orientation().x(), xrPosef.orientation().y(), xrPosef.orientation().z(), xrPosef.orientation().w());
-    }
-
-    public static void setPose(Pose pose, XrPosef xrPosef, float turnYaw) {
-        pose.pos.set(xrPosef.position$().x(), xrPosef.position$().y(), xrPosef.position$().z());
-        pose.orientation.set(xrPosef.orientation().x(), xrPosef.orientation().y(), xrPosef.orientation().z(), xrPosef.orientation().w());
-        pose.orientation.rotateLocalY(turnYaw);
-
-        new Quaternionf().rotateLocalY(turnYaw).transform(pose.pos);
     }
 }

@@ -37,7 +37,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
     @Inject(method = "tick", at = @At("HEAD"))
     void preTick(CallbackInfo ci) {
-        this.calculateDimensions();
+        if (this.isXR()) {
+            this.calculateDimensions();
+        }
     }
 
     @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
@@ -46,7 +48,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             return;
         }
 
-        if (headPose != null) {
+        if (this.isXR()) {
             final float scale = MCXRCore.getScale(this);
 
             final float minHeight = 0.5f * scale;
@@ -83,5 +85,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Override
     public void markVR() {
         headPose = new Pose();
+    }
+
+    public boolean isXR() {
+        return headPose != null;
     }
 }

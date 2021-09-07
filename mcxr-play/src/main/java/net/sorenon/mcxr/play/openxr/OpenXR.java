@@ -173,17 +173,4 @@ public class OpenXR {
         }
         throw new XrRuntimeException("XR method returned " + result);
     }
-
-    public void setPosesFromSpace(XrSpace handSpace, long time, ControllerPoses result) {
-        try (MemoryStack ignored = stackPush()) {
-            XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
-            int res = XR10.xrLocateSpace(handSpace, session.xrAppSpace, time, space_location);
-            if (res == XR10.XR_SUCCESS &&
-                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
-                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
-
-                result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn);
-            }
-        }
-    }
 }

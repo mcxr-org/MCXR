@@ -38,7 +38,7 @@ public class MCXRCore implements ModInitializer {
     public void onInitialize() {
         INSTANCE = this;
         if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
-            config.xrAllowed = true;
+            config.xrEnabled = true;
         }
 
         ServerLoginNetworking.registerGlobalReceiver(S2C_CONFIG, (server, handler, understood, buf, synchronizer, responseSender) -> {
@@ -67,12 +67,12 @@ public class MCXRCore implements ModInitializer {
                         Pose pose = new Pose();
                         pose.pos.set(vec);
                         pose.orientation.set(quat);
-                        playerPose(player, pose);
+                        setPlayerHeadPose(player, pose);
                     });
                 });
     }
 
-    public void playerPose(PlayerEntity player, Pose pose) {
+    public void setPlayerHeadPose(PlayerEntity player, Pose pose) {
         PlayerEntityAcc acc = (PlayerEntityAcc) player;
         if (acc.getHeadPose() == null) {
             acc.markVR();

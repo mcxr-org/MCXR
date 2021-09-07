@@ -138,10 +138,10 @@ public final class XrInput {
             } else if (Math.abs(value) > 0.7f) {
                 MCXRPlayClient.yawTurn += Math.toRadians(22) * -Math.signum(value);
                 var scale = MCXRPlayClient.getCameraScale();
-                Vector3f rotatedPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f()).mul(scale);
-                Vector3f finalPos = MCXRPlayClient.xrOffset.add(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().mul(scale, new Vector3f()), new Vector3f());
+                Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f()).mul(scale);
+                Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos());
 
-                MCXRPlayClient.xrOffset = finalPos.sub(rotatedPos).mul(1, 0, 1);
+                MCXRPlayClient.xrOffset = wantedPos.sub(newPos).mul(1, 0, 1);
 
                 actionSet.turnActivated = true;
             }
@@ -221,7 +221,7 @@ public final class XrInput {
         FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
         MouseExt mouse = (MouseExt) MinecraftClient.getInstance().mouse;
         if (FGM.isScreenOpen()) {
-            Pose pose = handsActionSet.gripPoses[MCXRPlayClient.mainHand].getPhysicalPose();
+            Pose pose = handsActionSet.gripPoses[MCXRPlayClient.mainHand].getScaledPhysicalPose();
             Vector3d pos = new Vector3d(pose.getPos());
             Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
             Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));

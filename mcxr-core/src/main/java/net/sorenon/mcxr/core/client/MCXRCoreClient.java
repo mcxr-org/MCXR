@@ -6,12 +6,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.loader.api.FabricLoader;
 import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.config.MCXRCoreConfig;
 import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MCXRCoreClient implements ClientModInitializer {
@@ -32,12 +30,12 @@ public class MCXRCoreClient implements ClientModInitializer {
             var buf = PacketByteBufs.create();
             LOGGER.info("Received login packet");
             buf.writeBoolean(playInstalled);
-            ((MCXRCoreConfigImpl) MCXRCore.getCoreConfig()).xrAllowed = true;
+            ((MCXRCoreConfigImpl) MCXRCore.getCoreConfig()).xrEnabled = true;
             return CompletableFuture.completedFuture(buf);
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-                ((MCXRCoreConfigImpl) MCXRCore.getCoreConfig()).xrAllowed = false
+                ((MCXRCoreConfigImpl) MCXRCore.getCoreConfig()).xrEnabled = false
         );
     }
 }

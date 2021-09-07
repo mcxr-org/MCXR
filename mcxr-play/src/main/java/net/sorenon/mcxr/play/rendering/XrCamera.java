@@ -39,8 +39,8 @@ public class XrCamera extends Camera {
         if (focusedEntity != null && MinecraftClient.getInstance().player == focusedEntity) {
             Entity player = MinecraftClient.getInstance().player;
 
-            float yaw = MCXRPlayClient.viewSpacePoses.getPhysicalPose().getMCYaw();
-            float pitch = MCXRPlayClient.viewSpacePoses.getPhysicalPose().getMCPitch();
+            float yaw = MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getMCYaw();
+            float pitch = MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getMCPitch();
             float dYaw = yaw - player.getYaw();
             float dPitch = pitch - player.getPitch();
             player.setYaw(yaw);

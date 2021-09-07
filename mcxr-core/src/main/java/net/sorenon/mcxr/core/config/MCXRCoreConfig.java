@@ -10,4 +10,6 @@ public interface MCXRCoreConfig {
     boolean thinnerPlayerBoundingBox();
 
     boolean controllerRaytracing();
+
+    boolean roomscaleMovement();
 }

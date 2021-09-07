@@ -26,6 +26,8 @@ public class FlatGuiManager {
     public int scaledWidth;
     public int scaledHeight;
 
+    public boolean needsReset = true;
+
     /**
      * The position of the GUI relative in physical space
      */
@@ -72,10 +74,19 @@ public class FlatGuiManager {
             pos = null;
             rot.set(0, 0, 0, 1);
         } else if (MinecraftClient.getInstance().currentScreen == null) {
-            XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
+            resetTransform();
+        }
+    }
+
+    public void resetTransform() {
+        XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
+        if (camera.isReady()) {
             Quaterniond orientation = JOMLUtil.convertd(camera.getRotation());
             pos = camera.getPos().add(JOMLUtil.convert(orientation.transform(new Vector3d(0, -0.5, 1)))).subtract(JOMLUtil.convert(MCXRPlayClient.xrOrigin));
             rot = orientation;
+            needsReset = false;
+        } else {
+            needsReset = true;
         }
     }
 

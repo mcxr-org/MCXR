@@ -24,7 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
@@ -106,8 +105,6 @@ public class XrRenderer {
             }
             layers.flip();
 
-            GL11.glFinish(); //TODO check if we can just let the runtime worry about this
-
             instance.check(XR10.xrEndFrame(
                     session.handle,
                     XrFrameEndInfo.callocStack()
@@ -159,9 +156,34 @@ public class XrRenderer {
         }
 
         session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, scalePreTick);
+        Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
+        if (cameraEntity != null) { //TODO seriously need to tidy up poses
+            if (MCXRCore.getCoreConfig().roomscaleMovement()) {
+                MCXRPlayClient.xrOrigin.set(cameraEntity.getX() - MCXRPlayClient.roomscalePlayerOffset.x,
+                        cameraEntity.getY(),
+                        cameraEntity.getZ() - MCXRPlayClient.roomscalePlayerOffset.z);
+            } else {
+                MCXRPlayClient.xrOrigin.set(cameraEntity.getX(),
+                        cameraEntity.getY(),
+                        cameraEntity.getZ());
+            }
 
+            MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);
+            for (var poses : XrInput.handsActionSet.gripPoses) {
+                poses.updateGamePose(MCXRPlayClient.xrOrigin);
+            }
+            for (var poses : XrInput.handsActionSet.aimPoses) {
+                poses.updateGamePose(MCXRPlayClient.xrOrigin);
+            }
+        }
         XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
-        camera.updateXR(this.client.world, this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity(), MCXRPlayClient.viewSpacePoses.getGamePose());
+        camera.updateXR(this.client.world, cameraEntity, MCXRPlayClient.viewSpacePoses.getGamePose());
+
+        FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
+
+        if (FGM.needsReset) {
+            FGM.resetTransform();
+        }
 
         long frameStartTime = Util.getMeasuringTimeNano();
         if (MinecraftClient.getInstance().player != null && MCXRCore.getCoreConfig().xrAllowed()) {
@@ -204,7 +226,6 @@ public class XrRenderer {
         client.getProfiler().pop();
 
         //Render GUI
-        FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
         mainRenderTarget.setFramebuffer(FGM.backFramebuffer);
         XrInput.postTick(predictedDisplayTime);
         FGM.backFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);

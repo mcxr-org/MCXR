@@ -49,37 +49,6 @@ processResources {
     filesMatching("fabric.mod.json") {
         expand "play_version": project.play_version, "core_version": project.core_version
     }
-
-    //TODO fetch latest openxr loader automatically
-    File openxr_dll = file("loader/openxr_loader.dll")
-    if (!openxr_dll.exists()) {
-        throw new FileNotFoundException("openxr_loader.dll is missing! place it -> ${openxr_dll.absolutePath}")
-    }
-}
-
-downloadAssets {
-    mkdir("loader")
-//    boolean offline = project.getGradle().getStartParameter().isOffline()
-//    if (!offline) {
-//        File openxr_dll = file("loader/openxr_loader.dll")
-//        mkdir(openxr_dll.parent)
-//
-//        HttpURLConnection connection = new URL("https://www.nuget.org/api/v2/package/OpenXR.Loader/1.0.10.2").openConnection()
-//        connection.connect()
-//        InputStream inputStream = connection.getInputStream()
-//
-////        FileUtils.copyInputStreamToFile(inputStream, file("openxr_loader.zip"));
-//        try (FileOutputStream outputStream = new FileOutputStream(file("loader/openxr_loader.zip"), false)) {
-//            final int DEFAULT_BUFFER_SIZE = 8192;
-//            int read;
-//            byte[] bytes = new byte[DEFAULT_BUFFER_SIZE];
-//            while ((read = inputStream.read(bytes)) != -1) {
-//                outputStream.write(bytes, 0, read);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e)
-//        }
-//    }
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -95,7 +64,6 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}" }
     }
-    from("openxr_loader.dll")
 }
 
 // configure the maven publication

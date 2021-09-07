@@ -45,7 +45,6 @@ public class XR {
      * @see #create(FunctionProvider)
      */
     public static void create(String libName) {
-        //TODO bundle loader on windows
         SharedLibrary defaultOpenXRLoader = Library.loadNative(XR.class, libName, false);
         XR.create(defaultOpenXRLoader);
     }

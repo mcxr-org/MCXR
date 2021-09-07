@@ -14,7 +14,7 @@ import org.joml.*;
 
 public class FlatGuiManager {
 
-    public final int framebufferWidth = 1440;
+    public final int framebufferWidth = 1980;
     public final int framebufferHeight = 1080;
 
     public final Identifier texture = new Identifier("mcxr", "gui");
@@ -26,13 +26,15 @@ public class FlatGuiManager {
     public int scaledWidth;
     public int scaledHeight;
 
-    public boolean needsReset = true;
+    public boolean needsReset = false;
+
+    public float size = 1.5f;
 
     /**
-     * The position of the GUI relative in physical space
+     * The transform of the GUI in physical space
      */
-    public Vec3d pos = null;
-    public Quaterniond rot = new Quaterniond(0, 0, 0, 1);
+    public Vec3d position = null;
+    public Quaterniond orientation = new Quaterniond(0, 0, 0, 1);
 
     public void init() {
         guiScale = calcGuiScale();
@@ -49,6 +51,7 @@ public class FlatGuiManager {
         MinecraftClient.getInstance().getTextureManager().registerTexture(texture, new ExistingTexture(frontFramebuffer.getColorAttachment()));
     }
 
+    @SuppressWarnings("ConditionCoveredByFurtherCondition")
     public double calcGuiScale() {
         int guiScale = 4;
         boolean forceUnicodeFont = MinecraftClient.getInstance().forcesUnicodeFont();
@@ -66,13 +69,14 @@ public class FlatGuiManager {
     }
 
     public boolean isScreenOpen() {
-        return pos != null && MinecraftClient.getInstance().currentScreen != null;
+        return position != null && MinecraftClient.getInstance().currentScreen != null;
     }
 
     public void openScreen(@Nullable Screen screen) {
         if (screen == null) {
-            pos = null;
-            rot.set(0, 0, 0, 1);
+            position = null;
+            orientation.set(0, 0, 0, 1);
+            needsReset = false;
         } else if (MinecraftClient.getInstance().currentScreen == null) {
             resetTransform();
         }
@@ -82,8 +86,8 @@ public class FlatGuiManager {
         XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
         if (camera.isReady()) {
             Quaterniond orientation = JOMLUtil.convertd(camera.getRotation());
-            pos = camera.getPos().add(JOMLUtil.convert(orientation.transform(new Vector3d(0, -0.5, 1)))).subtract(JOMLUtil.convert(MCXRPlayClient.xrOrigin));
-            rot = orientation;
+            position = camera.getPos().add(JOMLUtil.convert(orientation.transform(new Vector3d(0, -0.5, 1)))).subtract(JOMLUtil.convert(MCXRPlayClient.xrOrigin));
+            this.orientation = orientation;
             needsReset = false;
         } else {
             needsReset = true;
@@ -92,14 +96,14 @@ public class FlatGuiManager {
 
     @Nullable
     public Vector3d guiRaycast(Vector3d rayPos, Vector3d rayDir) {
-        if (pos == null) {
+        if (position == null) {
             return null;
         }
         double distance = Intersectiond.intersectRayPlane(
                 rayPos,
                 rayDir,
-                JOMLUtil.convert(pos),
-                rot.transform(new Vector3d(0, 0, -1)),
+                JOMLUtil.convert(position),
+                orientation.transform(new Vector3d(0, 0, -1)),
                 0.1f
         );
         if (distance >= 0) {

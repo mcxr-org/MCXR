@@ -31,6 +31,7 @@ import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.opengl.GL11;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -79,6 +80,8 @@ public class VrFirstPersonRenderer {
 
     public void renderAfterEntities(WorldRenderContext context) {
         Entity camEntity = context.camera().getFocusedEntity();
+        VertexConsumerProvider.Immediate consumers = (VertexConsumerProvider.Immediate) context.consumers();
+        assert consumers != null;
 
         if (camEntity != null) {
             renderShadow(context, camEntity);
@@ -93,16 +96,16 @@ public class VrFirstPersonRenderer {
                 matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
 
                 matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-camEntity.getYaw() + 180.0F));
-                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90-camEntity.getPitch()));
+                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(90 - camEntity.getPitch()));
 
                 Matrix4f model = matrices.peek().getModel();
                 Matrix3f normal = matrices.peek().getNormal();
 
-                VertexConsumer consumer = context.consumers().getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
+                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
                 consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
                 consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
 
-                consumer = context.consumers().getBuffer(LINE_CUSTOM.apply(2.0));
+                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
                 consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
                 consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).next();
 
@@ -136,7 +139,7 @@ public class VrFirstPersonRenderer {
                                 hand == 0 ? ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND : ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND,
                                 hand == 0,
                                 matrices,
-                                context.consumers(),
+                                consumers,
                                 light
                         );
 
@@ -176,11 +179,11 @@ public class VrFirstPersonRenderer {
                 Matrix4f model = matrices.peek().getModel();
                 Matrix3f normal = matrices.peek().getNormal();
 
-                VertexConsumer consumer = context.consumers().getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
+                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
                 consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
                 consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
 
-                consumer = context.consumers().getBuffer(LINE_CUSTOM.apply(2.0));
+                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
                 consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).next();
                 consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).next();
             }
@@ -188,7 +191,7 @@ public class VrFirstPersonRenderer {
             boolean debug = MinecraftClient.getInstance().options.debugEnabled;
 
             if (debug) {
-                FartUtil.renderCrosshair(context.consumers(), context.matrixStack(), 0.05f, false);
+                FartUtil.renderCrosshair(consumers, context.matrixStack(), 0.05f, false);
             }
 
             matrices.pop(); //2
@@ -199,12 +202,36 @@ public class VrFirstPersonRenderer {
                                 pose.getOrientation()
                         )
                 );
-                FartUtil.renderCrosshair(context.consumers(), context.matrixStack(), 0.1f, false);
+                FartUtil.renderCrosshair(consumers, context.matrixStack(), 0.1f, false);
             }
 
             matrices.pop(); //1
         }
 
+        consumers.draw();
+        for (int hand = 0; hand < 2; hand++) {
+            if (!XrInput.handsActionSet.grip.isActive[hand]) {
+                continue;
+            }
+            matrices.push();
+
+            transformToHand(matrices, hand, context.tickDelta());
+
+            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
+            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+
+            matrices.translate(-2 / 16f, -12 / 16f, 0);
+
+            if (hand == 0 && !FGM.isScreenOpen()) {
+                matrices.push();
+                matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
+                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
+                renderHudQuad(matrices.peek(), consumers);
+                consumers.drawCurrentLayer();
+                matrices.pop();
+            }
+            matrices.pop();
+        }
     }
 
     public void hands(WorldRenderContext context) {
@@ -294,51 +321,33 @@ public class VrFirstPersonRenderer {
         VertexConsumerProvider.Immediate consumers = (VertexConsumerProvider.Immediate) context.consumers();
         assert consumers != null;
 
-        if (FGM.pos != null) {
+        if (FGM.position != null) {
             matrices.push();
-            Vec3d pos = FGM.pos.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getScaledPhysicalPose().getPos()));
+            Vec3d pos = FGM.position.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getScaledPhysicalPose().getPos()));
             matrices.translate(pos.x, pos.y, pos.z);
-            matrices.multiply(new Quaternion((float) FGM.rot.x, (float) FGM.rot.y, (float) FGM.rot.z, (float) FGM.rot.w));
+            matrices.multiply(new Quaternion((float) FGM.orientation.x, (float) FGM.orientation.y, (float) FGM.orientation.z, (float) FGM.orientation.w));
             renderGuiQuad(matrices.peek(), consumers);
             matrices.pop();
             consumers.drawCurrentLayer();
-        }
-
-        for (int hand = 0; hand < 2; hand++) {
-            if (!XrInput.handsActionSet.grip.isActive[hand]) {
-                continue;
-            }
-            matrices.push();
-
-            transformToHand(matrices, hand, context.tickDelta());
-
-            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
-            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
-
-            matrices.translate(-2 / 16f, -12 / 16f, 0);
-
-            if (hand == 0 && !FGM.isScreenOpen()) {
-                matrices.push();
-                matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
-                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
-                renderHudQuad(matrices.peek(), consumers);
-                consumers.drawCurrentLayer();
-                matrices.pop();
-            }
-            matrices.pop();
         }
     }
 
     private void renderGuiQuad(MatrixStack.Entry transform, VertexConsumerProvider consumers) {
         Framebuffer guiFramebuffer = FGM.frontFramebuffer;
 
-        float size = 1f;
-        float x = size / 2;
-        float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
+        float x = FGM.size / 2;
+        float y = FGM.size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
-        VertexConsumer consumer = consumers.getBuffer(GUI_NO_DEPTH_TEST.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
+        VertexConsumer consumer;
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
+
+        consumer = consumers.getBuffer(GUI_SHADOW.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
+        consumer.vertex(modelMatrix, -x - 0.005f, y - 0.005f, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(0).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, x - 0.005f, y - 0.005f, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(0).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, x - 0.005f, 0 - 0.005f, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(0).normal(normalMatrix, 0, 0, -1).next();
+        consumer.vertex(modelMatrix, -x - 0.005f, 0 - 0.005f, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(0).normal(normalMatrix, 0, 0, -1).next();
+        consumer = consumers.getBuffer(GUI_NO_DEPTH_TEST.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
         consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
@@ -353,11 +362,11 @@ public class VrFirstPersonRenderer {
     private void renderHudQuad(MatrixStack.Entry transform, VertexConsumerProvider consumers) {
         Framebuffer guiFramebuffer = FGM.backFramebuffer;
 
-        float size = 1f;
+        float size = 1.5f;
         float x = size / 2;
         float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
 
-        VertexConsumer consumer = consumers.getBuffer(RenderLayer.getEntityTranslucent(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
+        VertexConsumer consumer = consumers.getBuffer(GUI_NO_DEPTH_TEST.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
         Matrix4f modelMatrix = transform.getModel();
         Matrix3f normalMatrix = transform.getNormal();
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
@@ -393,6 +402,21 @@ public class VrFirstPersonRenderer {
                 .lightmap(RenderStateShards.LIGHTMAP)
                 .overlay(RenderStateShards.OVERLAY)
                 .depthTest(RenderStateShards.NO_DEPTH_TEST);
+        return renderTypeBuilder.build(true);
+    });
+
+    public static final Function<Identifier, RenderLayer> GUI_SHADOW = Util.memoize((texture) -> {
+        Supplier<Shader> shader = GameRenderer::getRenderTypeEntityTranslucentShader;
+
+        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("gui_no_depth_test"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, true);
+        renderTypeBuilder.innerBuilder.
+                shader(RenderStateShards.shader(shader))
+                .texture(RenderStateShards.texture(texture, false, false))
+                .transparency(RenderStateShards.TRANSLUCENT_TRANSPARENCY)
+                .cull(RenderStateShards.NO_CULL)
+                .lightmap(RenderStateShards.LIGHTMAP)
+                .overlay(RenderStateShards.OVERLAY)
+                .depthTest(RenderStateShards.depthTest("GL_GREATER", GL11.GL_GREATER));
         return renderTypeBuilder.build(true);
     });
 

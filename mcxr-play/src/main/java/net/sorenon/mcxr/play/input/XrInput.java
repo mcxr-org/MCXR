@@ -41,8 +41,7 @@ public final class XrInput {
     public static final VanillaGameplayActionSet vanillaGameplayActionSet = new VanillaGameplayActionSet();
     public static final GuiActionSet guiActionSet = new GuiActionSet();
 
-    //TODO find a way to remove this
-    public static boolean menuButton = false;
+    public static boolean exitMenuStillHeld = false;
 
     private XrInput() {
     }
@@ -113,13 +112,23 @@ public final class XrInput {
      */
     public static void pollActions() {
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
-            GuiActionSet actionSet = guiActionSet;
-            if (actionSet.exit.changedSinceLastSync) {
-                if (actionSet.exit.currentState) {
+            if (guiActionSet.exit.changedSinceLastSync) {
+                if (guiActionSet.exit.currentState) {
                     MinecraftClient.getInstance().currentScreen.keyPressed(256, 0, 0);
+                    exitMenuStillHeld = true;
                 }
             }
+            exitMenuStillHeld |= guiActionSet.pickup.currentState;
+        }
 
+        if (exitMenuStillHeld) {
+            if (!guiActionSet.exit.currentState && !guiActionSet.pickup.currentState) {
+                exitMenuStillHeld = false;
+            }
+            return;
+        }
+
+        if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
             return;
         }
 
@@ -158,9 +167,7 @@ public final class XrInput {
             }
         }
         if (actionSet.inventory.changedSinceLastSync) {
-            if (actionSet.inventory.currentState) {
-                menuButton = true;
-            } else if (menuButton) {
+            if (!actionSet.inventory.currentState) {
                 MinecraftClient client = MinecraftClient.getInstance();
                 if (client.currentScreen == null) {
                     if (client.player != null && client.interactionManager != null) {
@@ -171,10 +178,7 @@ public final class XrInput {
                             client.setScreen(new InventoryScreen(client.player));
                         }
                     }
-                } else {
-                    client.currentScreen.keyPressed(256, 0, 0);
                 }
-                menuButton = false;
             }
         }
         if (actionSet.sprint.changedSinceLastSync) {
@@ -226,9 +230,12 @@ public final class XrInput {
             Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
             Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
             if (result != null) {
-                Vector3d vec = result.sub(JOMLUtil.convert(FGM.pos));
-                FGM.rot.invert(new Quaterniond()).transform(vec);
+                Vector3d vec = result.sub(JOMLUtil.convert(FGM.position));
+                FGM.orientation.invert(new Quaterniond()).transform(vec);
                 vec.y *= ((double) FGM.framebufferWidth / FGM.framebufferHeight);
+
+                vec.x /= FGM.size;
+                vec.y /= FGM.size;
 
                 ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
                         FGM.framebufferWidth * (0.5 - vec.x),
@@ -250,12 +257,16 @@ public final class XrInput {
                     mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
                 }
             }
-            if (actionSet.scroll.changedSinceLastSync) {
+            {
                 var state = actionSet.scroll.currentState;
                 double sensitivity = 0.25;
-                mouse.mouseScroll(-state.x() * sensitivity, state.y() * sensitivity);
+                if (Math.abs(state.y()) > 0.9 && state.length() > 0.95) {
+                    mouse.mouseScroll(-state.x() * sensitivity, 1.5 * Math.signum(state.y()));
+                } else if (Math.abs(state.y()) > 0.1) {
+                    mouse.mouseScroll(-state.x() * sensitivity, 0.1 * Math.signum(state.y()));
+                }
             }
-        } else {
+        } else if (!exitMenuStillHeld) {
             VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
             if (actionSet.attack.changedSinceLastSync) {
                 if (actionSet.attack.currentState) {
@@ -268,7 +279,7 @@ public final class XrInput {
                 long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
                 if (heldTime * 1E-09 > 1) {
                     MinecraftClient.getInstance().openPauseMenu(false);
-                    menuButton = false;
+                    exitMenuStillHeld = false;
                 }
             }
         }

@@ -65,6 +65,10 @@ public class TitleScreenMixin extends Screen {
 
         OpenXR OPEN_XR = MCXRPlayClient.OPEN_XR;
 
+        if (!FabricLoader.getInstance().isModLoaded("modmenu")) {
+            y += 12;
+        }
+
         if (!FabricLoader.getInstance().isModLoaded("sodium")) {
             DrawableHelper.drawStringWithShadow(matrices, textRenderer, "Sodium Missing!", x + 1, y + 12, 16733525 | l);
             y += 12;

@@ -81,10 +81,7 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static void resetView() {
-        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos()/*.mul(getCameraScale(), new Vector3f())*/).mul(1, 0, 1);
-        if (MCXRCore.getCoreConfig().roomscaleMovement()) {
-            xrOffset.zero();
-        }
+        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos()).mul(1, 0, 1);
     }
 
     public static float getCameraScale() {

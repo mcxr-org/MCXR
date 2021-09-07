@@ -1,4 +1,4 @@
-package net.sorenon.mcxr.play.mixin.flatgui;
+package net.sorenon.mcxr.play.mixin;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.render.GameRenderer;
@@ -24,20 +24,12 @@ public class GameRendererMixin {
 
     @Shadow @Final private Map<String, Shader> shaders;
 
-    //TODO create a library for handling things like this
     @Inject(method = "loadShaders", at = @At(value = "TAIL"))
     void loadGuiShader(ResourceManager manager, CallbackInfo ci) {
         ArrayList<Pair<Shader, Consumer<Shader>>> loadingShaders = new ArrayList<>();
         try {
-            loadingShaders.add(Pair.of(new Shader(manager, "rendertype_gui_translucent", VertexFormats.POSITION_TEXTURE), (shader) -> {
-//                VrFirstPersonRenderer.guiShader = shader;
-            }));
-            loadingShaders.add(Pair.of(new Shader(manager, "blit_screen_mcxr", VertexFormats.BLIT_SCREEN), (shader) -> {
-                MCXRPlayClient.RENDERER.blitShader = shader;
-            }));
-            loadingShaders.add(Pair.of(new Shader(manager, "gui_blit_screen_mcxr", VertexFormats.BLIT_SCREEN), (shader) -> {
-                MCXRPlayClient.RENDERER.guiBlitShader = shader;
-            }));
+            loadingShaders.add(Pair.of(new Shader(manager, "blit_screen_mcxr", VertexFormats.BLIT_SCREEN), (shader) -> MCXRPlayClient.RENDERER.blitShader = shader));
+            loadingShaders.add(Pair.of(new Shader(manager, "gui_blit_screen_mcxr", VertexFormats.BLIT_SCREEN), (shader) -> MCXRPlayClient.RENDERER.guiBlitShader = shader));
         } catch (IOException e) {
             throw new RuntimeException("[MCXR] Could not load custom shaders", e);
         }

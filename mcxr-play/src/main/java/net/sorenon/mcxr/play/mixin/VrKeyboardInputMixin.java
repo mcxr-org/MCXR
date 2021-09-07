@@ -26,6 +26,6 @@ public class VrKeyboardInputMixin extends Input {
         this.pressingRight = thumbstick.x() > 0;
         this.pressingLeft = thumbstick.y() < 0;
 
-        this.jumping = XrInput.vanillaGameplayActionSet.jump.currentState;
+        this.jumping = XrInput.vanillaGameplayActionSet.jump.currentState && !XrInput.exitMenuStillHeld;
     }
 }

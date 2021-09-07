@@ -62,10 +62,14 @@ public class OpenXRSwapchain implements AutoCloseable {
     @Override
     public void close() {
         XR10.xrDestroySwapchain(handle);
-        images.close();
-        RenderSystem.recordRenderCall(() -> {
-            innerFramebuffer.delete();
-            framebuffer.delete();
-        });
+        if (images != null) {
+            images.close();
+        }
+        if (framebuffer != null) {
+            RenderSystem.recordRenderCall(() -> {
+                innerFramebuffer.delete();
+                framebuffer.delete();
+            });
+        }
     }
 }

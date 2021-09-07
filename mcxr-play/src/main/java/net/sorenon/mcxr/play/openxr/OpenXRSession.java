@@ -236,9 +236,15 @@ public class OpenXRSession implements AutoCloseable {
         for (var swapchain : swapchains) {
             swapchain.close();
         }
-        views.close();
-        XR10.xrDestroySpace(xrAppSpace);
-        XR10.xrDestroySpace(xrViewSpace);
+        if (views != null) {
+            views.close();
+        }
+        if (xrAppSpace != null) {
+            XR10.xrDestroySpace(xrAppSpace);
+        }
+        if (xrViewSpace != null) {
+            XR10.xrDestroySpace(xrViewSpace);
+        }
         XR10.xrDestroySession(handle);
     }
 }

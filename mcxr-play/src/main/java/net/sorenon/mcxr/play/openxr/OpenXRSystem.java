@@ -88,11 +88,11 @@ public class OpenXRSystem {
             long glXWindowHandle = GLFWNativeGLX.glfwGetGLXWindow(windowHandle);
 
             int fbXID = glXQueryDrawable(xDisplay, glXWindowHandle, GLX_FBCONFIG_ID);
-            PointerBuffer fbConfigs = glXChooseFBConfig(xDisplay, X11.XDefaultScreen(xDisplay), stackInts(GLX_FBCONFIG_ID, fbXID, 0));
-            long fbConfig = fbConfigs.get();
-            if(fbConfig == NULL) {
+            PointerBuffer fbConfigBuf = glXChooseFBConfig(xDisplay, X11.XDefaultScreen(xDisplay), stackInts(GLX_FBCONFIG_ID, fbXID, 0));
+            if(fbConfigBuf == null) {
                 throw new IllegalStateException("Your framebuffer config was null, make a github issue");
             }
+            long fbConfig = fbConfigBuf.get();
 
             return XrGraphicsBindingOpenGLXlibKHR.callocStack().set(
                     KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,

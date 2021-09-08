@@ -1,8 +1,11 @@
 package net.sorenon.mcxr.play;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.sorenon.fart.FartRenderEvents;
@@ -14,6 +17,7 @@ import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.XR;
@@ -66,6 +70,23 @@ public class MCXRPlayClient implements ClientModInitializer {
     public void onInitializeClient() {
         INSTANCE = this;
         XR.create("openxr_loader");
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+            if (RENDERER.renderPass instanceof RenderPass.World) {
+                if (!MinecraftClient.getInstance().options.hudHidden && !flatGuiManager.isScreenOpen()) {
+                    Camera camera = context.camera();
+                    if (camera.getFocusedEntity() instanceof ClientPlayerEntity player) {
+                        vrFirstPersonRenderer.renderHandsAndItems(
+                                player,
+                                VrFirstPersonRenderer.getLight(camera, context.world()),
+                                context.matrixStack(),
+                                context.consumers(),
+                                context.tickDelta()
+                        );
+                    }
+                }
+            }
+        });
+
         FartRenderEvents.LAST.register(context -> {
             if (RENDERER.renderPass instanceof RenderPass.World) {
                 if (!MinecraftClient.getInstance().options.hudHidden) {
@@ -80,7 +101,11 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static void resetView() {
-        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos()).mul(1, 0, 1);
+        Vector3f pos = new Vector3f(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos());
+        new Quaternionf().rotateLocalY(yawTurn).transform(pos);
+        pos.mul(getCameraScale());
+
+        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(pos).mul(1, 0, 1);
     }
 
     public static float getCameraScale() {

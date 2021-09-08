@@ -9,13 +9,14 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.*;
 import net.minecraft.world.LightType;
+import net.minecraft.world.World;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
@@ -82,10 +83,14 @@ public class VrFirstPersonRenderer {
      * This function contains a log of depth hackery so each draw call has to be done in a specific order
      */
     public void renderFirstPerson(WorldRenderContext context) {
-        Entity camEntity = context.camera().getFocusedEntity();
+        Camera camera = context.camera();
+        Entity camEntity = camera.getFocusedEntity();
         VertexConsumerProvider.Immediate consumers = (VertexConsumerProvider.Immediate) context.consumers();
         MatrixStack matrices = context.matrixStack();
+        ClientWorld world = context.world();
         assert consumers != null;
+
+        int light = getLight(camera, world);
 
         //Render gui
         if (FGM.position != null) {
@@ -127,75 +132,15 @@ public class VrFirstPersonRenderer {
 
                 matrices.pop();
             }
+        }
 
-            //Render held items
-            if (!FGM.isScreenOpen() && camEntity instanceof LivingEntity livingEntity) {
-                for (int hand = 0; hand < 2; hand++) {
-                    if (!XrInput.handsActionSet.grip.isActive[hand]) {
-                        continue;
-                    }
-
-                    ItemStack stack = hand == 0 ? livingEntity.getOffHandStack() : livingEntity.getMainHandStack();
-
-                    if (!stack.isEmpty()) {
-                        boolean mainHand = hand == MCXRPlayClient.mainHand;
-                        matrices.push();
-                        transformToHand(matrices, hand, context.tickDelta());
-
-                        int light = LightmapTextureManager.pack(livingEntity.world.getLightLevel(LightType.BLOCK, livingEntity.getBlockPos()), livingEntity.world.getLightLevel(LightType.SKY, livingEntity.getBlockPos()));
-
-                        if (mainHand) {
-                            float swing = -0.4f * MathHelper.sin((float) (Math.sqrt(livingEntity.getHandSwingProgress(context.tickDelta())) * Math.PI * 2));
-                            matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(swing));
-                        }
-
-                        MinecraftClient.getInstance().getHeldItemRenderer().renderItem(
-                                livingEntity,
-                                stack,
-                                hand == 0 ? ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND : ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND,
-                                hand == 0,
-                                matrices,
-                                consumers,
-                                light
-                        );
-
-                        matrices.pop();
-                    }
-                }
-            }
+        if (camEntity instanceof ClientPlayerEntity player && FGM.isScreenOpen()) {
+            renderHandsAndItems(player, light, matrices, consumers, context.tickDelta());
         }
 
         for (int hand = 0; hand < 2; hand++) {
             if (!XrInput.handsActionSet.grip.isActive[hand]) {
                 continue;
-            }
-
-            //Draw hand
-            if (context.camera().getFocusedEntity() instanceof ClientPlayerEntity player) {
-                matrices.push();
-
-                transformToHand(matrices, hand, context.tickDelta());
-
-                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
-                matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
-
-                matrices.translate(-2 / 16f, -12 / 16f, 0);
-
-                matrices.push();
-                ModelPart armModel;
-                if (player.getModel().equals("slim")) {
-                    armModel = this.slimArmModel[hand];
-                } else {
-                    armModel = this.armModel[hand];
-                }
-
-                int light = LightmapTextureManager.pack(player.world.getLightLevel(LightType.BLOCK, player.getBlockPos()), player.world.getLightLevel(LightType.SKY, player.getBlockPos()));
-
-                VertexConsumer consumer = context.consumers().getBuffer(RenderLayer.getEntityTranslucent(player.getSkinTexture()));
-                armModel.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV);
-                matrices.pop();
-
-                matrices.pop();
             }
 
             //Draw the hand ray and debug lines
@@ -274,6 +219,10 @@ public class VrFirstPersonRenderer {
         }
     }
 
+    public static int getLight(Camera camera, World world) {
+        return LightmapTextureManager.pack(world.getLightLevel(LightType.BLOCK, camera.getBlockPos()), world.getLightLevel(LightType.SKY, camera.getBlockPos()));
+    }
+
     public void transformToHand(MatrixStack matrices, int hand, float tickDelta) {
         Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
         Vec3d gripPos = convert(pose.getPos());
@@ -346,20 +295,66 @@ public class VrFirstPersonRenderer {
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
     }
 
-    private void renderHudQuad(MatrixStack.Entry transform, VertexConsumerProvider consumers) {
-        Framebuffer guiFramebuffer = FGM.backFramebuffer;
+    public void renderHandsAndItems(ClientPlayerEntity player, int light, MatrixStack matrices, VertexConsumerProvider consumers, float deltaTick) {
+        //Render held items
+        for (int hand = 0; hand < 2; hand++) {
+            if (!XrInput.handsActionSet.grip.isActive[hand]) {
+                continue;
+            }
 
-        float size = 1.5f;
-        float x = size / 2;
-        float y = size * guiFramebuffer.textureHeight / guiFramebuffer.textureWidth;
+            if (!FGM.isScreenOpen()) {
+                ItemStack stack = hand == 0 ? player.getOffHandStack() : player.getMainHandStack();
 
-        VertexConsumer consumer = consumers.getBuffer(GUI_NO_DEPTH_TEST.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
-        Matrix4f modelMatrix = transform.getModel();
-        Matrix3f normalMatrix = transform.getNormal();
-        consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).texture(1, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-        consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).texture(0, 1).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-        consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).texture(0, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
-        consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0, 0, -1).next();
+                if (!stack.isEmpty()) {
+                    boolean mainHand = hand == MCXRPlayClient.mainHand;
+                    matrices.push();
+                    transformToHand(matrices, hand, deltaTick);
+
+                    if (mainHand) {
+                        float swing = -0.4f * MathHelper.sin((float) (Math.sqrt(player.getHandSwingProgress(deltaTick)) * Math.PI * 2));
+                        matrices.multiply(Vec3f.POSITIVE_X.getRadialQuaternion(swing));
+                    }
+
+                    MinecraftClient.getInstance().getHeldItemRenderer().renderItem(
+                            player,
+                            stack,
+                            hand == 0 ? ModelTransformation.Mode.THIRD_PERSON_LEFT_HAND : ModelTransformation.Mode.THIRD_PERSON_RIGHT_HAND,
+                            hand == 0,
+                            matrices,
+                            consumers,
+                            light
+                    );
+
+                    matrices.pop();
+                }
+            }
+
+            //Draw hand
+            matrices.push();
+
+            transformToHand(matrices, hand, deltaTick);
+
+            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
+            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+
+            matrices.translate(-2 / 16f, -12 / 16f, 0);
+
+            matrices.push();
+            ModelPart armModel;
+            if (player.getModel().equals("slim")) {
+                armModel = this.slimArmModel[hand];
+            } else {
+                armModel = this.armModel[hand];
+            }
+
+            VertexConsumer consumer = consumers.getBuffer(RenderLayer.getEntityTranslucent(player.getSkinTexture()));
+            armModel.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV);
+            matrices.pop();
+
+            matrices.pop();
+
+            consumers.getBuffer(RenderLayer.LINES); //Hello I'm a hack ;)
+        }
     }
 
     public static final Function<Identifier, RenderLayer> DEPTH_ONLY = Util.memoize((texture) -> {

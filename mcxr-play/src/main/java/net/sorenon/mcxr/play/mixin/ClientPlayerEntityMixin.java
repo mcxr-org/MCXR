@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.mixin;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.input.Input;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin extends PlayerEntity {
@@ -41,9 +43,8 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
      */
     @Inject(method = "tick", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/network/ClientPlayerEntity;sendMovementPackets()V"))
     void applyRoomscaleMovement(CallbackInfo ci) {
-        if (MCXRCore.getCoreConfig().roomscaleMovement()) {
-            Vector3d roomscaleOffset = MCXRPlayClient.roomscalePlayerOffset;
-
+        Vector3d roomscaleOffset = MCXRPlayClient.roomscalePlayerOffset;
+        if (MCXRCore.getCoreConfig().roomscaleMovement() && !this.hasVehicle()) {
             Vector3f viewPos = MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos();
 
             double oldX = this.getX();
@@ -65,6 +66,15 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
 
             this.prevX += deltaX;
             this.prevZ += deltaZ;
+        } else {
+            roomscaleOffset.zero();
+        }
+    }
+
+    @Inject(method = "startRiding", at = @At("RETURN"))
+    void onStartRiding(Entity entity, boolean force, CallbackInfoReturnable<Boolean> cir) {
+        if (cir.getReturnValue()) {
+            MCXRPlayClient.resetView();
         }
     }
 }

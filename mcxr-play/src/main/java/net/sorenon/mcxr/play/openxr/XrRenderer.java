@@ -9,6 +9,7 @@ import net.minecraft.client.gl.GlUniform;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
@@ -29,7 +30,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
 
 import java.nio.IntBuffer;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.lwjgl.system.MemoryStack.stackCallocInt;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -151,7 +151,8 @@ public class XrRenderer {
         session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, scalePreTick);
         Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
         if (cameraEntity != null) { //TODO seriously need to tidy up poses
-            if (MCXRCore.getCoreConfig().roomscaleMovement()) {
+            Entity vehicle = cameraEntity.getVehicle();
+            if (MCXRCore.getCoreConfig().roomscaleMovement() && vehicle == null) {
                 MCXRPlayClient.xrOrigin.set(cameraEntity.getX() - MCXRPlayClient.roomscalePlayerOffset.x,
                         cameraEntity.getY(),
                         cameraEntity.getZ() - MCXRPlayClient.roomscalePlayerOffset.z);
@@ -159,6 +160,13 @@ public class XrRenderer {
                 MCXRPlayClient.xrOrigin.set(cameraEntity.getX(),
                         cameraEntity.getY(),
                         cameraEntity.getZ());
+            }
+            if (vehicle != null) {
+                if (vehicle instanceof LivingEntity) {
+                    MCXRPlayClient.xrOrigin.y += 0.60;
+                } else {
+                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getMountedHeightOffset();
+                }
             }
 
             MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);
@@ -194,7 +202,8 @@ public class XrRenderer {
                 tickDelta = 0.0f;
             }
 
-            if (MCXRCore.getCoreConfig().roomscaleMovement()) {
+            Entity vehicle = camEntity.getVehicle();
+            if (MCXRCore.getCoreConfig().roomscaleMovement() && vehicle == null) {
                 MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()) - MCXRPlayClient.roomscalePlayerOffset.x,
                         MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()),
                         MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()) - MCXRPlayClient.roomscalePlayerOffset.z);
@@ -202,6 +211,13 @@ public class XrRenderer {
                 MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()),
                         MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()),
                         MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()));
+            }
+            if (vehicle != null) {
+                if (vehicle instanceof LivingEntity) {
+                    MCXRPlayClient.xrOrigin.y += 0.60;
+                } else {
+                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getMountedHeightOffset();
+                }
             }
 
             MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);

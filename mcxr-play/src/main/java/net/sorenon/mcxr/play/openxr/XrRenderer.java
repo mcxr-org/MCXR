@@ -50,13 +50,6 @@ public class XrRenderer {
     public Shader blitShader;
     public Shader guiBlitShader;
 
-    public boolean readyForSwap = false;
-    public final ReentrantLock renderLock = new ReentrantLock();
-
-    public XrRenderer() {
-        renderLock.lock();
-    }
-
     public void setSession(OpenXRSession session) {
         this.session = session;
         this.instance = session.instance;
@@ -76,13 +69,12 @@ public class XrRenderer {
         try (MemoryStack stack = stackPush()) {
             var frameState = XrFrameState.callocStack().type(XR10.XR_TYPE_FRAME_STATE);
 
-            renderLock.unlock();
+            GLFW.glfwSwapBuffers(MinecraftClient.getInstance().getWindow().getHandle());
             instance.check(XR10.xrWaitFrame(
                     session.handle,
                     XrFrameWaitInfo.callocStack().type(XR10.XR_TYPE_FRAME_WAIT_INFO),
                     frameState
             ), "xrWaitFrame");
-            renderLock.lock();
 
             instance.check(XR10.xrBeginFrame(
                     session.handle,
@@ -97,7 +89,6 @@ public class XrRenderer {
                     if (layer != null) {
                         layers.put(layer.address());
                     }
-                    readyForSwap = true;
                 } else {
                     var layer = renderLayerBlankOpenXR(frameState.predictedDisplayTime());
                     layers.put(layer.address());
@@ -466,28 +457,5 @@ public class XrRenderer {
         GlStateManager._colorMask(true, true, true, true);
 
         matrixStack.pop();
-    }
-
-    public static class OffThreadSwapper extends Thread {
-        final long windowHandle;
-        final XrRenderer xrRenderer;
-
-        public OffThreadSwapper(long windowHandle, XrRenderer xrRenderer) {
-            this.windowHandle = windowHandle;
-            this.xrRenderer = xrRenderer;
-        }
-
-        @Override
-        public void run() {
-            super.run();
-            while (MinecraftClient.getInstance().isRunning()) {
-                xrRenderer.renderLock.lock();
-                if (xrRenderer.readyForSwap) {
-                    xrRenderer.readyForSwap = false;
-                    GLFW.glfwSwapBuffers(windowHandle);
-                }
-                xrRenderer.renderLock.unlock();
-            }
-        }
     }
 }

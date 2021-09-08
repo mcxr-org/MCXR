@@ -176,9 +176,6 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Unique
     private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
 
-    @Unique
-    private XrRenderer.OffThreadSwapper swapper;
-
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/gl/WindowFramebuffer"))
     WindowFramebuffer createFramebuffer(int width, int height) {
         return new MainRenderTarget(width, height);
@@ -187,23 +184,10 @@ public abstract class MinecraftClientMixin extends ReentrantThreadExecutor<Runna
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
         MCXRPlayClient.INSTANCE.flatGuiManager.init();
-
-        swapper = new XrRenderer.OffThreadSwapper(window.getHandle(), MCXRPlayClient.RENDERER);
-        swapper.setName("MCXR Swapper Thread");
-        swapper.start();
-    }
-
-    @Inject(method = "close", at = @At("RETURN"))
-    void end(CallbackInfo ci) {
-        swapper.interrupt();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;render(Z)V"), method = "run")
     void loop(MinecraftClient minecraftClient, boolean tick) {
-        if (!swapper.isAlive()) {
-            throw new RuntimeException("MCXR Swapper thread has died");
-        }
-
         OpenXR openXR = MCXRPlayClient.OPEN_XR;
         if (openXR.loop()) {
             //Just render normally

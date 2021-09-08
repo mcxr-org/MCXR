@@ -69,8 +69,7 @@ public class MCXRPlayClient implements ClientModInitializer {
         FartRenderEvents.LAST.register(context -> {
             if (RENDERER.renderPass instanceof RenderPass.World) {
                 if (!MinecraftClient.getInstance().options.hudHidden) {
-                    vrFirstPersonRenderer.renderHud(context);
-                    vrFirstPersonRenderer.renderAfterEntities(context);
+                    vrFirstPersonRenderer.renderFirstPerson(context);
                 }
             }
         });

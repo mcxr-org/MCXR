@@ -4,10 +4,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.model.ModelData;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.model.ModelPartBuilder;
-import net.minecraft.client.model.ModelTransform;
+import net.minecraft.client.model.*;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.model.json.ModelTransformation;
@@ -38,10 +35,7 @@ import java.util.function.Supplier;
 
 import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
-/**
- * TODO Split up and dehackify
- * TODO rip apart this class then put it back together again
- */
+//TODO third person renderer
 public class VrFirstPersonRenderer {
 
     private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
@@ -56,37 +50,59 @@ public class VrFirstPersonRenderer {
         for (int slim = 0; slim < 2; slim++) {
             ModelPart[] arr = slim == 0 ? armModel : slimArmModel;
             for (int hand = 0; hand < 2; hand++) {
-                ModelPartBuilder builder = ModelPartBuilder.create();
+                ModelPartBuilder armBuilder = ModelPartBuilder.create();
+                ModelPartBuilder sleeveBuilder = ModelPartBuilder.create();
 
                 if (hand == 0) {
-                    builder.uv(32, 48);
+                    armBuilder.uv(32, 48);
+                    sleeveBuilder.uv(48, 48);
                 } else {
-                    builder.uv(40, 16);
+                    armBuilder.uv(40, 16);
+                    sleeveBuilder.uv(40, 32);
                 }
 
                 if (slim == 0) {
-                    builder.cuboid(0, 0, 0, 4, 12, 4, hand == 0);
+                    armBuilder.cuboid(0, 0, 0, 4, 12, 4);
+                    sleeveBuilder.cuboid(0, 0, 0, 4, 12, 4, new Dilation(0.25F));
                 } else {
-                    builder.cuboid(0.5f, 0, 0, 3, 12, 4, hand == 0);
+                    armBuilder.cuboid(0.5f, 0, 0, 3, 12, 4);
+                    sleeveBuilder.cuboid(0.5f, 0, 0, 3, 12, 4, new Dilation(0.25F));
                 }
 
-                arr[hand] = new ModelData().getRoot().addChild(
-                        "arm",
-                        builder,
-                        ModelTransform.NONE).createPart(64, 64);
+                ModelData modelData = new ModelData();
+                modelData.getRoot().addChild("arm", armBuilder, ModelTransform.NONE);
+                modelData.getRoot().addChild("sleeve", sleeveBuilder, ModelTransform.NONE);
+
+                arr[hand] = TexturedModelData.of(modelData, 64, 64).createModel();
             }
         }
     }
 
-    public void renderAfterEntities(WorldRenderContext context) {
+    /**
+     * This function contains a log of depth hackery so each draw call has to be done in a specific order
+     */
+    public void renderFirstPerson(WorldRenderContext context) {
         Entity camEntity = context.camera().getFocusedEntity();
         VertexConsumerProvider.Immediate consumers = (VertexConsumerProvider.Immediate) context.consumers();
+        MatrixStack matrices = context.matrixStack();
         assert consumers != null;
+
+        //Render gui
+        if (FGM.position != null) {
+            matrices.push();
+            Vec3d pos = FGM.position.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getScaledPhysicalPose().getPos()));
+            matrices.translate(pos.x, pos.y, pos.z);
+            matrices.multiply(new Quaternion((float) FGM.orientation.x, (float) FGM.orientation.y, (float) FGM.orientation.z, (float) FGM.orientation.w));
+            renderGuiQuad(matrices.peek(), consumers);
+            matrices.pop();
+            consumers.drawCurrentLayer();
+        }
 
         if (camEntity != null) {
             renderShadow(context, camEntity);
+
+            //Render vanilla crosshair ray if controller raytracing is disabled
             if (!FGM.isScreenOpen() && !MCXRCore.getCoreConfig().controllerRaytracing()) {
-                MatrixStack matrices = context.matrixStack();
                 Vec3d camPos = context.camera().getPos();
                 matrices.push();
 
@@ -112,6 +128,7 @@ public class VrFirstPersonRenderer {
                 matrices.pop();
             }
 
+            //Render held items
             if (!FGM.isScreenOpen() && camEntity instanceof LivingEntity livingEntity) {
                 for (int hand = 0; hand < 2; hand++) {
                     if (!XrInput.handsActionSet.grip.isActive[hand]) {
@@ -121,7 +138,6 @@ public class VrFirstPersonRenderer {
                     ItemStack stack = hand == 0 ? livingEntity.getOffHandStack() : livingEntity.getMainHandStack();
 
                     if (!stack.isEmpty()) {
-                        MatrixStack matrices = context.matrixStack();
                         boolean mainHand = hand == MCXRPlayClient.mainHand;
                         matrices.push();
                         transformToHand(matrices, hand, context.tickDelta());
@@ -149,14 +165,40 @@ public class VrFirstPersonRenderer {
             }
         }
 
-        hands(context);
-
-        MatrixStack matrices = context.matrixStack();
         for (int hand = 0; hand < 2; hand++) {
             if (!XrInput.handsActionSet.grip.isActive[hand]) {
                 continue;
             }
 
+            //Draw hand
+            if (context.camera().getFocusedEntity() instanceof ClientPlayerEntity player) {
+                matrices.push();
+
+                transformToHand(matrices, hand, context.tickDelta());
+
+                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
+                matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+
+                matrices.translate(-2 / 16f, -12 / 16f, 0);
+
+                matrices.push();
+                ModelPart armModel;
+                if (player.getModel().equals("slim")) {
+                    armModel = this.slimArmModel[hand];
+                } else {
+                    armModel = this.armModel[hand];
+                }
+
+                int light = LightmapTextureManager.pack(player.world.getLightLevel(LightType.BLOCK, player.getBlockPos()), player.world.getLightLevel(LightType.SKY, player.getBlockPos()));
+
+                VertexConsumer consumer = context.consumers().getBuffer(RenderLayer.getEntityTranslucent(player.getSkinTexture()));
+                armModel.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV);
+                matrices.pop();
+
+                matrices.pop();
+            }
+
+            //Draw the hand ray and debug lines
             matrices.push(); //1
 
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
@@ -209,63 +251,24 @@ public class VrFirstPersonRenderer {
         }
 
         consumers.draw();
-        for (int hand = 0; hand < 2; hand++) {
-            if (!XrInput.handsActionSet.grip.isActive[hand]) {
-                continue;
-            }
+
+        //Render HUD
+        if (!FGM.isScreenOpen() && XrInput.handsActionSet.grip.isActive[0]) {
             matrices.push();
 
-            transformToHand(matrices, hand, context.tickDelta());
+            transformToHand(matrices, 0, context.tickDelta());
 
             matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
             matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
 
             matrices.translate(-2 / 16f, -12 / 16f, 0);
 
-            if (hand == 0 && !FGM.isScreenOpen()) {
-                matrices.push();
-                matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
-                matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
-                renderHudQuad(matrices.peek(), consumers);
-                consumers.drawCurrentLayer();
-                matrices.pop();
-            }
+            matrices.push();
+            matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
+            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-75f));
+            renderGuiQuad(matrices.peek(), consumers);
+            consumers.drawCurrentLayer();
             matrices.pop();
-        }
-    }
-
-    public void hands(WorldRenderContext context) {
-        MatrixStack matrices = context.matrixStack();
-
-        for (int hand = 0; hand < 2; hand++) {
-            if (!XrInput.handsActionSet.grip.isActive[hand]) {
-                continue;
-            }
-            matrices.push();
-
-            transformToHand(matrices, hand, context.tickDelta());
-
-            matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(-90.0F));
-            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
-
-            matrices.translate(-2 / 16f, -12 / 16f, 0);
-
-            //Draw hand
-            if (context.camera().getFocusedEntity() instanceof ClientPlayerEntity player) {
-                matrices.push();
-                ModelPart armModel;
-                if (player.getModel().equals("slim")) {
-                    armModel = this.slimArmModel[hand];
-                } else {
-                    armModel = this.armModel[hand];
-                }
-
-                int light = LightmapTextureManager.pack(player.world.getLightLevel(LightType.BLOCK, player.getBlockPos()), player.world.getLightLevel(LightType.SKY, player.getBlockPos()));
-
-                VertexConsumer consumer = context.consumers().getBuffer(RenderLayer.getEntityTranslucent(player.getSkinTexture()));
-                armModel.render(matrices, consumer, light, OverlayTexture.DEFAULT_UV);
-                matrices.pop();
-            }
 
             matrices.pop();
         }
@@ -314,22 +317,6 @@ public class VrFirstPersonRenderer {
         vertexConsumer.vertex(entry.getModel(), radius, y0, -radius).color(1.0F, 1.0F, 1.0F, alpha).texture(1, 0).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(entry.getNormal(), 0.0F, 1.0F, 0.0F).next();
 
         matrices.pop();
-    }
-
-    public void renderHud(WorldRenderContext context) {
-        MatrixStack matrices = context.matrixStack();
-        VertexConsumerProvider.Immediate consumers = (VertexConsumerProvider.Immediate) context.consumers();
-        assert consumers != null;
-
-        if (FGM.position != null) {
-            matrices.push();
-            Vec3d pos = FGM.position.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getScaledPhysicalPose().getPos()));
-            matrices.translate(pos.x, pos.y, pos.z);
-            matrices.multiply(new Quaternion((float) FGM.orientation.x, (float) FGM.orientation.y, (float) FGM.orientation.z, (float) FGM.orientation.w));
-            renderGuiQuad(matrices.peek(), consumers);
-            matrices.pop();
-            consumers.drawCurrentLayer();
-        }
     }
 
     private void renderGuiQuad(MatrixStack.Entry transform, VertexConsumerProvider consumers) {
@@ -393,7 +380,7 @@ public class VrFirstPersonRenderer {
             shader = GameRenderer::getRenderTypeEntityTranslucentShader;
         }
 
-        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("gui_no_depth_test"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, true);
+        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("gui_no_depth_test"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, false);
         renderTypeBuilder.innerBuilder.
                 shader(RenderStateShards.shader(shader))
                 .texture(RenderStateShards.texture(texture, false, false))
@@ -406,11 +393,9 @@ public class VrFirstPersonRenderer {
     });
 
     public static final Function<Identifier, RenderLayer> GUI_SHADOW = Util.memoize((texture) -> {
-        Supplier<Shader> shader = GameRenderer::getRenderTypeEntityTranslucentShader;
-
         RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("gui_no_depth_test"), VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, true);
         renderTypeBuilder.innerBuilder.
-                shader(RenderStateShards.shader(shader))
+                shader(RenderStateShards.shader(GameRenderer::getRenderTypeEntityTranslucentShader))
                 .texture(RenderStateShards.texture(texture, false, false))
                 .transparency(RenderStateShards.TRANSLUCENT_TRANSPARENCY)
                 .cull(RenderStateShards.NO_CULL)

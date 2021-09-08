@@ -69,7 +69,9 @@ public class XrRenderer {
         try (MemoryStack stack = stackPush()) {
             var frameState = XrFrameState.callocStack().type(XR10.XR_TYPE_FRAME_STATE);
 
-            GLFW.glfwSwapBuffers(MinecraftClient.getInstance().getWindow().getHandle());
+            if (isXrMode()) {
+                GLFW.glfwSwapBuffers(MinecraftClient.getInstance().getWindow().getHandle());
+            }
             instance.check(XR10.xrWaitFrame(
                     session.handle,
                     XrFrameWaitInfo.callocStack().type(XR10.XR_TYPE_FRAME_WAIT_INFO),

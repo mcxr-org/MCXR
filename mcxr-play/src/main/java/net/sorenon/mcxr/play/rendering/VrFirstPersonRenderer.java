@@ -95,7 +95,7 @@ public class VrFirstPersonRenderer {
         //Render gui
         if (FGM.position != null) {
             matrices.push();
-            Vec3d pos = FGM.position.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getScaledPhysicalPose().getPos()));
+            Vec3d pos = FGM.position.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getUnscaledPhysicalPose().getPos()));
             matrices.translate(pos.x, pos.y, pos.z);
             matrices.multiply(new Quaternion((float) FGM.orientation.x, (float) FGM.orientation.y, (float) FGM.orientation.z, (float) FGM.orientation.w));
             renderGuiQuad(matrices.peek(), consumers);

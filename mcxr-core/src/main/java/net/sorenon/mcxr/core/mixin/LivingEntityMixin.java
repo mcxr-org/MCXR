@@ -23,7 +23,7 @@ public abstract class LivingEntityMixin extends Entity {
         }
 
         if (this instanceof PlayerEntityAcc acc && acc.getHeadPose() != null) {
-            cir.setReturnValue(acc.getHeadPose().pos.y * MCXRCore.getScale((LivingEntity) (Object) this));
+            cir.setReturnValue(acc.getHeadPose().pos.y);
         }
     }
 }

@@ -85,9 +85,8 @@ public class FlatGuiManager {
     public void resetTransform() {
         XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
         if (camera.isReady()) {
-            Quaterniond orientation = JOMLUtil.convertd(camera.getRotation());
-            position = camera.getPos().add(JOMLUtil.convert(orientation.transform(new Vector3d(0, -0.5, 1)))).subtract(JOMLUtil.convert(MCXRPlayClient.xrOrigin));
-            this.orientation = orientation;
+            orientation = JOMLUtil.convertd(camera.getRotation());
+            position = JOMLUtil.convert(MCXRPlayClient.viewSpacePoses.getUnscaledPhysicalPose().getPos().add(orientation.transform(new Vector3f(0, -0.5f, 1))));
             needsReset = false;
         } else {
             needsReset = true;

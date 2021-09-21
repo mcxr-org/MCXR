@@ -1,4 +1,4 @@
-package net.sorenon.mcxr.play.mixin;
+package net.sorenon.mcxr.play.mixin.roomscale;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.input.Input;
@@ -20,6 +20,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import virtuoel.pehkui.util.ScaleUtils;
 
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin extends PlayerEntity {
@@ -29,6 +30,8 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
 
     @Shadow
     public Input input;
+
+    @Shadow public abstract void move(MovementType movementType, Vec3d movement);
 
     @Unique
     private static final Input sneakingInput = new Input();
@@ -54,7 +57,9 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
             Input input = this.input;
             this.input = sneakingInput;
             sneakingInput.sneaking = true;
-            this.move(MovementType.SELF, new Vec3d(viewPos.x - roomscaleOffset.x, 0, viewPos.z - roomscaleOffset.z));
+
+            final float invScale = 1.0f / ScaleUtils.getMotionScale(this); //Counter out the method pehuki uses for scaling movement
+            this.move(MovementType.SELF, new Vec3d(viewPos.x - roomscaleOffset.x, 0, viewPos.z - roomscaleOffset.z).multiply(invScale));
             this.input = input;
             this.onGround = onGround;
 

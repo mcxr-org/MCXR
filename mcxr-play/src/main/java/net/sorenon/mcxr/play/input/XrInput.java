@@ -225,7 +225,7 @@ public final class XrInput {
         FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
         MouseExt mouse = (MouseExt) MinecraftClient.getInstance().mouse;
         if (FGM.isScreenOpen()) {
-            Pose pose = handsActionSet.gripPoses[MCXRPlayClient.mainHand].getScaledPhysicalPose();
+            Pose pose = handsActionSet.gripPoses[MCXRPlayClient.mainHand].getUnscaledPhysicalPose();
             Vector3d pos = new Vector3d(pose.getPos());
             Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
             Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));

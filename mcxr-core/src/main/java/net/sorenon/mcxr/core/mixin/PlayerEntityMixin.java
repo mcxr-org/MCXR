@@ -53,7 +53,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 
             final float minHeight = 0.5f * scale;
             final float currentHeight = this.getHeight();
-            final float wantedHeight = (headPose.pos.y + 0.125f) * scale;
+            final float wantedHeight = (headPose.pos.y + 0.125f * scale);
             final float deltaHeight = wantedHeight - currentHeight;
 
             if (deltaHeight <= 0) {

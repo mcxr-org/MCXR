@@ -11,6 +11,7 @@ public class ControllerPoses {
 
     private final Pose rawPhysicalPose = new Pose();
     private final Pose physicalPose = new Pose();
+    private final Pose unscaledPhysicalPose = new Pose();
     private final Pose gamePose = new Pose();
 
     /**
@@ -26,6 +27,13 @@ public class ControllerPoses {
      */
     public Pose getScaledPhysicalPose() {
         return physicalPose;
+    }
+
+    /**
+     * The rotated pose in physical space
+     */
+    public Pose getUnscaledPhysicalPose() {
+        return unscaledPhysicalPose;
     }
 
     /**
@@ -45,7 +53,10 @@ public class ControllerPoses {
 
         new Quaternionf().rotateLocalY(yawTurn).transform(physicalPose.pos);
 
+        unscaledPhysicalPose.set(physicalPose);
+
         physicalPose.pos.mul(scale);
+
         physicalPose.pos.add(MCXRPlayClient.xrOffset);
     }
 

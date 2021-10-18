@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,19 +69,21 @@ public class XrView extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns a {@link XrPosef} view of the {@code pose} field. */
+    /** @return a {@link XrPosef} view of the {@code pose} field. */
     public XrPosef pose() { return npose(address()); }
-    /** Returns a {@link XrFovf} view of the {@code fov} field. */
+    /** @return a {@link XrFovf} view of the {@code fov} field. */
     public XrFovf fov() { return nfov(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrView type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_VIEW TYPE_VIEW} value to the {@code type} field. */
+    public XrView type$Default() { return type(XR10.XR_TYPE_VIEW); }
     /** Sets the specified value to the {@code next} field. */
     public XrView next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Copies the specified {@link XrPosef} to the {@code pose} field. */
@@ -195,24 +195,13 @@ public class XrView extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrView} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrView mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrView} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrView callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrView} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrView mallocStack(MemoryStack stack) {
+    public static XrView malloc(MemoryStack stack) {
         return wrap(XrView.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -221,45 +210,27 @@ public class XrView extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrView callocStack(MemoryStack stack) {
+    public static XrView calloc(MemoryStack stack) {
         return wrap(XrView.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -321,19 +292,21 @@ public class XrView extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrView.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrView.nnext(address()); }
-        /** Returns a {@link XrPosef} view of the {@code pose} field. */
+        /** @return a {@link XrPosef} view of the {@code pose} field. */
         public XrPosef pose() { return XrView.npose(address()); }
-        /** Returns a {@link XrFovf} view of the {@code fov} field. */
+        /** @return a {@link XrFovf} view of the {@code fov} field. */
         public XrFovf fov() { return XrView.nfov(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrView.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_VIEW TYPE_VIEW} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_VIEW); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrView.nnext(address(), value); return this; }
         /** Copies the specified {@link XrPosef} to the {@code pose} field. */

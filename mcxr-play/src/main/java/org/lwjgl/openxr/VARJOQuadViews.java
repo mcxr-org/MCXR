@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The VARJO_quad_views extension. */
 public final class VARJOQuadViews {
 

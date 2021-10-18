@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The EXT_samsung_odyssey_controller extension. */
 public final class EXTSamsungOdysseyController {
 

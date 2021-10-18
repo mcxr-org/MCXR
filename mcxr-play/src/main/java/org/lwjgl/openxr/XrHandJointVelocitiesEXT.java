@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -72,21 +70,23 @@ public class XrHandJointVelocitiesEXT extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code jointCount} field. */
+    /** @return the value of the {@code jointCount} field. */
     @NativeType("uint32_t")
     public int jointCount() { return njointCount(address()); }
-    /** Returns a {@link XrHandJointVelocityEXT.Buffer} view of the struct array pointed to by the {@code jointVelocities} field. */
+    /** @return a {@link XrHandJointVelocityEXT.Buffer} view of the struct array pointed to by the {@code jointVelocities} field. */
     @NativeType("XrHandJointVelocityEXT *")
     public XrHandJointVelocityEXT.Buffer jointVelocities() { return njointVelocities(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrHandJointVelocitiesEXT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EXTHandTracking#XR_TYPE_HAND_JOINT_VELOCITIES_EXT TYPE_HAND_JOINT_VELOCITIES_EXT} value to the {@code type} field. */
+    public XrHandJointVelocitiesEXT type$Default() { return type(EXTHandTracking.XR_TYPE_HAND_JOINT_VELOCITIES_EXT); }
     /** Sets the specified value to the {@code next} field. */
     public XrHandJointVelocitiesEXT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the address of the specified {@link XrHandJointVelocityEXT.Buffer} to the {@code jointVelocities} field. */
@@ -190,24 +190,13 @@ public class XrHandJointVelocitiesEXT extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrHandJointVelocitiesEXT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrHandJointVelocitiesEXT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrHandJointVelocitiesEXT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrHandJointVelocitiesEXT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrHandJointVelocitiesEXT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandJointVelocitiesEXT mallocStack(MemoryStack stack) {
+    public static XrHandJointVelocitiesEXT malloc(MemoryStack stack) {
         return wrap(XrHandJointVelocitiesEXT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -216,45 +205,27 @@ public class XrHandJointVelocitiesEXT extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandJointVelocitiesEXT callocStack(MemoryStack stack) {
+    public static XrHandJointVelocitiesEXT calloc(MemoryStack stack) {
         return wrap(XrHandJointVelocitiesEXT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -337,21 +308,23 @@ public class XrHandJointVelocitiesEXT extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrHandJointVelocitiesEXT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrHandJointVelocitiesEXT.nnext(address()); }
-        /** Returns the value of the {@code jointCount} field. */
+        /** @return the value of the {@code jointCount} field. */
         @NativeType("uint32_t")
         public int jointCount() { return XrHandJointVelocitiesEXT.njointCount(address()); }
-        /** Returns a {@link XrHandJointVelocityEXT.Buffer} view of the struct array pointed to by the {@code jointVelocities} field. */
+        /** @return a {@link XrHandJointVelocityEXT.Buffer} view of the struct array pointed to by the {@code jointVelocities} field. */
         @NativeType("XrHandJointVelocityEXT *")
         public XrHandJointVelocityEXT.Buffer jointVelocities() { return XrHandJointVelocitiesEXT.njointVelocities(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrHandJointVelocitiesEXT.ntype(address(), value); return this; }
+        /** Sets the {@link EXTHandTracking#XR_TYPE_HAND_JOINT_VELOCITIES_EXT TYPE_HAND_JOINT_VELOCITIES_EXT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EXTHandTracking.XR_TYPE_HAND_JOINT_VELOCITIES_EXT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrHandJointVelocitiesEXT.nnext(address(), value); return this; }
         /** Sets the address of the specified {@link XrHandJointVelocityEXT.Buffer} to the {@code jointVelocities} field. */

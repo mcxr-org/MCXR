@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,19 +69,21 @@ public class XrViewConfigurationViewFovEPIC extends Struct implements NativeReso
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns a {@link XrFovf} view of the {@code recommendedFov} field. */
+    /** @return a {@link XrFovf} view of the {@code recommendedFov} field. */
     public XrFovf recommendedFov() { return nrecommendedFov(address()); }
-    /** Returns a {@link XrFovf} view of the {@code maxMutableFov} field. */
+    /** @return a {@link XrFovf} view of the {@code maxMutableFov} field. */
     public XrFovf maxMutableFov() { return nmaxMutableFov(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrViewConfigurationViewFovEPIC type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EPICViewConfigurationFov#XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC} value to the {@code type} field. */
+    public XrViewConfigurationViewFovEPIC type$Default() { return type(EPICViewConfigurationFov.XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC); }
     /** Sets the specified value to the {@code next} field. */
     public XrViewConfigurationViewFovEPIC next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Copies the specified {@link XrFovf} to the {@code recommendedFov} field. */
@@ -195,24 +195,13 @@ public class XrViewConfigurationViewFovEPIC extends Struct implements NativeReso
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrViewConfigurationViewFovEPIC} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrViewConfigurationViewFovEPIC mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrViewConfigurationViewFovEPIC} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrViewConfigurationViewFovEPIC callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrViewConfigurationViewFovEPIC} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrViewConfigurationViewFovEPIC mallocStack(MemoryStack stack) {
+    public static XrViewConfigurationViewFovEPIC malloc(MemoryStack stack) {
         return wrap(XrViewConfigurationViewFovEPIC.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -221,45 +210,27 @@ public class XrViewConfigurationViewFovEPIC extends Struct implements NativeReso
      *
      * @param stack the stack from which to allocate
      */
-    public static XrViewConfigurationViewFovEPIC callocStack(MemoryStack stack) {
+    public static XrViewConfigurationViewFovEPIC calloc(MemoryStack stack) {
         return wrap(XrViewConfigurationViewFovEPIC.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -321,19 +292,21 @@ public class XrViewConfigurationViewFovEPIC extends Struct implements NativeReso
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrViewConfigurationViewFovEPIC.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrViewConfigurationViewFovEPIC.nnext(address()); }
-        /** Returns a {@link XrFovf} view of the {@code recommendedFov} field. */
+        /** @return a {@link XrFovf} view of the {@code recommendedFov} field. */
         public XrFovf recommendedFov() { return XrViewConfigurationViewFovEPIC.nrecommendedFov(address()); }
-        /** Returns a {@link XrFovf} view of the {@code maxMutableFov} field. */
+        /** @return a {@link XrFovf} view of the {@code maxMutableFov} field. */
         public XrFovf maxMutableFov() { return XrViewConfigurationViewFovEPIC.nmaxMutableFov(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrViewConfigurationViewFovEPIC.ntype(address(), value); return this; }
+        /** Sets the {@link EPICViewConfigurationFov#XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EPICViewConfigurationFov.XR_TYPE_VIEW_CONFIGURATION_VIEW_FOV_EPIC); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrViewConfigurationViewFovEPIC.nnext(address(), value); return this; }
         /** Copies the specified {@link XrFovf} to the {@code recommendedFov} field. */

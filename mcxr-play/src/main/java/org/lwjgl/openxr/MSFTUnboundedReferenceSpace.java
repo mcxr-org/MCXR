@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The MSFT_unbounded_reference_space extension. */
 public final class MSFTUnboundedReferenceSpace {
 

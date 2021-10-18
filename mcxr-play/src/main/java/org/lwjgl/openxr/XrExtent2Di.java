@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -63,10 +61,10 @@ public class XrExtent2Di extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code width} field. */
+    /** @return the value of the {@code width} field. */
     @NativeType("int32_t")
     public int width() { return nwidth(address()); }
-    /** Returns the value of the {@code height} field. */
+    /** @return the value of the {@code height} field. */
     @NativeType("int32_t")
     public int height() { return nheight(address()); }
 
@@ -171,24 +169,13 @@ public class XrExtent2Di extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrExtent2Di} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrExtent2Di mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrExtent2Di} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrExtent2Di callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrExtent2Di} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrExtent2Di mallocStack(MemoryStack stack) {
+    public static XrExtent2Di malloc(MemoryStack stack) {
         return wrap(XrExtent2Di.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -197,45 +184,27 @@ public class XrExtent2Di extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrExtent2Di callocStack(MemoryStack stack) {
+    public static XrExtent2Di calloc(MemoryStack stack) {
         return wrap(XrExtent2Di.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -289,10 +258,10 @@ public class XrExtent2Di extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code width} field. */
+        /** @return the value of the {@code width} field. */
         @NativeType("int32_t")
         public int width() { return XrExtent2Di.nwidth(address()); }
-        /** Returns the value of the {@code height} field. */
+        /** @return the value of the {@code height} field. */
         @NativeType("int32_t")
         public int height() { return XrExtent2Di.nheight(address()); }
 

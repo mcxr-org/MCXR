@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The MND_swapchain_usage_input_attachment_bit extension. */
 public final class MNDSwapchainUsageInputAttachmentBit {
 

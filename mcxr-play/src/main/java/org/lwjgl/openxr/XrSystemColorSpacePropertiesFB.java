@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -67,18 +65,20 @@ public class XrSystemColorSpacePropertiesFB extends Struct implements NativeReso
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code colorSpace} field. */
+    /** @return the value of the {@code colorSpace} field. */
     @NativeType("XrColorSpaceFB")
     public int colorSpace() { return ncolorSpace(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSystemColorSpacePropertiesFB type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link FBColorSpace#XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB} value to the {@code type} field. */
+    public XrSystemColorSpacePropertiesFB type$Default() { return type(FBColorSpace.XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB); }
     /** Sets the specified value to the {@code next} field. */
     public XrSystemColorSpacePropertiesFB next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code colorSpace} field. */
@@ -182,24 +182,13 @@ public class XrSystemColorSpacePropertiesFB extends Struct implements NativeReso
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSystemColorSpacePropertiesFB} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSystemColorSpacePropertiesFB mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSystemColorSpacePropertiesFB} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSystemColorSpacePropertiesFB callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSystemColorSpacePropertiesFB} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemColorSpacePropertiesFB mallocStack(MemoryStack stack) {
+    public static XrSystemColorSpacePropertiesFB malloc(MemoryStack stack) {
         return wrap(XrSystemColorSpacePropertiesFB.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -208,45 +197,27 @@ public class XrSystemColorSpacePropertiesFB extends Struct implements NativeReso
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemColorSpacePropertiesFB callocStack(MemoryStack stack) {
+    public static XrSystemColorSpacePropertiesFB calloc(MemoryStack stack) {
         return wrap(XrSystemColorSpacePropertiesFB.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -304,18 +275,20 @@ public class XrSystemColorSpacePropertiesFB extends Struct implements NativeReso
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSystemColorSpacePropertiesFB.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrSystemColorSpacePropertiesFB.nnext(address()); }
-        /** Returns the value of the {@code colorSpace} field. */
+        /** @return the value of the {@code colorSpace} field. */
         @NativeType("XrColorSpaceFB")
         public int colorSpace() { return XrSystemColorSpacePropertiesFB.ncolorSpace(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSystemColorSpacePropertiesFB.ntype(address(), value); return this; }
+        /** Sets the {@link FBColorSpace#XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB} value to the {@code type} field. */
+        public Buffer type$Default() { return type(FBColorSpace.XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrSystemColorSpacePropertiesFB.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code colorSpace} field. */

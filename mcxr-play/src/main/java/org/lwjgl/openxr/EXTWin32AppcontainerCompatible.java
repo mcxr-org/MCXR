@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The EXT_win32_appcontainer_compatible extension. */
 public final class EXTWin32AppcontainerCompatible {
 

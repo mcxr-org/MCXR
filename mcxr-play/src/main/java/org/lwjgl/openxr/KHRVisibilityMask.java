@@ -5,11 +5,12 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeType;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.JNI.*;
+import static org.lwjgl.system.JNI.callPPI;
 
 /** The KHR_visibility_mask extension. */
 public class KHRVisibilityMask {

@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -88,30 +86,32 @@ public class XrCompositionLayerQuad extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code layerFlags} field. */
+    /** @return the value of the {@code layerFlags} field. */
     @NativeType("XrCompositionLayerFlags")
     public long layerFlags() { return nlayerFlags(address()); }
-    /** Returns the value of the {@code space} field. */
+    /** @return the value of the {@code space} field. */
     @NativeType("XrSpace")
     public long space() { return nspace(address()); }
-    /** Returns the value of the {@code eyeVisibility} field. */
+    /** @return the value of the {@code eyeVisibility} field. */
     @NativeType("XrEyeVisibility")
     public int eyeVisibility() { return neyeVisibility(address()); }
-    /** Returns a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
+    /** @return a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
     public XrSwapchainSubImage subImage() { return nsubImage(address()); }
-    /** Returns a {@link XrPosef} view of the {@code pose} field. */
+    /** @return a {@link XrPosef} view of the {@code pose} field. */
     public XrPosef pose() { return npose(address()); }
-    /** Returns a {@link XrExtent2Df} view of the {@code size} field. */
+    /** @return a {@link XrExtent2Df} view of the {@code size} field. */
     public XrExtent2Df size() { return nsize(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrCompositionLayerQuad type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_COMPOSITION_LAYER_QUAD TYPE_COMPOSITION_LAYER_QUAD} value to the {@code type} field. */
+    public XrCompositionLayerQuad type$Default() { return type(XR10.XR_TYPE_COMPOSITION_LAYER_QUAD); }
     /** Sets the specified value to the {@code next} field. */
     public XrCompositionLayerQuad next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code layerFlags} field. */
@@ -241,24 +241,13 @@ public class XrCompositionLayerQuad extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrCompositionLayerQuad} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrCompositionLayerQuad mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrCompositionLayerQuad} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrCompositionLayerQuad callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrCompositionLayerQuad} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerQuad mallocStack(MemoryStack stack) {
+    public static XrCompositionLayerQuad malloc(MemoryStack stack) {
         return wrap(XrCompositionLayerQuad.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -267,45 +256,27 @@ public class XrCompositionLayerQuad extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerQuad callocStack(MemoryStack stack) {
+    public static XrCompositionLayerQuad calloc(MemoryStack stack) {
         return wrap(XrCompositionLayerQuad.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -405,30 +376,32 @@ public class XrCompositionLayerQuad extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrCompositionLayerQuad.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrCompositionLayerQuad.nnext(address()); }
-        /** Returns the value of the {@code layerFlags} field. */
+        /** @return the value of the {@code layerFlags} field. */
         @NativeType("XrCompositionLayerFlags")
         public long layerFlags() { return XrCompositionLayerQuad.nlayerFlags(address()); }
-        /** Returns the value of the {@code space} field. */
+        /** @return the value of the {@code space} field. */
         @NativeType("XrSpace")
         public long space() { return XrCompositionLayerQuad.nspace(address()); }
-        /** Returns the value of the {@code eyeVisibility} field. */
+        /** @return the value of the {@code eyeVisibility} field. */
         @NativeType("XrEyeVisibility")
         public int eyeVisibility() { return XrCompositionLayerQuad.neyeVisibility(address()); }
-        /** Returns a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
+        /** @return a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
         public XrSwapchainSubImage subImage() { return XrCompositionLayerQuad.nsubImage(address()); }
-        /** Returns a {@link XrPosef} view of the {@code pose} field. */
+        /** @return a {@link XrPosef} view of the {@code pose} field. */
         public XrPosef pose() { return XrCompositionLayerQuad.npose(address()); }
-        /** Returns a {@link XrExtent2Df} view of the {@code size} field. */
+        /** @return a {@link XrExtent2Df} view of the {@code size} field. */
         public XrExtent2Df size() { return XrCompositionLayerQuad.nsize(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrCompositionLayerQuad.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_COMPOSITION_LAYER_QUAD TYPE_COMPOSITION_LAYER_QUAD} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_COMPOSITION_LAYER_QUAD); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrCompositionLayerQuad.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code layerFlags} field. */

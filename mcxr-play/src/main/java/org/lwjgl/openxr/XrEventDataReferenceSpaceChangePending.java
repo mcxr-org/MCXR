@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -84,29 +82,31 @@ public class XrEventDataReferenceSpaceChangePending extends Struct implements Na
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code session} field. */
+    /** @return the value of the {@code session} field. */
     @NativeType("XrSession")
     public long session() { return nsession(address()); }
-    /** Returns the value of the {@code referenceSpaceType} field. */
+    /** @return the value of the {@code referenceSpaceType} field. */
     @NativeType("XrReferenceSpaceType")
     public int referenceSpaceType() { return nreferenceSpaceType(address()); }
-    /** Returns the value of the {@code changeTime} field. */
+    /** @return the value of the {@code changeTime} field. */
     @NativeType("XrTime")
     public long changeTime() { return nchangeTime(address()); }
-    /** Returns the value of the {@code poseValid} field. */
+    /** @return the value of the {@code poseValid} field. */
     @NativeType("XrBool32")
     public boolean poseValid() { return nposeValid(address()) != 0; }
-    /** Returns a {@link XrPosef} view of the {@code poseInPreviousSpace} field. */
+    /** @return a {@link XrPosef} view of the {@code poseInPreviousSpace} field. */
     public XrPosef poseInPreviousSpace() { return nposeInPreviousSpace(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrEventDataReferenceSpaceChangePending type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING} value to the {@code type} field. */
+    public XrEventDataReferenceSpaceChangePending type$Default() { return type(XR10.XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING); }
     /** Sets the specified value to the {@code next} field. */
     public XrEventDataReferenceSpaceChangePending next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code session} field. */
@@ -228,24 +228,13 @@ public class XrEventDataReferenceSpaceChangePending extends Struct implements Na
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrEventDataReferenceSpaceChangePending} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrEventDataReferenceSpaceChangePending mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrEventDataReferenceSpaceChangePending} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrEventDataReferenceSpaceChangePending callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrEventDataReferenceSpaceChangePending} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrEventDataReferenceSpaceChangePending mallocStack(MemoryStack stack) {
+    public static XrEventDataReferenceSpaceChangePending malloc(MemoryStack stack) {
         return wrap(XrEventDataReferenceSpaceChangePending.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -254,45 +243,27 @@ public class XrEventDataReferenceSpaceChangePending extends Struct implements Na
      *
      * @param stack the stack from which to allocate
      */
-    public static XrEventDataReferenceSpaceChangePending callocStack(MemoryStack stack) {
+    public static XrEventDataReferenceSpaceChangePending calloc(MemoryStack stack) {
         return wrap(XrEventDataReferenceSpaceChangePending.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -387,29 +358,31 @@ public class XrEventDataReferenceSpaceChangePending extends Struct implements Na
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrEventDataReferenceSpaceChangePending.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrEventDataReferenceSpaceChangePending.nnext(address()); }
-        /** Returns the value of the {@code session} field. */
+        /** @return the value of the {@code session} field. */
         @NativeType("XrSession")
         public long session() { return XrEventDataReferenceSpaceChangePending.nsession(address()); }
-        /** Returns the value of the {@code referenceSpaceType} field. */
+        /** @return the value of the {@code referenceSpaceType} field. */
         @NativeType("XrReferenceSpaceType")
         public int referenceSpaceType() { return XrEventDataReferenceSpaceChangePending.nreferenceSpaceType(address()); }
-        /** Returns the value of the {@code changeTime} field. */
+        /** @return the value of the {@code changeTime} field. */
         @NativeType("XrTime")
         public long changeTime() { return XrEventDataReferenceSpaceChangePending.nchangeTime(address()); }
-        /** Returns the value of the {@code poseValid} field. */
+        /** @return the value of the {@code poseValid} field. */
         @NativeType("XrBool32")
         public boolean poseValid() { return XrEventDataReferenceSpaceChangePending.nposeValid(address()) != 0; }
-        /** Returns a {@link XrPosef} view of the {@code poseInPreviousSpace} field. */
+        /** @return a {@link XrPosef} view of the {@code poseInPreviousSpace} field. */
         public XrPosef poseInPreviousSpace() { return XrEventDataReferenceSpaceChangePending.nposeInPreviousSpace(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrEventDataReferenceSpaceChangePending.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrEventDataReferenceSpaceChangePending.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code session} field. */

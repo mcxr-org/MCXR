@@ -5,19 +5,20 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.NativeType;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.JNI.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 
 /** The EXT_debug_utils extension. */
 public class EXTDebugUtils {
 
     /** The extension specification version. */
-    public static final int XR_EXT_debug_utils_SPEC_VERSION = 3;
+    public static final int XR_EXT_debug_utils_SPEC_VERSION = 4;
 
     /** The extension name. */
     public static final String XR_EXT_DEBUG_UTILS_EXTENSION_NAME = "XR_EXT_debug_utils";
@@ -130,20 +131,19 @@ public class EXTDebugUtils {
 
     // --- [ xrSubmitDebugUtilsMessageEXT ] ---
 
-    public static int nxrSubmitDebugUtilsMessageEXT(XrInstance instance, long messageSeverity, long messageTypes, long callbackData) {
-        long __functionAddress = instance.getCapabilities().xrSubmitDebugUtilsMessageEXT;
-        if (CHECKS) {
-            check(__functionAddress);
-            XrDebugUtilsMessengerCallbackDataEXT.validate(callbackData);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
+//    public static int nxrSubmitDebugUtilsMessageEXT(XrInstance instance, long messageSeverity, long messageTypes, long callbackData) {
+//        long __functionAddress = instance.getCapabilities().xrSubmitDebugUtilsMessageEXT;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//            XrDebugUtilsMessengerCallbackDataEXT.validate(callbackData);
+//        }
 //        return callPJJPI(instance.address(), messageSeverity, messageTypes, callbackData, __functionAddress);
-    }
+//    }
 
-    @NativeType("XrResult")
-    public static int xrSubmitDebugUtilsMessageEXT(XrInstance instance, @NativeType("XrDebugUtilsMessageSeverityFlagsEXT") long messageSeverity, @NativeType("XrDebugUtilsMessageTypeFlagsEXT") long messageTypes, @NativeType("XrDebugUtilsMessengerCallbackDataEXT const *") XrDebugUtilsMessengerCallbackDataEXT callbackData) {
-        return nxrSubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, callbackData.address());
-    }
+//    @NativeType("XrResult")
+//    public static int xrSubmitDebugUtilsMessageEXT(XrInstance instance, @NativeType("XrDebugUtilsMessageSeverityFlagsEXT") long messageSeverity, @NativeType("XrDebugUtilsMessageTypeFlagsEXT") long messageTypes, @NativeType("XrDebugUtilsMessengerCallbackDataEXT const *") XrDebugUtilsMessengerCallbackDataEXT callbackData) {
+//        return nxrSubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, callbackData.address());
+//    }
 
     // --- [ xrSessionBeginDebugUtilsLabelRegionEXT ] ---
 

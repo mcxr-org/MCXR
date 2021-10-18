@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -64,10 +62,10 @@ public class XrBaseInStructure extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns a {@link XrBaseInStructure} view of the struct pointed to by the {@code next} field. */
+    /** @return a {@link XrBaseInStructure} view of the struct pointed to by the {@code next} field. */
     @NativeType("XrBaseInStructure *")
     public XrBaseInStructure next() { return nnext(address()); }
 
@@ -172,24 +170,13 @@ public class XrBaseInStructure extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrBaseInStructure} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrBaseInStructure mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrBaseInStructure} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrBaseInStructure callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrBaseInStructure} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrBaseInStructure mallocStack(MemoryStack stack) {
+    public static XrBaseInStructure malloc(MemoryStack stack) {
         return wrap(XrBaseInStructure.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -198,45 +185,27 @@ public class XrBaseInStructure extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrBaseInStructure callocStack(MemoryStack stack) {
+    public static XrBaseInStructure calloc(MemoryStack stack) {
         return wrap(XrBaseInStructure.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -311,10 +280,10 @@ public class XrBaseInStructure extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrBaseInStructure.ntype(address()); }
-        /** Returns a {@link XrBaseInStructure} view of the struct pointed to by the {@code next} field. */
+        /** @return a {@link XrBaseInStructure} view of the struct pointed to by the {@code next} field. */
         @NativeType("XrBaseInStructure *")
         public XrBaseInStructure next() { return XrBaseInStructure.nnext(address()); }
 

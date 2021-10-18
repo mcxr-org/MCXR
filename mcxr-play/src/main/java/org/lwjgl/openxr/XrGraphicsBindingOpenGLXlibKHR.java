@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -84,30 +82,32 @@ public class XrGraphicsBindingOpenGLXlibKHR extends Struct implements NativeReso
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code xDisplay} field. */
+    /** @return the value of the {@code xDisplay} field. */
     @NativeType("Display *")
     public long xDisplay() { return nxDisplay(address()); }
-    /** Returns the value of the {@code visualid} field. */
+    /** @return the value of the {@code visualid} field. */
     @NativeType("uint32_t")
     public int visualid() { return nvisualid(address()); }
-    /** Returns the value of the {@code glxFBConfig} field. */
+    /** @return the value of the {@code glxFBConfig} field. */
     @NativeType("GLXFBConfig")
     public long glxFBConfig() { return nglxFBConfig(address()); }
-    /** Returns the value of the {@code glxDrawable} field. */
+    /** @return the value of the {@code glxDrawable} field. */
     @NativeType("GLXDrawable")
     public long glxDrawable() { return nglxDrawable(address()); }
-    /** Returns the value of the {@code glxContext} field. */
+    /** @return the value of the {@code glxContext} field. */
     @NativeType("GLXContext")
     public long glxContext() { return nglxContext(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrGraphicsBindingOpenGLXlibKHR type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link KHROpenglEnable#XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR} value to the {@code type} field. */
+    public XrGraphicsBindingOpenGLXlibKHR type$Default() { return type(KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR); }
     /** Sets the specified value to the {@code next} field. */
     public XrGraphicsBindingOpenGLXlibKHR next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code xDisplay} field. */
@@ -227,24 +227,13 @@ public class XrGraphicsBindingOpenGLXlibKHR extends Struct implements NativeReso
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrGraphicsBindingOpenGLXlibKHR} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrGraphicsBindingOpenGLXlibKHR mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrGraphicsBindingOpenGLXlibKHR} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrGraphicsBindingOpenGLXlibKHR callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrGraphicsBindingOpenGLXlibKHR} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrGraphicsBindingOpenGLXlibKHR mallocStack(MemoryStack stack) {
+    public static XrGraphicsBindingOpenGLXlibKHR malloc(MemoryStack stack) {
         return wrap(XrGraphicsBindingOpenGLXlibKHR.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -253,45 +242,27 @@ public class XrGraphicsBindingOpenGLXlibKHR extends Struct implements NativeReso
      *
      * @param stack the stack from which to allocate
      */
-    public static XrGraphicsBindingOpenGLXlibKHR callocStack(MemoryStack stack) {
+    public static XrGraphicsBindingOpenGLXlibKHR calloc(MemoryStack stack) {
         return wrap(XrGraphicsBindingOpenGLXlibKHR.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -389,30 +360,32 @@ public class XrGraphicsBindingOpenGLXlibKHR extends Struct implements NativeReso
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrGraphicsBindingOpenGLXlibKHR.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrGraphicsBindingOpenGLXlibKHR.nnext(address()); }
-        /** Returns the value of the {@code xDisplay} field. */
+        /** @return the value of the {@code xDisplay} field. */
         @NativeType("Display *")
         public long xDisplay() { return XrGraphicsBindingOpenGLXlibKHR.nxDisplay(address()); }
-        /** Returns the value of the {@code visualid} field. */
+        /** @return the value of the {@code visualid} field. */
         @NativeType("uint32_t")
         public int visualid() { return XrGraphicsBindingOpenGLXlibKHR.nvisualid(address()); }
-        /** Returns the value of the {@code glxFBConfig} field. */
+        /** @return the value of the {@code glxFBConfig} field. */
         @NativeType("GLXFBConfig")
         public long glxFBConfig() { return XrGraphicsBindingOpenGLXlibKHR.nglxFBConfig(address()); }
-        /** Returns the value of the {@code glxDrawable} field. */
+        /** @return the value of the {@code glxDrawable} field. */
         @NativeType("GLXDrawable")
         public long glxDrawable() { return XrGraphicsBindingOpenGLXlibKHR.nglxDrawable(address()); }
-        /** Returns the value of the {@code glxContext} field. */
+        /** @return the value of the {@code glxContext} field. */
         @NativeType("GLXContext")
         public long glxContext() { return XrGraphicsBindingOpenGLXlibKHR.nglxContext(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrGraphicsBindingOpenGLXlibKHR.ntype(address(), value); return this; }
+        /** Sets the {@link KHROpenglEnable#XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR} value to the {@code type} field. */
+        public Buffer type$Default() { return type(KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrGraphicsBindingOpenGLXlibKHR.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code xDisplay} field. */

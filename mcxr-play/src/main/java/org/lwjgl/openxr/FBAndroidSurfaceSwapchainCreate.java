@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The FB_android_surface_swapchain_create extension. */
 public final class FBAndroidSurfaceSwapchainCreate {
 

@@ -67,32 +67,32 @@ public class XrRenderer {
 
     public void renderFrame() {
         try (MemoryStack stack = stackPush()) {
-            var frameState = XrFrameState.callocStack().type(XR10.XR_TYPE_FRAME_STATE);
+            var frameState = XrFrameState.calloc(stack).type(XR10.XR_TYPE_FRAME_STATE);
 
             if (isXrMode()) {
                 GLFW.glfwSwapBuffers(MinecraftClient.getInstance().getWindow().getHandle());
             }
             instance.check(XR10.xrWaitFrame(
                     session.handle,
-                    XrFrameWaitInfo.callocStack().type(XR10.XR_TYPE_FRAME_WAIT_INFO),
+                    XrFrameWaitInfo.calloc(stack).type(XR10.XR_TYPE_FRAME_WAIT_INFO),
                     frameState
             ), "xrWaitFrame");
 
             instance.check(XR10.xrBeginFrame(
                     session.handle,
-                    XrFrameBeginInfo.callocStack().type(XR10.XR_TYPE_FRAME_BEGIN_INFO)
+                    XrFrameBeginInfo.calloc(stack).type(XR10.XR_TYPE_FRAME_BEGIN_INFO)
             ), "xrBeginFrame");
 
             PointerBuffer layers = stack.callocPointer(1);
 
             if (frameState.shouldRender()) {
                 if (this.isXrMode()) {
-                    var layer = renderLayerOpenXR(frameState.predictedDisplayTime());
+                    var layer = renderLayerOpenXR(frameState.predictedDisplayTime(), stack);
                     if (layer != null) {
                         layers.put(layer.address());
                     }
                 } else {
-                    var layer = renderLayerBlankOpenXR(frameState.predictedDisplayTime());
+                    var layer = renderLayerBlankOpenXR(frameState.predictedDisplayTime(), stack);
                     layers.put(layer.address());
                 }
             }
@@ -100,7 +100,7 @@ public class XrRenderer {
 
             instance.check(XR10.xrEndFrame(
                     session.handle,
-                    XrFrameEndInfo.callocStack()
+                    XrFrameEndInfo.calloc(stack)
                             .type(XR10.XR_TYPE_FRAME_END_INFO)
                             .displayTime(frameState.predictedDisplayTime())
                             .environmentBlendMode(XR10.XR_ENVIRONMENT_BLEND_MODE_OPAQUE)
@@ -109,13 +109,13 @@ public class XrRenderer {
         }
     }
 
-    private Struct renderLayerOpenXR(long predictedDisplayTime) {
+    private Struct renderLayerOpenXR(long predictedDisplayTime, MemoryStack stack) {
 //        try (MemoryStack stack = stackPush()) {
 
-        XrViewState viewState = XrViewState.callocStack().type(XR10.XR_TYPE_VIEW_STATE);
+        XrViewState viewState = XrViewState.calloc(stack).type(XR10.XR_TYPE_VIEW_STATE);
         IntBuffer intBuf = stackCallocInt(1);
 
-        XrViewLocateInfo viewLocateInfo = XrViewLocateInfo.callocStack();
+        XrViewLocateInfo viewLocateInfo = XrViewLocateInfo.calloc(stack);
         viewLocateInfo.set(XR10.XR_TYPE_VIEW_LOCATE_INFO,
                 0,
                 session.viewConfigurationType,
@@ -132,7 +132,7 @@ public class XrRenderer {
         }
         int viewCountOutput = intBuf.get(0);
 
-        var projectionLayerViews = XrCompositionLayerProjectionView.callocStack(viewCountOutput);
+        var projectionLayerViews = XrCompositionLayerProjectionView.calloc(viewCountOutput);
 
         float scalePreTick = MCXRPlayClient.getCameraScale();
 
@@ -257,14 +257,14 @@ public class XrRenderer {
 
             instance.check(XR10.xrAcquireSwapchainImage(
                     viewSwapchain.handle,
-                    XrSwapchainImageAcquireInfo.callocStack().type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
+                    XrSwapchainImageAcquireInfo.calloc(stack).type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
                     intBuf
             ), "xrAcquireSwapchainImage");
 
             int swapchainImageIndex = intBuf.get(0);
 
             instance.check(XR10.xrWaitSwapchainImage(viewSwapchain.handle,
-                    XrSwapchainImageWaitInfo.callocStack()
+                    XrSwapchainImageWaitInfo.calloc(stack)
                             .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO)
                             .timeout(XR10.XR_INFINITE_DURATION)
             ), "xrWaitSwapchainImage");
@@ -307,7 +307,7 @@ public class XrRenderer {
 
             instance.check(XR10.xrReleaseSwapchainImage(
                     viewSwapchain.handle,
-                    XrSwapchainImageReleaseInfo.callocStack()
+                    XrSwapchainImageReleaseInfo.calloc(stack)
                             .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
             ), "xrReleaseSwapchainImage");
         }
@@ -315,45 +315,45 @@ public class XrRenderer {
         camera.setPose(MCXRPlayClient.viewSpacePoses.getGamePose());
         clientExt.postRender();
 
-        return XrCompositionLayerProjection.callocStack()
+        return XrCompositionLayerProjection.calloc(stack)
                 .type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION)
                 .space(session.xrAppSpace)
                 .views(projectionLayerViews);
 //        }
     }
 
-    private Struct renderLayerBlankOpenXR(long predictedDisplayTime) {
+    private Struct renderLayerBlankOpenXR(long predictedDisplayTime, MemoryStack stack) {
 //        try (MemoryStack stack = stackPush()) {
         IntBuffer intBuf = stackCallocInt(1);
 
         instance.check(XR10.xrLocateViews(
                 session.handle,
-                XrViewLocateInfo.callocStack().set(XR10.XR_TYPE_VIEW_LOCATE_INFO,
+                XrViewLocateInfo.calloc(stack).set(XR10.XR_TYPE_VIEW_LOCATE_INFO,
                         0,
                         session.viewConfigurationType,
                         predictedDisplayTime,
                         session.xrAppSpace
                 ),
-                XrViewState.callocStack().type(XR10.XR_TYPE_VIEW_STATE),
+                XrViewState.calloc(stack).type(XR10.XR_TYPE_VIEW_STATE),
                 intBuf,
                 session.views
         ), "xrLocateViews");
 
         int viewCountOutput = intBuf.get(0);
 
-        var projectionLayerViews = XrCompositionLayerProjectionView.callocStack(viewCountOutput);
+        var projectionLayerViews = XrCompositionLayerProjectionView.calloc(viewCountOutput);
 
         OpenXRSwapchain viewSwapchain = session.swapchains[0];
         instance.check(XR10.xrAcquireSwapchainImage(
                 viewSwapchain.handle,
-                XrSwapchainImageAcquireInfo.callocStack().type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
+                XrSwapchainImageAcquireInfo.calloc(stack).type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
                 intBuf
         ), "xrAcquireSwapchainImage");
         int swapchainImageIndex = intBuf.get(0);
 
         instance.check(XR10.xrWaitSwapchainImage(
                 viewSwapchain.handle,
-                XrSwapchainImageWaitInfo.callocStack()
+                XrSwapchainImageWaitInfo.calloc(stack)
                         .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO)
                         .timeout(XR10.XR_INFINITE_DURATION)
         ), "xrWaitSwapchainImage");
@@ -374,10 +374,10 @@ public class XrRenderer {
 
         instance.check(XR10.xrReleaseSwapchainImage(
                 viewSwapchain.handle,
-                XrSwapchainImageReleaseInfo.callocStack().type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
+                XrSwapchainImageReleaseInfo.calloc(stack).type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
         ), "xrReleaseSwapchainImage");
 
-        XrCompositionLayerProjection layer = XrCompositionLayerProjection.callocStack().type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION);
+        XrCompositionLayerProjection layer = XrCompositionLayerProjection.calloc(stack).type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION);
         layer.space(session.xrAppSpace);
         layer.views(projectionLayerViews);
         return layer;

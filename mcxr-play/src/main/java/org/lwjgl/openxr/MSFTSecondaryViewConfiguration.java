@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The MSFT_secondary_view_configuration extension. */
 public final class MSFTSecondaryViewConfiguration {
 

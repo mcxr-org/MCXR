@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -63,15 +61,17 @@ public class XrSwapchainImageAcquireInfo extends Struct implements NativeResourc
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSwapchainImageAcquireInfo type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO} value to the {@code type} field. */
+    public XrSwapchainImageAcquireInfo type$Default() { return type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO); }
     /** Sets the specified value to the {@code next} field. */
     public XrSwapchainImageAcquireInfo next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
 
@@ -171,24 +171,13 @@ public class XrSwapchainImageAcquireInfo extends Struct implements NativeResourc
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSwapchainImageAcquireInfo} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSwapchainImageAcquireInfo mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSwapchainImageAcquireInfo} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSwapchainImageAcquireInfo callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSwapchainImageAcquireInfo} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSwapchainImageAcquireInfo mallocStack(MemoryStack stack) {
+    public static XrSwapchainImageAcquireInfo malloc(MemoryStack stack) {
         return wrap(XrSwapchainImageAcquireInfo.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -197,45 +186,27 @@ public class XrSwapchainImageAcquireInfo extends Struct implements NativeResourc
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSwapchainImageAcquireInfo callocStack(MemoryStack stack) {
+    public static XrSwapchainImageAcquireInfo calloc(MemoryStack stack) {
         return wrap(XrSwapchainImageAcquireInfo.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -289,15 +260,17 @@ public class XrSwapchainImageAcquireInfo extends Struct implements NativeResourc
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSwapchainImageAcquireInfo.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrSwapchainImageAcquireInfo.nnext(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSwapchainImageAcquireInfo.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrSwapchainImageAcquireInfo.nnext(address(), value); return this; }
 

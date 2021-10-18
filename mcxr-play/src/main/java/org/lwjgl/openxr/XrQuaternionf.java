@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,13 +69,13 @@ public class XrQuaternionf extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code x} field. */
+    /** @return the value of the {@code x} field. */
     public float x() { return nx(address()); }
-    /** Returns the value of the {@code y} field. */
+    /** @return the value of the {@code y} field. */
     public float y() { return ny(address()); }
-    /** Returns the value of the {@code z} field. */
+    /** @return the value of the {@code z} field. */
     public float z() { return nz(address()); }
-    /** Returns the value of the {@code w} field. */
+    /** @return the value of the {@code w} field. */
     public float w() { return nw(address()); }
 
     /** Sets the specified value to the {@code x} field. */
@@ -189,24 +187,13 @@ public class XrQuaternionf extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrQuaternionf} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrQuaternionf mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrQuaternionf} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrQuaternionf callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrQuaternionf} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrQuaternionf mallocStack(MemoryStack stack) {
+    public static XrQuaternionf malloc(MemoryStack stack) {
         return wrap(XrQuaternionf.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -215,45 +202,27 @@ public class XrQuaternionf extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrQuaternionf callocStack(MemoryStack stack) {
+    public static XrQuaternionf calloc(MemoryStack stack) {
         return wrap(XrQuaternionf.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -315,13 +284,13 @@ public class XrQuaternionf extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code x} field. */
+        /** @return the value of the {@code x} field. */
         public float x() { return XrQuaternionf.nx(address()); }
-        /** Returns the value of the {@code y} field. */
+        /** @return the value of the {@code y} field. */
         public float y() { return XrQuaternionf.ny(address()); }
-        /** Returns the value of the {@code z} field. */
+        /** @return the value of the {@code z} field. */
         public float z() { return XrQuaternionf.nz(address()); }
-        /** Returns the value of the {@code w} field. */
+        /** @return the value of the {@code w} field. */
         public float w() { return XrQuaternionf.nw(address()); }
 
         /** Sets the specified value to the {@code x} field. */

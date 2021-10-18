@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -83,28 +81,30 @@ public class XrHandMeshMSFT extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code isActive} field. */
+    /** @return the value of the {@code isActive} field. */
     @NativeType("XrBool32")
     public boolean isActive() { return nisActive(address()) != 0; }
-    /** Returns the value of the {@code indexBufferChanged} field. */
+    /** @return the value of the {@code indexBufferChanged} field. */
     @NativeType("XrBool32")
     public boolean indexBufferChanged() { return nindexBufferChanged(address()) != 0; }
-    /** Returns the value of the {@code vertexBufferChanged} field. */
+    /** @return the value of the {@code vertexBufferChanged} field. */
     @NativeType("XrBool32")
     public boolean vertexBufferChanged() { return nvertexBufferChanged(address()) != 0; }
-    /** Returns a {@link XrHandMeshIndexBufferMSFT} view of the {@code indexBuffer} field. */
+    /** @return a {@link XrHandMeshIndexBufferMSFT} view of the {@code indexBuffer} field. */
     public XrHandMeshIndexBufferMSFT indexBuffer() { return nindexBuffer(address()); }
-    /** Returns a {@link XrHandMeshVertexBufferMSFT} view of the {@code vertexBuffer} field. */
+    /** @return a {@link XrHandMeshVertexBufferMSFT} view of the {@code vertexBuffer} field. */
     public XrHandMeshVertexBufferMSFT vertexBuffer() { return nvertexBuffer(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrHandMeshMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTHandTrackingMesh#XR_TYPE_HAND_MESH_MSFT TYPE_HAND_MESH_MSFT} value to the {@code type} field. */
+    public XrHandMeshMSFT type$Default() { return type(MSFTHandTrackingMesh.XR_TYPE_HAND_MESH_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrHandMeshMSFT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code isActive} field. */
@@ -228,24 +228,13 @@ public class XrHandMeshMSFT extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrHandMeshMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrHandMeshMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrHandMeshMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrHandMeshMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrHandMeshMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandMeshMSFT mallocStack(MemoryStack stack) {
+    public static XrHandMeshMSFT malloc(MemoryStack stack) {
         return wrap(XrHandMeshMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -254,45 +243,27 @@ public class XrHandMeshMSFT extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandMeshMSFT callocStack(MemoryStack stack) {
+    public static XrHandMeshMSFT calloc(MemoryStack stack) {
         return wrap(XrHandMeshMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -388,28 +359,30 @@ public class XrHandMeshMSFT extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrHandMeshMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrHandMeshMSFT.nnext(address()); }
-        /** Returns the value of the {@code isActive} field. */
+        /** @return the value of the {@code isActive} field. */
         @NativeType("XrBool32")
         public boolean isActive() { return XrHandMeshMSFT.nisActive(address()) != 0; }
-        /** Returns the value of the {@code indexBufferChanged} field. */
+        /** @return the value of the {@code indexBufferChanged} field. */
         @NativeType("XrBool32")
         public boolean indexBufferChanged() { return XrHandMeshMSFT.nindexBufferChanged(address()) != 0; }
-        /** Returns the value of the {@code vertexBufferChanged} field. */
+        /** @return the value of the {@code vertexBufferChanged} field. */
         @NativeType("XrBool32")
         public boolean vertexBufferChanged() { return XrHandMeshMSFT.nvertexBufferChanged(address()) != 0; }
-        /** Returns a {@link XrHandMeshIndexBufferMSFT} view of the {@code indexBuffer} field. */
+        /** @return a {@link XrHandMeshIndexBufferMSFT} view of the {@code indexBuffer} field. */
         public XrHandMeshIndexBufferMSFT indexBuffer() { return XrHandMeshMSFT.nindexBuffer(address()); }
-        /** Returns a {@link XrHandMeshVertexBufferMSFT} view of the {@code vertexBuffer} field. */
+        /** @return a {@link XrHandMeshVertexBufferMSFT} view of the {@code vertexBuffer} field. */
         public XrHandMeshVertexBufferMSFT vertexBuffer() { return XrHandMeshMSFT.nvertexBuffer(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrHandMeshMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTHandTrackingMesh#XR_TYPE_HAND_MESH_MSFT TYPE_HAND_MESH_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTHandTrackingMesh.XR_TYPE_HAND_MESH_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrHandMeshMSFT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code isActive} field. */

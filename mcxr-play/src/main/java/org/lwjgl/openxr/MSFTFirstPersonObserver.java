@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The MSFT_first_person_observer extension. */
 public final class MSFTFirstPersonObserver {
 

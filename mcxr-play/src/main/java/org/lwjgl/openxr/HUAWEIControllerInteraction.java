@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The HUAWEI_controller_interaction extension. */
 public final class HUAWEIControllerInteraction {
 

@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The MNDX_egl_enable extension. */
 public final class MNDXEglEnable {
 

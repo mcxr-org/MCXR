@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -72,20 +70,22 @@ public class XrSpatialAnchorSpaceCreateInfoMSFT extends Struct implements Native
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code anchor} field. */
+    /** @return the value of the {@code anchor} field. */
     @NativeType("XrSpatialAnchorMSFT")
     public long anchor() { return nanchor(address()); }
-    /** Returns a {@link XrPosef} view of the {@code poseInAnchorSpace} field. */
+    /** @return a {@link XrPosef} view of the {@code poseInAnchorSpace} field. */
     public XrPosef poseInAnchorSpace() { return nposeInAnchorSpace(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSpatialAnchorSpaceCreateInfoMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTSpatialAnchor#XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT} value to the {@code type} field. */
+    public XrSpatialAnchorSpaceCreateInfoMSFT type$Default() { return type(MSFTSpatialAnchor.XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrSpatialAnchorSpaceCreateInfoMSFT next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code anchor} field. */
@@ -195,24 +195,13 @@ public class XrSpatialAnchorSpaceCreateInfoMSFT extends Struct implements Native
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSpatialAnchorSpaceCreateInfoMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSpatialAnchorSpaceCreateInfoMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSpatialAnchorSpaceCreateInfoMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSpatialAnchorSpaceCreateInfoMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSpatialAnchorSpaceCreateInfoMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSpatialAnchorSpaceCreateInfoMSFT mallocStack(MemoryStack stack) {
+    public static XrSpatialAnchorSpaceCreateInfoMSFT malloc(MemoryStack stack) {
         return wrap(XrSpatialAnchorSpaceCreateInfoMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -221,45 +210,27 @@ public class XrSpatialAnchorSpaceCreateInfoMSFT extends Struct implements Native
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSpatialAnchorSpaceCreateInfoMSFT callocStack(MemoryStack stack) {
+    public static XrSpatialAnchorSpaceCreateInfoMSFT calloc(MemoryStack stack) {
         return wrap(XrSpatialAnchorSpaceCreateInfoMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -342,20 +313,22 @@ public class XrSpatialAnchorSpaceCreateInfoMSFT extends Struct implements Native
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSpatialAnchorSpaceCreateInfoMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrSpatialAnchorSpaceCreateInfoMSFT.nnext(address()); }
-        /** Returns the value of the {@code anchor} field. */
+        /** @return the value of the {@code anchor} field. */
         @NativeType("XrSpatialAnchorMSFT")
         public long anchor() { return XrSpatialAnchorSpaceCreateInfoMSFT.nanchor(address()); }
-        /** Returns a {@link XrPosef} view of the {@code poseInAnchorSpace} field. */
+        /** @return a {@link XrPosef} view of the {@code poseInAnchorSpace} field. */
         public XrPosef poseInAnchorSpace() { return XrSpatialAnchorSpaceCreateInfoMSFT.nposeInAnchorSpace(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSpatialAnchorSpaceCreateInfoMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTSpatialAnchor#XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTSpatialAnchor.XR_TYPE_SPATIAL_ANCHOR_SPACE_CREATE_INFO_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrSpatialAnchorSpaceCreateInfoMSFT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code anchor} field. */

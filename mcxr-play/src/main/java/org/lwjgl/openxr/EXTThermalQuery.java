@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeType;
 
 import java.nio.FloatBuffer;
@@ -12,14 +13,14 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
+import static org.lwjgl.system.JNI.callPPPPI;
 import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.JNI.*;
 
 /** The EXT_thermal_query extension. */
 public class EXTThermalQuery {
 
     /** The extension specification version. */
-    public static final int XR_EXT_thermal_query_SPEC_VERSION = 1;
+    public static final int XR_EXT_thermal_query_SPEC_VERSION = 2;
 
     /** The extension name. */
     public static final String XR_EXT_THERMAL_QUERY_EXTENSION_NAME = "XR_EXT_thermal_query";
@@ -49,17 +50,16 @@ public class EXTThermalQuery {
     }
 
     /** Array version of: {@link #xrThermalGetTemperatureTrendEXT ThermalGetTemperatureTrendEXT} */
-    @NativeType("XrResult")
-    public static int xrThermalGetTemperatureTrendEXT(XrSession session, @NativeType("XrPerfSettingsDomainEXT") int domain, @NativeType("XrPerfSettingsNotificationLevelEXT *") int[] notificationLevel, @NativeType("float *") float[] tempHeadroom, @NativeType("float *") float[] tempSlope) {
-        long __functionAddress = session.getCapabilities().xrThermalGetTemperatureTrendEXT;
-        if (CHECKS) {
-            check(__functionAddress);
-            check(notificationLevel, 1);
-            check(tempHeadroom, 1);
-            check(tempSlope, 1);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPPPPI(session.address(), domain, notificationLevel, tempHeadroom, tempSlope, __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrThermalGetTemperatureTrendEXT(XrSession session, @NativeType("XrPerfSettingsDomainEXT") int domain, @NativeType("XrPerfSettingsNotificationLevelEXT *") int[] notificationLevel, @NativeType("float *") float[] tempHeadroom, @NativeType("float *") float[] tempSlope) {
+//        long __functionAddress = session.getCapabilities().xrThermalGetTemperatureTrendEXT;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//            check(notificationLevel, 1);
+//            check(tempHeadroom, 1);
+//            check(tempSlope, 1);
+//        }
+//        return callPPPPI(session.address(), domain, notificationLevel, tempHeadroom, tempSlope, __functionAddress);
+//    }
 
 }

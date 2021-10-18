@@ -6,15 +6,14 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.openxr.XR10.*;
+import static org.lwjgl.openxr.XR10.XR_MAX_APPLICATION_NAME_SIZE;
+import static org.lwjgl.openxr.XR10.XR_MAX_ENGINE_NAME_SIZE;
 import static org.lwjgl.system.Checks.*;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -77,25 +76,25 @@ public class XrApplicationInfo extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns a {@link ByteBuffer} view of the {@code applicationName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code applicationName} field. */
     @NativeType("char[XR_MAX_APPLICATION_NAME_SIZE]")
     public ByteBuffer applicationName() { return napplicationName(address()); }
-    /** Decodes the null-terminated string stored in the {@code applicationName} field. */
+    /** @return the null-terminated string stored in the {@code applicationName} field. */
     @NativeType("char[XR_MAX_APPLICATION_NAME_SIZE]")
     public String applicationNameString() { return napplicationNameString(address()); }
-    /** Returns the value of the {@code applicationVersion} field. */
+    /** @return the value of the {@code applicationVersion} field. */
     @NativeType("uint32_t")
     public int applicationVersion() { return napplicationVersion(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code engineName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code engineName} field. */
     @NativeType("char[XR_MAX_ENGINE_NAME_SIZE]")
     public ByteBuffer engineName() { return nengineName(address()); }
-    /** Decodes the null-terminated string stored in the {@code engineName} field. */
+    /** @return the null-terminated string stored in the {@code engineName} field. */
     @NativeType("char[XR_MAX_ENGINE_NAME_SIZE]")
     public String engineNameString() { return nengineNameString(address()); }
-    /** Returns the value of the {@code engineVersion} field. */
+    /** @return the value of the {@code engineVersion} field. */
     @NativeType("uint32_t")
     public int engineVersion() { return nengineVersion(address()); }
-    /** Returns the value of the {@code apiVersion} field. */
+    /** @return the value of the {@code apiVersion} field. */
     @NativeType("XrVersion")
     public long apiVersion() { return napiVersion(address()); }
 
@@ -212,24 +211,13 @@ public class XrApplicationInfo extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrApplicationInfo} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrApplicationInfo mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrApplicationInfo} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrApplicationInfo callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrApplicationInfo} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrApplicationInfo mallocStack(MemoryStack stack) {
+    public static XrApplicationInfo malloc(MemoryStack stack) {
         return wrap(XrApplicationInfo.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -238,45 +226,27 @@ public class XrApplicationInfo extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrApplicationInfo callocStack(MemoryStack stack) {
+    public static XrApplicationInfo calloc(MemoryStack stack) {
         return wrap(XrApplicationInfo.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -358,25 +328,25 @@ public class XrApplicationInfo extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns a {@link ByteBuffer} view of the {@code applicationName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code applicationName} field. */
         @NativeType("char[XR_MAX_APPLICATION_NAME_SIZE]")
         public ByteBuffer applicationName() { return XrApplicationInfo.napplicationName(address()); }
-        /** Decodes the null-terminated string stored in the {@code applicationName} field. */
+        /** @return the null-terminated string stored in the {@code applicationName} field. */
         @NativeType("char[XR_MAX_APPLICATION_NAME_SIZE]")
         public String applicationNameString() { return XrApplicationInfo.napplicationNameString(address()); }
-        /** Returns the value of the {@code applicationVersion} field. */
+        /** @return the value of the {@code applicationVersion} field. */
         @NativeType("uint32_t")
         public int applicationVersion() { return XrApplicationInfo.napplicationVersion(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code engineName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code engineName} field. */
         @NativeType("char[XR_MAX_ENGINE_NAME_SIZE]")
         public ByteBuffer engineName() { return XrApplicationInfo.nengineName(address()); }
-        /** Decodes the null-terminated string stored in the {@code engineName} field. */
+        /** @return the null-terminated string stored in the {@code engineName} field. */
         @NativeType("char[XR_MAX_ENGINE_NAME_SIZE]")
         public String engineNameString() { return XrApplicationInfo.nengineNameString(address()); }
-        /** Returns the value of the {@code engineVersion} field. */
+        /** @return the value of the {@code engineVersion} field. */
         @NativeType("uint32_t")
         public int engineVersion() { return XrApplicationInfo.nengineVersion(address()); }
-        /** Returns the value of the {@code apiVersion} field. */
+        /** @return the value of the {@code apiVersion} field. */
         @NativeType("XrVersion")
         public long apiVersion() { return XrApplicationInfo.napiVersion(address()); }
 

@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,21 +69,23 @@ public class XrEventDataMainSessionVisibilityChangedEXTX extends Struct implemen
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code visible} field. */
+    /** @return the value of the {@code visible} field. */
     @NativeType("XrBool32")
     public boolean visible() { return nvisible(address()) != 0; }
-    /** Returns the value of the {@code flags} field. */
+    /** @return the value of the {@code flags} field. */
     @NativeType("XrOverlayMainSessionFlagsEXTX")
     public long flags() { return nflags(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrEventDataMainSessionVisibilityChangedEXTX type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EXTXOverlay#XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX} value to the {@code type} field. */
+    public XrEventDataMainSessionVisibilityChangedEXTX type$Default() { return type(EXTXOverlay.XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX); }
     /** Sets the specified value to the {@code next} field. */
     public XrEventDataMainSessionVisibilityChangedEXTX next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code visible} field. */
@@ -193,24 +193,13 @@ public class XrEventDataMainSessionVisibilityChangedEXTX extends Struct implemen
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrEventDataMainSessionVisibilityChangedEXTX} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrEventDataMainSessionVisibilityChangedEXTX mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrEventDataMainSessionVisibilityChangedEXTX} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrEventDataMainSessionVisibilityChangedEXTX callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrEventDataMainSessionVisibilityChangedEXTX} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrEventDataMainSessionVisibilityChangedEXTX mallocStack(MemoryStack stack) {
+    public static XrEventDataMainSessionVisibilityChangedEXTX malloc(MemoryStack stack) {
         return wrap(XrEventDataMainSessionVisibilityChangedEXTX.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -219,45 +208,27 @@ public class XrEventDataMainSessionVisibilityChangedEXTX extends Struct implemen
      *
      * @param stack the stack from which to allocate
      */
-    public static XrEventDataMainSessionVisibilityChangedEXTX callocStack(MemoryStack stack) {
+    public static XrEventDataMainSessionVisibilityChangedEXTX calloc(MemoryStack stack) {
         return wrap(XrEventDataMainSessionVisibilityChangedEXTX.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -319,21 +290,23 @@ public class XrEventDataMainSessionVisibilityChangedEXTX extends Struct implemen
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrEventDataMainSessionVisibilityChangedEXTX.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrEventDataMainSessionVisibilityChangedEXTX.nnext(address()); }
-        /** Returns the value of the {@code visible} field. */
+        /** @return the value of the {@code visible} field. */
         @NativeType("XrBool32")
         public boolean visible() { return XrEventDataMainSessionVisibilityChangedEXTX.nvisible(address()) != 0; }
-        /** Returns the value of the {@code flags} field. */
+        /** @return the value of the {@code flags} field. */
         @NativeType("XrOverlayMainSessionFlagsEXTX")
         public long flags() { return XrEventDataMainSessionVisibilityChangedEXTX.nflags(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrEventDataMainSessionVisibilityChangedEXTX.ntype(address(), value); return this; }
+        /** Sets the {@link EXTXOverlay#XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EXTXOverlay.XR_TYPE_EVENT_DATA_MAIN_SESSION_VISIBILITY_CHANGED_EXTX); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrEventDataMainSessionVisibilityChangedEXTX.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code visible} field. */

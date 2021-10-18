@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
@@ -14,7 +13,6 @@ import org.lwjgl.system.*;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -89,34 +87,36 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code createFlags} field. */
+    /** @return the value of the {@code createFlags} field. */
     @NativeType("XrInstanceCreateFlags")
     public long createFlags() { return ncreateFlags(address()); }
-    /** Returns a {@link XrApplicationInfo} view of the {@code applicationInfo} field. */
+    /** @return a {@link XrApplicationInfo} view of the {@code applicationInfo} field. */
     public XrApplicationInfo applicationInfo() { return napplicationInfo(address()); }
-    /** Returns the value of the {@code enabledApiLayerCount} field. */
+    /** @return the value of the {@code enabledApiLayerCount} field. */
     @NativeType("uint32_t")
     public int enabledApiLayerCount() { return nenabledApiLayerCount(address()); }
-    /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code enabledApiLayerNames} field. */
+    /** @return a {@link PointerBuffer} view of the data pointed to by the {@code enabledApiLayerNames} field. */
     @Nullable
     @NativeType("char const * const *")
     public PointerBuffer enabledApiLayerNames() { return nenabledApiLayerNames(address()); }
-    /** Returns the value of the {@code enabledExtensionCount} field. */
+    /** @return the value of the {@code enabledExtensionCount} field. */
     @NativeType("uint32_t")
     public int enabledExtensionCount() { return nenabledExtensionCount(address()); }
-    /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code enabledExtensionNames} field. */
+    /** @return a {@link PointerBuffer} view of the data pointed to by the {@code enabledExtensionNames} field. */
     @Nullable
     @NativeType("char const * const *")
     public PointerBuffer enabledExtensionNames() { return nenabledExtensionNames(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrInstanceCreateInfo type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_INSTANCE_CREATE_INFO TYPE_INSTANCE_CREATE_INFO} value to the {@code type} field. */
+    public XrInstanceCreateInfo type$Default() { return type(XR10.XR_TYPE_INSTANCE_CREATE_INFO); }
     /** Sets the specified value to the {@code next} field. */
     public XrInstanceCreateInfo next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code createFlags} field. */
@@ -234,24 +234,13 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrInstanceCreateInfo} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrInstanceCreateInfo mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrInstanceCreateInfo} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrInstanceCreateInfo callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrInstanceCreateInfo} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrInstanceCreateInfo mallocStack(MemoryStack stack) {
+    public static XrInstanceCreateInfo malloc(MemoryStack stack) {
         return wrap(XrInstanceCreateInfo.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -260,45 +249,27 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrInstanceCreateInfo callocStack(MemoryStack stack) {
+    public static XrInstanceCreateInfo calloc(MemoryStack stack) {
         return wrap(XrInstanceCreateInfo.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -402,34 +373,36 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrInstanceCreateInfo.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrInstanceCreateInfo.nnext(address()); }
-        /** Returns the value of the {@code createFlags} field. */
+        /** @return the value of the {@code createFlags} field. */
         @NativeType("XrInstanceCreateFlags")
         public long createFlags() { return XrInstanceCreateInfo.ncreateFlags(address()); }
-        /** Returns a {@link XrApplicationInfo} view of the {@code applicationInfo} field. */
+        /** @return a {@link XrApplicationInfo} view of the {@code applicationInfo} field. */
         public XrApplicationInfo applicationInfo() { return XrInstanceCreateInfo.napplicationInfo(address()); }
-        /** Returns the value of the {@code enabledApiLayerCount} field. */
+        /** @return the value of the {@code enabledApiLayerCount} field. */
         @NativeType("uint32_t")
         public int enabledApiLayerCount() { return XrInstanceCreateInfo.nenabledApiLayerCount(address()); }
-        /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code enabledApiLayerNames} field. */
+        /** @return a {@link PointerBuffer} view of the data pointed to by the {@code enabledApiLayerNames} field. */
         @Nullable
         @NativeType("char const * const *")
         public PointerBuffer enabledApiLayerNames() { return XrInstanceCreateInfo.nenabledApiLayerNames(address()); }
-        /** Returns the value of the {@code enabledExtensionCount} field. */
+        /** @return the value of the {@code enabledExtensionCount} field. */
         @NativeType("uint32_t")
         public int enabledExtensionCount() { return XrInstanceCreateInfo.nenabledExtensionCount(address()); }
-        /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code enabledExtensionNames} field. */
+        /** @return a {@link PointerBuffer} view of the data pointed to by the {@code enabledExtensionNames} field. */
         @Nullable
         @NativeType("char const * const *")
         public PointerBuffer enabledExtensionNames() { return XrInstanceCreateInfo.nenabledExtensionNames(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrInstanceCreateInfo.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_INSTANCE_CREATE_INFO TYPE_INSTANCE_CREATE_INFO} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_INSTANCE_CREATE_INFO); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrInstanceCreateInfo.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code createFlags} field. */

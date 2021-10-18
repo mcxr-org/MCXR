@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -100,36 +98,38 @@ public class XrCompositionLayerEquirect2KHR extends Struct implements NativeReso
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code layerFlags} field. */
+    /** @return the value of the {@code layerFlags} field. */
     @NativeType("XrCompositionLayerFlags")
     public long layerFlags() { return nlayerFlags(address()); }
-    /** Returns the value of the {@code space} field. */
+    /** @return the value of the {@code space} field. */
     @NativeType("XrSpace")
     public long space() { return nspace(address()); }
-    /** Returns the value of the {@code eyeVisibility} field. */
+    /** @return the value of the {@code eyeVisibility} field. */
     @NativeType("XrEyeVisibility")
     public int eyeVisibility() { return neyeVisibility(address()); }
-    /** Returns a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
+    /** @return a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
     public XrSwapchainSubImage subImage() { return nsubImage(address()); }
-    /** Returns a {@link XrPosef} view of the {@code pose} field. */
+    /** @return a {@link XrPosef} view of the {@code pose} field. */
     public XrPosef pose() { return npose(address()); }
-    /** Returns the value of the {@code radius} field. */
+    /** @return the value of the {@code radius} field. */
     public float radius() { return nradius(address()); }
-    /** Returns the value of the {@code centralHorizontalAngle} field. */
+    /** @return the value of the {@code centralHorizontalAngle} field. */
     public float centralHorizontalAngle() { return ncentralHorizontalAngle(address()); }
-    /** Returns the value of the {@code upperVerticalAngle} field. */
+    /** @return the value of the {@code upperVerticalAngle} field. */
     public float upperVerticalAngle() { return nupperVerticalAngle(address()); }
-    /** Returns the value of the {@code lowerVerticalAngle} field. */
+    /** @return the value of the {@code lowerVerticalAngle} field. */
     public float lowerVerticalAngle() { return nlowerVerticalAngle(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrCompositionLayerEquirect2KHR type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link KHRCompositionLayerEquirect2#XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR} value to the {@code type} field. */
+    public XrCompositionLayerEquirect2KHR type$Default() { return type(KHRCompositionLayerEquirect2.XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR); }
     /** Sets the specified value to the {@code next} field. */
     public XrCompositionLayerEquirect2KHR next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code layerFlags} field. */
@@ -269,24 +269,13 @@ public class XrCompositionLayerEquirect2KHR extends Struct implements NativeReso
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrCompositionLayerEquirect2KHR} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrCompositionLayerEquirect2KHR mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrCompositionLayerEquirect2KHR} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrCompositionLayerEquirect2KHR callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrCompositionLayerEquirect2KHR} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerEquirect2KHR mallocStack(MemoryStack stack) {
+    public static XrCompositionLayerEquirect2KHR malloc(MemoryStack stack) {
         return wrap(XrCompositionLayerEquirect2KHR.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -295,45 +284,27 @@ public class XrCompositionLayerEquirect2KHR extends Struct implements NativeReso
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerEquirect2KHR callocStack(MemoryStack stack) {
+    public static XrCompositionLayerEquirect2KHR calloc(MemoryStack stack) {
         return wrap(XrCompositionLayerEquirect2KHR.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -445,36 +416,38 @@ public class XrCompositionLayerEquirect2KHR extends Struct implements NativeReso
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrCompositionLayerEquirect2KHR.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrCompositionLayerEquirect2KHR.nnext(address()); }
-        /** Returns the value of the {@code layerFlags} field. */
+        /** @return the value of the {@code layerFlags} field. */
         @NativeType("XrCompositionLayerFlags")
         public long layerFlags() { return XrCompositionLayerEquirect2KHR.nlayerFlags(address()); }
-        /** Returns the value of the {@code space} field. */
+        /** @return the value of the {@code space} field. */
         @NativeType("XrSpace")
         public long space() { return XrCompositionLayerEquirect2KHR.nspace(address()); }
-        /** Returns the value of the {@code eyeVisibility} field. */
+        /** @return the value of the {@code eyeVisibility} field. */
         @NativeType("XrEyeVisibility")
         public int eyeVisibility() { return XrCompositionLayerEquirect2KHR.neyeVisibility(address()); }
-        /** Returns a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
+        /** @return a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
         public XrSwapchainSubImage subImage() { return XrCompositionLayerEquirect2KHR.nsubImage(address()); }
-        /** Returns a {@link XrPosef} view of the {@code pose} field. */
+        /** @return a {@link XrPosef} view of the {@code pose} field. */
         public XrPosef pose() { return XrCompositionLayerEquirect2KHR.npose(address()); }
-        /** Returns the value of the {@code radius} field. */
+        /** @return the value of the {@code radius} field. */
         public float radius() { return XrCompositionLayerEquirect2KHR.nradius(address()); }
-        /** Returns the value of the {@code centralHorizontalAngle} field. */
+        /** @return the value of the {@code centralHorizontalAngle} field. */
         public float centralHorizontalAngle() { return XrCompositionLayerEquirect2KHR.ncentralHorizontalAngle(address()); }
-        /** Returns the value of the {@code upperVerticalAngle} field. */
+        /** @return the value of the {@code upperVerticalAngle} field. */
         public float upperVerticalAngle() { return XrCompositionLayerEquirect2KHR.nupperVerticalAngle(address()); }
-        /** Returns the value of the {@code lowerVerticalAngle} field. */
+        /** @return the value of the {@code lowerVerticalAngle} field. */
         public float lowerVerticalAngle() { return XrCompositionLayerEquirect2KHR.nlowerVerticalAngle(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrCompositionLayerEquirect2KHR.ntype(address(), value); return this; }
+        /** Sets the {@link KHRCompositionLayerEquirect2#XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR} value to the {@code type} field. */
+        public Buffer type$Default() { return type(KHRCompositionLayerEquirect2.XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrCompositionLayerEquirect2KHR.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code layerFlags} field. */

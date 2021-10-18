@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The EXT_view_configuration_depth_range extension. */
 public final class EXTViewConfigurationDepthRange {
 

@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The KHR_composition_layer_equirect2 extension. */
 public final class KHRCompositionLayerEquirect2 {
 

@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The KHR_composition_layer_depth extension. */
 public final class KHRCompositionLayerDepth {
 

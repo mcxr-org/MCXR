@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -72,21 +70,23 @@ public class XrInstanceCreateInfoAndroidKHR extends Struct implements NativeReso
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code applicationVM} field. */
+    /** @return the value of the {@code applicationVM} field. */
     @NativeType("void *")
     public long applicationVM() { return napplicationVM(address()); }
-    /** Returns the value of the {@code applicationActivity} field. */
+    /** @return the value of the {@code applicationActivity} field. */
     @NativeType("void *")
     public long applicationActivity() { return napplicationActivity(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrInstanceCreateInfoAndroidKHR type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link KHRAndroidCreateInstance#XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR} value to the {@code type} field. */
+    public XrInstanceCreateInfoAndroidKHR type$Default() { return type(KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR); }
     /** Sets the specified value to the {@code next} field. */
     public XrInstanceCreateInfoAndroidKHR next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code applicationVM} field. */
@@ -194,24 +194,13 @@ public class XrInstanceCreateInfoAndroidKHR extends Struct implements NativeReso
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrInstanceCreateInfoAndroidKHR} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrInstanceCreateInfoAndroidKHR mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrInstanceCreateInfoAndroidKHR} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrInstanceCreateInfoAndroidKHR callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrInstanceCreateInfoAndroidKHR} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrInstanceCreateInfoAndroidKHR mallocStack(MemoryStack stack) {
+    public static XrInstanceCreateInfoAndroidKHR malloc(MemoryStack stack) {
         return wrap(XrInstanceCreateInfoAndroidKHR.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -220,45 +209,27 @@ public class XrInstanceCreateInfoAndroidKHR extends Struct implements NativeReso
      *
      * @param stack the stack from which to allocate
      */
-    public static XrInstanceCreateInfoAndroidKHR callocStack(MemoryStack stack) {
+    public static XrInstanceCreateInfoAndroidKHR calloc(MemoryStack stack) {
         return wrap(XrInstanceCreateInfoAndroidKHR.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -342,21 +313,23 @@ public class XrInstanceCreateInfoAndroidKHR extends Struct implements NativeReso
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrInstanceCreateInfoAndroidKHR.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrInstanceCreateInfoAndroidKHR.nnext(address()); }
-        /** Returns the value of the {@code applicationVM} field. */
+        /** @return the value of the {@code applicationVM} field. */
         @NativeType("void *")
         public long applicationVM() { return XrInstanceCreateInfoAndroidKHR.napplicationVM(address()); }
-        /** Returns the value of the {@code applicationActivity} field. */
+        /** @return the value of the {@code applicationActivity} field. */
         @NativeType("void *")
         public long applicationActivity() { return XrInstanceCreateInfoAndroidKHR.napplicationActivity(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrInstanceCreateInfoAndroidKHR.ntype(address(), value); return this; }
+        /** Sets the {@link KHRAndroidCreateInstance#XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR} value to the {@code type} field. */
+        public Buffer type$Default() { return type(KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrInstanceCreateInfoAndroidKHR.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code applicationVM} field. */

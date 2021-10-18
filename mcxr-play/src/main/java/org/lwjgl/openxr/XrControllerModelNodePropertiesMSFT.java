@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
@@ -14,7 +13,6 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.openxr.MSFTControllerModel.XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT;
 import static org.lwjgl.system.Checks.*;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -73,27 +71,29 @@ public class XrControllerModelNodePropertiesMSFT extends Struct implements Nativ
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code parentNodeName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code parentNodeName} field. */
     @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
     public ByteBuffer parentNodeName() { return nparentNodeName(address()); }
-    /** Decodes the null-terminated string stored in the {@code parentNodeName} field. */
+    /** @return the null-terminated string stored in the {@code parentNodeName} field. */
     @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
     public String parentNodeNameString() { return nparentNodeNameString(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code nodeName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code nodeName} field. */
     @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
     public ByteBuffer nodeName() { return nnodeName(address()); }
-    /** Decodes the null-terminated string stored in the {@code nodeName} field. */
+    /** @return the null-terminated string stored in the {@code nodeName} field. */
     @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
     public String nodeNameString() { return nnodeNameString(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrControllerModelNodePropertiesMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTControllerModel#XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT} value to the {@code type} field. */
+    public XrControllerModelNodePropertiesMSFT type$Default() { return type(MSFTControllerModel.XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrControllerModelNodePropertiesMSFT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Copies the specified encoded string to the {@code parentNodeName} field. */
@@ -201,24 +201,13 @@ public class XrControllerModelNodePropertiesMSFT extends Struct implements Nativ
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrControllerModelNodePropertiesMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrControllerModelNodePropertiesMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrControllerModelNodePropertiesMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrControllerModelNodePropertiesMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrControllerModelNodePropertiesMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrControllerModelNodePropertiesMSFT mallocStack(MemoryStack stack) {
+    public static XrControllerModelNodePropertiesMSFT malloc(MemoryStack stack) {
         return wrap(XrControllerModelNodePropertiesMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -227,45 +216,27 @@ public class XrControllerModelNodePropertiesMSFT extends Struct implements Nativ
      *
      * @param stack the stack from which to allocate
      */
-    public static XrControllerModelNodePropertiesMSFT callocStack(MemoryStack stack) {
+    public static XrControllerModelNodePropertiesMSFT calloc(MemoryStack stack) {
         return wrap(XrControllerModelNodePropertiesMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -343,27 +314,29 @@ public class XrControllerModelNodePropertiesMSFT extends Struct implements Nativ
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrControllerModelNodePropertiesMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrControllerModelNodePropertiesMSFT.nnext(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code parentNodeName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code parentNodeName} field. */
         @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
         public ByteBuffer parentNodeName() { return XrControllerModelNodePropertiesMSFT.nparentNodeName(address()); }
-        /** Decodes the null-terminated string stored in the {@code parentNodeName} field. */
+        /** @return the null-terminated string stored in the {@code parentNodeName} field. */
         @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
         public String parentNodeNameString() { return XrControllerModelNodePropertiesMSFT.nparentNodeNameString(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code nodeName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code nodeName} field. */
         @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
         public ByteBuffer nodeName() { return XrControllerModelNodePropertiesMSFT.nnodeName(address()); }
-        /** Decodes the null-terminated string stored in the {@code nodeName} field. */
+        /** @return the null-terminated string stored in the {@code nodeName} field. */
         @NativeType("char[XR_MAX_CONTROLLER_MODEL_NODE_NAME_SIZE_MSFT]")
         public String nodeNameString() { return XrControllerModelNodePropertiesMSFT.nnodeNameString(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrControllerModelNodePropertiesMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTControllerModel#XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTControllerModel.XR_TYPE_CONTROLLER_MODEL_NODE_PROPERTIES_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrControllerModelNodePropertiesMSFT.nnext(address(), value); return this; }
         /** Copies the specified encoded string to the {@code parentNodeName} field. */

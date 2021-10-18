@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -67,18 +65,20 @@ public class XrSystemHandTrackingPropertiesEXT extends Struct implements NativeR
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code supportsHandTracking} field. */
+    /** @return the value of the {@code supportsHandTracking} field. */
     @NativeType("XrBool32")
     public boolean supportsHandTracking() { return nsupportsHandTracking(address()) != 0; }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSystemHandTrackingPropertiesEXT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EXTHandTracking#XR_TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT} value to the {@code type} field. */
+    public XrSystemHandTrackingPropertiesEXT type$Default() { return type(EXTHandTracking.XR_TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT); }
     /** Sets the specified value to the {@code next} field. */
     public XrSystemHandTrackingPropertiesEXT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code supportsHandTracking} field. */
@@ -182,24 +182,13 @@ public class XrSystemHandTrackingPropertiesEXT extends Struct implements NativeR
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSystemHandTrackingPropertiesEXT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSystemHandTrackingPropertiesEXT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSystemHandTrackingPropertiesEXT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSystemHandTrackingPropertiesEXT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSystemHandTrackingPropertiesEXT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemHandTrackingPropertiesEXT mallocStack(MemoryStack stack) {
+    public static XrSystemHandTrackingPropertiesEXT malloc(MemoryStack stack) {
         return wrap(XrSystemHandTrackingPropertiesEXT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -208,45 +197,27 @@ public class XrSystemHandTrackingPropertiesEXT extends Struct implements NativeR
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemHandTrackingPropertiesEXT callocStack(MemoryStack stack) {
+    public static XrSystemHandTrackingPropertiesEXT calloc(MemoryStack stack) {
         return wrap(XrSystemHandTrackingPropertiesEXT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -304,18 +275,20 @@ public class XrSystemHandTrackingPropertiesEXT extends Struct implements NativeR
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSystemHandTrackingPropertiesEXT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrSystemHandTrackingPropertiesEXT.nnext(address()); }
-        /** Returns the value of the {@code supportsHandTracking} field. */
+        /** @return the value of the {@code supportsHandTracking} field. */
         @NativeType("XrBool32")
         public boolean supportsHandTracking() { return XrSystemHandTrackingPropertiesEXT.nsupportsHandTracking(address()) != 0; }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSystemHandTrackingPropertiesEXT.ntype(address(), value); return this; }
+        /** Sets the {@link EXTHandTracking#XR_TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EXTHandTracking.XR_TYPE_SYSTEM_HAND_TRACKING_PROPERTIES_EXT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrSystemHandTrackingPropertiesEXT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code supportsHandTracking} field. */

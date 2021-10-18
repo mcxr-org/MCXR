@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -76,24 +74,26 @@ public class XrInteractionProfileSuggestedBinding extends Struct implements Nati
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code interactionProfile} field. */
+    /** @return the value of the {@code interactionProfile} field. */
     @NativeType("XrPath")
     public long interactionProfile() { return ninteractionProfile(address()); }
-    /** Returns the value of the {@code countSuggestedBindings} field. */
+    /** @return the value of the {@code countSuggestedBindings} field. */
     @NativeType("uint32_t")
     public int countSuggestedBindings() { return ncountSuggestedBindings(address()); }
-    /** Returns a {@link XrActionSuggestedBinding.Buffer} view of the struct array pointed to by the {@code suggestedBindings} field. */
+    /** @return a {@link XrActionSuggestedBinding.Buffer} view of the struct array pointed to by the {@code suggestedBindings} field. */
     @NativeType("XrActionSuggestedBinding const *")
     public XrActionSuggestedBinding.Buffer suggestedBindings() { return nsuggestedBindings(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrInteractionProfileSuggestedBinding type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING} value to the {@code type} field. */
+    public XrInteractionProfileSuggestedBinding type$Default() { return type(XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING); }
     /** Sets the specified value to the {@code next} field. */
     public XrInteractionProfileSuggestedBinding next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code interactionProfile} field. */
@@ -201,24 +201,13 @@ public class XrInteractionProfileSuggestedBinding extends Struct implements Nati
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrInteractionProfileSuggestedBinding} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrInteractionProfileSuggestedBinding mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrInteractionProfileSuggestedBinding} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrInteractionProfileSuggestedBinding callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrInteractionProfileSuggestedBinding} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrInteractionProfileSuggestedBinding mallocStack(MemoryStack stack) {
+    public static XrInteractionProfileSuggestedBinding malloc(MemoryStack stack) {
         return wrap(XrInteractionProfileSuggestedBinding.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -227,45 +216,27 @@ public class XrInteractionProfileSuggestedBinding extends Struct implements Nati
      *
      * @param stack the stack from which to allocate
      */
-    public static XrInteractionProfileSuggestedBinding callocStack(MemoryStack stack) {
+    public static XrInteractionProfileSuggestedBinding calloc(MemoryStack stack) {
         return wrap(XrInteractionProfileSuggestedBinding.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -355,24 +326,26 @@ public class XrInteractionProfileSuggestedBinding extends Struct implements Nati
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrInteractionProfileSuggestedBinding.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrInteractionProfileSuggestedBinding.nnext(address()); }
-        /** Returns the value of the {@code interactionProfile} field. */
+        /** @return the value of the {@code interactionProfile} field. */
         @NativeType("XrPath")
         public long interactionProfile() { return XrInteractionProfileSuggestedBinding.ninteractionProfile(address()); }
-        /** Returns the value of the {@code countSuggestedBindings} field. */
+        /** @return the value of the {@code countSuggestedBindings} field. */
         @NativeType("uint32_t")
         public int countSuggestedBindings() { return XrInteractionProfileSuggestedBinding.ncountSuggestedBindings(address()); }
-        /** Returns a {@link XrActionSuggestedBinding.Buffer} view of the struct array pointed to by the {@code suggestedBindings} field. */
+        /** @return a {@link XrActionSuggestedBinding.Buffer} view of the struct array pointed to by the {@code suggestedBindings} field. */
         @NativeType("XrActionSuggestedBinding const *")
         public XrActionSuggestedBinding.Buffer suggestedBindings() { return XrInteractionProfileSuggestedBinding.nsuggestedBindings(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrInteractionProfileSuggestedBinding.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrInteractionProfileSuggestedBinding.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code interactionProfile} field. */

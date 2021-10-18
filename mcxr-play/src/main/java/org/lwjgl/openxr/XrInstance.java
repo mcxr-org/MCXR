@@ -8,6 +8,8 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.Checks;
 import org.lwjgl.system.MemoryStack;
 
+import java.util.HashSet;
+
 import static org.lwjgl.system.APIUtil.apiLog;
 import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -33,6 +35,6 @@ public class XrInstance extends DispatchableHandle {
                 }
                 return address;
             }
-        }, apiVersion, XR.getEnabledExtensionSet(apiVersion, ci.enabledExtensionNames()));
+        }, apiVersion, XR.getEnabledExtensionSet(apiVersion, ci.enabledExtensionNames()), new HashSet<>());
     }
 }

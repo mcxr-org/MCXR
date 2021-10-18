@@ -5,11 +5,12 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeType;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.JNI.*;
+import static org.lwjgl.system.JNI.callPI;
 
 /** The KHR_android_thread_settings extension. */
 public class KHRAndroidThreadSettings {

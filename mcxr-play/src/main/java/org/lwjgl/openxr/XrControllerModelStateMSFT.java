@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -75,25 +73,27 @@ public class XrControllerModelStateMSFT extends Struct implements NativeResource
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code nodeCapacityInput} field. */
+    /** @return the value of the {@code nodeCapacityInput} field. */
     @NativeType("uint32_t")
     public int nodeCapacityInput() { return nnodeCapacityInput(address()); }
-    /** Returns the value of the {@code nodeCountOutput} field. */
+    /** @return the value of the {@code nodeCountOutput} field. */
     @NativeType("uint32_t")
     public int nodeCountOutput() { return nnodeCountOutput(address()); }
-    /** Returns a {@link XrControllerModelNodeStateMSFT.Buffer} view of the struct array pointed to by the {@code nodeStates} field. */
+    /** @return a {@link XrControllerModelNodeStateMSFT.Buffer} view of the struct array pointed to by the {@code nodeStates} field. */
     @Nullable
     @NativeType("XrControllerModelNodeStateMSFT *")
     public XrControllerModelNodeStateMSFT.Buffer nodeStates() { return nnodeStates(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrControllerModelStateMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTControllerModel#XR_TYPE_CONTROLLER_MODEL_STATE_MSFT TYPE_CONTROLLER_MODEL_STATE_MSFT} value to the {@code type} field. */
+    public XrControllerModelStateMSFT type$Default() { return type(MSFTControllerModel.XR_TYPE_CONTROLLER_MODEL_STATE_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrControllerModelStateMSFT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code nodeCapacityInput} field. */
@@ -205,24 +205,13 @@ public class XrControllerModelStateMSFT extends Struct implements NativeResource
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrControllerModelStateMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrControllerModelStateMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrControllerModelStateMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrControllerModelStateMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrControllerModelStateMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrControllerModelStateMSFT mallocStack(MemoryStack stack) {
+    public static XrControllerModelStateMSFT malloc(MemoryStack stack) {
         return wrap(XrControllerModelStateMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -231,45 +220,27 @@ public class XrControllerModelStateMSFT extends Struct implements NativeResource
      *
      * @param stack the stack from which to allocate
      */
-    public static XrControllerModelStateMSFT callocStack(MemoryStack stack) {
+    public static XrControllerModelStateMSFT calloc(MemoryStack stack) {
         return wrap(XrControllerModelStateMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -335,25 +306,27 @@ public class XrControllerModelStateMSFT extends Struct implements NativeResource
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrControllerModelStateMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrControllerModelStateMSFT.nnext(address()); }
-        /** Returns the value of the {@code nodeCapacityInput} field. */
+        /** @return the value of the {@code nodeCapacityInput} field. */
         @NativeType("uint32_t")
         public int nodeCapacityInput() { return XrControllerModelStateMSFT.nnodeCapacityInput(address()); }
-        /** Returns the value of the {@code nodeCountOutput} field. */
+        /** @return the value of the {@code nodeCountOutput} field. */
         @NativeType("uint32_t")
         public int nodeCountOutput() { return XrControllerModelStateMSFT.nnodeCountOutput(address()); }
-        /** Returns a {@link XrControllerModelNodeStateMSFT.Buffer} view of the struct array pointed to by the {@code nodeStates} field. */
+        /** @return a {@link XrControllerModelNodeStateMSFT.Buffer} view of the struct array pointed to by the {@code nodeStates} field. */
         @Nullable
         @NativeType("XrControllerModelNodeStateMSFT *")
         public XrControllerModelNodeStateMSFT.Buffer nodeStates() { return XrControllerModelStateMSFT.nnodeStates(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrControllerModelStateMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTControllerModel#XR_TYPE_CONTROLLER_MODEL_STATE_MSFT TYPE_CONTROLLER_MODEL_STATE_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTControllerModel.XR_TYPE_CONTROLLER_MODEL_STATE_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrControllerModelStateMSFT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code nodeCapacityInput} field. */

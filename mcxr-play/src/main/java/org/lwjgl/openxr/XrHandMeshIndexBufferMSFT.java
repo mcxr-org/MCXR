@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
@@ -14,7 +13,6 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -73,16 +71,16 @@ public class XrHandMeshIndexBufferMSFT extends Struct implements NativeResource 
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code indexBufferKey} field. */
+    /** @return the value of the {@code indexBufferKey} field. */
     @NativeType("uint32_t")
     public int indexBufferKey() { return nindexBufferKey(address()); }
-    /** Returns the value of the {@code indexCapacityInput} field. */
+    /** @return the value of the {@code indexCapacityInput} field. */
     @NativeType("uint32_t")
     public int indexCapacityInput() { return nindexCapacityInput(address()); }
-    /** Returns the value of the {@code indexCountOutput} field. */
+    /** @return the value of the {@code indexCountOutput} field. */
     @NativeType("uint32_t")
     public int indexCountOutput() { return nindexCountOutput(address()); }
-    /** Returns a {@link IntBuffer} view of the data pointed to by the {@code indices} field. */
+    /** @return a {@link IntBuffer} view of the data pointed to by the {@code indices} field. */
     @NativeType("uint32_t *")
     public IntBuffer indices() { return nindices(address()); }
 
@@ -191,24 +189,13 @@ public class XrHandMeshIndexBufferMSFT extends Struct implements NativeResource 
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrHandMeshIndexBufferMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrHandMeshIndexBufferMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrHandMeshIndexBufferMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrHandMeshIndexBufferMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrHandMeshIndexBufferMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandMeshIndexBufferMSFT mallocStack(MemoryStack stack) {
+    public static XrHandMeshIndexBufferMSFT malloc(MemoryStack stack) {
         return wrap(XrHandMeshIndexBufferMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -217,45 +204,27 @@ public class XrHandMeshIndexBufferMSFT extends Struct implements NativeResource 
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandMeshIndexBufferMSFT callocStack(MemoryStack stack) {
+    public static XrHandMeshIndexBufferMSFT calloc(MemoryStack stack) {
         return wrap(XrHandMeshIndexBufferMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -338,16 +307,16 @@ public class XrHandMeshIndexBufferMSFT extends Struct implements NativeResource 
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code indexBufferKey} field. */
+        /** @return the value of the {@code indexBufferKey} field. */
         @NativeType("uint32_t")
         public int indexBufferKey() { return XrHandMeshIndexBufferMSFT.nindexBufferKey(address()); }
-        /** Returns the value of the {@code indexCapacityInput} field. */
+        /** @return the value of the {@code indexCapacityInput} field. */
         @NativeType("uint32_t")
         public int indexCapacityInput() { return XrHandMeshIndexBufferMSFT.nindexCapacityInput(address()); }
-        /** Returns the value of the {@code indexCountOutput} field. */
+        /** @return the value of the {@code indexCountOutput} field. */
         @NativeType("uint32_t")
         public int indexCountOutput() { return XrHandMeshIndexBufferMSFT.nindexCountOutput(address()); }
-        /** Returns a {@link IntBuffer} view of the data pointed to by the {@code indices} field. */
+        /** @return a {@link IntBuffer} view of the data pointed to by the {@code indices} field. */
         @NativeType("uint32_t *")
         public IntBuffer indices() { return XrHandMeshIndexBufferMSFT.nindices(address()); }
 

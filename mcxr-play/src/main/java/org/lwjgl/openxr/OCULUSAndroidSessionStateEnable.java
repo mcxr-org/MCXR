@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The OCULUS_android_session_state_enable extension. */
 public final class OCULUSAndroidSessionStateEnable {
 

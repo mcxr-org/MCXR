@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,19 +69,21 @@ public class XrCompositionLayerColorScaleBiasKHR extends Struct implements Nativ
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns a {@link XrColor4f} view of the {@code colorScale} field. */
+    /** @return a {@link XrColor4f} view of the {@code colorScale} field. */
     public XrColor4f colorScale() { return ncolorScale(address()); }
-    /** Returns a {@link XrColor4f} view of the {@code colorBias} field. */
+    /** @return a {@link XrColor4f} view of the {@code colorBias} field. */
     public XrColor4f colorBias() { return ncolorBias(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrCompositionLayerColorScaleBiasKHR type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link KHRCompositionLayerColorScaleBias#XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR} value to the {@code type} field. */
+    public XrCompositionLayerColorScaleBiasKHR type$Default() { return type(KHRCompositionLayerColorScaleBias.XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR); }
     /** Sets the specified value to the {@code next} field. */
     public XrCompositionLayerColorScaleBiasKHR next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Copies the specified {@link XrColor4f} to the {@code colorScale} field. */
@@ -195,24 +195,13 @@ public class XrCompositionLayerColorScaleBiasKHR extends Struct implements Nativ
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrCompositionLayerColorScaleBiasKHR} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrCompositionLayerColorScaleBiasKHR mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrCompositionLayerColorScaleBiasKHR} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrCompositionLayerColorScaleBiasKHR callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrCompositionLayerColorScaleBiasKHR} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerColorScaleBiasKHR mallocStack(MemoryStack stack) {
+    public static XrCompositionLayerColorScaleBiasKHR malloc(MemoryStack stack) {
         return wrap(XrCompositionLayerColorScaleBiasKHR.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -221,45 +210,27 @@ public class XrCompositionLayerColorScaleBiasKHR extends Struct implements Nativ
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerColorScaleBiasKHR callocStack(MemoryStack stack) {
+    public static XrCompositionLayerColorScaleBiasKHR calloc(MemoryStack stack) {
         return wrap(XrCompositionLayerColorScaleBiasKHR.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -321,19 +292,21 @@ public class XrCompositionLayerColorScaleBiasKHR extends Struct implements Nativ
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrCompositionLayerColorScaleBiasKHR.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrCompositionLayerColorScaleBiasKHR.nnext(address()); }
-        /** Returns a {@link XrColor4f} view of the {@code colorScale} field. */
+        /** @return a {@link XrColor4f} view of the {@code colorScale} field. */
         public XrColor4f colorScale() { return XrCompositionLayerColorScaleBiasKHR.ncolorScale(address()); }
-        /** Returns a {@link XrColor4f} view of the {@code colorBias} field. */
+        /** @return a {@link XrColor4f} view of the {@code colorBias} field. */
         public XrColor4f colorBias() { return XrCompositionLayerColorScaleBiasKHR.ncolorBias(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrCompositionLayerColorScaleBiasKHR.ntype(address(), value); return this; }
+        /** Sets the {@link KHRCompositionLayerColorScaleBias#XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR} value to the {@code type} field. */
+        public Buffer type$Default() { return type(KHRCompositionLayerColorScaleBias.XR_TYPE_COMPOSITION_LAYER_COLOR_SCALE_BIAS_KHR); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrCompositionLayerColorScaleBiasKHR.nnext(address(), value); return this; }
         /** Copies the specified {@link XrColor4f} to the {@code colorScale} field. */

@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The EXT_eye_gaze_interaction extension. */
 public final class EXTEyeGazeInteraction {
 

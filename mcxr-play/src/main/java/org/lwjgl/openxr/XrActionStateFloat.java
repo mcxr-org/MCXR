@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -79,26 +77,28 @@ public class XrActionStateFloat extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code currentState} field. */
+    /** @return the value of the {@code currentState} field. */
     public float currentState() { return ncurrentState(address()); }
-    /** Returns the value of the {@code changedSinceLastSync} field. */
+    /** @return the value of the {@code changedSinceLastSync} field. */
     @NativeType("XrBool32")
     public boolean changedSinceLastSync() { return nchangedSinceLastSync(address()) != 0; }
-    /** Returns the value of the {@code lastChangeTime} field. */
+    /** @return the value of the {@code lastChangeTime} field. */
     @NativeType("XrTime")
     public long lastChangeTime() { return nlastChangeTime(address()); }
-    /** Returns the value of the {@code isActive} field. */
+    /** @return the value of the {@code isActive} field. */
     @NativeType("XrBool32")
     public boolean isActive() { return nisActive(address()) != 0; }
 
     /** Sets the specified value to the {@code type} field. */
     public XrActionStateFloat type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_ACTION_STATE_FLOAT TYPE_ACTION_STATE_FLOAT} value to the {@code type} field. */
+    public XrActionStateFloat type$Default() { return type(XR10.XR_TYPE_ACTION_STATE_FLOAT); }
     /** Sets the specified value to the {@code next} field. */
     public XrActionStateFloat next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code currentState} field. */
@@ -214,24 +214,13 @@ public class XrActionStateFloat extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrActionStateFloat} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrActionStateFloat mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrActionStateFloat} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrActionStateFloat callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrActionStateFloat} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrActionStateFloat mallocStack(MemoryStack stack) {
+    public static XrActionStateFloat malloc(MemoryStack stack) {
         return wrap(XrActionStateFloat.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -240,45 +229,27 @@ public class XrActionStateFloat extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrActionStateFloat callocStack(MemoryStack stack) {
+    public static XrActionStateFloat calloc(MemoryStack stack) {
         return wrap(XrActionStateFloat.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -348,26 +319,28 @@ public class XrActionStateFloat extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrActionStateFloat.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrActionStateFloat.nnext(address()); }
-        /** Returns the value of the {@code currentState} field. */
+        /** @return the value of the {@code currentState} field. */
         public float currentState() { return XrActionStateFloat.ncurrentState(address()); }
-        /** Returns the value of the {@code changedSinceLastSync} field. */
+        /** @return the value of the {@code changedSinceLastSync} field. */
         @NativeType("XrBool32")
         public boolean changedSinceLastSync() { return XrActionStateFloat.nchangedSinceLastSync(address()) != 0; }
-        /** Returns the value of the {@code lastChangeTime} field. */
+        /** @return the value of the {@code lastChangeTime} field. */
         @NativeType("XrTime")
         public long lastChangeTime() { return XrActionStateFloat.nlastChangeTime(address()); }
-        /** Returns the value of the {@code isActive} field. */
+        /** @return the value of the {@code isActive} field. */
         @NativeType("XrBool32")
         public boolean isActive() { return XrActionStateFloat.nisActive(address()) != 0; }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrActionStateFloat.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_ACTION_STATE_FLOAT TYPE_ACTION_STATE_FLOAT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_ACTION_STATE_FLOAT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrActionStateFloat.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code currentState} field. */

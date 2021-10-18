@@ -6,16 +6,15 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 
-import static org.lwjgl.openxr.XR10.*;
+import static org.lwjgl.openxr.XR10.XR_MAX_ACTION_NAME_SIZE;
+import static org.lwjgl.openxr.XR10.XR_MAX_LOCALIZED_ACTION_NAME_SIZE;
 import static org.lwjgl.system.Checks.*;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -86,37 +85,39 @@ public class XrActionCreateInfo extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code actionName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code actionName} field. */
     @NativeType("char[XR_MAX_ACTION_NAME_SIZE]")
     public ByteBuffer actionName() { return nactionName(address()); }
-    /** Decodes the null-terminated string stored in the {@code actionName} field. */
+    /** @return the null-terminated string stored in the {@code actionName} field. */
     @NativeType("char[XR_MAX_ACTION_NAME_SIZE]")
     public String actionNameString() { return nactionNameString(address()); }
-    /** Returns the value of the {@code actionType} field. */
+    /** @return the value of the {@code actionType} field. */
     @NativeType("XrActionType")
     public int actionType() { return nactionType(address()); }
-    /** Returns the value of the {@code countSubactionPaths} field. */
+    /** @return the value of the {@code countSubactionPaths} field. */
     @NativeType("uint32_t")
     public int countSubactionPaths() { return ncountSubactionPaths(address()); }
-    /** Returns a {@link LongBuffer} view of the data pointed to by the {@code subactionPaths} field. */
+    /** @return a {@link LongBuffer} view of the data pointed to by the {@code subactionPaths} field. */
     @Nullable
     @NativeType("XrPath const *")
     public LongBuffer subactionPaths() { return nsubactionPaths(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code localizedActionName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code localizedActionName} field. */
     @NativeType("char[XR_MAX_LOCALIZED_ACTION_NAME_SIZE]")
     public ByteBuffer localizedActionName() { return nlocalizedActionName(address()); }
-    /** Decodes the null-terminated string stored in the {@code localizedActionName} field. */
+    /** @return the null-terminated string stored in the {@code localizedActionName} field. */
     @NativeType("char[XR_MAX_LOCALIZED_ACTION_NAME_SIZE]")
     public String localizedActionNameString() { return nlocalizedActionNameString(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrActionCreateInfo type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_ACTION_CREATE_INFO TYPE_ACTION_CREATE_INFO} value to the {@code type} field. */
+    public XrActionCreateInfo type$Default() { return type(XR10.XR_TYPE_ACTION_CREATE_INFO); }
     /** Sets the specified value to the {@code next} field. */
     public XrActionCreateInfo next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Copies the specified encoded string to the {@code actionName} field. */
@@ -236,24 +237,13 @@ public class XrActionCreateInfo extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrActionCreateInfo} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrActionCreateInfo mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrActionCreateInfo} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrActionCreateInfo callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrActionCreateInfo} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrActionCreateInfo mallocStack(MemoryStack stack) {
+    public static XrActionCreateInfo malloc(MemoryStack stack) {
         return wrap(XrActionCreateInfo.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -262,45 +252,27 @@ public class XrActionCreateInfo extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrActionCreateInfo callocStack(MemoryStack stack) {
+    public static XrActionCreateInfo calloc(MemoryStack stack) {
         return wrap(XrActionCreateInfo.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -390,37 +362,39 @@ public class XrActionCreateInfo extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrActionCreateInfo.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrActionCreateInfo.nnext(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code actionName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code actionName} field. */
         @NativeType("char[XR_MAX_ACTION_NAME_SIZE]")
         public ByteBuffer actionName() { return XrActionCreateInfo.nactionName(address()); }
-        /** Decodes the null-terminated string stored in the {@code actionName} field. */
+        /** @return the null-terminated string stored in the {@code actionName} field. */
         @NativeType("char[XR_MAX_ACTION_NAME_SIZE]")
         public String actionNameString() { return XrActionCreateInfo.nactionNameString(address()); }
-        /** Returns the value of the {@code actionType} field. */
+        /** @return the value of the {@code actionType} field. */
         @NativeType("XrActionType")
         public int actionType() { return XrActionCreateInfo.nactionType(address()); }
-        /** Returns the value of the {@code countSubactionPaths} field. */
+        /** @return the value of the {@code countSubactionPaths} field. */
         @NativeType("uint32_t")
         public int countSubactionPaths() { return XrActionCreateInfo.ncountSubactionPaths(address()); }
-        /** Returns a {@link LongBuffer} view of the data pointed to by the {@code subactionPaths} field. */
+        /** @return a {@link LongBuffer} view of the data pointed to by the {@code subactionPaths} field. */
         @Nullable
         @NativeType("XrPath const *")
         public LongBuffer subactionPaths() { return XrActionCreateInfo.nsubactionPaths(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code localizedActionName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code localizedActionName} field. */
         @NativeType("char[XR_MAX_LOCALIZED_ACTION_NAME_SIZE]")
         public ByteBuffer localizedActionName() { return XrActionCreateInfo.nlocalizedActionName(address()); }
-        /** Decodes the null-terminated string stored in the {@code localizedActionName} field. */
+        /** @return the null-terminated string stored in the {@code localizedActionName} field. */
         @NativeType("char[XR_MAX_LOCALIZED_ACTION_NAME_SIZE]")
         public String localizedActionNameString() { return XrActionCreateInfo.nlocalizedActionNameString(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrActionCreateInfo.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_ACTION_CREATE_INFO TYPE_ACTION_CREATE_INFO} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_ACTION_CREATE_INFO); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrActionCreateInfo.nnext(address(), value); return this; }
         /** Copies the specified encoded string to the {@code actionName} field. */

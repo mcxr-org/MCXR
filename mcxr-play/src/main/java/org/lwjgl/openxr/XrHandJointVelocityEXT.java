@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -67,12 +65,12 @@ public class XrHandJointVelocityEXT extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code velocityFlags} field. */
+    /** @return the value of the {@code velocityFlags} field. */
     @NativeType("XrSpaceVelocityFlags")
     public long velocityFlags() { return nvelocityFlags(address()); }
-    /** Returns a {@link XrVector3f} view of the {@code linearVelocity} field. */
+    /** @return a {@link XrVector3f} view of the {@code linearVelocity} field. */
     public XrVector3f linearVelocity() { return nlinearVelocity(address()); }
-    /** Returns a {@link XrVector3f} view of the {@code angularVelocity} field. */
+    /** @return a {@link XrVector3f} view of the {@code angularVelocity} field. */
     public XrVector3f angularVelocity() { return nangularVelocity(address()); }
 
     /** Sets the specified value to the {@code velocityFlags} field. */
@@ -184,24 +182,13 @@ public class XrHandJointVelocityEXT extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrHandJointVelocityEXT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrHandJointVelocityEXT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrHandJointVelocityEXT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrHandJointVelocityEXT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrHandJointVelocityEXT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandJointVelocityEXT mallocStack(MemoryStack stack) {
+    public static XrHandJointVelocityEXT malloc(MemoryStack stack) {
         return wrap(XrHandJointVelocityEXT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -210,45 +197,27 @@ public class XrHandJointVelocityEXT extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHandJointVelocityEXT callocStack(MemoryStack stack) {
+    public static XrHandJointVelocityEXT calloc(MemoryStack stack) {
         return wrap(XrHandJointVelocityEXT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -306,12 +275,12 @@ public class XrHandJointVelocityEXT extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code velocityFlags} field. */
+        /** @return the value of the {@code velocityFlags} field. */
         @NativeType("XrSpaceVelocityFlags")
         public long velocityFlags() { return XrHandJointVelocityEXT.nvelocityFlags(address()); }
-        /** Returns a {@link XrVector3f} view of the {@code linearVelocity} field. */
+        /** @return a {@link XrVector3f} view of the {@code linearVelocity} field. */
         public XrVector3f linearVelocity() { return XrHandJointVelocityEXT.nlinearVelocity(address()); }
-        /** Returns a {@link XrVector3f} view of the {@code angularVelocity} field. */
+        /** @return a {@link XrVector3f} view of the {@code angularVelocity} field. */
         public XrVector3f angularVelocity() { return XrHandJointVelocityEXT.nangularVelocity(address()); }
 
         /** Sets the specified value to the {@code velocityFlags} field. */

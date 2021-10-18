@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -80,27 +78,29 @@ public class XrDebugUtilsMessengerCreateInfoEXT extends Struct implements Native
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code messageSeverities} field. */
+    /** @return the value of the {@code messageSeverities} field. */
     @NativeType("XrDebugUtilsMessageSeverityFlagsEXT")
     public long messageSeverities() { return nmessageSeverities(address()); }
-    /** Returns the value of the {@code messageTypes} field. */
+    /** @return the value of the {@code messageTypes} field. */
     @NativeType("XrDebugUtilsMessageTypeFlagsEXT")
     public long messageTypes() { return nmessageTypes(address()); }
-    /** Returns the value of the {@code userCallback} field. */
+    /** @return the value of the {@code userCallback} field. */
     @NativeType("PFN_xrDebugUtilsMessengerCallbackEXT")
     public XrDebugUtilsMessengerCallbackEXT userCallback() { return nuserCallback(address()); }
-    /** Returns the value of the {@code userData} field. */
+    /** @return the value of the {@code userData} field. */
     @NativeType("void *")
     public long userData() { return nuserData(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrDebugUtilsMessengerCreateInfoEXT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EXTDebugUtils#XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT} value to the {@code type} field. */
+    public XrDebugUtilsMessengerCreateInfoEXT type$Default() { return type(EXTDebugUtils.XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT); }
     /** Sets the specified value to the {@code next} field. */
     public XrDebugUtilsMessengerCreateInfoEXT next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code messageSeverities} field. */
@@ -216,24 +216,13 @@ public class XrDebugUtilsMessengerCreateInfoEXT extends Struct implements Native
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrDebugUtilsMessengerCreateInfoEXT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrDebugUtilsMessengerCreateInfoEXT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrDebugUtilsMessengerCreateInfoEXT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrDebugUtilsMessengerCreateInfoEXT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrDebugUtilsMessengerCreateInfoEXT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrDebugUtilsMessengerCreateInfoEXT mallocStack(MemoryStack stack) {
+    public static XrDebugUtilsMessengerCreateInfoEXT malloc(MemoryStack stack) {
         return wrap(XrDebugUtilsMessengerCreateInfoEXT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -242,45 +231,27 @@ public class XrDebugUtilsMessengerCreateInfoEXT extends Struct implements Native
      *
      * @param stack the stack from which to allocate
      */
-    public static XrDebugUtilsMessengerCreateInfoEXT callocStack(MemoryStack stack) {
+    public static XrDebugUtilsMessengerCreateInfoEXT calloc(MemoryStack stack) {
         return wrap(XrDebugUtilsMessengerCreateInfoEXT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -371,27 +342,29 @@ public class XrDebugUtilsMessengerCreateInfoEXT extends Struct implements Native
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrDebugUtilsMessengerCreateInfoEXT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrDebugUtilsMessengerCreateInfoEXT.nnext(address()); }
-        /** Returns the value of the {@code messageSeverities} field. */
+        /** @return the value of the {@code messageSeverities} field. */
         @NativeType("XrDebugUtilsMessageSeverityFlagsEXT")
         public long messageSeverities() { return XrDebugUtilsMessengerCreateInfoEXT.nmessageSeverities(address()); }
-        /** Returns the value of the {@code messageTypes} field. */
+        /** @return the value of the {@code messageTypes} field. */
         @NativeType("XrDebugUtilsMessageTypeFlagsEXT")
         public long messageTypes() { return XrDebugUtilsMessengerCreateInfoEXT.nmessageTypes(address()); }
-        /** Returns the value of the {@code userCallback} field. */
+        /** @return the value of the {@code userCallback} field. */
         @NativeType("PFN_xrDebugUtilsMessengerCallbackEXT")
         public XrDebugUtilsMessengerCallbackEXT userCallback() { return XrDebugUtilsMessengerCreateInfoEXT.nuserCallback(address()); }
-        /** Returns the value of the {@code userData} field. */
+        /** @return the value of the {@code userData} field. */
         @NativeType("void *")
         public long userData() { return XrDebugUtilsMessengerCreateInfoEXT.nuserData(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrDebugUtilsMessengerCreateInfoEXT.ntype(address(), value); return this; }
+        /** Sets the {@link EXTDebugUtils#XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EXTDebugUtils.XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrDebugUtilsMessengerCreateInfoEXT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code messageSeverities} field. */

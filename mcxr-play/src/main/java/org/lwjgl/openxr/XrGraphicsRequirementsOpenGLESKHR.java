@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,21 +69,23 @@ public class XrGraphicsRequirementsOpenGLESKHR extends Struct implements NativeR
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code minApiVersionSupported} field. */
+    /** @return the value of the {@code minApiVersionSupported} field. */
     @NativeType("XrVersion")
     public long minApiVersionSupported() { return nminApiVersionSupported(address()); }
-    /** Returns the value of the {@code maxApiVersionSupported} field. */
+    /** @return the value of the {@code maxApiVersionSupported} field. */
     @NativeType("XrVersion")
     public long maxApiVersionSupported() { return nmaxApiVersionSupported(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrGraphicsRequirementsOpenGLESKHR type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link KHROpenglEsEnable#XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR} value to the {@code type} field. */
+    public XrGraphicsRequirementsOpenGLESKHR type$Default() { return type(KHROpenglEsEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR); }
     /** Sets the specified value to the {@code next} field. */
     public XrGraphicsRequirementsOpenGLESKHR next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code minApiVersionSupported} field. */
@@ -193,24 +193,13 @@ public class XrGraphicsRequirementsOpenGLESKHR extends Struct implements NativeR
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrGraphicsRequirementsOpenGLESKHR} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrGraphicsRequirementsOpenGLESKHR mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrGraphicsRequirementsOpenGLESKHR} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrGraphicsRequirementsOpenGLESKHR callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrGraphicsRequirementsOpenGLESKHR} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrGraphicsRequirementsOpenGLESKHR mallocStack(MemoryStack stack) {
+    public static XrGraphicsRequirementsOpenGLESKHR malloc(MemoryStack stack) {
         return wrap(XrGraphicsRequirementsOpenGLESKHR.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -219,45 +208,27 @@ public class XrGraphicsRequirementsOpenGLESKHR extends Struct implements NativeR
      *
      * @param stack the stack from which to allocate
      */
-    public static XrGraphicsRequirementsOpenGLESKHR callocStack(MemoryStack stack) {
+    public static XrGraphicsRequirementsOpenGLESKHR calloc(MemoryStack stack) {
         return wrap(XrGraphicsRequirementsOpenGLESKHR.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -319,21 +290,23 @@ public class XrGraphicsRequirementsOpenGLESKHR extends Struct implements NativeR
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrGraphicsRequirementsOpenGLESKHR.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrGraphicsRequirementsOpenGLESKHR.nnext(address()); }
-        /** Returns the value of the {@code minApiVersionSupported} field. */
+        /** @return the value of the {@code minApiVersionSupported} field. */
         @NativeType("XrVersion")
         public long minApiVersionSupported() { return XrGraphicsRequirementsOpenGLESKHR.nminApiVersionSupported(address()); }
-        /** Returns the value of the {@code maxApiVersionSupported} field. */
+        /** @return the value of the {@code maxApiVersionSupported} field. */
         @NativeType("XrVersion")
         public long maxApiVersionSupported() { return XrGraphicsRequirementsOpenGLESKHR.nmaxApiVersionSupported(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrGraphicsRequirementsOpenGLESKHR.ntype(address(), value); return this; }
+        /** Sets the {@link KHROpenglEsEnable#XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR} value to the {@code type} field. */
+        public Buffer type$Default() { return type(KHROpenglEsEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrGraphicsRequirementsOpenGLESKHR.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code minApiVersionSupported} field. */

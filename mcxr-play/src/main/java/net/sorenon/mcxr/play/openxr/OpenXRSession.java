@@ -51,13 +51,13 @@ public class OpenXRSession implements AutoCloseable {
 
     public void createXRReferenceSpaces() {
         try (MemoryStack stack = stackPush()) {
-            XrPosef identityPose = XrPosef.mallocStack();
+            XrPosef identityPose = XrPosef.malloc(stack);
             identityPose.set(
-                    XrQuaternionf.mallocStack().set(0, 0, 0, 1),
-                    XrVector3f.callocStack()
+                    XrQuaternionf.malloc(stack).set(0, 0, 0, 1),
+                    XrVector3f.calloc(stack)
             );
 
-            XrReferenceSpaceCreateInfo referenceSpaceCreateInfo = XrReferenceSpaceCreateInfo.mallocStack();
+            XrReferenceSpaceCreateInfo referenceSpaceCreateInfo = XrReferenceSpaceCreateInfo.malloc(stack);
             referenceSpaceCreateInfo.set(
                     XR10.XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
                     NULL,
@@ -125,7 +125,7 @@ public class OpenXRSession implements AutoCloseable {
             swapchains = new OpenXRSwapchain[viewCountNumber];
             for (int i = 0; i < viewCountNumber; i++) {
                 XrViewConfigurationView viewConfig = viewConfigs.get(i);
-                XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.mallocStack();
+                XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
 
                 swapchainCreateInfo.set(
                         XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
@@ -165,9 +165,11 @@ public class OpenXRSession implements AutoCloseable {
 
         switch (state) {
             case XR10.XR_SESSION_STATE_READY: {
-                XrSessionBeginInfo sessionBeginInfo = XrSessionBeginInfo.mallocStack();
-                sessionBeginInfo.set(XR10.XR_TYPE_SESSION_BEGIN_INFO, 0, viewConfigurationType);
-                instance.check(XR10.xrBeginSession(handle, sessionBeginInfo), "xrBeginSession");
+                try (MemoryStack stack = stackPush()) {
+                    XrSessionBeginInfo sessionBeginInfo = XrSessionBeginInfo.malloc(stack);
+                    sessionBeginInfo.set(XR10.XR_TYPE_SESSION_BEGIN_INFO, 0, viewConfigurationType);
+                    instance.check(XR10.xrBeginSession(handle, sessionBeginInfo), "xrBeginSession");
+                }
                 running = true;
                 return false;
             }
@@ -195,12 +197,12 @@ public class OpenXRSession implements AutoCloseable {
             return;
         }
 
-        try (var ignored = stackPush()) {
+        try (var stack = stackPush()) {
             VanillaGameplayActionSet vcActionSet = XrInput.vanillaGameplayActionSet;
             GuiActionSet guiActionSet = XrInput.guiActionSet;
             HandsActionSet handsActionSet = XrInput.handsActionSet;
 
-            XrActiveActionSet.Buffer sets = XrActiveActionSet.callocStack(3);
+            XrActiveActionSet.Buffer sets = XrActiveActionSet.calloc(3, stack);
             sets.get(0).actionSet(handsActionSet.getHandle());
             sets.get(1).actionSet(vcActionSet.getHandle());
             sets.get(2).actionSet(guiActionSet.getHandle());
@@ -220,8 +222,8 @@ public class OpenXRSession implements AutoCloseable {
     }
 
     public void setPosesFromSpace(XrSpace handSpace, long time, ControllerPoses result, float scale) {
-        try (MemoryStack ignored = stackPush()) {
-            XrSpaceLocation space_location = XrSpaceLocation.callocStack().type(XR10.XR_TYPE_SPACE_LOCATION);
+        try (var stack = stackPush()) {
+            XrSpaceLocation space_location = XrSpaceLocation.calloc(stack).type(XR10.XR_TYPE_SPACE_LOCATION);
             instance.check(XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location), "xrLocateSpace");
             if ((space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
                     (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {

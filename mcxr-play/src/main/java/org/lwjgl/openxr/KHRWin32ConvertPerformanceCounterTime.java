@@ -5,14 +5,16 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeType;
 
 import java.nio.LongBuffer;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
+import static org.lwjgl.system.JNI.callPJPI;
+import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.JNI.*;
 
 /** The KHR_win32_convert_performance_counter_time extension. */
 public class KHRWin32ConvertPerformanceCounterTime {
@@ -77,15 +79,14 @@ public class KHRWin32ConvertPerformanceCounterTime {
     }
 
     /** Array version of: {@link #xrConvertTimeToWin32PerformanceCounterKHR ConvertTimeToWin32PerformanceCounterKHR} */
-    @NativeType("XrResult")
-    public static int xrConvertTimeToWin32PerformanceCounterKHR(XrInstance instance, @NativeType("XrTime") long time, @NativeType("LARGE_INTEGER *") long[] performanceCounter) {
-        long __functionAddress = instance.getCapabilities().xrConvertTimeToWin32PerformanceCounterKHR;
-        if (CHECKS) {
-            check(__functionAddress);
-            check(performanceCounter, 1);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPJPI(instance.address(), time, performanceCounter, __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrConvertTimeToWin32PerformanceCounterKHR(XrInstance instance, @NativeType("XrTime") long time, @NativeType("LARGE_INTEGER *") long[] performanceCounter) {
+//        long __functionAddress = instance.getCapabilities().xrConvertTimeToWin32PerformanceCounterKHR;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//            check(performanceCounter, 1);
+//        }
+//        return callPJPI(instance.address(), time, performanceCounter, __functionAddress);
+//    }
 
 }

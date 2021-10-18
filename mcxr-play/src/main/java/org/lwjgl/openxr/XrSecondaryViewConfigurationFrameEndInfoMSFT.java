@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -72,21 +70,23 @@ public class XrSecondaryViewConfigurationFrameEndInfoMSFT extends Struct impleme
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code viewConfigurationCount} field. */
+    /** @return the value of the {@code viewConfigurationCount} field. */
     @NativeType("uint32_t")
     public int viewConfigurationCount() { return nviewConfigurationCount(address()); }
-    /** Returns a {@link XrSecondaryViewConfigurationLayerInfoMSFT.Buffer} view of the struct array pointed to by the {@code viewConfigurationLayersInfo} field. */
+    /** @return a {@link XrSecondaryViewConfigurationLayerInfoMSFT.Buffer} view of the struct array pointed to by the {@code viewConfigurationLayersInfo} field. */
     @NativeType("XrSecondaryViewConfigurationLayerInfoMSFT const *")
     public XrSecondaryViewConfigurationLayerInfoMSFT.Buffer viewConfigurationLayersInfo() { return nviewConfigurationLayersInfo(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSecondaryViewConfigurationFrameEndInfoMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTSecondaryViewConfiguration#XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT} value to the {@code type} field. */
+    public XrSecondaryViewConfigurationFrameEndInfoMSFT type$Default() { return type(MSFTSecondaryViewConfiguration.XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrSecondaryViewConfigurationFrameEndInfoMSFT next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the address of the specified {@link XrSecondaryViewConfigurationLayerInfoMSFT.Buffer} to the {@code viewConfigurationLayersInfo} field. */
@@ -190,24 +190,13 @@ public class XrSecondaryViewConfigurationFrameEndInfoMSFT extends Struct impleme
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSecondaryViewConfigurationFrameEndInfoMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSecondaryViewConfigurationFrameEndInfoMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSecondaryViewConfigurationFrameEndInfoMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSecondaryViewConfigurationFrameEndInfoMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSecondaryViewConfigurationFrameEndInfoMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSecondaryViewConfigurationFrameEndInfoMSFT mallocStack(MemoryStack stack) {
+    public static XrSecondaryViewConfigurationFrameEndInfoMSFT malloc(MemoryStack stack) {
         return wrap(XrSecondaryViewConfigurationFrameEndInfoMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -216,45 +205,27 @@ public class XrSecondaryViewConfigurationFrameEndInfoMSFT extends Struct impleme
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSecondaryViewConfigurationFrameEndInfoMSFT callocStack(MemoryStack stack) {
+    public static XrSecondaryViewConfigurationFrameEndInfoMSFT calloc(MemoryStack stack) {
         return wrap(XrSecondaryViewConfigurationFrameEndInfoMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -340,21 +311,23 @@ public class XrSecondaryViewConfigurationFrameEndInfoMSFT extends Struct impleme
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSecondaryViewConfigurationFrameEndInfoMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrSecondaryViewConfigurationFrameEndInfoMSFT.nnext(address()); }
-        /** Returns the value of the {@code viewConfigurationCount} field. */
+        /** @return the value of the {@code viewConfigurationCount} field. */
         @NativeType("uint32_t")
         public int viewConfigurationCount() { return XrSecondaryViewConfigurationFrameEndInfoMSFT.nviewConfigurationCount(address()); }
-        /** Returns a {@link XrSecondaryViewConfigurationLayerInfoMSFT.Buffer} view of the struct array pointed to by the {@code viewConfigurationLayersInfo} field. */
+        /** @return a {@link XrSecondaryViewConfigurationLayerInfoMSFT.Buffer} view of the struct array pointed to by the {@code viewConfigurationLayersInfo} field. */
         @NativeType("XrSecondaryViewConfigurationLayerInfoMSFT const *")
         public XrSecondaryViewConfigurationLayerInfoMSFT.Buffer viewConfigurationLayersInfo() { return XrSecondaryViewConfigurationFrameEndInfoMSFT.nviewConfigurationLayersInfo(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSecondaryViewConfigurationFrameEndInfoMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTSecondaryViewConfiguration#XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTSecondaryViewConfiguration.XR_TYPE_SECONDARY_VIEW_CONFIGURATION_FRAME_END_INFO_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrSecondaryViewConfigurationFrameEndInfoMSFT.nnext(address(), value); return this; }
         /** Sets the address of the specified {@link XrSecondaryViewConfigurationLayerInfoMSFT.Buffer} to the {@code viewConfigurationLayersInfo} field. */

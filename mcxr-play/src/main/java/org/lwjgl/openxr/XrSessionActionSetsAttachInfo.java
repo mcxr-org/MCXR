@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
@@ -14,7 +13,6 @@ import org.lwjgl.system.*;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -73,21 +71,23 @@ public class XrSessionActionSetsAttachInfo extends Struct implements NativeResou
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code countActionSets} field. */
+    /** @return the value of the {@code countActionSets} field. */
     @NativeType("uint32_t")
     public int countActionSets() { return ncountActionSets(address()); }
-    /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code actionSets} field. */
+    /** @return a {@link PointerBuffer} view of the data pointed to by the {@code actionSets} field. */
     @NativeType("XrActionSet const *")
     public PointerBuffer actionSets() { return nactionSets(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSessionActionSetsAttachInfo type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO TYPE_SESSION_ACTION_SETS_ATTACH_INFO} value to the {@code type} field. */
+    public XrSessionActionSetsAttachInfo type$Default() { return type(XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO); }
     /** Sets the specified value to the {@code next} field. */
     public XrSessionActionSetsAttachInfo next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the address of the specified {@link PointerBuffer} to the {@code actionSets} field. */
@@ -191,24 +191,13 @@ public class XrSessionActionSetsAttachInfo extends Struct implements NativeResou
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSessionActionSetsAttachInfo} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSessionActionSetsAttachInfo mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSessionActionSetsAttachInfo} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSessionActionSetsAttachInfo callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSessionActionSetsAttachInfo} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSessionActionSetsAttachInfo mallocStack(MemoryStack stack) {
+    public static XrSessionActionSetsAttachInfo malloc(MemoryStack stack) {
         return wrap(XrSessionActionSetsAttachInfo.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -217,45 +206,27 @@ public class XrSessionActionSetsAttachInfo extends Struct implements NativeResou
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSessionActionSetsAttachInfo callocStack(MemoryStack stack) {
+    public static XrSessionActionSetsAttachInfo calloc(MemoryStack stack) {
         return wrap(XrSessionActionSetsAttachInfo.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -338,21 +309,23 @@ public class XrSessionActionSetsAttachInfo extends Struct implements NativeResou
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSessionActionSetsAttachInfo.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrSessionActionSetsAttachInfo.nnext(address()); }
-        /** Returns the value of the {@code countActionSets} field. */
+        /** @return the value of the {@code countActionSets} field. */
         @NativeType("uint32_t")
         public int countActionSets() { return XrSessionActionSetsAttachInfo.ncountActionSets(address()); }
-        /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code actionSets} field. */
+        /** @return a {@link PointerBuffer} view of the data pointed to by the {@code actionSets} field. */
         @NativeType("XrActionSet const *")
         public PointerBuffer actionSets() { return XrSessionActionSetsAttachInfo.nactionSets(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSessionActionSetsAttachInfo.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO TYPE_SESSION_ACTION_SETS_ATTACH_INFO} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrSessionActionSetsAttachInfo.nnext(address(), value); return this; }
         /** Sets the address of the specified {@link PointerBuffer} to the {@code actionSets} field. */

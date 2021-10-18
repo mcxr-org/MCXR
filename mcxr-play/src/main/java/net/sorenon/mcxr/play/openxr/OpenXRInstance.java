@@ -31,7 +31,7 @@ public class OpenXRInstance implements AutoCloseable {
 
     public OpenXRSystem getSystem(int formFactor) throws XrException {
         try (MemoryStack stack = stackPush()) {
-            XrSystemGetInfo systemInfo = XrSystemGetInfo.mallocStack();
+            XrSystemGetInfo systemInfo = XrSystemGetInfo.malloc(stack);
             systemInfo.set(XR10.XR_TYPE_SYSTEM_GET_INFO, 0, formFactor);
 
             LongBuffer lBuf = stack.longs(0);
@@ -46,9 +46,9 @@ public class OpenXRInstance implements AutoCloseable {
 
     public OpenXRSession createSession(int viewConfigurationType, OpenXRSystem system) throws XrException {
         try (MemoryStack stack = stackPush()) {
-            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.mallocStack().set(
+            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.malloc(stack).set(
                     XR10.XR_TYPE_SESSION_CREATE_INFO,
-                    system.createOpenGLBinding().address(),
+                    system.createOpenGLBinding(stack).address(),
                     0,
                     system.handle
             );

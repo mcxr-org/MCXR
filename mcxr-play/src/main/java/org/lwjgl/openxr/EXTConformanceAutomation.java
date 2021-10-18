@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.Library;
 import org.lwjgl.system.NativeType;
 
@@ -14,13 +15,13 @@ import static org.lwjgl.system.Checks.check;
 /** The EXT_conformance_automation extension. */
 public class EXTConformanceAutomation {
 
+    static { Library.initialize(); }
+
     /** The extension specification version. */
-    public static final int XR_EXT_conformance_automation_SPEC_VERSION = 1;
+    public static final int XR_EXT_conformance_automation_SPEC_VERSION = 3;
 
     /** The extension name. */
     public static final String XR_EXT_CONFORMANCE_AUTOMATION_EXTENSION_NAME = "XR_EXT_conformance_automation";
-
-    static { Library.initialize(); }
 
     protected EXTConformanceAutomation() {
         throw new UnsupportedOperationException();
@@ -28,39 +29,36 @@ public class EXTConformanceAutomation {
 
     // --- [ xrSetInputDeviceActiveEXT ] ---
 
-    @NativeType("XrResult")
-    public static int xrSetInputDeviceActiveEXT(XrSession session, @NativeType("XrPath") long interactionProfile, @NativeType("XrPath") long topLevelPath, @NativeType("XrBool32") boolean isActive) {
-        long __functionAddress = session.getCapabilities().xrSetInputDeviceActiveEXT;
-        if (CHECKS) {
-            check(__functionAddress);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPJJI(session.address(), interactionProfile, topLevelPath, isActive ? 1 : 0, __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrSetInputDeviceActiveEXT(XrSession session, @NativeType("XrPath") long interactionProfile, @NativeType("XrPath") long topLevelPath, @NativeType("XrBool32") boolean isActive) {
+//        long __functionAddress = session.getCapabilities().xrSetInputDeviceActiveEXT;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//        }
+//        return callPJJI(session.address(), interactionProfile, topLevelPath, isActive ? 1 : 0, __functionAddress);
+//    }
 
     // --- [ xrSetInputDeviceStateBoolEXT ] ---
 
-    @NativeType("XrResult")
-    public static int xrSetInputDeviceStateBoolEXT(XrSession session, @NativeType("XrPath") long topLevelPath, @NativeType("XrPath") long inputSourcePath, @NativeType("XrBool32") boolean state) {
-        long __functionAddress = session.getCapabilities().xrSetInputDeviceStateBoolEXT;
-        if (CHECKS) {
-            check(__functionAddress);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPJJI(session.address(), topLevelPath, inputSourcePath, state ? 1 : 0, __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrSetInputDeviceStateBoolEXT(XrSession session, @NativeType("XrPath") long topLevelPath, @NativeType("XrPath") long inputSourcePath, @NativeType("XrBool32") boolean state) {
+//        long __functionAddress = session.getCapabilities().xrSetInputDeviceStateBoolEXT;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//        }
+//        return callPJJI(session.address(), topLevelPath, inputSourcePath, state ? 1 : 0, __functionAddress);
+//    }
 
     // --- [ xrSetInputDeviceStateFloatEXT ] ---
 
-    @NativeType("XrResult")
-    public static int xrSetInputDeviceStateFloatEXT(XrSession session, @NativeType("XrPath") long topLevelPath, @NativeType("XrPath") long inputSourcePath, float state) {
-        long __functionAddress = session.getCapabilities().xrSetInputDeviceStateFloatEXT;
-        if (CHECKS) {
-            check(__functionAddress);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPJJI(session.address(), topLevelPath, inputSourcePath, state, __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrSetInputDeviceStateFloatEXT(XrSession session, @NativeType("XrPath") long topLevelPath, @NativeType("XrPath") long inputSourcePath, float state) {
+//        long __functionAddress = session.getCapabilities().xrSetInputDeviceStateFloatEXT;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//        }
+//        return callPJJI(session.address(), topLevelPath, inputSourcePath, state, __functionAddress);
+//    }
 
     // --- [ xrSetInputDeviceStateVector2fEXT ] ---
 

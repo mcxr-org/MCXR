@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The MSFT_hand_interaction extension. */
 public final class MSFTHandInteraction {
 

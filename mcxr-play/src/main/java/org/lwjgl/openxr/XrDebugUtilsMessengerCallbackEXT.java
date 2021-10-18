@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.system.Callback;
 
 import static org.lwjgl.system.MemoryUtil.NULL;

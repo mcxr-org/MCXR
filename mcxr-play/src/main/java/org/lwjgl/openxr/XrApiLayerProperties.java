@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
@@ -14,8 +13,6 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.openxr.XR10.XR_MAX_API_LAYER_DESCRIPTION_SIZE;
 import static org.lwjgl.openxr.XR10.XR_MAX_API_LAYER_NAME_SIZE;
-import static org.lwjgl.system.Checks.*;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -82,74 +79,30 @@ public class XrApiLayerProperties extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code layerName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code layerName} field. */
     @NativeType("char[XR_MAX_API_LAYER_NAME_SIZE]")
     public ByteBuffer layerName() { return nlayerName(address()); }
-    /** Decodes the null-terminated string stored in the {@code layerName} field. */
+    /** @return the null-terminated string stored in the {@code layerName} field. */
     @NativeType("char[XR_MAX_API_LAYER_NAME_SIZE]")
     public String layerNameString() { return nlayerNameString(address()); }
-    /** Returns the value of the {@code specVersion} field. */
+    /** @return the value of the {@code specVersion} field. */
     @NativeType("XrVersion")
     public long specVersion() { return nspecVersion(address()); }
-    /** Returns the value of the {@code layerVersion} field. */
+    /** @return the value of the {@code layerVersion} field. */
     @NativeType("uint32_t")
     public int layerVersion() { return nlayerVersion(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code description} field. */
+    /** @return a {@link ByteBuffer} view of the {@code description} field. */
     @NativeType("char[XR_MAX_API_LAYER_DESCRIPTION_SIZE]")
     public ByteBuffer description() { return ndescription(address()); }
-    /** Decodes the null-terminated string stored in the {@code description} field. */
+    /** @return the null-terminated string stored in the {@code description} field. */
     @NativeType("char[XR_MAX_API_LAYER_DESCRIPTION_SIZE]")
     public String descriptionString() { return ndescriptionString(address()); }
-
-    /** Sets the specified value to the {@code type} field. */
-    public XrApiLayerProperties type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
-    /** Sets the specified value to the {@code next} field. */
-    public XrApiLayerProperties next(@NativeType("void *") long value) { nnext(address(), value); return this; }
-    /** Copies the specified encoded string to the {@code layerName} field. */
-    public XrApiLayerProperties layerName(@NativeType("char[XR_MAX_API_LAYER_NAME_SIZE]") ByteBuffer value) { nlayerName(address(), value); return this; }
-    /** Sets the specified value to the {@code specVersion} field. */
-    public XrApiLayerProperties specVersion(@NativeType("XrVersion") long value) { nspecVersion(address(), value); return this; }
-    /** Sets the specified value to the {@code layerVersion} field. */
-    public XrApiLayerProperties layerVersion(@NativeType("uint32_t") int value) { nlayerVersion(address(), value); return this; }
-    /** Copies the specified encoded string to the {@code description} field. */
-    public XrApiLayerProperties description(@NativeType("char[XR_MAX_API_LAYER_DESCRIPTION_SIZE]") ByteBuffer value) { ndescription(address(), value); return this; }
-
-    /** Initializes this struct with the specified values. */
-    public XrApiLayerProperties set(
-        int type,
-        long next,
-        ByteBuffer layerName,
-        long specVersion,
-        int layerVersion,
-        ByteBuffer description
-    ) {
-        type(type);
-        next(next);
-        layerName(layerName);
-        specVersion(specVersion);
-        layerVersion(layerVersion);
-        description(description);
-
-        return this;
-    }
-
-    /**
-     * Copies the specified struct data to this struct.
-     *
-     * @param src the source struct
-     *
-     * @return this struct
-     */
-    public XrApiLayerProperties set(XrApiLayerProperties src) {
-        memCopy(src.address(), address(), SIZEOF);
-        return this;
-    }
 
     // -----------------------------------
 
@@ -224,24 +177,13 @@ public class XrApiLayerProperties extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrApiLayerProperties} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrApiLayerProperties mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrApiLayerProperties} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrApiLayerProperties callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrApiLayerProperties} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrApiLayerProperties mallocStack(MemoryStack stack) {
+    public static XrApiLayerProperties malloc(MemoryStack stack) {
         return wrap(XrApiLayerProperties.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -250,45 +192,27 @@ public class XrApiLayerProperties extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrApiLayerProperties callocStack(MemoryStack stack) {
+    public static XrApiLayerProperties calloc(MemoryStack stack) {
         return wrap(XrApiLayerProperties.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -310,31 +234,6 @@ public class XrApiLayerProperties extends Struct implements NativeResource {
     public static ByteBuffer ndescription(long struct) { return memByteBuffer(struct + XrApiLayerProperties.DESCRIPTION, XR_MAX_API_LAYER_DESCRIPTION_SIZE); }
     /** Unsafe version of {@link #descriptionString}. */
     public static String ndescriptionString(long struct) { return memUTF8(struct + XrApiLayerProperties.DESCRIPTION); }
-
-    /** Unsafe version of {@link #type(int) type}. */
-    public static void ntype(long struct, int value) { UNSAFE.putInt(null, struct + XrApiLayerProperties.TYPE, value); }
-    /** Unsafe version of {@link #next(long) next}. */
-    public static void nnext(long struct, long value) { memPutAddress(struct + XrApiLayerProperties.NEXT, value); }
-    /** Unsafe version of {@link #layerName(ByteBuffer) layerName}. */
-    public static void nlayerName(long struct, ByteBuffer value) {
-        if (CHECKS) {
-            checkNT1(value);
-            checkGT(value, XR_MAX_API_LAYER_NAME_SIZE);
-        }
-        memCopy(memAddress(value), struct + XrApiLayerProperties.LAYERNAME, value.remaining());
-    }
-    /** Unsafe version of {@link #specVersion(long) specVersion}. */
-    public static void nspecVersion(long struct, long value) { UNSAFE.putLong(null, struct + XrApiLayerProperties.SPECVERSION, value); }
-    /** Unsafe version of {@link #layerVersion(int) layerVersion}. */
-    public static void nlayerVersion(long struct, int value) { UNSAFE.putInt(null, struct + XrApiLayerProperties.LAYERVERSION, value); }
-    /** Unsafe version of {@link #description(ByteBuffer) description}. */
-    public static void ndescription(long struct, ByteBuffer value) {
-        if (CHECKS) {
-            checkNT1(value);
-            checkGT(value, XR_MAX_API_LAYER_DESCRIPTION_SIZE);
-        }
-        memCopy(memAddress(value), struct + XrApiLayerProperties.DESCRIPTION, value.remaining());
-    }
 
     // -----------------------------------
 
@@ -374,43 +273,30 @@ public class XrApiLayerProperties extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrApiLayerProperties.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrApiLayerProperties.nnext(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code layerName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code layerName} field. */
         @NativeType("char[XR_MAX_API_LAYER_NAME_SIZE]")
         public ByteBuffer layerName() { return XrApiLayerProperties.nlayerName(address()); }
-        /** Decodes the null-terminated string stored in the {@code layerName} field. */
+        /** @return the null-terminated string stored in the {@code layerName} field. */
         @NativeType("char[XR_MAX_API_LAYER_NAME_SIZE]")
         public String layerNameString() { return XrApiLayerProperties.nlayerNameString(address()); }
-        /** Returns the value of the {@code specVersion} field. */
+        /** @return the value of the {@code specVersion} field. */
         @NativeType("XrVersion")
         public long specVersion() { return XrApiLayerProperties.nspecVersion(address()); }
-        /** Returns the value of the {@code layerVersion} field. */
+        /** @return the value of the {@code layerVersion} field. */
         @NativeType("uint32_t")
         public int layerVersion() { return XrApiLayerProperties.nlayerVersion(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code description} field. */
+        /** @return a {@link ByteBuffer} view of the {@code description} field. */
         @NativeType("char[XR_MAX_API_LAYER_DESCRIPTION_SIZE]")
         public ByteBuffer description() { return XrApiLayerProperties.ndescription(address()); }
-        /** Decodes the null-terminated string stored in the {@code description} field. */
+        /** @return the null-terminated string stored in the {@code description} field. */
         @NativeType("char[XR_MAX_API_LAYER_DESCRIPTION_SIZE]")
         public String descriptionString() { return XrApiLayerProperties.ndescriptionString(address()); }
-
-        /** Sets the specified value to the {@code type} field. */
-        public Buffer type(@NativeType("XrStructureType") int value) { XrApiLayerProperties.ntype(address(), value); return this; }
-        /** Sets the specified value to the {@code next} field. */
-        public Buffer next(@NativeType("void *") long value) { XrApiLayerProperties.nnext(address(), value); return this; }
-        /** Copies the specified encoded string to the {@code layerName} field. */
-        public Buffer layerName(@NativeType("char[XR_MAX_API_LAYER_NAME_SIZE]") ByteBuffer value) { XrApiLayerProperties.nlayerName(address(), value); return this; }
-        /** Sets the specified value to the {@code specVersion} field. */
-        public Buffer specVersion(@NativeType("XrVersion") long value) { XrApiLayerProperties.nspecVersion(address(), value); return this; }
-        /** Sets the specified value to the {@code layerVersion} field. */
-        public Buffer layerVersion(@NativeType("uint32_t") int value) { XrApiLayerProperties.nlayerVersion(address(), value); return this; }
-        /** Copies the specified encoded string to the {@code description} field. */
-        public Buffer description(@NativeType("char[XR_MAX_API_LAYER_DESCRIPTION_SIZE]") ByteBuffer value) { XrApiLayerProperties.ndescription(address(), value); return this; }
 
     }
 

@@ -6,16 +6,15 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.system.NativeType;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.system.Checks.*;
+import static org.lwjgl.system.JNI.*;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.MemoryUtil.memAddressSafe;
-import static org.lwjgl.system.JNI.*;
 
 /** The FB_display_refresh_rate extension. */
 public class FBDisplayRefreshRate {
@@ -84,27 +83,25 @@ public class FBDisplayRefreshRate {
     }
 
     /** Array version of: {@link #xrEnumerateDisplayRefreshRatesFB EnumerateDisplayRefreshRatesFB} */
-    @NativeType("XrResult")
-    public static int xrEnumerateDisplayRefreshRatesFB(XrSession session, @NativeType("uint32_t *") int[] displayRefreshRateCountOutput, @Nullable @NativeType("float *") float[] displayRefreshRates) {
-        long __functionAddress = session.getCapabilities().xrEnumerateDisplayRefreshRatesFB;
-        if (CHECKS) {
-            check(__functionAddress);
-            check(displayRefreshRateCountOutput, 1);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPPPI(session.address(), lengthSafe(displayRefreshRates), displayRefreshRateCountOutput, displayRefreshRates, __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrEnumerateDisplayRefreshRatesFB(XrSession session, @NativeType("uint32_t *") int[] displayRefreshRateCountOutput, @Nullable @NativeType("float *") float[] displayRefreshRates) {
+//        long __functionAddress = session.getCapabilities().xrEnumerateDisplayRefreshRatesFB;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//            check(displayRefreshRateCountOutput, 1);
+//        }
+//        return callPPPI(session.address(), lengthSafe(displayRefreshRates), displayRefreshRateCountOutput, displayRefreshRates, __functionAddress);
+//    }
 
     /** Array version of: {@link #xrGetDisplayRefreshRateFB GetDisplayRefreshRateFB} */
-    @NativeType("XrResult")
-    public static int xrGetDisplayRefreshRateFB(XrSession session, @NativeType("float *") float[] displayRefreshRate) {
-        long __functionAddress = session.getCapabilities().xrGetDisplayRefreshRateFB;
-        if (CHECKS) {
-            check(__functionAddress);
-            check(displayRefreshRate, 1);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPPI(session.address(), displayRefreshRate, __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrGetDisplayRefreshRateFB(XrSession session, @NativeType("float *") float[] displayRefreshRate) {
+//        long __functionAddress = session.getCapabilities().xrGetDisplayRefreshRateFB;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//            check(displayRefreshRate, 1);
+//        }
+//        return callPPI(session.address(), displayRefreshRate, __functionAddress);
+//    }
 
 }

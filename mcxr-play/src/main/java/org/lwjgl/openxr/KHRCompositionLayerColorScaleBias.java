@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The KHR_composition_layer_color_scale_bias extension. */
 public final class KHRCompositionLayerColorScaleBias {
 

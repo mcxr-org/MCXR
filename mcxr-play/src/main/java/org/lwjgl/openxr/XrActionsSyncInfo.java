@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,22 +69,24 @@ public class XrActionsSyncInfo extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code countActiveActionSets} field. */
+    /** @return the value of the {@code countActiveActionSets} field. */
     @NativeType("uint32_t")
     public int countActiveActionSets() { return ncountActiveActionSets(address()); }
-    /** Returns a {@link XrActiveActionSet.Buffer} view of the struct array pointed to by the {@code activeActionSets} field. */
+    /** @return a {@link XrActiveActionSet.Buffer} view of the struct array pointed to by the {@code activeActionSets} field. */
     @Nullable
     @NativeType("XrActiveActionSet const *")
     public XrActiveActionSet.Buffer activeActionSets() { return nactiveActionSets(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrActionsSyncInfo type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_ACTIONS_SYNC_INFO TYPE_ACTIONS_SYNC_INFO} value to the {@code type} field. */
+    public XrActionsSyncInfo type$Default() { return type(XR10.XR_TYPE_ACTIONS_SYNC_INFO); }
     /** Sets the specified value to the {@code next} field. */
     public XrActionsSyncInfo next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code countActiveActionSets} field. */
@@ -194,24 +194,13 @@ public class XrActionsSyncInfo extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrActionsSyncInfo} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrActionsSyncInfo mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrActionsSyncInfo} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrActionsSyncInfo callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrActionsSyncInfo} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrActionsSyncInfo mallocStack(MemoryStack stack) {
+    public static XrActionsSyncInfo malloc(MemoryStack stack) {
         return wrap(XrActionsSyncInfo.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -220,45 +209,27 @@ public class XrActionsSyncInfo extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrActionsSyncInfo callocStack(MemoryStack stack) {
+    public static XrActionsSyncInfo calloc(MemoryStack stack) {
         return wrap(XrActionsSyncInfo.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -320,22 +291,24 @@ public class XrActionsSyncInfo extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrActionsSyncInfo.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrActionsSyncInfo.nnext(address()); }
-        /** Returns the value of the {@code countActiveActionSets} field. */
+        /** @return the value of the {@code countActiveActionSets} field. */
         @NativeType("uint32_t")
         public int countActiveActionSets() { return XrActionsSyncInfo.ncountActiveActionSets(address()); }
-        /** Returns a {@link XrActiveActionSet.Buffer} view of the struct array pointed to by the {@code activeActionSets} field. */
+        /** @return a {@link XrActiveActionSet.Buffer} view of the struct array pointed to by the {@code activeActionSets} field. */
         @Nullable
         @NativeType("XrActiveActionSet const *")
         public XrActiveActionSet.Buffer activeActionSets() { return XrActionsSyncInfo.nactiveActionSets(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrActionsSyncInfo.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_ACTIONS_SYNC_INFO TYPE_ACTIONS_SYNC_INFO} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_ACTIONS_SYNC_INFO); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrActionsSyncInfo.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code countActiveActionSets} field. */

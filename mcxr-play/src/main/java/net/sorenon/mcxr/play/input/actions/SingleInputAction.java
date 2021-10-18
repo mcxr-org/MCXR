@@ -27,13 +27,13 @@ public abstract class SingleInputAction<T> extends Action implements InputAction
 
     @Override
     public void createHandle(XrActionSet actionSet, OpenXRInstance instance) throws XrException {
-        try (MemoryStack ignored = stackPush()) {
+        try (var stack = stackPush()) {
             String localizedName = "mcxr.action." + this.name;
             if (I18n.hasTranslation(localizedName)) {
                 localizedName = I18n.translate(localizedName);
             }
 
-            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
+            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.malloc(stack).set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
                     NULL,
                     memUTF8("mcxr." + this.name),

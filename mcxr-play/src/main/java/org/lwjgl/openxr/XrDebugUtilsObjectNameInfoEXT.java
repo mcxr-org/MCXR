@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
@@ -14,7 +13,6 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.checkNT1Safe;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -77,29 +75,31 @@ public class XrDebugUtilsObjectNameInfoEXT extends Struct implements NativeResou
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code objectType} field. */
+    /** @return the value of the {@code objectType} field. */
     @NativeType("XrObjectType")
     public int objectType() { return nobjectType(address()); }
-    /** Returns the value of the {@code objectHandle} field. */
+    /** @return the value of the {@code objectHandle} field. */
     @NativeType("uint64_t")
     public long objectHandle() { return nobjectHandle(address()); }
-    /** Returns a {@link ByteBuffer} view of the null-terminated string pointed to by the {@code objectName} field. */
+    /** @return a {@link ByteBuffer} view of the null-terminated string pointed to by the {@code objectName} field. */
     @Nullable
     @NativeType("char const *")
     public ByteBuffer objectName() { return nobjectName(address()); }
-    /** Decodes the null-terminated string pointed to by the {@code objectName} field. */
+    /** @return the null-terminated string pointed to by the {@code objectName} field. */
     @Nullable
     @NativeType("char const *")
     public String objectNameString() { return nobjectNameString(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrDebugUtilsObjectNameInfoEXT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EXTDebugUtils#XR_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT} value to the {@code type} field. */
+    public XrDebugUtilsObjectNameInfoEXT type$Default() { return type(EXTDebugUtils.XR_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT); }
     /** Sets the specified value to the {@code next} field. */
     public XrDebugUtilsObjectNameInfoEXT next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code objectType} field. */
@@ -211,24 +211,13 @@ public class XrDebugUtilsObjectNameInfoEXT extends Struct implements NativeResou
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrDebugUtilsObjectNameInfoEXT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrDebugUtilsObjectNameInfoEXT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrDebugUtilsObjectNameInfoEXT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrDebugUtilsObjectNameInfoEXT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrDebugUtilsObjectNameInfoEXT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrDebugUtilsObjectNameInfoEXT mallocStack(MemoryStack stack) {
+    public static XrDebugUtilsObjectNameInfoEXT malloc(MemoryStack stack) {
         return wrap(XrDebugUtilsObjectNameInfoEXT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -237,45 +226,27 @@ public class XrDebugUtilsObjectNameInfoEXT extends Struct implements NativeResou
      *
      * @param stack the stack from which to allocate
      */
-    public static XrDebugUtilsObjectNameInfoEXT callocStack(MemoryStack stack) {
+    public static XrDebugUtilsObjectNameInfoEXT calloc(MemoryStack stack) {
         return wrap(XrDebugUtilsObjectNameInfoEXT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -346,29 +317,31 @@ public class XrDebugUtilsObjectNameInfoEXT extends Struct implements NativeResou
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrDebugUtilsObjectNameInfoEXT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrDebugUtilsObjectNameInfoEXT.nnext(address()); }
-        /** Returns the value of the {@code objectType} field. */
+        /** @return the value of the {@code objectType} field. */
         @NativeType("XrObjectType")
         public int objectType() { return XrDebugUtilsObjectNameInfoEXT.nobjectType(address()); }
-        /** Returns the value of the {@code objectHandle} field. */
+        /** @return the value of the {@code objectHandle} field. */
         @NativeType("uint64_t")
         public long objectHandle() { return XrDebugUtilsObjectNameInfoEXT.nobjectHandle(address()); }
-        /** Returns a {@link ByteBuffer} view of the null-terminated string pointed to by the {@code objectName} field. */
+        /** @return a {@link ByteBuffer} view of the null-terminated string pointed to by the {@code objectName} field. */
         @Nullable
         @NativeType("char const *")
         public ByteBuffer objectName() { return XrDebugUtilsObjectNameInfoEXT.nobjectName(address()); }
-        /** Decodes the null-terminated string pointed to by the {@code objectName} field. */
+        /** @return the null-terminated string pointed to by the {@code objectName} field. */
         @Nullable
         @NativeType("char const *")
         public String objectNameString() { return XrDebugUtilsObjectNameInfoEXT.nobjectNameString(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrDebugUtilsObjectNameInfoEXT.ntype(address(), value); return this; }
+        /** Sets the {@link EXTDebugUtils#XR_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EXTDebugUtils.XR_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrDebugUtilsObjectNameInfoEXT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code objectType} field. */

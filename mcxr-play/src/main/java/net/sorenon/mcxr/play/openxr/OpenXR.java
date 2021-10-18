@@ -109,14 +109,14 @@ public class OpenXR {
                 throw new XrException(0, "OpenXR runtime does not provide required extension: " + KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
             }
 
-            XrApplicationInfo applicationInfo = XrApplicationInfo.mallocStack();
+            XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
             applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
             applicationInfo.applicationVersion(1);
             applicationInfo.engineName(stack.UTF8("Minecraft Java Edition"));
             applicationInfo.engineVersion(117);
 
-            XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.mallocStack();
+            XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
                     0,

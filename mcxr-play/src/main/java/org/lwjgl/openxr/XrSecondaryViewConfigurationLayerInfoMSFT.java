@@ -6,7 +6,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
@@ -14,7 +13,6 @@ import org.lwjgl.system.*;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -81,27 +79,29 @@ public class XrSecondaryViewConfigurationLayerInfoMSFT extends Struct implements
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code viewConfigurationType} field. */
+    /** @return the value of the {@code viewConfigurationType} field. */
     @NativeType("XrViewConfigurationType")
     public int viewConfigurationType() { return nviewConfigurationType(address()); }
-    /** Returns the value of the {@code environmentBlendMode} field. */
+    /** @return the value of the {@code environmentBlendMode} field. */
     @NativeType("XrEnvironmentBlendMode")
     public int environmentBlendMode() { return nenvironmentBlendMode(address()); }
-    /** Returns the value of the {@code layerCount} field. */
+    /** @return the value of the {@code layerCount} field. */
     @NativeType("uint32_t")
     public int layerCount() { return nlayerCount(address()); }
-    /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code layers} field. */
+    /** @return a {@link PointerBuffer} view of the data pointed to by the {@code layers} field. */
     @NativeType("XrCompositionLayerBaseHeader const * const *")
     public PointerBuffer layers() { return nlayers(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSecondaryViewConfigurationLayerInfoMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTSecondaryViewConfiguration#XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT} value to the {@code type} field. */
+    public XrSecondaryViewConfigurationLayerInfoMSFT type$Default() { return type(MSFTSecondaryViewConfiguration.XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrSecondaryViewConfigurationLayerInfoMSFT next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code viewConfigurationType} field. */
@@ -213,24 +213,13 @@ public class XrSecondaryViewConfigurationLayerInfoMSFT extends Struct implements
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSecondaryViewConfigurationLayerInfoMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSecondaryViewConfigurationLayerInfoMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSecondaryViewConfigurationLayerInfoMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSecondaryViewConfigurationLayerInfoMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSecondaryViewConfigurationLayerInfoMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSecondaryViewConfigurationLayerInfoMSFT mallocStack(MemoryStack stack) {
+    public static XrSecondaryViewConfigurationLayerInfoMSFT malloc(MemoryStack stack) {
         return wrap(XrSecondaryViewConfigurationLayerInfoMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -239,45 +228,27 @@ public class XrSecondaryViewConfigurationLayerInfoMSFT extends Struct implements
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSecondaryViewConfigurationLayerInfoMSFT callocStack(MemoryStack stack) {
+    public static XrSecondaryViewConfigurationLayerInfoMSFT calloc(MemoryStack stack) {
         return wrap(XrSecondaryViewConfigurationLayerInfoMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -368,27 +339,29 @@ public class XrSecondaryViewConfigurationLayerInfoMSFT extends Struct implements
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSecondaryViewConfigurationLayerInfoMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrSecondaryViewConfigurationLayerInfoMSFT.nnext(address()); }
-        /** Returns the value of the {@code viewConfigurationType} field. */
+        /** @return the value of the {@code viewConfigurationType} field. */
         @NativeType("XrViewConfigurationType")
         public int viewConfigurationType() { return XrSecondaryViewConfigurationLayerInfoMSFT.nviewConfigurationType(address()); }
-        /** Returns the value of the {@code environmentBlendMode} field. */
+        /** @return the value of the {@code environmentBlendMode} field. */
         @NativeType("XrEnvironmentBlendMode")
         public int environmentBlendMode() { return XrSecondaryViewConfigurationLayerInfoMSFT.nenvironmentBlendMode(address()); }
-        /** Returns the value of the {@code layerCount} field. */
+        /** @return the value of the {@code layerCount} field. */
         @NativeType("uint32_t")
         public int layerCount() { return XrSecondaryViewConfigurationLayerInfoMSFT.nlayerCount(address()); }
-        /** Returns a {@link PointerBuffer} view of the data pointed to by the {@code layers} field. */
+        /** @return a {@link PointerBuffer} view of the data pointed to by the {@code layers} field. */
         @NativeType("XrCompositionLayerBaseHeader const * const *")
         public PointerBuffer layers() { return XrSecondaryViewConfigurationLayerInfoMSFT.nlayers(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSecondaryViewConfigurationLayerInfoMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTSecondaryViewConfiguration#XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTSecondaryViewConfiguration.XR_TYPE_SECONDARY_VIEW_CONFIGURATION_LAYER_INFO_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrSecondaryViewConfigurationLayerInfoMSFT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code viewConfigurationType} field. */

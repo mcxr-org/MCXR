@@ -19,4 +19,5 @@ abstract class DispatchableHandle extends Pointer.Default {
     public XRCapabilities getCapabilities() {
         return capabilities;
     }
+
 }

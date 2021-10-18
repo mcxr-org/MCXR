@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The EXT_hp_mixed_reality_controller extension. */
 public final class EXTHpMixedRealityController {
 

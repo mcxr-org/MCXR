@@ -6,14 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -80,27 +78,29 @@ public class XrGraphicsBindingEGLMNDX extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code getProcAddress} field. */
+    /** @return the value of the {@code getProcAddress} field. */
     @NativeType("PFNEGLGETPROCADDRESSPROC")
     public long getProcAddress() { return ngetProcAddress(address()); }
-    /** Returns the value of the {@code display} field. */
+    /** @return the value of the {@code display} field. */
     @NativeType("EGLDisplay")
     public long display() { return ndisplay(address()); }
-    /** Returns the value of the {@code config} field. */
+    /** @return the value of the {@code config} field. */
     @NativeType("EGLConfig")
     public long config() { return nconfig(address()); }
-    /** Returns the value of the {@code context} field. */
+    /** @return the value of the {@code context} field. */
     @NativeType("EGLContext")
     public long context() { return ncontext(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrGraphicsBindingEGLMNDX type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MNDXEglEnable#XR_TYPE_GRAPHICS_BINDING_EGL_MNDX TYPE_GRAPHICS_BINDING_EGL_MNDX} value to the {@code type} field. */
+    public XrGraphicsBindingEGLMNDX type$Default() { return type(MNDXEglEnable.XR_TYPE_GRAPHICS_BINDING_EGL_MNDX); }
     /** Sets the specified value to the {@code next} field. */
     public XrGraphicsBindingEGLMNDX next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code getProcAddress} field. */
@@ -216,24 +216,13 @@ public class XrGraphicsBindingEGLMNDX extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrGraphicsBindingEGLMNDX} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrGraphicsBindingEGLMNDX mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrGraphicsBindingEGLMNDX} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrGraphicsBindingEGLMNDX callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrGraphicsBindingEGLMNDX} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrGraphicsBindingEGLMNDX mallocStack(MemoryStack stack) {
+    public static XrGraphicsBindingEGLMNDX malloc(MemoryStack stack) {
         return wrap(XrGraphicsBindingEGLMNDX.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -242,45 +231,27 @@ public class XrGraphicsBindingEGLMNDX extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrGraphicsBindingEGLMNDX callocStack(MemoryStack stack) {
+    public static XrGraphicsBindingEGLMNDX calloc(MemoryStack stack) {
         return wrap(XrGraphicsBindingEGLMNDX.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -374,27 +345,29 @@ public class XrGraphicsBindingEGLMNDX extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrGraphicsBindingEGLMNDX.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrGraphicsBindingEGLMNDX.nnext(address()); }
-        /** Returns the value of the {@code getProcAddress} field. */
+        /** @return the value of the {@code getProcAddress} field. */
         @NativeType("PFNEGLGETPROCADDRESSPROC")
         public long getProcAddress() { return XrGraphicsBindingEGLMNDX.ngetProcAddress(address()); }
-        /** Returns the value of the {@code display} field. */
+        /** @return the value of the {@code display} field. */
         @NativeType("EGLDisplay")
         public long display() { return XrGraphicsBindingEGLMNDX.ndisplay(address()); }
-        /** Returns the value of the {@code config} field. */
+        /** @return the value of the {@code config} field. */
         @NativeType("EGLConfig")
         public long config() { return XrGraphicsBindingEGLMNDX.nconfig(address()); }
-        /** Returns the value of the {@code context} field. */
+        /** @return the value of the {@code context} field. */
         @NativeType("EGLContext")
         public long context() { return XrGraphicsBindingEGLMNDX.ncontext(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrGraphicsBindingEGLMNDX.ntype(address(), value); return this; }
+        /** Sets the {@link MNDXEglEnable#XR_TYPE_GRAPHICS_BINDING_EGL_MNDX TYPE_GRAPHICS_BINDING_EGL_MNDX} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MNDXEglEnable.XR_TYPE_GRAPHICS_BINDING_EGL_MNDX); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrGraphicsBindingEGLMNDX.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code getProcAddress} field. */

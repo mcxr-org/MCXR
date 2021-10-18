@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -63,10 +61,10 @@ public class XrSystemTrackingProperties extends Struct implements NativeResource
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code orientationTracking} field. */
+    /** @return the value of the {@code orientationTracking} field. */
     @NativeType("XrBool32")
     public boolean orientationTracking() { return norientationTracking(address()) != 0; }
-    /** Returns the value of the {@code positionTracking} field. */
+    /** @return the value of the {@code positionTracking} field. */
     @NativeType("XrBool32")
     public boolean positionTracking() { return npositionTracking(address()) != 0; }
 
@@ -171,24 +169,13 @@ public class XrSystemTrackingProperties extends Struct implements NativeResource
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSystemTrackingProperties} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSystemTrackingProperties mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSystemTrackingProperties} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSystemTrackingProperties callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSystemTrackingProperties} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemTrackingProperties mallocStack(MemoryStack stack) {
+    public static XrSystemTrackingProperties malloc(MemoryStack stack) {
         return wrap(XrSystemTrackingProperties.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -197,45 +184,27 @@ public class XrSystemTrackingProperties extends Struct implements NativeResource
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemTrackingProperties callocStack(MemoryStack stack) {
+    public static XrSystemTrackingProperties calloc(MemoryStack stack) {
         return wrap(XrSystemTrackingProperties.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -289,10 +258,10 @@ public class XrSystemTrackingProperties extends Struct implements NativeResource
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code orientationTracking} field. */
+        /** @return the value of the {@code orientationTracking} field. */
         @NativeType("XrBool32")
         public boolean orientationTracking() { return XrSystemTrackingProperties.norientationTracking(address()) != 0; }
-        /** Returns the value of the {@code positionTracking} field. */
+        /** @return the value of the {@code positionTracking} field. */
         @NativeType("XrBool32")
         public boolean positionTracking() { return XrSystemTrackingProperties.npositionTracking(address()) != 0; }
 

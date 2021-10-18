@@ -39,7 +39,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
 
     @Override
     public void createHandle(XrActionSet actionSet, OpenXRInstance instance) throws XrException {
-        try (MemoryStack ignored = stackPush()) {
+        try (var stack = stackPush()) {
 
             for (int i = 0; i < amount; i++) {
                 var str = subactionPathsStr.get(i);
@@ -51,7 +51,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
                 localizedName = I18n.translate(localizedName);
             }
 
-            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.mallocStack().set(
+            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.malloc(stack).set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
                     NULL,
                     memUTF8("mcxr." + this.name),
@@ -68,10 +68,10 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
 
     @Override
     public void createHandleSession(OpenXRSession session) throws XrException {
-        try (var ignored = stackPush()) {
+        try (var stack = stackPush()) {
             spaces = new XrSpace[amount];
             for (int i = 0; i < amount; i++) {
-                XrActionSpaceCreateInfo action_space_info = XrActionSpaceCreateInfo.mallocStack().set(
+                XrActionSpaceCreateInfo action_space_info = XrActionSpaceCreateInfo.malloc(stack).set(
                         XR10.XR_TYPE_ACTION_SPACE_CREATE_INFO,
                         NULL,
                         handle,

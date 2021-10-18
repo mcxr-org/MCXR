@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -63,9 +61,9 @@ public class XrRect2Di extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns a {@link XrOffset2Di} view of the {@code offset} field. */
+    /** @return a {@link XrOffset2Di} view of the {@code offset} field. */
     public XrOffset2Di offset() { return noffset(address()); }
-    /** Returns a {@link XrExtent2Di} view of the {@code extent} field. */
+    /** @return a {@link XrExtent2Di} view of the {@code extent} field. */
     public XrExtent2Di extent() { return nextent(address()); }
 
     /** Copies the specified {@link XrOffset2Di} to the {@code offset} field. */
@@ -173,24 +171,13 @@ public class XrRect2Di extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrRect2Di} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrRect2Di mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrRect2Di} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrRect2Di callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrRect2Di} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrRect2Di mallocStack(MemoryStack stack) {
+    public static XrRect2Di malloc(MemoryStack stack) {
         return wrap(XrRect2Di.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -199,45 +186,27 @@ public class XrRect2Di extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrRect2Di callocStack(MemoryStack stack) {
+    public static XrRect2Di calloc(MemoryStack stack) {
         return wrap(XrRect2Di.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -291,9 +260,9 @@ public class XrRect2Di extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns a {@link XrOffset2Di} view of the {@code offset} field. */
+        /** @return a {@link XrOffset2Di} view of the {@code offset} field. */
         public XrOffset2Di offset() { return XrRect2Di.noffset(address()); }
-        /** Returns a {@link XrExtent2Di} view of the {@code extent} field. */
+        /** @return a {@link XrExtent2Di} view of the {@code extent} field. */
         public XrExtent2Di extent() { return XrRect2Di.nextent(address()); }
 
         /** Copies the specified {@link XrOffset2Di} to the {@code offset} field. */

@@ -1,5 +1,6 @@
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.FunctionProvider;
 import org.lwjgl.system.dyncall.DynCall;
 

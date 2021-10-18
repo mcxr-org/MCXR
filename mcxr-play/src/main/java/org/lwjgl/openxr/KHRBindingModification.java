@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The KHR_binding_modification extension. */
 public final class KHRBindingModification {
 

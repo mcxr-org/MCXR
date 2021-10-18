@@ -5,7 +5,6 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
 
@@ -37,7 +36,7 @@ public class XR {
 //    }
 
     /**
-     * Loads the OpenXR loader, using the specified library path.
+     * Loads the OpenXR loader, using the specified library name.
      *
      * <p>The {@link FunctionProvider} instance created by this method can only be used to retrieve global commands and commands exposed statically by the loader.</p>
      *
@@ -91,10 +90,7 @@ public class XR {
             xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR", false);
         }
 
-        private long getFunctionAddress(String name) {
-            return getFunctionAddress(name, true);
-        }
-
+        private long getFunctionAddress(String name) { return getFunctionAddress(name, true); }
         private long getFunctionAddress(String name, boolean required) {
             try (MemoryStack stack = stackPush()) {
                 PointerBuffer pp = stack.mallocPointer(1);
@@ -108,9 +104,7 @@ public class XR {
         }
     }
 
-    static GlobalCommands getGlobalCommands() {
-        return check(globalCommands);
-    }
+    static GlobalCommands getGlobalCommands() { return check(globalCommands); }
 
     static Set<String> getEnabledExtensionSet(long apiVersion, @Nullable PointerBuffer extensionNames) {
         Set<String> enabledExtensions = new HashSet<>(16);
@@ -119,7 +113,7 @@ public class XR {
         long minorVersion = XR10.XR_VERSION_MINOR(apiVersion);
 
         int[] XR_VERSIONS = {
-                1
+            1
         };
 
         long maxMajor = min(majorVersion, XR_VERSIONS.length);

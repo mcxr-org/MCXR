@@ -5,13 +5,14 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.NativeType;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
+import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.JNI.*;
 
 /** The MSFT_spatial_graph_bridge extension. */
 public class MSFTSpatialGraphBridge {

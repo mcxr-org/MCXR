@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -75,24 +73,26 @@ public class XrSystemHandTrackingMeshPropertiesMSFT extends Struct implements Na
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code supportsHandTrackingMesh} field. */
+    /** @return the value of the {@code supportsHandTrackingMesh} field. */
     @NativeType("XrBool32")
     public boolean supportsHandTrackingMesh() { return nsupportsHandTrackingMesh(address()) != 0; }
-    /** Returns the value of the {@code maxHandMeshIndexCount} field. */
+    /** @return the value of the {@code maxHandMeshIndexCount} field. */
     @NativeType("uint32_t")
     public int maxHandMeshIndexCount() { return nmaxHandMeshIndexCount(address()); }
-    /** Returns the value of the {@code maxHandMeshVertexCount} field. */
+    /** @return the value of the {@code maxHandMeshVertexCount} field. */
     @NativeType("uint32_t")
     public int maxHandMeshVertexCount() { return nmaxHandMeshVertexCount(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSystemHandTrackingMeshPropertiesMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTHandTrackingMesh#XR_TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT} value to the {@code type} field. */
+    public XrSystemHandTrackingMeshPropertiesMSFT type$Default() { return type(MSFTHandTrackingMesh.XR_TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrSystemHandTrackingMeshPropertiesMSFT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code supportsHandTrackingMesh} field. */
@@ -204,24 +204,13 @@ public class XrSystemHandTrackingMeshPropertiesMSFT extends Struct implements Na
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSystemHandTrackingMeshPropertiesMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSystemHandTrackingMeshPropertiesMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSystemHandTrackingMeshPropertiesMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSystemHandTrackingMeshPropertiesMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSystemHandTrackingMeshPropertiesMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemHandTrackingMeshPropertiesMSFT mallocStack(MemoryStack stack) {
+    public static XrSystemHandTrackingMeshPropertiesMSFT malloc(MemoryStack stack) {
         return wrap(XrSystemHandTrackingMeshPropertiesMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -230,45 +219,27 @@ public class XrSystemHandTrackingMeshPropertiesMSFT extends Struct implements Na
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemHandTrackingMeshPropertiesMSFT callocStack(MemoryStack stack) {
+    public static XrSystemHandTrackingMeshPropertiesMSFT calloc(MemoryStack stack) {
         return wrap(XrSystemHandTrackingMeshPropertiesMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -334,24 +305,26 @@ public class XrSystemHandTrackingMeshPropertiesMSFT extends Struct implements Na
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSystemHandTrackingMeshPropertiesMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrSystemHandTrackingMeshPropertiesMSFT.nnext(address()); }
-        /** Returns the value of the {@code supportsHandTrackingMesh} field. */
+        /** @return the value of the {@code supportsHandTrackingMesh} field. */
         @NativeType("XrBool32")
         public boolean supportsHandTrackingMesh() { return XrSystemHandTrackingMeshPropertiesMSFT.nsupportsHandTrackingMesh(address()) != 0; }
-        /** Returns the value of the {@code maxHandMeshIndexCount} field. */
+        /** @return the value of the {@code maxHandMeshIndexCount} field. */
         @NativeType("uint32_t")
         public int maxHandMeshIndexCount() { return XrSystemHandTrackingMeshPropertiesMSFT.nmaxHandMeshIndexCount(address()); }
-        /** Returns the value of the {@code maxHandMeshVertexCount} field. */
+        /** @return the value of the {@code maxHandMeshVertexCount} field. */
         @NativeType("uint32_t")
         public int maxHandMeshVertexCount() { return XrSystemHandTrackingMeshPropertiesMSFT.nmaxHandMeshVertexCount(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSystemHandTrackingMeshPropertiesMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTHandTrackingMesh#XR_TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTHandTrackingMesh.XR_TYPE_SYSTEM_HAND_TRACKING_MESH_PROPERTIES_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrSystemHandTrackingMeshPropertiesMSFT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code supportsHandTrackingMesh} field. */

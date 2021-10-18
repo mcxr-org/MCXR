@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The KHR_loader_init_android extension. */
 public final class KHRLoaderInitAndroid {
 

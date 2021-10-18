@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -75,22 +73,24 @@ public class XrHapticVibration extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code duration} field. */
+    /** @return the value of the {@code duration} field. */
     @NativeType("XrDuration")
     public long duration() { return nduration(address()); }
-    /** Returns the value of the {@code frequency} field. */
+    /** @return the value of the {@code frequency} field. */
     public float frequency() { return nfrequency(address()); }
-    /** Returns the value of the {@code amplitude} field. */
+    /** @return the value of the {@code amplitude} field. */
     public float amplitude() { return namplitude(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrHapticVibration type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_HAPTIC_VIBRATION TYPE_HAPTIC_VIBRATION} value to the {@code type} field. */
+    public XrHapticVibration type$Default() { return type(XR10.XR_TYPE_HAPTIC_VIBRATION); }
     /** Sets the specified value to the {@code next} field. */
     public XrHapticVibration next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code duration} field. */
@@ -202,24 +202,13 @@ public class XrHapticVibration extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrHapticVibration} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrHapticVibration mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrHapticVibration} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrHapticVibration callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrHapticVibration} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHapticVibration mallocStack(MemoryStack stack) {
+    public static XrHapticVibration malloc(MemoryStack stack) {
         return wrap(XrHapticVibration.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -228,45 +217,27 @@ public class XrHapticVibration extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrHapticVibration callocStack(MemoryStack stack) {
+    public static XrHapticVibration calloc(MemoryStack stack) {
         return wrap(XrHapticVibration.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -332,22 +303,24 @@ public class XrHapticVibration extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrHapticVibration.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrHapticVibration.nnext(address()); }
-        /** Returns the value of the {@code duration} field. */
+        /** @return the value of the {@code duration} field. */
         @NativeType("XrDuration")
         public long duration() { return XrHapticVibration.nduration(address()); }
-        /** Returns the value of the {@code frequency} field. */
+        /** @return the value of the {@code frequency} field. */
         public float frequency() { return XrHapticVibration.nfrequency(address()); }
-        /** Returns the value of the {@code amplitude} field. */
+        /** @return the value of the {@code amplitude} field. */
         public float amplitude() { return XrHapticVibration.namplitude(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrHapticVibration.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_HAPTIC_VIBRATION TYPE_HAPTIC_VIBRATION} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_HAPTIC_VIBRATION); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrHapticVibration.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code duration} field. */

@@ -5,11 +5,12 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The VALVE_analog_threshold extension. */
 public final class VALVEAnalogThreshold {
 
     /** The extension specification version. */
-    public static final int XR_VALVE_analog_threshold_SPEC_VERSION = 1;
+    public static final int XR_VALVE_analog_threshold_SPEC_VERSION = 2;
 
     /** The extension name. */
     public static final String XR_VALVE_ANALOG_THRESHOLD_EXTENSION_NAME = "XR_VALVE_analog_threshold";

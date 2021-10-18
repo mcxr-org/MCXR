@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,21 +69,23 @@ public class XrSecondaryViewConfigurationStateMSFT extends Struct implements Nat
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code viewConfigurationType} field. */
+    /** @return the value of the {@code viewConfigurationType} field. */
     @NativeType("XrViewConfigurationType")
     public int viewConfigurationType() { return nviewConfigurationType(address()); }
-    /** Returns the value of the {@code active} field. */
+    /** @return the value of the {@code active} field. */
     @NativeType("XrBool32")
     public boolean active() { return nactive(address()) != 0; }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSecondaryViewConfigurationStateMSFT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link MSFTSecondaryViewConfiguration#XR_TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT} value to the {@code type} field. */
+    public XrSecondaryViewConfigurationStateMSFT type$Default() { return type(MSFTSecondaryViewConfiguration.XR_TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT); }
     /** Sets the specified value to the {@code next} field. */
     public XrSecondaryViewConfigurationStateMSFT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code viewConfigurationType} field. */
@@ -193,24 +193,13 @@ public class XrSecondaryViewConfigurationStateMSFT extends Struct implements Nat
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSecondaryViewConfigurationStateMSFT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSecondaryViewConfigurationStateMSFT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSecondaryViewConfigurationStateMSFT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSecondaryViewConfigurationStateMSFT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSecondaryViewConfigurationStateMSFT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSecondaryViewConfigurationStateMSFT mallocStack(MemoryStack stack) {
+    public static XrSecondaryViewConfigurationStateMSFT malloc(MemoryStack stack) {
         return wrap(XrSecondaryViewConfigurationStateMSFT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -219,45 +208,27 @@ public class XrSecondaryViewConfigurationStateMSFT extends Struct implements Nat
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSecondaryViewConfigurationStateMSFT callocStack(MemoryStack stack) {
+    public static XrSecondaryViewConfigurationStateMSFT calloc(MemoryStack stack) {
         return wrap(XrSecondaryViewConfigurationStateMSFT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -319,21 +290,23 @@ public class XrSecondaryViewConfigurationStateMSFT extends Struct implements Nat
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSecondaryViewConfigurationStateMSFT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrSecondaryViewConfigurationStateMSFT.nnext(address()); }
-        /** Returns the value of the {@code viewConfigurationType} field. */
+        /** @return the value of the {@code viewConfigurationType} field. */
         @NativeType("XrViewConfigurationType")
         public int viewConfigurationType() { return XrSecondaryViewConfigurationStateMSFT.nviewConfigurationType(address()); }
-        /** Returns the value of the {@code active} field. */
+        /** @return the value of the {@code active} field. */
         @NativeType("XrBool32")
         public boolean active() { return XrSecondaryViewConfigurationStateMSFT.nactive(address()) != 0; }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSecondaryViewConfigurationStateMSFT.ntype(address(), value); return this; }
+        /** Sets the {@link MSFTSecondaryViewConfiguration#XR_TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(MSFTSecondaryViewConfiguration.XR_TYPE_SECONDARY_VIEW_CONFIGURATION_STATE_MSFT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrSecondaryViewConfigurationStateMSFT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code viewConfigurationType} field. */

@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -71,21 +69,23 @@ public class XrSessionCreateInfoOverlayEXTX extends Struct implements NativeReso
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code createFlags} field. */
+    /** @return the value of the {@code createFlags} field. */
     @NativeType("XrOverlaySessionCreateFlagsEXTX")
     public long createFlags() { return ncreateFlags(address()); }
-    /** Returns the value of the {@code sessionLayersPlacement} field. */
+    /** @return the value of the {@code sessionLayersPlacement} field. */
     @NativeType("uint32_t")
     public int sessionLayersPlacement() { return nsessionLayersPlacement(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSessionCreateInfoOverlayEXTX type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EXTXOverlay#XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX} value to the {@code type} field. */
+    public XrSessionCreateInfoOverlayEXTX type$Default() { return type(EXTXOverlay.XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX); }
     /** Sets the specified value to the {@code next} field. */
     public XrSessionCreateInfoOverlayEXTX next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code createFlags} field. */
@@ -193,24 +193,13 @@ public class XrSessionCreateInfoOverlayEXTX extends Struct implements NativeReso
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSessionCreateInfoOverlayEXTX} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSessionCreateInfoOverlayEXTX mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSessionCreateInfoOverlayEXTX} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSessionCreateInfoOverlayEXTX callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSessionCreateInfoOverlayEXTX} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSessionCreateInfoOverlayEXTX mallocStack(MemoryStack stack) {
+    public static XrSessionCreateInfoOverlayEXTX malloc(MemoryStack stack) {
         return wrap(XrSessionCreateInfoOverlayEXTX.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -219,45 +208,27 @@ public class XrSessionCreateInfoOverlayEXTX extends Struct implements NativeReso
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSessionCreateInfoOverlayEXTX callocStack(MemoryStack stack) {
+    public static XrSessionCreateInfoOverlayEXTX calloc(MemoryStack stack) {
         return wrap(XrSessionCreateInfoOverlayEXTX.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -319,21 +290,23 @@ public class XrSessionCreateInfoOverlayEXTX extends Struct implements NativeReso
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSessionCreateInfoOverlayEXTX.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrSessionCreateInfoOverlayEXTX.nnext(address()); }
-        /** Returns the value of the {@code createFlags} field. */
+        /** @return the value of the {@code createFlags} field. */
         @NativeType("XrOverlaySessionCreateFlagsEXTX")
         public long createFlags() { return XrSessionCreateInfoOverlayEXTX.ncreateFlags(address()); }
-        /** Returns the value of the {@code sessionLayersPlacement} field. */
+        /** @return the value of the {@code sessionLayersPlacement} field. */
         @NativeType("uint32_t")
         public int sessionLayersPlacement() { return XrSessionCreateInfoOverlayEXTX.nsessionLayersPlacement(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSessionCreateInfoOverlayEXTX.ntype(address(), value); return this; }
+        /** Sets the {@link EXTXOverlay#XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EXTXOverlay.XR_TYPE_SESSION_CREATE_INFO_OVERLAY_EXTX); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrSessionCreateInfoOverlayEXTX.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code createFlags} field. */

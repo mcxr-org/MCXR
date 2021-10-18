@@ -6,16 +6,16 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.system.NativeType;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.system.Checks.*;
+import static org.lwjgl.system.JNI.callPJPI;
+import static org.lwjgl.system.JNI.callPJPPI;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.MemoryUtil.memAddressSafe;
-import static org.lwjgl.system.JNI.*;
 
 /** The MSFT_controller_model extension. */
 public class MSFTControllerModel {
@@ -120,15 +120,14 @@ public class MSFTControllerModel {
     }
 
     /** Array version of: {@link #xrLoadControllerModelMSFT LoadControllerModelMSFT} */
-    @NativeType("XrResult")
-    public static int xrLoadControllerModelMSFT(XrSession session, @NativeType("XrControllerModelKeyMSFT") long modelKey, @NativeType("uint32_t *") int[] bufferCountOutput, @Nullable @NativeType("uint8_t *") ByteBuffer buffer) {
-        long __functionAddress = session.getCapabilities().xrLoadControllerModelMSFT;
-        if (CHECKS) {
-            check(__functionAddress);
-            check(bufferCountOutput, 1);
-        }
-        throw new RuntimeException("JNI call does not exist in LWJGL version");
-//return callPJPPI(session.address(), modelKey, remainingSafe(buffer), bufferCountOutput, memAddressSafe(buffer), __functionAddress);
-    }
+//    @NativeType("XrResult")
+//    public static int xrLoadControllerModelMSFT(XrSession session, @NativeType("XrControllerModelKeyMSFT") long modelKey, @NativeType("uint32_t *") int[] bufferCountOutput, @Nullable @NativeType("uint8_t *") ByteBuffer buffer) {
+//        long __functionAddress = session.getCapabilities().xrLoadControllerModelMSFT;
+//        if (CHECKS) {
+//            check(__functionAddress);
+//            check(bufferCountOutput, 1);
+//        }
+//        return callPJPPI(session.address(), modelKey, remainingSafe(buffer), bufferCountOutput, memAddressSafe(buffer), __functionAddress);
+//    }
 
 }

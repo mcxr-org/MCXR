@@ -65,11 +65,11 @@ public final class XrInput {
             }
         }
 
-        try (var ignored = stackPush()) {
+        try (var stack = stackPush()) {
             for (var entry : bindingsMap.entrySet()) {
                 var bindingsSet = entry.getValue();
 
-                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.mallocStack(bindingsSet.size());
+                XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.malloc(bindingsSet.size(), stack);
 
                 for (int i = 0; i < bindingsSet.size(); i++) {
                     var binding = bindingsSet.get(i);
@@ -79,7 +79,7 @@ public final class XrInput {
                     );
                 }
 
-                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.mallocStack().set(
+                XrInteractionProfileSuggestedBinding suggested_binds = XrInteractionProfileSuggestedBinding.malloc(stack).set(
                         XR10.XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING,
                         NULL,
                         instance.getPath(entry.getKey()),
@@ -97,7 +97,7 @@ public final class XrInput {
                 }
             }
 
-            XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.mallocStack().set(
+            XrSessionActionSetsAttachInfo attach_info = XrSessionActionSetsAttachInfo.malloc(stack).set(
                     XR10.XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO,
                     NULL,
                     stackPointers(vanillaGameplayActionSet.getHandle().address(), guiActionSet.getHandle().address(), handsActionSet.getHandle().address())

@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -87,33 +85,35 @@ public class XrViewConfigurationView extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code recommendedImageRectWidth} field. */
+    /** @return the value of the {@code recommendedImageRectWidth} field. */
     @NativeType("uint32_t")
     public int recommendedImageRectWidth() { return nrecommendedImageRectWidth(address()); }
-    /** Returns the value of the {@code maxImageRectWidth} field. */
+    /** @return the value of the {@code maxImageRectWidth} field. */
     @NativeType("uint32_t")
     public int maxImageRectWidth() { return nmaxImageRectWidth(address()); }
-    /** Returns the value of the {@code recommendedImageRectHeight} field. */
+    /** @return the value of the {@code recommendedImageRectHeight} field. */
     @NativeType("uint32_t")
     public int recommendedImageRectHeight() { return nrecommendedImageRectHeight(address()); }
-    /** Returns the value of the {@code maxImageRectHeight} field. */
+    /** @return the value of the {@code maxImageRectHeight} field. */
     @NativeType("uint32_t")
     public int maxImageRectHeight() { return nmaxImageRectHeight(address()); }
-    /** Returns the value of the {@code recommendedSwapchainSampleCount} field. */
+    /** @return the value of the {@code recommendedSwapchainSampleCount} field. */
     @NativeType("uint32_t")
     public int recommendedSwapchainSampleCount() { return nrecommendedSwapchainSampleCount(address()); }
-    /** Returns the value of the {@code maxSwapchainSampleCount} field. */
+    /** @return the value of the {@code maxSwapchainSampleCount} field. */
     @NativeType("uint32_t")
     public int maxSwapchainSampleCount() { return nmaxSwapchainSampleCount(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrViewConfigurationView type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_VIEW_CONFIGURATION_VIEW TYPE_VIEW_CONFIGURATION_VIEW} value to the {@code type} field. */
+    public XrViewConfigurationView type$Default() { return type(XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW); }
     /** Sets the specified value to the {@code next} field. */
     public XrViewConfigurationView next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code recommendedImageRectWidth} field. */
@@ -237,24 +237,13 @@ public class XrViewConfigurationView extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrViewConfigurationView} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrViewConfigurationView mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrViewConfigurationView} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrViewConfigurationView callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrViewConfigurationView} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrViewConfigurationView mallocStack(MemoryStack stack) {
+    public static XrViewConfigurationView malloc(MemoryStack stack) {
         return wrap(XrViewConfigurationView.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -263,45 +252,27 @@ public class XrViewConfigurationView extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrViewConfigurationView callocStack(MemoryStack stack) {
+    public static XrViewConfigurationView calloc(MemoryStack stack) {
         return wrap(XrViewConfigurationView.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -379,33 +350,35 @@ public class XrViewConfigurationView extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrViewConfigurationView.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrViewConfigurationView.nnext(address()); }
-        /** Returns the value of the {@code recommendedImageRectWidth} field. */
+        /** @return the value of the {@code recommendedImageRectWidth} field. */
         @NativeType("uint32_t")
         public int recommendedImageRectWidth() { return XrViewConfigurationView.nrecommendedImageRectWidth(address()); }
-        /** Returns the value of the {@code maxImageRectWidth} field. */
+        /** @return the value of the {@code maxImageRectWidth} field. */
         @NativeType("uint32_t")
         public int maxImageRectWidth() { return XrViewConfigurationView.nmaxImageRectWidth(address()); }
-        /** Returns the value of the {@code recommendedImageRectHeight} field. */
+        /** @return the value of the {@code recommendedImageRectHeight} field. */
         @NativeType("uint32_t")
         public int recommendedImageRectHeight() { return XrViewConfigurationView.nrecommendedImageRectHeight(address()); }
-        /** Returns the value of the {@code maxImageRectHeight} field. */
+        /** @return the value of the {@code maxImageRectHeight} field. */
         @NativeType("uint32_t")
         public int maxImageRectHeight() { return XrViewConfigurationView.nmaxImageRectHeight(address()); }
-        /** Returns the value of the {@code recommendedSwapchainSampleCount} field. */
+        /** @return the value of the {@code recommendedSwapchainSampleCount} field. */
         @NativeType("uint32_t")
         public int recommendedSwapchainSampleCount() { return XrViewConfigurationView.nrecommendedSwapchainSampleCount(address()); }
-        /** Returns the value of the {@code maxSwapchainSampleCount} field. */
+        /** @return the value of the {@code maxSwapchainSampleCount} field. */
         @NativeType("uint32_t")
         public int maxSwapchainSampleCount() { return XrViewConfigurationView.nmaxSwapchainSampleCount(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrViewConfigurationView.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_VIEW_CONFIGURATION_VIEW TYPE_VIEW_CONFIGURATION_VIEW} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrViewConfigurationView.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code recommendedImageRectWidth} field. */

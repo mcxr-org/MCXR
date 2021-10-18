@@ -5,19 +5,21 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.NativeType;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
+import static org.lwjgl.system.JNI.callPI;
+import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.JNI.*;
 
 /** The MSFT_spatial_anchor extension. */
 public class MSFTSpatialAnchor {
 
     /** The extension specification version. */
-    public static final int XR_MSFT_spatial_anchor_SPEC_VERSION = 1;
+    public static final int XR_MSFT_spatial_anchor_SPEC_VERSION = 2;
 
     /** The extension name. */
     public static final String XR_MSFT_SPATIAL_ANCHOR_EXTENSION_NAME = "XR_MSFT_spatial_anchor";

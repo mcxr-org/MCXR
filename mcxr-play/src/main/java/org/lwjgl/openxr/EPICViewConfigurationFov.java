@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The EPIC_view_configuration_fov extension. */
 public final class EPICViewConfigurationFov {
 

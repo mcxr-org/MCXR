@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -79,23 +77,25 @@ public class XrViewConfigurationDepthRangeEXT extends Struct implements NativeRe
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code recommendedNearZ} field. */
+    /** @return the value of the {@code recommendedNearZ} field. */
     public float recommendedNearZ() { return nrecommendedNearZ(address()); }
-    /** Returns the value of the {@code minNearZ} field. */
+    /** @return the value of the {@code minNearZ} field. */
     public float minNearZ() { return nminNearZ(address()); }
-    /** Returns the value of the {@code recommendedFarZ} field. */
+    /** @return the value of the {@code recommendedFarZ} field. */
     public float recommendedFarZ() { return nrecommendedFarZ(address()); }
-    /** Returns the value of the {@code maxFarZ} field. */
+    /** @return the value of the {@code maxFarZ} field. */
     public float maxFarZ() { return nmaxFarZ(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrViewConfigurationDepthRangeEXT type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link EXTViewConfigurationDepthRange#XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT} value to the {@code type} field. */
+    public XrViewConfigurationDepthRangeEXT type$Default() { return type(EXTViewConfigurationDepthRange.XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT); }
     /** Sets the specified value to the {@code next} field. */
     public XrViewConfigurationDepthRangeEXT next(@NativeType("void *") long value) { nnext(address(), value); return this; }
     /** Sets the specified value to the {@code recommendedNearZ} field. */
@@ -211,24 +211,13 @@ public class XrViewConfigurationDepthRangeEXT extends Struct implements NativeRe
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrViewConfigurationDepthRangeEXT} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrViewConfigurationDepthRangeEXT mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrViewConfigurationDepthRangeEXT} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrViewConfigurationDepthRangeEXT callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrViewConfigurationDepthRangeEXT} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrViewConfigurationDepthRangeEXT mallocStack(MemoryStack stack) {
+    public static XrViewConfigurationDepthRangeEXT malloc(MemoryStack stack) {
         return wrap(XrViewConfigurationDepthRangeEXT.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -237,45 +226,27 @@ public class XrViewConfigurationDepthRangeEXT extends Struct implements NativeRe
      *
      * @param stack the stack from which to allocate
      */
-    public static XrViewConfigurationDepthRangeEXT callocStack(MemoryStack stack) {
+    public static XrViewConfigurationDepthRangeEXT calloc(MemoryStack stack) {
         return wrap(XrViewConfigurationDepthRangeEXT.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -345,23 +316,25 @@ public class XrViewConfigurationDepthRangeEXT extends Struct implements NativeRe
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrViewConfigurationDepthRangeEXT.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrViewConfigurationDepthRangeEXT.nnext(address()); }
-        /** Returns the value of the {@code recommendedNearZ} field. */
+        /** @return the value of the {@code recommendedNearZ} field. */
         public float recommendedNearZ() { return XrViewConfigurationDepthRangeEXT.nrecommendedNearZ(address()); }
-        /** Returns the value of the {@code minNearZ} field. */
+        /** @return the value of the {@code minNearZ} field. */
         public float minNearZ() { return XrViewConfigurationDepthRangeEXT.nminNearZ(address()); }
-        /** Returns the value of the {@code recommendedFarZ} field. */
+        /** @return the value of the {@code recommendedFarZ} field. */
         public float recommendedFarZ() { return XrViewConfigurationDepthRangeEXT.nrecommendedFarZ(address()); }
-        /** Returns the value of the {@code maxFarZ} field. */
+        /** @return the value of the {@code maxFarZ} field. */
         public float maxFarZ() { return XrViewConfigurationDepthRangeEXT.nmaxFarZ(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrViewConfigurationDepthRangeEXT.ntype(address(), value); return this; }
+        /** Sets the {@link EXTViewConfigurationDepthRange#XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT} value to the {@code type} field. */
+        public Buffer type$Default() { return type(EXTViewConfigurationDepthRange.XR_TYPE_VIEW_CONFIGURATION_DEPTH_RANGE_EXT); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrViewConfigurationDepthRangeEXT.nnext(address(), value); return this; }
         /** Sets the specified value to the {@code recommendedNearZ} field. */

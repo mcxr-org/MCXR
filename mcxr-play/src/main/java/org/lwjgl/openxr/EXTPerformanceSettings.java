@@ -5,17 +5,18 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeType;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.JNI.*;
+import static org.lwjgl.system.JNI.callPI;
 
 /** The EXT_performance_settings extension. */
 public class EXTPerformanceSettings {
 
     /** The extension specification version. */
-    public static final int XR_EXT_performance_settings_SPEC_VERSION = 1;
+    public static final int XR_EXT_performance_settings_SPEC_VERSION = 3;
 
     /** The extension name. */
     public static final String XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME = "XR_EXT_performance_settings";

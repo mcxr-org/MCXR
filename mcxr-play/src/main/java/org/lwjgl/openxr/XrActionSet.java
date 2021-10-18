@@ -5,7 +5,11 @@
 package org.lwjgl.openxr;
 
 public class XrActionSet extends DispatchableHandle {
-    public XrActionSet(long handle, DispatchableHandle xrInstance) {
-        super(handle, xrInstance.getCapabilities());
+    public XrActionSet(long handle, DispatchableHandle session) {
+        super(handle, session.getCapabilities());
+    }
+
+    public XrActionSet(long handle, XRCapabilities capabilities) {
+        super(handle, capabilities);
     }
 }

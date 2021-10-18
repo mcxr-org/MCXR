@@ -6,21 +6,21 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.system.NativeType;
 
 import java.nio.IntBuffer;
 
 import static org.lwjgl.system.Checks.*;
+import static org.lwjgl.system.JNI.callPPI;
+import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 import static org.lwjgl.system.MemoryUtil.memAddressSafe;
-import static org.lwjgl.system.JNI.*;
 
 /** The FB_color_space extension. */
 public class FBColorSpace {
 
     /** The extension specification version. */
-    public static final int XR_FB_color_space_SPEC_VERSION = 1;
+    public static final int XR_FB_color_space_SPEC_VERSION = 2;
 
     /** The extension name. */
     public static final String XR_FB_COLOR_SPACE_EXTENSION_NAME = "XR_FB_color_space";
@@ -81,13 +81,20 @@ public class FBColorSpace {
 
     // --- [ xrSetColorSpaceFB ] ---
 
-    @NativeType("XrResult")
-    public static int xrSetColorSpaceFB(XrSession session, @NativeType("XrColorSpaceFB const") int colorspace) {
+    public static int nxrSetColorSpaceFB(XrSession session, long colorspace) {
         long __functionAddress = session.getCapabilities().xrSetColorSpaceFB;
         if (CHECKS) {
             check(__functionAddress);
         }
-        return callPI(session.address(), colorspace, __functionAddress);
+        return callPPI(session.address(), colorspace, __functionAddress);
+    }
+
+    @NativeType("XrResult")
+    public static int xrSetColorSpaceFB(XrSession session, @NativeType("XrColorSpaceFB const *") IntBuffer colorspace) {
+        if (CHECKS) {
+            check(colorspace, 1);
+        }
+        return nxrSetColorSpaceFB(session, memAddress(colorspace));
     }
 
     /** Array version of: {@link #xrEnumerateColorSpacesFB EnumerateColorSpacesFB} */
@@ -99,6 +106,17 @@ public class FBColorSpace {
             check(colorSpaceCountOutput, 1);
         }
         return callPPPI(session.address(), lengthSafe(colorSpaces), colorSpaceCountOutput, colorSpaces, __functionAddress);
+    }
+
+    /** Array version of: {@link #xrSetColorSpaceFB SetColorSpaceFB} */
+    @NativeType("XrResult")
+    public static int xrSetColorSpaceFB(XrSession session, @NativeType("XrColorSpaceFB const *") int[] colorspace) {
+        long __functionAddress = session.getCapabilities().xrSetColorSpaceFB;
+        if (CHECKS) {
+            check(__functionAddress);
+            check(colorspace, 1);
+        }
+        return callPPI(session.address(), colorspace, __functionAddress);
     }
 
 }

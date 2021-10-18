@@ -46,13 +46,13 @@ public abstract class ActionSet implements AutoCloseable {
     }
 
     public final void createHandle(OpenXRInstance instance) throws XrException {
-        try (MemoryStack ignored = stackPush()) {
+        try (var stack = stackPush()) {
             String localizedName = "mcxr.actionset." + this.name;
             if (I18n.hasTranslation(localizedName)) {
                 localizedName = I18n.translate(localizedName);
             }
 
-            XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.mallocStack().set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
+            XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.malloc(stack).set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
                     NULL,
                     memUTF8("mcxr." + this.name),
                     memUTF8(I18n.translate(localizedName)),

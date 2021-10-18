@@ -5,17 +5,18 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.NativeType;
 
 import static org.lwjgl.system.Checks.CHECKS;
 import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.JNI.*;
+import static org.lwjgl.system.JNI.callPJPI;
 
 /** The KHR_opengl_enable extension. */
 public class KHROpenglEnable {
 
     /** The extension specification version. */
-    public static final int XR_KHR_opengl_enable_SPEC_VERSION = 9;
+    public static final int XR_KHR_opengl_enable_SPEC_VERSION = 10;
 
     /** The extension name. */
     public static final String XR_KHR_OPENGL_ENABLE_EXTENSION_NAME = "XR_KHR_opengl_enable";

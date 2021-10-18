@@ -6,13 +6,11 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -83,25 +81,27 @@ public class XrCompositionLayerDepthInfoKHR extends Struct implements NativeReso
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void const *")
     public long next() { return nnext(address()); }
-    /** Returns a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
+    /** @return a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
     public XrSwapchainSubImage subImage() { return nsubImage(address()); }
-    /** Returns the value of the {@code minDepth} field. */
+    /** @return the value of the {@code minDepth} field. */
     public float minDepth() { return nminDepth(address()); }
-    /** Returns the value of the {@code maxDepth} field. */
+    /** @return the value of the {@code maxDepth} field. */
     public float maxDepth() { return nmaxDepth(address()); }
-    /** Returns the value of the {@code nearZ} field. */
+    /** @return the value of the {@code nearZ} field. */
     public float nearZ() { return nnearZ(address()); }
-    /** Returns the value of the {@code farZ} field. */
+    /** @return the value of the {@code farZ} field. */
     public float farZ() { return nfarZ(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrCompositionLayerDepthInfoKHR type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link KHRCompositionLayerDepth#XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR} value to the {@code type} field. */
+    public XrCompositionLayerDepthInfoKHR type$Default() { return type(KHRCompositionLayerDepth.XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR); }
     /** Sets the specified value to the {@code next} field. */
     public XrCompositionLayerDepthInfoKHR next(@NativeType("void const *") long value) { nnext(address(), value); return this; }
     /** Copies the specified {@link XrSwapchainSubImage} to the {@code subImage} field. */
@@ -223,24 +223,13 @@ public class XrCompositionLayerDepthInfoKHR extends Struct implements NativeReso
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrCompositionLayerDepthInfoKHR} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrCompositionLayerDepthInfoKHR mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrCompositionLayerDepthInfoKHR} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrCompositionLayerDepthInfoKHR callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrCompositionLayerDepthInfoKHR} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerDepthInfoKHR mallocStack(MemoryStack stack) {
+    public static XrCompositionLayerDepthInfoKHR malloc(MemoryStack stack) {
         return wrap(XrCompositionLayerDepthInfoKHR.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -249,45 +238,27 @@ public class XrCompositionLayerDepthInfoKHR extends Struct implements NativeReso
      *
      * @param stack the stack from which to allocate
      */
-    public static XrCompositionLayerDepthInfoKHR callocStack(MemoryStack stack) {
+    public static XrCompositionLayerDepthInfoKHR calloc(MemoryStack stack) {
         return wrap(XrCompositionLayerDepthInfoKHR.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -382,25 +353,27 @@ public class XrCompositionLayerDepthInfoKHR extends Struct implements NativeReso
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrCompositionLayerDepthInfoKHR.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void const *")
         public long next() { return XrCompositionLayerDepthInfoKHR.nnext(address()); }
-        /** Returns a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
+        /** @return a {@link XrSwapchainSubImage} view of the {@code subImage} field. */
         public XrSwapchainSubImage subImage() { return XrCompositionLayerDepthInfoKHR.nsubImage(address()); }
-        /** Returns the value of the {@code minDepth} field. */
+        /** @return the value of the {@code minDepth} field. */
         public float minDepth() { return XrCompositionLayerDepthInfoKHR.nminDepth(address()); }
-        /** Returns the value of the {@code maxDepth} field. */
+        /** @return the value of the {@code maxDepth} field. */
         public float maxDepth() { return XrCompositionLayerDepthInfoKHR.nmaxDepth(address()); }
-        /** Returns the value of the {@code nearZ} field. */
+        /** @return the value of the {@code nearZ} field. */
         public float nearZ() { return XrCompositionLayerDepthInfoKHR.nnearZ(address()); }
-        /** Returns the value of the {@code farZ} field. */
+        /** @return the value of the {@code farZ} field. */
         public float farZ() { return XrCompositionLayerDepthInfoKHR.nfarZ(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrCompositionLayerDepthInfoKHR.ntype(address(), value); return this; }
+        /** Sets the {@link KHRCompositionLayerDepth#XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR} value to the {@code type} field. */
+        public Buffer type$Default() { return type(KHRCompositionLayerDepth.XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void const *") long value) { XrCompositionLayerDepthInfoKHR.nnext(address(), value); return this; }
         /** Copies the specified {@link XrSwapchainSubImage} to the {@code subImage} field. */

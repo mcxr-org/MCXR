@@ -8,6 +8,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GLX13;
 import org.lwjgl.openxr.*;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeType;
 import org.lwjgl.system.Platform;
 import org.lwjgl.system.Struct;
@@ -45,8 +46,8 @@ public class OpenXRSystem {
         this.formFactor = formFactor;
         this.handle = handle;
 
-        try (var ignored = stackPush()) {
-            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.callocStack().type(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
+        try (var stack = stackPush()) {
+            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.calloc(stack).type(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
             instance.check(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
 
             XrSystemProperties systemProperties = XrSystemProperties.callocStack().type(XR10.XR_TYPE_SYSTEM_PROPERTIES);
@@ -69,12 +70,12 @@ public class OpenXRSystem {
         }
     }
 
-    public Struct createOpenGLBinding() {
+    public Struct createOpenGLBinding(MemoryStack stack) {
         //Bind the OpenGL context to the OpenXR instance and create the session
         Window window = MinecraftClient.getInstance().getWindow();
         long windowHandle = window.getHandle();
         if (Platform.get() == Platform.WINDOWS) {
-            return XrGraphicsBindingOpenGLWin32KHR.mallocStack().set(
+            return XrGraphicsBindingOpenGLWin32KHR.malloc(stack).set(
                     KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
                     NULL,
                     User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),
@@ -94,7 +95,7 @@ public class OpenXRSystem {
             }
             long fbConfig = fbConfigBuf.get();
 
-            return XrGraphicsBindingOpenGLXlibKHR.callocStack().set(
+            return XrGraphicsBindingOpenGLXlibKHR.calloc(stack).set(
                     KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
                     NULL,
                     xDisplay,

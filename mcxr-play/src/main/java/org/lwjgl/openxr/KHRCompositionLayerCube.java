@@ -5,6 +5,7 @@
  */
 package org.lwjgl.openxr;
 
+import org.jetbrains.annotations.Nullable;
 /** The KHR_composition_layer_cube extension. */
 public final class KHRCompositionLayerCube {
 

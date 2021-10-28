@@ -9,7 +9,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
@@ -21,7 +20,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import virtuoel.pehkui.api.ScaleType;
 
 public class MCXRCore implements ModInitializer {
 
@@ -79,7 +77,7 @@ public class MCXRCore implements ModInitializer {
         }
         acc.getHeadPose().set(pose);
 
-        if (player instanceof ClientPlayerEntity) {
+        if (player.world.isClient && player instanceof ClientPlayerEntity) {
             PacketByteBuf buf = PacketByteBufs.create();
             Vector3f pos = pose.pos;
             Quaternionf quat = pose.orientation;

@@ -18,7 +18,7 @@ public class HandsActionSet extends ActionSet {
     public final ControllerPoses[] aimPoses = {new ControllerPoses(), new ControllerPoses()};
 
     public HandsActionSet() {
-        super("hands");
+        super("hands", 0);
     }
 
     @Override
@@ -30,29 +30,37 @@ public class HandsActionSet extends ActionSet {
     }
 
     @Override
-    public void getBindings(HashMap<String, List<Pair<Action, String>>> map) {
+    public void getDefaultBindings(HashMap<String, List<Pair<Action, String>>> map) {
         map.computeIfAbsent("/interaction_profiles/khr/simple_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(grip, "/user/hand/left/input/grip/pose"),
-                        new Pair<>(grip, "/user/hand/right/input/grip/pose")
+                        new Pair<>(grip, "/user/hand/right/input/grip/pose"),
+                        new Pair<>(aim, "/user/hand/left/input/aim/pose"),
+                        new Pair<>(aim, "/user/hand/right/input/aim/pose")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/oculus/touch_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(grip, "/user/hand/left/input/grip/pose"),
-                        new Pair<>(grip, "/user/hand/right/input/grip/pose")
+                        new Pair<>(grip, "/user/hand/right/input/grip/pose"),
+                        new Pair<>(aim, "/user/hand/left/input/aim/pose"),
+                        new Pair<>(aim, "/user/hand/right/input/aim/pose")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(grip, "/user/hand/left/input/grip/pose"),
-                        new Pair<>(grip, "/user/hand/right/input/grip/pose")
+                        new Pair<>(grip, "/user/hand/right/input/grip/pose"),
+                        new Pair<>(aim, "/user/hand/left/input/aim/pose"),
+                        new Pair<>(aim, "/user/hand/right/input/aim/pose")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(grip, "/user/hand/left/input/grip/pose"),
-                        new Pair<>(grip, "/user/hand/right/input/grip/pose")
+                        new Pair<>(grip, "/user/hand/right/input/grip/pose"),
+                        new Pair<>(aim, "/user/hand/left/input/aim/pose"),
+                        new Pair<>(aim, "/user/hand/right/input/aim/pose")
                 )
         );
     }

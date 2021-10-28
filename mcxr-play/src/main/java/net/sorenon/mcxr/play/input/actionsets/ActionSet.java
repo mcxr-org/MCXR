@@ -24,9 +24,11 @@ public abstract class ActionSet implements AutoCloseable {
 
     public final String name;
     private XrActionSet handle;
+    private int priority;
 
-    public ActionSet(String name) {
+    public ActionSet(String name, int priority) {
         this.name = name;
+        this.priority = priority;
     }
 
     public abstract List<Action> actions();
@@ -35,7 +37,7 @@ public abstract class ActionSet implements AutoCloseable {
         return true;
     }
 
-    public abstract void getBindings(HashMap<String, List<Pair<Action, String>>> map);
+    public abstract void getDefaultBindings(HashMap<String, List<Pair<Action, String>>> map);
 
     public void sync(OpenXRSession session) {
         for (var action : actions()) {
@@ -56,7 +58,7 @@ public abstract class ActionSet implements AutoCloseable {
                     NULL,
                     memUTF8("mcxr." + this.name),
                     memUTF8(I18n.translate(localizedName)),
-                    0
+                    priority
             );
             PointerBuffer pp = stackMallocPointer(1);
             instance.checkSafe(XR10.xrCreateActionSet(instance.handle, actionSetCreateInfo, pp), "xrCreateActionSet");

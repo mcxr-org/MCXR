@@ -41,8 +41,6 @@ public final class XrInput {
     public static final VanillaGameplayActionSet vanillaGameplayActionSet = new VanillaGameplayActionSet();
     public static final GuiActionSet guiActionSet = new GuiActionSet();
 
-    public static boolean exitMenuStillHeld = false;
-
     private XrInput() {
     }
 
@@ -54,10 +52,10 @@ public final class XrInput {
         vanillaGameplayActionSet.createHandle(instance);
         guiActionSet.createHandle(instance);
 
-        HashMap<String, List<Pair<Action, String>>> bindingsMap = new HashMap<>();
-        handsActionSet.getBindings(bindingsMap);
-        vanillaGameplayActionSet.getBindings(bindingsMap);
-        guiActionSet.getBindings(bindingsMap);
+        HashMap<String, List<Pair<Action, String>>> defaultBindings = new HashMap<>();
+        handsActionSet.getDefaultBindings(defaultBindings);
+        vanillaGameplayActionSet.getDefaultBindings(defaultBindings);
+        guiActionSet.getDefaultBindings(defaultBindings);
 
         for (var action : handsActionSet.actions()) {
             if (action instanceof SessionAwareAction sessionAwareAction) {
@@ -66,7 +64,7 @@ public final class XrInput {
         }
 
         try (var stack = stackPush()) {
-            for (var entry : bindingsMap.entrySet()) {
+            for (var entry : defaultBindings.entrySet()) {
                 var bindingsSet = entry.getValue();
 
                 XrActionSuggestedBinding.Buffer bindings = XrActionSuggestedBinding.malloc(bindingsSet.size(), stack);
@@ -114,18 +112,11 @@ public final class XrInput {
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
             if (guiActionSet.exit.changedSinceLastSync) {
                 if (guiActionSet.exit.currentState) {
-                    MinecraftClient.getInstance().currentScreen.keyPressed(256, 0, 0);
-                    exitMenuStillHeld = true;
+                    if (MinecraftClient.getInstance().currentScreen != null) {
+                        MinecraftClient.getInstance().currentScreen.keyPressed(256, 0, 0);
+                    }
                 }
             }
-            exitMenuStillHeld |= guiActionSet.pickup.currentState;
-        }
-
-        if (exitMenuStillHeld) {
-            if (!guiActionSet.exit.currentState && !guiActionSet.pickup.currentState) {
-                exitMenuStillHeld = false;
-            }
-            return;
         }
 
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
@@ -257,30 +248,27 @@ public final class XrInput {
                     mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
                 }
             }
-            {
-                var state = actionSet.scroll.currentState;
-                double sensitivity = 0.25;
-                if (Math.abs(state.y()) > 0.9 && state.length() > 0.95) {
-                    mouse.mouseScroll(-state.x() * sensitivity, 1.5 * Math.signum(state.y()));
-                } else if (Math.abs(state.y()) > 0.1) {
-                    mouse.mouseScroll(-state.x() * sensitivity, 0.1 * Math.signum(state.y()));
-                }
+            var scrollState = actionSet.scroll.currentState;
+            //TODO replace with a better acc alg
+            double sensitivity = 0.25;
+            if (Math.abs(scrollState.y()) > 0.9 && scrollState.length() > 0.95) {
+                mouse.mouseScroll(-scrollState.x() * sensitivity, 1.5 * Math.signum(scrollState.y()));
+            } else if (Math.abs(scrollState.y()) > 0.1) {
+                mouse.mouseScroll(-scrollState.x() * sensitivity, 0.1 * Math.signum(scrollState.y()));
             }
-        } else if (!exitMenuStillHeld) {
-            VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
-            if (actionSet.attack.changedSinceLastSync) {
-                if (actionSet.attack.currentState) {
-                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
-                } else {
-                    mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
-                }
+        }
+        VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
+        if (actionSet.attack.changedSinceLastSync) {
+            if (actionSet.attack.currentState) {
+                mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+            } else {
+                mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
             }
-            if (actionSet.inventory.currentState) {
-                long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
-                if (heldTime * 1E-09 > 1) {
-                    MinecraftClient.getInstance().openPauseMenu(false);
-                    exitMenuStillHeld = false;
-                }
+        }
+        if (actionSet.inventory.currentState) {
+            long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
+            if (heldTime * 1E-09 > 1) {
+                MinecraftClient.getInstance().openPauseMenu(false);
             }
         }
     }

@@ -10,6 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -58,7 +59,7 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
             this.input = sneakingInput;
             sneakingInput.sneaking = true;
 
-            final float invScale = 1.0f / ScaleUtils.getMotionScale(this); //Counter out the method pehuki uses for scaling movement
+            final float invScale = 1.0f / MCXRScale.getMotionScale(this); //Counter out the method pehuki uses for scaling movement
             this.move(MovementType.SELF, new Vec3d(viewPos.x - roomscaleOffset.x, 0, viewPos.z - roomscaleOffset.z).multiply(invScale));
             this.input = input;
             this.onGround = onGround;

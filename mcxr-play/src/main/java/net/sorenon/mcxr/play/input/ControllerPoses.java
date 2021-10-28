@@ -14,6 +14,9 @@ public class ControllerPoses {
     private final Pose unscaledPhysicalPose = new Pose();
     private final Pose gamePose = new Pose();
 
+    //Man I love Java
+    private final Quaternionf quaternionf = new Quaternionf();
+
     /**
      * It's unlikely you will want to use this
      * @return The un-rotated pose in physical space
@@ -51,7 +54,7 @@ public class ControllerPoses {
         physicalPose.set(rawPhysicalPose);
         physicalPose.orientation.rotateLocalY(yawTurn);
 
-        new Quaternionf().rotateLocalY(yawTurn).transform(physicalPose.pos);
+        quaternionf.identity().rotateLocalY(yawTurn).transform(physicalPose.pos);
 
         unscaledPhysicalPose.set(physicalPose);
 

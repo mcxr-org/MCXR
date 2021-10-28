@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.input.actionsets;
 
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.BoolAction;
 import net.sorenon.mcxr.play.input.actions.Vec2fAction;
@@ -13,13 +14,14 @@ public class GuiActionSet extends ActionSet {
 
     public BoolAction pickup = new BoolAction("pickup"); //Pickup Stack, Swap Stack, Divide Drag, Pickup ALL
     public BoolAction split = new BoolAction("split"); //Split Stack, Swap Stack, Single Drag, Drop one
-    public BoolAction quickMove = new BoolAction("quick_move");
+    public BoolAction quickMove = new BoolAction("quick_move"); //Shift + Click
     public BoolAction exit = new BoolAction("close");
 //    public XrAction middleClickAction;
     public Vec2fAction scroll = new Vec2fAction("scroll");
 
+
     public GuiActionSet() {
-        super("gui");
+        super("gui", 1);
     }
 
     @Override
@@ -34,7 +36,12 @@ public class GuiActionSet extends ActionSet {
     }
 
     @Override
-    public void getBindings(HashMap<String, List<Pair<Action, String>>> map) {
+    public boolean shouldSync() {
+        return MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen() | exit.currentState | pickup.currentState;
+    }
+
+    @Override
+    public void getDefaultBindings(HashMap<String, List<Pair<Action, String>>> map) {
         map.computeIfAbsent("/interaction_profiles/oculus/touch_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(pickup, "/user/hand/right/input/a/click"),

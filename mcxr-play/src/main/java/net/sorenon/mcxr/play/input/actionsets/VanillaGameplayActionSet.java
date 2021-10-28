@@ -20,9 +20,10 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction sprint = new BoolAction("sprint");
     public final BoolAction sneak = new BoolAction("sneak");
     public final BoolAction resetPos = new BoolAction("reset_pos");
-    public final FloatAction turn = new FloatAction("turn");
+    public final BoolAction teleport = new BoolAction("teleport"); //TODO switch to Alyx-like bindings
+
+    public final FloatAction turn = new FloatAction("turn"); //TODO split into turn left / right
     public final FloatAction hotbar = new FloatAction("hotbar");
-//    public final Vec2fAction thumbstickMainHand = new Vec2fAction("thumbstick_mainhand");
     public final Vec2fAction move = new Vec2fAction("move");
 
     public boolean turnActivated = false;
@@ -38,12 +39,12 @@ public class VanillaGameplayActionSet extends ActionSet {
             resetPos,
             turn,
             hotbar,
-//            thumbstickMainHand,
-            move
+            move,
+            teleport
             );
 
     public VanillaGameplayActionSet() {
-        super("vanilla_gameplay");
+        super("vanilla_gameplay", 0);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class VanillaGameplayActionSet extends ActionSet {
         return !MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen();
     }
 
-    public void getBindings(HashMap<String, List<Pair<Action, String>>> map) {
+    public void getDefaultBindings(HashMap<String, List<Pair<Action, String>>> map) {
         map.computeIfAbsent("/interaction_profiles/oculus/touch_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(use, "/user/hand/left/input/trigger/value"),
@@ -68,7 +69,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
                         new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
                         new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
-                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click")
+                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/right/input/b/click")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
@@ -82,7 +84,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
                         new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
                         new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
-                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click")
+                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/right/input/b/click")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
@@ -96,7 +99,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(jump, "/user/hand/right/input/trackpad/click"),
                         new Pair<>(sprint, "/user/hand/right/input/squeeze/click"),
                         new Pair<>(sneak, "/user/hand/left/input/squeeze/click"),
-                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click")
+                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(inventory, "/user/hand/right/input/trackpad/click")
                 )
         );
     }

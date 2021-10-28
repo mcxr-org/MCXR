@@ -14,6 +14,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.World;
 import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import org.spongepowered.asm.mixin.Mixin;
@@ -49,7 +50,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         }
 
         if (this.isXR()) {
-            final float scale = MCXRCore.getScale(this);
+            final float scale = MCXRScale.getScale(this);
 
             final float minHeight = 0.5f * scale;
             final float currentHeight = this.getHeight();

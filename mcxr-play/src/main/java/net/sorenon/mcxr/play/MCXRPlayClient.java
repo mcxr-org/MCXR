@@ -9,7 +9,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
 import net.sorenon.fart.FartRenderEvents;
-import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
@@ -17,7 +17,6 @@ import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -50,7 +49,8 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static Vector3f xrOffset = new Vector3f(0, 0, 0);
 
     /**
-     * The inverse position of the player entity in physical space if roomscale movement is enabled
+     * (if roomscale movement is enabled)
+     * The negated position of the player entity in physical space
      */
     public static Vector3d roomscalePlayerOffset = new Vector3d();
 
@@ -118,7 +118,7 @@ public class MCXRPlayClient implements ClientModInitializer {
         if (cam == null) {
             return 1;
         } else {
-            return MCXRCore.getScale(cam, delta);
+            return MCXRScale.getScale(cam, delta);
         }
     }
 

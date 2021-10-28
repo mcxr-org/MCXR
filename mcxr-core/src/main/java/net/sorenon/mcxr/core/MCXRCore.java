@@ -94,16 +94,4 @@ public class MCXRCore implements ModInitializer {
         return INSTANCE.config;
     }
 
-    public static float getScale(Entity entity) {
-        return getScale(entity, 1.0f);
-    }
-
-    public static float getScale(Entity entity, float delta) {
-        if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-            var scaleData = ScaleType.BASE.getScaleData(entity);
-            return scaleData.getScale(delta);
-        } else {
-            return 1;
-        }
-    }
 }

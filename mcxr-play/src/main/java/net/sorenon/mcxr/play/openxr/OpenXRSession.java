@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.openxr;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
+import net.sorenon.mcxr.play.input.actionsets.ActionSet;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
 import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
 import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
@@ -17,9 +18,9 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.lwjgl.opengl.GL21.GL_SRGB8_ALPHA8;
-import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
@@ -201,17 +202,23 @@ public class OpenXRSession implements AutoCloseable {
             VanillaGameplayActionSet vcActionSet = XrInput.vanillaGameplayActionSet;
             GuiActionSet guiActionSet = XrInput.guiActionSet;
             HandsActionSet handsActionSet = XrInput.handsActionSet;
+            List<ActionSet> toSync = new ArrayList<>();
+            toSync.add(vcActionSet);
+            toSync.add(handsActionSet);
+            if (guiActionSet.shouldSync()) {
+                toSync.add(guiActionSet);
+            }
 
-            XrActiveActionSet.Buffer sets = XrActiveActionSet.calloc(3, stack);
-            sets.get(0).actionSet(handsActionSet.getHandle());
-            sets.get(1).actionSet(vcActionSet.getHandle());
-            sets.get(2).actionSet(guiActionSet.getHandle());
+            XrActiveActionSet.Buffer sets = XrActiveActionSet.calloc(toSync.size(), stack);
+            for (int i = 0; i < toSync.size(); i++) {
+                sets.get(i).set(toSync.get(i).getHandle(), NULL);
+            }
 
-            XrActionsSyncInfo sync_info = XrActionsSyncInfo.calloc()
+            XrActionsSyncInfo syncInfo = XrActionsSyncInfo.calloc()
                     .type(XR10.XR_TYPE_ACTIONS_SYNC_INFO)
                     .activeActionSets(sets);
 
-            instance.check(XR10.xrSyncActions(handle, sync_info), "xrSyncActions");
+            instance.check(XR10.xrSyncActions(handle, syncInfo), "xrSyncActions");
 
             handsActionSet.sync(this);
             vcActionSet.sync(this);

@@ -6,15 +6,12 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.openxr.XR10.XR_MAX_SYSTEM_NAME_SIZE;
-import static org.lwjgl.system.Checks.*;
-import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -85,65 +82,43 @@ public class XrSystemProperties extends Struct implements NativeResource {
     @Override
     public int sizeof() { return SIZEOF; }
 
-    /** Returns the value of the {@code type} field. */
+    /** @return the value of the {@code type} field. */
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
-    /** Returns the value of the {@code next} field. */
+    /** @return the value of the {@code next} field. */
     @NativeType("void *")
     public long next() { return nnext(address()); }
-    /** Returns the value of the {@code systemId} field. */
+    /** @return the value of the {@code systemId} field. */
     @NativeType("XrSystemId")
     public long systemId() { return nsystemId(address()); }
-    /** Returns the value of the {@code vendorId} field. */
+    /** @return the value of the {@code vendorId} field. */
     @NativeType("uint32_t")
     public int vendorId() { return nvendorId(address()); }
-    /** Returns a {@link ByteBuffer} view of the {@code systemName} field. */
+    /** @return a {@link ByteBuffer} view of the {@code systemName} field. */
     @NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]")
     public ByteBuffer systemName() { return nsystemName(address()); }
-    /** Decodes the null-terminated string stored in the {@code systemName} field. */
+    /** @return the null-terminated string stored in the {@code systemName} field. */
     @NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]")
     public String systemNameString() { return nsystemNameString(address()); }
-    /** Returns a {@link XrSystemGraphicsProperties} view of the {@code graphicsProperties} field. */
+    /** @return a {@link XrSystemGraphicsProperties} view of the {@code graphicsProperties} field. */
     public XrSystemGraphicsProperties graphicsProperties() { return ngraphicsProperties(address()); }
-    /** Returns a {@link XrSystemTrackingProperties} view of the {@code trackingProperties} field. */
+    /** @return a {@link XrSystemTrackingProperties} view of the {@code trackingProperties} field. */
     public XrSystemTrackingProperties trackingProperties() { return ntrackingProperties(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrSystemProperties type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link XR10#XR_TYPE_SYSTEM_PROPERTIES TYPE_SYSTEM_PROPERTIES} value to the {@code type} field. */
+    public XrSystemProperties type$Default() { return type(XR10.XR_TYPE_SYSTEM_PROPERTIES); }
     /** Sets the specified value to the {@code next} field. */
     public XrSystemProperties next(@NativeType("void *") long value) { nnext(address(), value); return this; }
-    /** Sets the specified value to the {@code systemId} field. */
-    public XrSystemProperties systemId(@NativeType("XrSystemId") long value) { nsystemId(address(), value); return this; }
-    /** Sets the specified value to the {@code vendorId} field. */
-    public XrSystemProperties vendorId(@NativeType("uint32_t") int value) { nvendorId(address(), value); return this; }
-    /** Copies the specified encoded string to the {@code systemName} field. */
-    public XrSystemProperties systemName(@NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]") ByteBuffer value) { nsystemName(address(), value); return this; }
-    /** Copies the specified {@link XrSystemGraphicsProperties} to the {@code graphicsProperties} field. */
-    public XrSystemProperties graphicsProperties(XrSystemGraphicsProperties value) { ngraphicsProperties(address(), value); return this; }
-    /** Passes the {@code graphicsProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
-    public XrSystemProperties graphicsProperties(java.util.function.Consumer<XrSystemGraphicsProperties> consumer) { consumer.accept(graphicsProperties()); return this; }
-    /** Copies the specified {@link XrSystemTrackingProperties} to the {@code trackingProperties} field. */
-    public XrSystemProperties trackingProperties(XrSystemTrackingProperties value) { ntrackingProperties(address(), value); return this; }
-    /** Passes the {@code trackingProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
-    public XrSystemProperties trackingProperties(java.util.function.Consumer<XrSystemTrackingProperties> consumer) { consumer.accept(trackingProperties()); return this; }
 
     /** Initializes this struct with the specified values. */
     public XrSystemProperties set(
         int type,
-        long next,
-        long systemId,
-        int vendorId,
-        ByteBuffer systemName,
-        XrSystemGraphicsProperties graphicsProperties,
-        XrSystemTrackingProperties trackingProperties
+        long next
     ) {
         type(type);
         next(next);
-        systemId(systemId);
-        vendorId(vendorId);
-        systemName(systemName);
-        graphicsProperties(graphicsProperties);
-        trackingProperties(trackingProperties);
 
         return this;
     }
@@ -233,24 +208,13 @@ public class XrSystemProperties extends Struct implements NativeResource {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
     }
 
-    // -----------------------------------
-
-    /** Returns a new {@code XrSystemProperties} instance allocated on the thread-local {@link MemoryStack}. */
-    public static XrSystemProperties mallocStack() {
-        return mallocStack(stackGet());
-    }
-
-    /** Returns a new {@code XrSystemProperties} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero. */
-    public static XrSystemProperties callocStack() {
-        return callocStack(stackGet());
-    }
 
     /**
      * Returns a new {@code XrSystemProperties} instance allocated on the specified {@link MemoryStack}.
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemProperties mallocStack(MemoryStack stack) {
+    public static XrSystemProperties malloc(MemoryStack stack) {
         return wrap(XrSystemProperties.class, stack.nmalloc(ALIGNOF, SIZEOF));
     }
 
@@ -259,45 +223,27 @@ public class XrSystemProperties extends Struct implements NativeResource {
      *
      * @param stack the stack from which to allocate
      */
-    public static XrSystemProperties callocStack(MemoryStack stack) {
+    public static XrSystemProperties calloc(MemoryStack stack) {
         return wrap(XrSystemProperties.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack}.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer mallocStack(int capacity) {
-        return mallocStack(capacity, stackGet());
-    }
-
-    /**
-     * Returns a new {@link Buffer} instance allocated on the thread-local {@link MemoryStack} and initializes all its bits to zero.
-     *
-     * @param capacity the buffer capacity
-     */
-    public static Buffer callocStack(int capacity) {
-        return callocStack(capacity, stackGet());
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer mallocStack(int capacity, MemoryStack stack) {
+    public static Buffer malloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
     }
 
     /**
      * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
      *
-     * @param stack the stack from which to allocate
+     * @param stack    the stack from which to allocate
      * @param capacity the buffer capacity
      */
-    public static Buffer callocStack(int capacity, MemoryStack stack) {
+    public static Buffer calloc(int capacity, MemoryStack stack) {
         return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
@@ -324,22 +270,6 @@ public class XrSystemProperties extends Struct implements NativeResource {
     public static void ntype(long struct, int value) { UNSAFE.putInt(null, struct + XrSystemProperties.TYPE, value); }
     /** Unsafe version of {@link #next(long) next}. */
     public static void nnext(long struct, long value) { memPutAddress(struct + XrSystemProperties.NEXT, value); }
-    /** Unsafe version of {@link #systemId(long) systemId}. */
-    public static void nsystemId(long struct, long value) { UNSAFE.putLong(null, struct + XrSystemProperties.SYSTEMID, value); }
-    /** Unsafe version of {@link #vendorId(int) vendorId}. */
-    public static void nvendorId(long struct, int value) { UNSAFE.putInt(null, struct + XrSystemProperties.VENDORID, value); }
-    /** Unsafe version of {@link #systemName(ByteBuffer) systemName}. */
-    public static void nsystemName(long struct, ByteBuffer value) {
-        if (CHECKS) {
-            checkNT1(value);
-            checkGT(value, XR_MAX_SYSTEM_NAME_SIZE);
-        }
-        memCopy(memAddress(value), struct + XrSystemProperties.SYSTEMNAME, value.remaining());
-    }
-    /** Unsafe version of {@link #graphicsProperties(XrSystemGraphicsProperties) graphicsProperties}. */
-    public static void ngraphicsProperties(long struct, XrSystemGraphicsProperties value) { memCopy(value.address(), struct + XrSystemProperties.GRAPHICSPROPERTIES, XrSystemGraphicsProperties.SIZEOF); }
-    /** Unsafe version of {@link #trackingProperties(XrSystemTrackingProperties) trackingProperties}. */
-    public static void ntrackingProperties(long struct, XrSystemTrackingProperties value) { memCopy(value.address(), struct + XrSystemProperties.TRACKINGPROPERTIES, XrSystemTrackingProperties.SIZEOF); }
 
     // -----------------------------------
 
@@ -379,47 +309,35 @@ public class XrSystemProperties extends Struct implements NativeResource {
             return ELEMENT_FACTORY;
         }
 
-        /** Returns the value of the {@code type} field. */
+        /** @return the value of the {@code type} field. */
         @NativeType("XrStructureType")
         public int type() { return XrSystemProperties.ntype(address()); }
-        /** Returns the value of the {@code next} field. */
+        /** @return the value of the {@code next} field. */
         @NativeType("void *")
         public long next() { return XrSystemProperties.nnext(address()); }
-        /** Returns the value of the {@code systemId} field. */
+        /** @return the value of the {@code systemId} field. */
         @NativeType("XrSystemId")
         public long systemId() { return XrSystemProperties.nsystemId(address()); }
-        /** Returns the value of the {@code vendorId} field. */
+        /** @return the value of the {@code vendorId} field. */
         @NativeType("uint32_t")
         public int vendorId() { return XrSystemProperties.nvendorId(address()); }
-        /** Returns a {@link ByteBuffer} view of the {@code systemName} field. */
+        /** @return a {@link ByteBuffer} view of the {@code systemName} field. */
         @NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]")
         public ByteBuffer systemName() { return XrSystemProperties.nsystemName(address()); }
-        /** Decodes the null-terminated string stored in the {@code systemName} field. */
+        /** @return the null-terminated string stored in the {@code systemName} field. */
         @NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]")
         public String systemNameString() { return XrSystemProperties.nsystemNameString(address()); }
-        /** Returns a {@link XrSystemGraphicsProperties} view of the {@code graphicsProperties} field. */
+        /** @return a {@link XrSystemGraphicsProperties} view of the {@code graphicsProperties} field. */
         public XrSystemGraphicsProperties graphicsProperties() { return XrSystemProperties.ngraphicsProperties(address()); }
-        /** Returns a {@link XrSystemTrackingProperties} view of the {@code trackingProperties} field. */
+        /** @return a {@link XrSystemTrackingProperties} view of the {@code trackingProperties} field. */
         public XrSystemTrackingProperties trackingProperties() { return XrSystemProperties.ntrackingProperties(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrSystemProperties.ntype(address(), value); return this; }
+        /** Sets the {@link XR10#XR_TYPE_SYSTEM_PROPERTIES TYPE_SYSTEM_PROPERTIES} value to the {@code type} field. */
+        public Buffer type$Default() { return type(XR10.XR_TYPE_SYSTEM_PROPERTIES); }
         /** Sets the specified value to the {@code next} field. */
         public Buffer next(@NativeType("void *") long value) { XrSystemProperties.nnext(address(), value); return this; }
-        /** Sets the specified value to the {@code systemId} field. */
-        public Buffer systemId(@NativeType("XrSystemId") long value) { XrSystemProperties.nsystemId(address(), value); return this; }
-        /** Sets the specified value to the {@code vendorId} field. */
-        public Buffer vendorId(@NativeType("uint32_t") int value) { XrSystemProperties.nvendorId(address(), value); return this; }
-        /** Copies the specified encoded string to the {@code systemName} field. */
-        public Buffer systemName(@NativeType("char[XR_MAX_SYSTEM_NAME_SIZE]") ByteBuffer value) { XrSystemProperties.nsystemName(address(), value); return this; }
-        /** Copies the specified {@link XrSystemGraphicsProperties} to the {@code graphicsProperties} field. */
-        public Buffer graphicsProperties(XrSystemGraphicsProperties value) { XrSystemProperties.ngraphicsProperties(address(), value); return this; }
-        /** Passes the {@code graphicsProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
-        public Buffer graphicsProperties(java.util.function.Consumer<XrSystemGraphicsProperties> consumer) { consumer.accept(graphicsProperties()); return this; }
-        /** Copies the specified {@link XrSystemTrackingProperties} to the {@code trackingProperties} field. */
-        public Buffer trackingProperties(XrSystemTrackingProperties value) { XrSystemProperties.ntrackingProperties(address(), value); return this; }
-        /** Passes the {@code trackingProperties} field to the specified {@link java.util.function.Consumer Consumer}. */
-        public Buffer trackingProperties(java.util.function.Consumer<XrSystemTrackingProperties> consumer) { consumer.accept(trackingProperties()); return this; }
 
     }
 

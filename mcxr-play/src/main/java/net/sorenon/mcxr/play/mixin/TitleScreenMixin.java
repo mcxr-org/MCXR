@@ -16,6 +16,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.openxr.OpenXR;
+import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
 import org.apache.commons.lang3.text.WordUtils;
 import org.lwjgl.openxr.XR10;
@@ -71,6 +72,12 @@ public class TitleScreenMixin extends Screen {
 
         if (!FabricLoader.getInstance().isModLoaded("sodium")) {
             DrawableHelper.drawStringWithShadow(matrices, textRenderer, "Sodium Missing!", x + 1, y + 12, 16733525 | l);
+            y += 12;
+        }
+
+        if (OPEN_XR.instance != null) {
+            OpenXRInstance instance = OPEN_XR.instance;
+            DrawableHelper.drawStringWithShadow(matrices, textRenderer, instance.runtimeName + " " + instance.runtimeVersionString, x + 1, y + 12, 16777215 | l);
             y += 12;
         }
 

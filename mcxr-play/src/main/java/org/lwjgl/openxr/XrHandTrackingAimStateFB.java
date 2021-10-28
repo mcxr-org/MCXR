@@ -6,9 +6,8 @@
 package org.lwjgl.openxr;
 
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.system.NativeType;
-import org.lwjgl.system.Struct;
-import org.lwjgl.system.StructBuffer;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
@@ -29,7 +28,7 @@ import static org.lwjgl.system.MemoryUtil.*;
  *     float pinchStrengthLittle;
  * }</code></pre>
  */
-public class XrHandTrackingAimStateFB extends Struct {
+public class XrHandTrackingAimStateFB extends Struct implements NativeResource {
 
     /** The struct size in bytes. */
     public static final int SIZEOF;
@@ -106,7 +105,53 @@ public class XrHandTrackingAimStateFB extends Struct {
     /** @return the value of the {@code pinchStrengthLittle} field. */
     public float pinchStrengthLittle() { return npinchStrengthLittle(address()); }
 
+    /** Sets the specified value to the {@code type} field. */
+    public XrHandTrackingAimStateFB type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
+    /** Sets the {@link FBHandTrackingAim#XR_TYPE_HAND_TRACKING_AIM_STATE_FB TYPE_HAND_TRACKING_AIM_STATE_FB} value to the {@code type} field. */
+    public XrHandTrackingAimStateFB type$Default() { return type(FBHandTrackingAim.XR_TYPE_HAND_TRACKING_AIM_STATE_FB); }
+    /** Sets the specified value to the {@code next} field. */
+    public XrHandTrackingAimStateFB next(@NativeType("void *") long value) { nnext(address(), value); return this; }
+
+    /** Initializes this struct with the specified values. */
+    public XrHandTrackingAimStateFB set(
+        int type,
+        long next
+    ) {
+        type(type);
+        next(next);
+
+        return this;
+    }
+
+    /**
+     * Copies the specified struct data to this struct.
+     *
+     * @param src the source struct
+     *
+     * @return this struct
+     */
+    public XrHandTrackingAimStateFB set(XrHandTrackingAimStateFB src) {
+        memCopy(src.address(), address(), SIZEOF);
+        return this;
+    }
+
     // -----------------------------------
+
+    /** Returns a new {@code XrHandTrackingAimStateFB} instance allocated with {@link MemoryUtil#memAlloc memAlloc}. The instance must be explicitly freed. */
+    public static XrHandTrackingAimStateFB malloc() {
+        return wrap(XrHandTrackingAimStateFB.class, nmemAllocChecked(SIZEOF));
+    }
+
+    /** Returns a new {@code XrHandTrackingAimStateFB} instance allocated with {@link MemoryUtil#memCalloc memCalloc}. The instance must be explicitly freed. */
+    public static XrHandTrackingAimStateFB calloc() {
+        return wrap(XrHandTrackingAimStateFB.class, nmemCallocChecked(1, SIZEOF));
+    }
+
+    /** Returns a new {@code XrHandTrackingAimStateFB} instance allocated with {@link BufferUtils}. */
+    public static XrHandTrackingAimStateFB create() {
+        ByteBuffer container = BufferUtils.createByteBuffer(SIZEOF);
+        return wrap(XrHandTrackingAimStateFB.class, memAddress(container), container);
+    }
 
     /** Returns a new {@code XrHandTrackingAimStateFB} instance for the specified memory address. */
     public static XrHandTrackingAimStateFB create(long address) {
@@ -117,6 +162,34 @@ public class XrHandTrackingAimStateFB extends Struct {
     @Nullable
     public static XrHandTrackingAimStateFB createSafe(long address) {
         return address == NULL ? null : wrap(XrHandTrackingAimStateFB.class, address);
+    }
+
+    /**
+     * Returns a new {@link Buffer} instance allocated with {@link MemoryUtil#memAlloc memAlloc}. The instance must be explicitly freed.
+     *
+     * @param capacity the buffer capacity
+     */
+    public static Buffer malloc(int capacity) {
+        return wrap(Buffer.class, nmemAllocChecked(__checkMalloc(capacity, SIZEOF)), capacity);
+    }
+
+    /**
+     * Returns a new {@link Buffer} instance allocated with {@link MemoryUtil#memCalloc memCalloc}. The instance must be explicitly freed.
+     *
+     * @param capacity the buffer capacity
+     */
+    public static Buffer calloc(int capacity) {
+        return wrap(Buffer.class, nmemCallocChecked(capacity, SIZEOF), capacity);
+    }
+
+    /**
+     * Returns a new {@link Buffer} instance allocated with {@link BufferUtils}.
+     *
+     * @param capacity the buffer capacity
+     */
+    public static Buffer create(int capacity) {
+        ByteBuffer container = __create(capacity, SIZEOF);
+        return wrap(Buffer.class, memAddress(container), capacity, container);
     }
 
     /**
@@ -133,6 +206,45 @@ public class XrHandTrackingAimStateFB extends Struct {
     @Nullable
     public static XrHandTrackingAimStateFB.Buffer createSafe(long address, int capacity) {
         return address == NULL ? null : wrap(Buffer.class, address, capacity);
+    }
+
+
+    /**
+     * Returns a new {@code XrHandTrackingAimStateFB} instance allocated on the specified {@link MemoryStack}.
+     *
+     * @param stack the stack from which to allocate
+     */
+    public static XrHandTrackingAimStateFB malloc(MemoryStack stack) {
+        return wrap(XrHandTrackingAimStateFB.class, stack.nmalloc(ALIGNOF, SIZEOF));
+    }
+
+    /**
+     * Returns a new {@code XrHandTrackingAimStateFB} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
+     *
+     * @param stack the stack from which to allocate
+     */
+    public static XrHandTrackingAimStateFB calloc(MemoryStack stack) {
+        return wrap(XrHandTrackingAimStateFB.class, stack.ncalloc(ALIGNOF, 1, SIZEOF));
+    }
+
+    /**
+     * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack}.
+     *
+     * @param stack    the stack from which to allocate
+     * @param capacity the buffer capacity
+     */
+    public static Buffer malloc(int capacity, MemoryStack stack) {
+        return wrap(Buffer.class, stack.nmalloc(ALIGNOF, capacity * SIZEOF), capacity);
+    }
+
+    /**
+     * Returns a new {@link Buffer} instance allocated on the specified {@link MemoryStack} and initializes all its bits to zero.
+     *
+     * @param stack    the stack from which to allocate
+     * @param capacity the buffer capacity
+     */
+    public static Buffer calloc(int capacity, MemoryStack stack) {
+        return wrap(Buffer.class, stack.ncalloc(ALIGNOF, capacity, SIZEOF), capacity);
     }
 
     // -----------------------------------
@@ -154,10 +266,15 @@ public class XrHandTrackingAimStateFB extends Struct {
     /** Unsafe version of {@link #pinchStrengthLittle}. */
     public static float npinchStrengthLittle(long struct) { return UNSAFE.getFloat(null, struct + XrHandTrackingAimStateFB.PINCHSTRENGTHLITTLE); }
 
+    /** Unsafe version of {@link #type(int) type}. */
+    public static void ntype(long struct, int value) { UNSAFE.putInt(null, struct + XrHandTrackingAimStateFB.TYPE, value); }
+    /** Unsafe version of {@link #next(long) next}. */
+    public static void nnext(long struct, long value) { memPutAddress(struct + XrHandTrackingAimStateFB.NEXT, value); }
+
     // -----------------------------------
 
     /** An array of {@link XrHandTrackingAimStateFB} structs. */
-    public static class Buffer extends StructBuffer<XrHandTrackingAimStateFB, Buffer> {
+    public static class Buffer extends StructBuffer<XrHandTrackingAimStateFB, Buffer> implements NativeResource {
 
         private static final XrHandTrackingAimStateFB ELEMENT_FACTORY = XrHandTrackingAimStateFB.create(-1L);
 
@@ -211,6 +328,13 @@ public class XrHandTrackingAimStateFB extends Struct {
         public float pinchStrengthRing() { return XrHandTrackingAimStateFB.npinchStrengthRing(address()); }
         /** @return the value of the {@code pinchStrengthLittle} field. */
         public float pinchStrengthLittle() { return XrHandTrackingAimStateFB.npinchStrengthLittle(address()); }
+
+        /** Sets the specified value to the {@code type} field. */
+        public Buffer type(@NativeType("XrStructureType") int value) { XrHandTrackingAimStateFB.ntype(address(), value); return this; }
+        /** Sets the {@link FBHandTrackingAim#XR_TYPE_HAND_TRACKING_AIM_STATE_FB TYPE_HAND_TRACKING_AIM_STATE_FB} value to the {@code type} field. */
+        public Buffer type$Default() { return type(FBHandTrackingAim.XR_TYPE_HAND_TRACKING_AIM_STATE_FB); }
+        /** Sets the specified value to the {@code next} field. */
+        public Buffer next(@NativeType("void *") long value) { XrHandTrackingAimStateFB.nnext(address(), value); return this; }
 
     }
 

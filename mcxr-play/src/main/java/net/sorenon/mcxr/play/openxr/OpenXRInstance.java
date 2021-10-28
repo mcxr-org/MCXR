@@ -24,9 +24,21 @@ public class OpenXRInstance implements AutoCloseable {
     public final XrInstance handle;
     public final XrEventDataBuffer eventDataBuffer;
 
+    public String runtimeName;
+    public long runtimeVersion;
+    public String runtimeVersionString;
+
     public OpenXRInstance(XrInstance handle) {
         this.handle = handle;
         eventDataBuffer = XrEventDataBuffer.calloc();
+
+        try (var stack = stackPush()) {
+            var properties = XrInstanceProperties.calloc(stack).type$Default();
+            check(XR10.xrGetInstanceProperties(handle, properties), "xrGetInstanceProperties");
+            runtimeName = properties.runtimeNameString();
+            runtimeVersion = properties.runtimeVersion();
+            runtimeVersionString = XR10.XR_VERSION_MAJOR(runtimeVersion) + "." + XR10.XR_VERSION_MINOR(runtimeVersion) + "." + XR10.XR_VERSION_PATCH(runtimeVersion);
+        }
     }
 
     public OpenXRSystem getSystem(int formFactor) throws XrException {

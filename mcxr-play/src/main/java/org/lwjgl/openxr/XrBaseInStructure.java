@@ -11,7 +11,6 @@ import org.lwjgl.system.*;
 
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.system.Checks.check;
 import static org.lwjgl.system.MemoryUtil.*;
 
 /**
@@ -66,18 +65,19 @@ public class XrBaseInStructure extends Struct implements NativeResource {
     @NativeType("XrStructureType")
     public int type() { return ntype(address()); }
     /** @return a {@link XrBaseInStructure} view of the struct pointed to by the {@code next} field. */
+    @Nullable
     @NativeType("XrBaseInStructure *")
     public XrBaseInStructure next() { return nnext(address()); }
 
     /** Sets the specified value to the {@code type} field. */
     public XrBaseInStructure type(@NativeType("XrStructureType") int value) { ntype(address(), value); return this; }
     /** Sets the address of the specified {@link XrBaseInStructure} to the {@code next} field. */
-    public XrBaseInStructure next(@NativeType("XrBaseInStructure *") XrBaseInStructure value) { nnext(address(), value); return this; }
+    public XrBaseInStructure next(@Nullable @NativeType("XrBaseInStructure *") XrBaseInStructure value) { nnext(address(), value); return this; }
 
     /** Initializes this struct with the specified values. */
     public XrBaseInStructure set(
         int type,
-        XrBaseInStructure next
+        @Nullable XrBaseInStructure next
     ) {
         type(type);
         next(next);
@@ -214,33 +214,12 @@ public class XrBaseInStructure extends Struct implements NativeResource {
     /** Unsafe version of {@link #type}. */
     public static int ntype(long struct) { return UNSAFE.getInt(null, struct + XrBaseInStructure.TYPE); }
     /** Unsafe version of {@link #next}. */
-    public static XrBaseInStructure nnext(long struct) { return XrBaseInStructure.create(memGetAddress(struct + XrBaseInStructure.NEXT)); }
+    @Nullable public static XrBaseInStructure nnext(long struct) { return XrBaseInStructure.createSafe(memGetAddress(struct + XrBaseInStructure.NEXT)); }
 
     /** Unsafe version of {@link #type(int) type}. */
     public static void ntype(long struct, int value) { UNSAFE.putInt(null, struct + XrBaseInStructure.TYPE, value); }
     /** Unsafe version of {@link #next(XrBaseInStructure) next}. */
-    public static void nnext(long struct, XrBaseInStructure value) { memPutAddress(struct + XrBaseInStructure.NEXT, value.address()); }
-
-    /**
-     * Validates pointer members that should not be {@code NULL}.
-     *
-     * @param struct the struct to validate
-     */
-    public static void validate(long struct) {
-        check(memGetAddress(struct + XrBaseInStructure.NEXT));
-    }
-
-    /**
-     * Calls {@link #validate(long)} for each struct contained in the specified struct array.
-     *
-     * @param array the struct array to validate
-     * @param count the number of structs in {@code array}
-     */
-    public static void validate(long array, int count) {
-        for (int i = 0; i < count; i++) {
-            validate(array + Integer.toUnsignedLong(i) * SIZEOF);
-        }
-    }
+    public static void nnext(long struct, @Nullable XrBaseInStructure value) { memPutAddress(struct + XrBaseInStructure.NEXT, memAddressSafe(value)); }
 
     // -----------------------------------
 
@@ -284,13 +263,14 @@ public class XrBaseInStructure extends Struct implements NativeResource {
         @NativeType("XrStructureType")
         public int type() { return XrBaseInStructure.ntype(address()); }
         /** @return a {@link XrBaseInStructure} view of the struct pointed to by the {@code next} field. */
+        @Nullable
         @NativeType("XrBaseInStructure *")
         public XrBaseInStructure next() { return XrBaseInStructure.nnext(address()); }
 
         /** Sets the specified value to the {@code type} field. */
         public Buffer type(@NativeType("XrStructureType") int value) { XrBaseInStructure.ntype(address(), value); return this; }
         /** Sets the address of the specified {@link XrBaseInStructure} to the {@code next} field. */
-        public Buffer next(@NativeType("XrBaseInStructure *") XrBaseInStructure value) { XrBaseInStructure.nnext(address(), value); return this; }
+        public Buffer next(@Nullable @NativeType("XrBaseInStructure *") XrBaseInStructure value) { XrBaseInStructure.nnext(address(), value); return this; }
 
     }
 

@@ -50,7 +50,7 @@ public class OpenXRSystem {
             XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.calloc(stack).type(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
             instance.check(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
 
-            XrSystemProperties systemProperties = XrSystemProperties.callocStack().type(XR10.XR_TYPE_SYSTEM_PROPERTIES);
+            XrSystemProperties systemProperties = XrSystemProperties.calloc(stack).type(XR10.XR_TYPE_SYSTEM_PROPERTIES);
             instance.check(XR10.xrGetSystemProperties(instance.handle, handle, systemProperties), "xrGetSystemProperties");
             XrSystemTrackingProperties trackingProperties = systemProperties.trackingProperties();
             XrSystemGraphicsProperties graphicsProperties = systemProperties.graphicsProperties();

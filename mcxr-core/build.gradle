@@ -9,7 +9,7 @@ sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = "mcxr-core"
-version = "${project.core_version}+${getVersionMetadata()}"
+version = "${project.core_version}+${rootProject.getVersionMetadata(this)}"
 group = project.maven_group
 
 repositories {
@@ -23,11 +23,11 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation("com.github.Virtuoel:Pehkui:2.2.1") {
+    modImplementation("com.github.Virtuoel:Pehkui:${project.pehkui_version}") {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    include(implementation("org.joml:joml:1.10.1"))
+    include(implementation("org.joml:joml:${project.joml_version}"))
 }
 
 processResources {
@@ -77,23 +77,17 @@ publishing {
     }
 }
 
-def getVersionMetadata() {
-    def build_id = System.getenv("GITHUB_RUN_NUMBER")
-
-    // CI builds only
-    if (build_id != null) {
-        return "build.${build_id}"
-    }
-
-    if (grgit != null) {
-        def head = grgit.head()
-        def id = head.abbreviatedId
-
-        // Flag the build if the build tree is not clean
-        if (!grgit.status().clean) {
-            id += "-dirty"
+loom {
+    runs {
+        coreClient {
+            client()
+            configName = "MCXR Core Client"
+            ideConfigGenerated(true)
         }
-
-        return "rev.${id}"
+        coreServer {
+            server()
+            configName = "MCXR Core Server"
+            ideConfigGenerated(true)
+        }
     }
 }

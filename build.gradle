@@ -1,0 +1,20 @@
+static def getVersionMetadata(var project) {
+    def build_id = System.getenv("GITHUB_RUN_NUMBER")
+
+    // CI builds only
+    if (build_id != null) {
+        return "build.${build_id}"
+    }
+
+    if (project.grgit != null) {
+        def head = project.grgit.head()
+        def id = head.abbreviatedId
+
+        // Flag the build if the build tree is not clean
+        if (!project.grgit.status().clean) {
+            id += "-dirty"
+        }
+
+        return "rev.${id}"
+    }
+}

@@ -109,6 +109,10 @@ public class TitleScreenMixin extends Screen {
         }
     }
 
+    /**
+     * These function may crash the game if a word in 'string' is longer than 'wrapLength'
+     */
+
     @Unique
     public List<String> wordWrap(String string, int wrapLength) {
         return WordUtils.wrap(string, wrapLength).lines().toList();

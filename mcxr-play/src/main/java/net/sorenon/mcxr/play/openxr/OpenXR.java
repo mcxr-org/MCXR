@@ -106,7 +106,7 @@ public class OpenXR {
             }
 
             if (missingOpenGL) {
-                throw new XrException(0, "OpenXR runtime does not provide required extension: " + KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
+                throw new XrException(0, "OpenXR runtime does not support OpenGL, try using SteamVR instead");
             }
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);

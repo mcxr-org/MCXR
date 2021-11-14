@@ -1,24 +1,29 @@
 package net.sorenon.mcxr.play.openxr;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.GlUniform;
-import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix4f;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Matrix4f;
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
 import net.sorenon.mcxr.play.input.XrInput;
-import net.sorenon.mcxr.play.rendering.MainRenderTarget;
+import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.XrCamera;
 import org.apache.logging.log4j.LogManager;
@@ -37,9 +42,9 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 public class XrRenderer {
     private static final OpenXR OPEN_XR = MCXRPlayClient.OPEN_XR;
     private static final Logger LOGGER = LogManager.getLogger();
-    private MinecraftClient client;
+    private Minecraft client;
     private MinecraftClientExt clientExt;
-    private MainRenderTarget mainRenderTarget;
+    private MCXRMainTarget MCXRMainTarget;
 
 
     private OpenXRInstance instance;
@@ -47,22 +52,22 @@ public class XrRenderer {
 
     public RenderPass renderPass = RenderPass.VANILLA;
 
-    public Shader blitShader;
-    public Shader guiBlitShader;
+    public ShaderInstance blitShader;
+    public ShaderInstance guiBlitShader;
 
     public void setSession(OpenXRSession session) {
         this.session = session;
         this.instance = session.instance;
 
         if (this.client == null) {
-            client = MinecraftClient.getInstance();
-            clientExt = ((MinecraftClientExt) MinecraftClient.getInstance());
-            mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
+            client = Minecraft.getInstance();
+            clientExt = ((MinecraftClientExt) Minecraft.getInstance());
+            MCXRMainTarget = (MCXRMainTarget) client.getMainRenderTarget();
         }
     }
 
     public boolean isXrMode() {
-        return MinecraftClient.getInstance().world != null && session != null;
+        return Minecraft.getInstance().level != null && session != null;
     }
 
     public void renderFrame() {
@@ -70,7 +75,7 @@ public class XrRenderer {
             var frameState = XrFrameState.calloc(stack).type(XR10.XR_TYPE_FRAME_STATE);
 
             if (isXrMode()) {
-                GLFW.glfwSwapBuffers(MinecraftClient.getInstance().getWindow().getHandle());
+                GLFW.glfwSwapBuffers(Minecraft.getInstance().getWindow().getWindow());
             }
             instance.check(XR10.xrWaitFrame(
                     session.handle,
@@ -165,7 +170,7 @@ public class XrRenderer {
                 if (vehicle instanceof LivingEntity) {
                     MCXRPlayClient.xrOrigin.y += 0.60;
                 } else {
-                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getMountedHeightOffset();
+                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getPassengersRidingOffset();
                 }
             }
 
@@ -177,8 +182,8 @@ public class XrRenderer {
                 poses.updateGamePose(MCXRPlayClient.xrOrigin);
             }
         }
-        XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
-        camera.updateXR(this.client.world, cameraEntity, MCXRPlayClient.viewSpacePoses.getGamePose());
+        XrCamera camera = (XrCamera) Minecraft.getInstance().gameRenderer.getMainCamera();
+        camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getGamePose());
 
         FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
 
@@ -186,17 +191,17 @@ public class XrRenderer {
             FGM.resetTransform();
         }
 
-        long frameStartTime = Util.getMeasuringTimeNano();
-        if (MinecraftClient.getInstance().player != null && MCXRCore.getCoreConfig().xrAllowed()) {
+        long frameStartTime = Util.getNanos();
+        if (Minecraft.getInstance().player != null && MCXRCore.getCoreConfig().xrAllowed()) {
             MCXRCore.INSTANCE.setPlayerHeadPose(
-                    MinecraftClient.getInstance().player,
+                    Minecraft.getInstance().player,
                     MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose()
             );
         }
         clientExt.preRender(true);
-        if (camera.getFocusedEntity() != null) {
-            float tickDelta = client.getTickDelta();
-            Entity camEntity = camera.getFocusedEntity();
+        if (camera.getEntity() != null) {
+            float tickDelta = client.getFrameTime();
+            Entity camEntity = camera.getEntity();
 
             if (client.isPaused()) {
                 tickDelta = 0.0f;
@@ -204,19 +209,19 @@ public class XrRenderer {
 
             Entity vehicle = camEntity.getVehicle();
             if (MCXRCore.getCoreConfig().roomscaleMovement() && vehicle == null) {
-                MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()) - MCXRPlayClient.roomscalePlayerOffset.x,
-                        MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()),
-                        MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()) - MCXRPlayClient.roomscalePlayerOffset.z);
+                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()) - MCXRPlayClient.roomscalePlayerOffset.x,
+                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
+                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()) - MCXRPlayClient.roomscalePlayerOffset.z);
             } else {
-                MCXRPlayClient.xrOrigin.set(MathHelper.lerp(tickDelta, camEntity.prevX, camEntity.getX()),
-                        MathHelper.lerp(tickDelta, camEntity.prevY, camEntity.getY()),
-                        MathHelper.lerp(tickDelta, camEntity.prevZ, camEntity.getZ()));
+                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()),
+                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
+                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()));
             }
             if (vehicle != null) {
                 if (vehicle instanceof LivingEntity) {
                     MCXRPlayClient.xrOrigin.y += 0.60;
                 } else {
-                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getMountedHeightOffset();
+                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getPassengersRidingOffset();
                 }
             }
 
@@ -229,24 +234,24 @@ public class XrRenderer {
             }
         }
 
-        client.getWindow().setPhase("Render");
+        client.getWindow().setErrorSection("Render");
         client.getProfiler().push("sound");
-        client.getSoundManager().updateListenerPosition(client.gameRenderer.getCamera());
+        client.getSoundManager().updateSource(client.gameRenderer.getMainCamera());
         client.getProfiler().pop();
 
         //Render GUI
-        mainRenderTarget.setFramebuffer(FGM.backFramebuffer);
+        MCXRMainTarget.setFramebuffer(FGM.backFramebuffer);
         XrInput.postTick(predictedDisplayTime);
-        FGM.backFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+        FGM.backFramebuffer.clear(Minecraft.ON_OSX);
         clientExt.doRender(true, frameStartTime, RenderPass.GUI);
 
-        FGM.frontFramebuffer.beginWrite(true);
-        this.guiBlitShader.addSampler("DiffuseSampler", FGM.backFramebuffer.getColorAttachment());
-        this.guiBlitShader.addSampler("DepthSampler", FGM.backFramebuffer.getDepthAttachment());
+        FGM.frontFramebuffer.bindWrite(true);
+        this.guiBlitShader.setSampler("DiffuseSampler", FGM.backFramebuffer.getColorTextureId());
+        this.guiBlitShader.setSampler("DepthSampler", FGM.backFramebuffer.getDepthTextureId());
         this.blit(FGM.frontFramebuffer, guiBlitShader);
-        FGM.frontFramebuffer.endWrite();
+        FGM.frontFramebuffer.unbindWrite();
 
-        mainRenderTarget.resetFramebuffer();
+        MCXRMainTarget.resetFramebuffer();
 
         RenderPass.World worldRenderPass = RenderPass.World.create();
 
@@ -281,8 +286,8 @@ public class XrRenderer {
             {
                 XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
                 viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
-                viewSwapchain.innerFramebuffer.endWrite();
-                mainRenderTarget.setXrFramebuffer(viewSwapchain.framebuffer);
+                viewSwapchain.innerFramebuffer.unbindWrite();
+                MCXRMainTarget.setXrFramebuffer(viewSwapchain.framebuffer);
                 worldRenderPass.fov = session.views.get(viewIndex).fov();
                 worldRenderPass.eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn, scalePreTick);
                 worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin);
@@ -291,15 +296,15 @@ public class XrRenderer {
                 clientExt.doRender(true, frameStartTime, worldRenderPass);
             }
 
-            viewSwapchain.innerFramebuffer.beginWrite(true);
-            this.blitShader.addSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorAttachment());
-            GlUniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
+            viewSwapchain.innerFramebuffer.bindWrite(true);
+            this.blitShader.setSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorTextureId());
+            Uniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
             if (inverseScreenSize != null) {
-                inverseScreenSize.set(1f / viewSwapchain.innerFramebuffer.textureWidth, 1f / viewSwapchain.innerFramebuffer.textureHeight);
+                inverseScreenSize.set(1f / viewSwapchain.innerFramebuffer.width, 1f / viewSwapchain.innerFramebuffer.height);
             }
-            viewSwapchain.framebuffer.setTexFilter(GlConst.GL_LINEAR);
+            viewSwapchain.framebuffer.setFilterMode(GlConst.GL_LINEAR);
             this.blit(viewSwapchain.innerFramebuffer, blitShader);
-            viewSwapchain.innerFramebuffer.endWrite();
+            viewSwapchain.innerFramebuffer.unbindWrite();
 
             if (viewIndex == viewCountOutput - 1) {
                 blitToBackbuffer(viewSwapchain.framebuffer);
@@ -311,7 +316,7 @@ public class XrRenderer {
                             .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
             ), "xrReleaseSwapchainImage");
         }
-        mainRenderTarget.resetFramebuffer();
+        MCXRMainTarget.resetFramebuffer();
         camera.setPose(MCXRPlayClient.viewSpacePoses.getGamePose());
         clientExt.postRender();
 
@@ -370,7 +375,7 @@ public class XrRenderer {
 
         XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
         viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
-        viewSwapchain.innerFramebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
+        viewSwapchain.innerFramebuffer.clear(Minecraft.ON_OSX);
 
         instance.check(XR10.xrReleaseSwapchainImage(
                 viewSwapchain.handle,
@@ -384,14 +389,14 @@ public class XrRenderer {
 //        }
     }
 
-    public void blit(Framebuffer framebuffer, Shader shader) {
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.push();
-        matrixStack.loadIdentity();
+    public void blit(RenderTarget framebuffer, ShaderInstance shader) {
+        PoseStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.pushPose();
+        matrixStack.setIdentity();
         RenderSystem.applyModelViewMatrix();
 
-        int width = framebuffer.textureWidth;
-        int height = framebuffer.textureHeight;
+        int width = framebuffer.width;
+        int height = framebuffer.height;
 
         GlStateManager._colorMask(true, true, true, true);
         GlStateManager._disableDepthTest();
@@ -399,46 +404,46 @@ public class XrRenderer {
         GlStateManager._viewport(0, 0, width, height);
         GlStateManager._disableBlend();
 
-        Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) -height, 1000.0F, 3000.0F);
+        Matrix4f matrix4f = Matrix4f.orthographic((float) width, (float) -height, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
-        if (shader.modelViewMat != null) {
-            shader.modelViewMat.set(Matrix4f.translate(0.0F, 0.0F, -2000.0F));
+        if (shader.MODEL_VIEW_MATRIX != null) {
+            shader.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0.0F, 0.0F, -2000.0F));
         }
 
-        if (shader.projectionMat != null) {
-            shader.projectionMat.set(matrix4f);
+        if (shader.PROJECTION_MATRIX != null) {
+            shader.PROJECTION_MATRIX.set(matrix4f);
         }
 
-        shader.bind();
-        float u = (float) framebuffer.viewportWidth / (float) framebuffer.textureWidth;
-        float v = (float) framebuffer.viewportHeight / (float) framebuffer.textureHeight;
-        Tessellator tessellator = RenderSystem.renderThreadTesselator();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(0.0, height * 2, 0.0).texture(0.0F, 1 - v * 2).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(width * 2, 0.0, 0.0).texture(u * 2, 1).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, 1).color(255, 255, 255, 255).next();
+        shader.apply();
+        float u = (float) framebuffer.viewWidth / (float) framebuffer.width;
+        float v = (float) framebuffer.viewHeight / (float) framebuffer.height;
+        Tesselator tessellator = RenderSystem.renderThreadTesselator();
+        BufferBuilder bufferBuilder = tessellator.getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferBuilder.vertex(0.0, height * 2, 0.0).uv(0.0F, 1 - v * 2).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width * 2, 0.0, 0.0).uv(u * 2, 1).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, 1).color(255, 255, 255, 255).endVertex();
         bufferBuilder.end();
-        BufferRenderer.postDraw(bufferBuilder);
-        shader.unbind();
+        BufferUploader._endInternal(bufferBuilder);
+        shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
-    public void blitToBackbuffer(Framebuffer framebuffer) {
+    public void blitToBackbuffer(RenderTarget framebuffer) {
         //TODO render alyx-like gui over this
-        Shader shader = MinecraftClient.getInstance().gameRenderer.blitScreenShader;
-        shader.addSampler("DiffuseSampler", framebuffer.getColorAttachment());
+        ShaderInstance shader = Minecraft.getInstance().gameRenderer.blitShader;
+        shader.setSampler("DiffuseSampler", framebuffer.getColorTextureId());
 
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.push();
-        matrixStack.loadIdentity();
+        PoseStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.pushPose();
+        matrixStack.setIdentity();
         RenderSystem.applyModelViewMatrix();
 
-        int width = mainRenderTarget.windowFramebuffer.textureWidth;
-        int height = mainRenderTarget.windowFramebuffer.textureHeight;
+        int width = MCXRMainTarget.windowFramebuffer.width;
+        int height = MCXRMainTarget.windowFramebuffer.height;
 
         GlStateManager._colorMask(true, true, true, true);
         GlStateManager._disableDepthTest();
@@ -446,34 +451,34 @@ public class XrRenderer {
         GlStateManager._viewport(0, 0, width, height);
         GlStateManager._disableBlend();
 
-        Matrix4f matrix4f = Matrix4f.projectionMatrix((float) width, (float) (-height), 1000.0F, 3000.0F);
+        Matrix4f matrix4f = Matrix4f.orthographic((float) width, (float) (-height), 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
-        if (shader.modelViewMat != null) {
-            shader.modelViewMat.set(Matrix4f.translate(0, 0, -2000.0F));
+        if (shader.MODEL_VIEW_MATRIX != null) {
+            shader.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0, 0, -2000.0F));
         }
 
-        if (shader.projectionMat != null) {
-            shader.projectionMat.set(matrix4f);
+        if (shader.PROJECTION_MATRIX != null) {
+            shader.PROJECTION_MATRIX.set(matrix4f);
         }
 
-        shader.bind();
-        float widthNormalized = (float) framebuffer.textureWidth / (float) width;
-        float heightNormalized = (float) framebuffer.textureHeight / (float) height;
+        shader.apply();
+        float widthNormalized = (float) framebuffer.width / (float) width;
+        float heightNormalized = (float) framebuffer.height / (float) height;
         float v = (widthNormalized / heightNormalized) / 2;
 
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        bufferBuilder.vertex(0.0, height, 0.0).texture(0.0F, v).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(width, height, 0.0).texture(1, v).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(width, 0.0, 0.0).texture(1, 1 - v).color(255, 255, 255, 255).next();
-        bufferBuilder.vertex(0.0, 0.0, 0.0).texture(0.0F, 1 - v).color(255, 255, 255, 255).next();
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferBuilder.vertex(0.0, height, 0.0).uv(0.0F, v).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width, height, 0.0).uv(1, v).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width, 0.0, 0.0).uv(1, 1 - v).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, 1 - v).color(255, 255, 255, 255).endVertex();
         bufferBuilder.end();
-        BufferRenderer.postDraw(bufferBuilder);
-        shader.unbind();
+        BufferUploader._endInternal(bufferBuilder);
+        shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 }

@@ -1,10 +1,10 @@
 package net.sorenon.mcxr.play.mixin.hands;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.*;
-import net.minecraft.world.RaycastContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -21,28 +21,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
 
-    @Shadow
-    @Final
-    private MinecraftClient client;
+    @Shadow @Final private Minecraft minecraft;
 
-    @Inject(method = "updateTargetedEntity", at = @At(value = "INVOKE_ASSIGN", shift = At.Shift.AFTER, target = "Lnet/minecraft/entity/Entity;raycast(DFZ)Lnet/minecraft/util/hit/HitResult;"))
+    @Inject(method = "pick", at = @At(value = "INVOKE_ASSIGN", shift = At.Shift.AFTER, target = "Lnet/minecraft/world/entity/Entity;pick(DFZ)Lnet/minecraft/world/phys/HitResult;"))
     private void overrideEntity$raycast(float tickDelta, CallbackInfo ci) {
         if (enabled()) {
-            Entity entity = this.client.getCameraEntity();
+            Entity entity = this.minecraft.getCameraEntity();
             int hand = 1;
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
-            Vec3d pos = JOMLUtil.convert(pose.getPos());
+            Vec3 pos = JOMLUtil.convert(pose.getPos());
             Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
-            Vec3d dir = new Vec3d(dir1.x, dir1.y, dir1.z);
-            Vec3d endPos = pos.add(dir.multiply(this.client.interactionManager.getReachDistance()));
-            this.client.crosshairTarget = entity.world.raycast(new RaycastContext(pos, endPos, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, entity));
+            Vec3 dir = new Vec3(dir1.x, dir1.y, dir1.z);
+            Vec3 endPos = pos.add(dir.scale(this.minecraft.gameMode.getPickRange()));
+            this.minecraft.hitResult = entity.level.clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
         }
     }
 
-    @ModifyVariable(method = "updateTargetedEntity", ordinal = 0,
-            at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/entity/Entity;getCameraPosVec(F)Lnet/minecraft/util/math/Vec3d;")
+    @ModifyVariable(method = "pick", ordinal = 0,
+            at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;getEyePosition(F)Lnet/minecraft/world/phys/Vec3;")
     )
-    private Vec3d alterStartPosVec(Vec3d value) {
+    private Vec3 alterStartPosVec(Vec3 value) {
         if (enabled()) {
             int hand = 1;
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
@@ -52,10 +50,10 @@ public class GameRendererMixin {
         }
     }
 
-    @ModifyVariable(method = "updateTargetedEntity", ordinal = 1,
-            at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/entity/Entity;getRotationVec(F)Lnet/minecraft/util/math/Vec3d;")
+    @ModifyVariable(method = "pick", ordinal = 1,
+            at = @At(value = "INVOKE_ASSIGN", target = "Lnet/minecraft/world/entity/Entity;getViewVector(F)Lnet/minecraft/world/phys/Vec3;")
     )
-    private Vec3d alterDirVec(Vec3d value) {
+    private Vec3 alterDirVec(Vec3 value) {
         if (enabled()) {
             int hand = 1;
             Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();

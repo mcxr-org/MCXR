@@ -1,7 +1,11 @@
 package net.sorenon.mcxr.core.mixin;
 
-import net.minecraft.entity.*;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.level.Level;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
 
-    public LivingEntityMixin(EntityType<?> type, World world) {
+    public LivingEntityMixin(EntityType<?> type, Level world) {
         super(type, world);
     }
 
-    @Inject(method = "getEyeHeight(Lnet/minecraft/entity/EntityPose;Lnet/minecraft/entity/EntityDimensions;)F", at = @At("HEAD"), cancellable = true)
-    void overrideEyeHeight(EntityPose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
+    @Inject(method = "getEyeHeight", at = @At("HEAD"), cancellable = true)
+    void overrideEyeHeight(Pose pose, EntityDimensions dimensions, CallbackInfoReturnable<Float> cir) {
         if (!MCXRCore.getCoreConfig().dynamicPlayerEyeHeight()) {
             return;
         }

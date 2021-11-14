@@ -1,15 +1,15 @@
 package net.sorenon.mcxr.play.mixin.accessor;
 
-import net.minecraft.client.gl.Framebuffer;
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Framebuffer.class)
+@Mixin(RenderTarget.class)
 public interface FramebufferAcc {
 
-    @Accessor("colorAttachment")
+    @Accessor("colorTextureId")
     void colorAttachment(int colorAttachment);
 
-    @Accessor("depthAttachment")
+    @Accessor("depthBufferId")
     void depthAttachment(int depthAttachment);
 }

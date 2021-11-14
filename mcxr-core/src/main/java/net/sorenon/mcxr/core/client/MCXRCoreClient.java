@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientLoginNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.FriendlyByteBuf;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
 import org.apache.logging.log4j.LogManager;

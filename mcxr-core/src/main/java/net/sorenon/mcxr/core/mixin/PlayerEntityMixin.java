@@ -1,18 +1,17 @@
 package net.sorenon.mcxr.core.mixin;
 
-import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.collection.ReusableStream;
-import net.minecraft.util.function.BooleanBiFunction;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.World;
+import net.minecraft.util.RewindableStream;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.core.Pose;
@@ -26,25 +25,25 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.stream.Stream;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityAcc {
 
     @Unique
     public Pose headPose = null;
 
-    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
+    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
     void preTick(CallbackInfo ci) {
         if (this.isXR()) {
-            this.calculateDimensions();
+            this.refreshDimensions();
         }
     }
 
     @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
-    void overrideDims(EntityPose _pose, CallbackInfoReturnable<EntityDimensions> cir) {
+    void overrideDims(net.minecraft.world.entity.Pose _pose, CallbackInfoReturnable<EntityDimensions> cir) {
         if (!MCXRCore.getCoreConfig().dynamicPlayerHeight()) {
             return;
         }
@@ -53,27 +52,27 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             final float scale = MCXRScale.getScale(this);
 
             final float minHeight = 0.5f * scale;
-            final float currentHeight = this.getHeight();
+            final float currentHeight = this.getBbHeight();
             final float wantedHeight = (headPose.pos.y + 0.125f * scale);
             final float deltaHeight = wantedHeight - currentHeight;
 
             if (deltaHeight <= 0) {
                 cir.setReturnValue(
-                        EntityDimensions.changing(0.6F * scale, Math.max(wantedHeight, minHeight))
+                        EntityDimensions.scalable(0.6F * scale, Math.max(wantedHeight, minHeight))
                 );
                 return;
             }
 
-            Box currentSize = this.getBoundingBox();
-            ShapeContext shapeContext = ShapeContext.of(this);
-            VoxelShape voxelShape = this.world.getWorldBorder().asVoxelShape();
-            Stream<VoxelShape> stream = VoxelShapes.matchesAnywhere(voxelShape, VoxelShapes.cuboid(currentSize.contract(1.0E-7)), BooleanBiFunction.AND) ? Stream.empty() : Stream.of(voxelShape);
-            Stream<VoxelShape> stream2 = this.world.getEntityCollisions(this, currentSize.stretch(0, deltaHeight, 0), entity -> true);
-            ReusableStream<VoxelShape> reusableStream = new ReusableStream<>(Stream.concat(stream2, stream));
-            double maxDeltaHeight = adjustSingleAxisMovementForCollisions(new Vec3d(0, deltaHeight, 0), currentSize, this.world, shapeContext, reusableStream).y;
+            AABB currentSize = this.getBoundingBox();
+            CollisionContext shapeContext = CollisionContext.of(this);
+            VoxelShape voxelShape = this.level.getWorldBorder().getCollisionShape();
+            Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelShape, Shapes.create(currentSize.deflate(1.0E-7)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelShape);
+            Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0), entity -> true);
+            RewindableStream<VoxelShape> reusableStream = new RewindableStream<>(Stream.concat(stream2, stream));
+            double maxDeltaHeight = collideBoundingBox(new Vec3(0, deltaHeight, 0), currentSize, this.level, shapeContext, reusableStream).y;
 
             cir.setReturnValue(
-                    EntityDimensions.changing(0.6F * scale, Math.max(currentHeight + (float) maxDeltaHeight, minHeight))
+                    EntityDimensions.scalable(0.6F * scale, Math.max(currentHeight + (float) maxDeltaHeight, minHeight))
             );
         }
     }

@@ -1,14 +1,14 @@
 package net.sorenon.mcxr.play.mixin.roomscale;
 
 import com.mojang.authlib.GameProfile;
-import net.minecraft.client.input.Input;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.client.player.Input;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -23,21 +23,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import virtuoel.pehkui.util.ScaleUtils;
 
-@Mixin(ClientPlayerEntity.class)
-public abstract class ClientPlayerEntityMixin extends PlayerEntity {
+@Mixin(LocalPlayer.class)
+public abstract class ClientPlayerEntityMixin extends Player {
 
     @Shadow
-    public abstract boolean isSneaking();
+    public abstract boolean isShiftKeyDown();
 
     @Shadow
     public Input input;
 
-    @Shadow public abstract void move(MovementType movementType, Vec3d movement);
+    @Shadow public abstract void move(MoverType movementType, Vec3 movement);
 
     @Unique
     private static final Input sneakingInput = new Input();
 
-    public ClientPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
+    public ClientPlayerEntityMixin(Level world, BlockPos pos, float yaw, GameProfile profile) {
         super(world, pos, yaw, profile);
     }
 
@@ -45,10 +45,10 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
      * Try to move the player to the position of the headset
      * We can do this entirely on the client because minecraft's anti cheat is non-existent
      */
-    @Inject(method = "tick", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/network/ClientPlayerEntity;sendMovementPackets()V"))
+    @Inject(method = "tick", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V"))
     void applyRoomscaleMovement(CallbackInfo ci) {
         Vector3d roomscaleOffset = MCXRPlayClient.roomscalePlayerOffset;
-        if (MCXRCore.getCoreConfig().roomscaleMovement() && !this.hasVehicle()) {
+        if (MCXRCore.getCoreConfig().roomscaleMovement() && !this.isPassenger()) {
             Vector3f viewPos = MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos();
 
             double oldX = this.getX();
@@ -57,10 +57,10 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
             boolean onGround = this.onGround;
             Input input = this.input;
             this.input = sneakingInput;
-            sneakingInput.sneaking = true;
+            sneakingInput.shiftKeyDown = true;
 
             final float invScale = 1.0f / MCXRScale.getMotionScale(this); //Counter out the method pehuki uses for scaling movement
-            this.move(MovementType.SELF, new Vec3d(viewPos.x - roomscaleOffset.x, 0, viewPos.z - roomscaleOffset.z).multiply(invScale));
+            this.move(MoverType.SELF, new Vec3(viewPos.x - roomscaleOffset.x, 0, viewPos.z - roomscaleOffset.z).scale(invScale));
             this.input = input;
             this.onGround = onGround;
 
@@ -70,8 +70,8 @@ public abstract class ClientPlayerEntityMixin extends PlayerEntity {
             roomscaleOffset.x += deltaX;
             roomscaleOffset.z += deltaZ;
 
-            this.prevX += deltaX;
-            this.prevZ += deltaZ;
+            this.xo += deltaX;
+            this.zo += deltaZ;
         } else {
             roomscaleOffset.zero();
         }

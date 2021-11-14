@@ -4,7 +4,6 @@
   "package": "net.sorenon.mcxr.play.mixin",
   "compatibilityLevel": "JAVA_16",
   "client": [
-    "roomscale.ClientPlayerEntityMixin",
     "FramebufferMixin",
     "GameRendererMixin",
     "SystemDetailsMixin",
@@ -14,18 +13,19 @@
     "accessor.FramebufferAcc",
     "accessor.WindowAcc",
     "flatgui.InputUtilMixin",
-    "flatgui.MinecraftClientMixin",
+    "flatgui.MinecraftMixin",
     "flatgui.MouseMixin",
     "flatgui.ScreenMixin",
     "hands.GameRendererMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
     "rendering.Matrix4fMixin",
-    "rendering.MinecraftClientMixin",
+    "rendering.MinecraftMixin",
     "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "rendering.WorldRendererMixin"
+    "rendering.WorldRendererMixin",
+    "roomscale.ClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

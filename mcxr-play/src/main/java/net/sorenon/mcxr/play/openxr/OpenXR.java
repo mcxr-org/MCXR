@@ -1,6 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
@@ -145,7 +145,7 @@ public class OpenXR {
         }
 
         if (instance.pollEvents()) {
-            MinecraftClient.getInstance().scheduleStop();
+            Minecraft.getInstance().stop();
             return false;
         }
 

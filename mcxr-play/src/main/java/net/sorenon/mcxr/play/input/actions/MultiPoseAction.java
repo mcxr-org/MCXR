@@ -1,7 +1,7 @@
 package net.sorenon.mcxr.play.input.actions;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.resources.language.I18n;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
@@ -47,8 +47,8 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
             }
 
             String localizedName = "mcxr.action." + this.name;
-            if (I18n.hasTranslation(localizedName)) {
-                localizedName = I18n.translate(localizedName);
+            if (I18n.exists(localizedName)) {
+                localizedName = I18n.get(localizedName);
             }
 
             XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.malloc(stack).set(

@@ -1,14 +1,13 @@
 package net.sorenon.mcxr.play.rendering;
 
-import net.minecraft.client.texture.AbstractTexture;
-import net.minecraft.resource.ResourceManager;
-
 import java.io.IOException;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 public class ExistingTexture extends AbstractTexture {
 
     public ExistingTexture(int glID) {
-        this.glId = glID;
+        this.id = glID;
     }
 
     @Override
@@ -17,7 +16,7 @@ public class ExistingTexture extends AbstractTexture {
     }
 
     @Override
-    public void clearGlId() {
+    public void releaseId() {
 
     }
 }

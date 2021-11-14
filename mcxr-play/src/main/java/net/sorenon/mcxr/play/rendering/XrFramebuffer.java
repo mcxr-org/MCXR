@@ -1,10 +1,10 @@
 package net.sorenon.mcxr.play.rendering;
 
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.SimpleFramebuffer;
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
 import org.lwjgl.opengl.GL30;
 
@@ -42,48 +42,48 @@ If method 3 has too great of a performance issue (which i doubt) i will look at 
  * XrFramebuffer is a framebuffer which accepts a color texture for rendering to rather than creating its own
  * TODO accept depth textures as well
  */
-public class XrFramebuffer extends SimpleFramebuffer {
+public class XrFramebuffer extends TextureTarget {
 
     public XrFramebuffer(int width, int height) {
-        super(width, height, true, MinecraftClient.IS_SYSTEM_MAC);
+        super(width, height, true, Minecraft.ON_OSX);
     }
 
     @Override
-    public void initFbo(int width, int height, boolean getError) {
+    public void createBuffers(int width, int height, boolean getError) {
         RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
         int i = RenderSystem.maxSupportedTextureSize();
         if (width > 0 && width <= i && height > 0 && height <= i) {
-            this.viewportWidth = width;
-            this.viewportHeight = height;
-            this.textureWidth = width;
-            this.textureHeight = height;
-            this.fbo = GlStateManager.glGenFramebuffers();
+            this.viewWidth = width;
+            this.viewHeight = height;
+            this.width = width;
+            this.height = height;
+            this.frameBufferId = GlStateManager.glGenFramebuffers();
 //            this.colorAttachment = TextureUtil.generateTextureId();
-            if (this.useDepthAttachment) {
-                this.depthAttachment = TextureUtil.generateTextureId();
-                GlStateManager._bindTexture(this.depthAttachment);
+            if (this.useDepth) {
+                this.depthBufferId = TextureUtil.generateTextureId();
+                GlStateManager._bindTexture(this.depthBufferId);
                 GlStateManager._texParameter(3553, 10241, 9728);
                 GlStateManager._texParameter(3553, 10240, 9728);
                 GlStateManager._texParameter(3553, 34892, 0);
                 GlStateManager._texParameter(3553, 10242, 33071);
                 GlStateManager._texParameter(3553, 10243, 33071);
-                GlStateManager._texImage2D(3553, 0, 6402, this.textureWidth, this.textureHeight, 0, 6402, 5126, (IntBuffer)null);
+                GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, (IntBuffer)null);
             }
 
-            this.setTexFilter(9728);
+            this.setFilterMode(9728);
 //            GlStateManager._bindTexture(this.colorAttachment);
 //            GlStateManager._texParameter(3553, 10242, 33071);
 //            GlStateManager._texParameter(3553, 10243, 33071);
 //            GlStateManager._texImage2D(3553, 0, 32856, this.textureWidth, this.textureHeight, 0, 6408, 5121, (IntBuffer)null);
-            GlStateManager._glBindFramebuffer(36160, this.fbo);
+            GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
 //            GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorAttachment, 0);
-            if (this.useDepthAttachment) {
-                GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthAttachment, 0);
+            if (this.useDepth) {
+                GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthBufferId, 0);
             }
 
-            this.checkFramebufferStatus();
+            this.checkStatus();
             this.clear(getError);
-            this.endRead();
+            this.unbindRead();
         } else {
             throw new IllegalArgumentException("Window " + width + "x" + height + " size out of bounds (max. size: " + i + ")");
         }
@@ -91,7 +91,7 @@ public class XrFramebuffer extends SimpleFramebuffer {
 
     public void setColorAttachment(int colorAttachment) {
         ((FramebufferAcc) this).colorAttachment(colorAttachment);
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBufferId);
         GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
     }
 }

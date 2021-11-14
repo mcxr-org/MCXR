@@ -1,9 +1,10 @@
 package net.sorenon.mcxr.play.mixin;
 
-import net.minecraft.client.input.Input;
-import net.minecraft.client.input.KeyboardInput;
+import net.minecraft.client.player.Input;
+import net.minecraft.client.player.KeyboardInput;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
+import org.joml.Vector2f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -18,13 +19,13 @@ public class VrKeyboardInputMixin extends Input {
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) return;
 
         var thumbstick = XrInput.vanillaGameplayActionSet.move.currentState;
-        this.movementForward = thumbstick.y();
-        this.movementSideways = -thumbstick.x();
+        this.forwardImpulse = thumbstick.y();
+        this.leftImpulse = -thumbstick.x();
 
-        this.pressingForward = thumbstick.y() > 0;
-        this.pressingBack = thumbstick.y() < 0;
-        this.pressingRight = thumbstick.x() > 0;
-        this.pressingLeft = thumbstick.y() < 0;
+        this.up = thumbstick.y() > 0;
+        this.down = thumbstick.y() < 0;
+        this.right = thumbstick.x() > 0;
+        this.left = thumbstick.y() < 0;
 
         this.jumping = XrInput.vanillaGameplayActionSet.jump.currentState;
     }

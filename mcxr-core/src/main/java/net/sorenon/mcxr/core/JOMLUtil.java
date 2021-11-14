@@ -1,7 +1,7 @@
 package net.sorenon.mcxr.core;
 
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.math.Quaternion;
+import net.minecraft.world.phys.Vec3;
 import org.joml.*;
 
 public class JOMLUtil {
@@ -10,15 +10,15 @@ public class JOMLUtil {
      * Vector 3 start
      */
 
-    public static Vec3d convert(Vector3dc vec) {
-        return new Vec3d(vec.x(), vec.y(), vec.z());
+    public static Vec3 convert(Vector3dc vec) {
+        return new Vec3(vec.x(), vec.y(), vec.z());
     }
 
-    public static Vec3d convert(Vector3fc vec) {
-        return new Vec3d(vec.x(), vec.y(), vec.z());
+    public static Vec3 convert(Vector3fc vec) {
+        return new Vec3(vec.x(), vec.y(), vec.z());
     }
 
-    public static Vector3d convert(Vec3d vec) {
+    public static Vector3d convert(Vec3 vec) {
         return new Vector3d(vec.x, vec.y, vec.z);
     }
 
@@ -35,10 +35,10 @@ public class JOMLUtil {
     }
 
     public static Quaternionf convert(Quaternion quat) {
-        return new Quaternionf(quat.getX(), quat.getY(), quat.getZ(), quat.getW());
+        return new Quaternionf(quat.i(), quat.j(), quat.k(), quat.r());
     }
 
     public static Quaterniond convertd(Quaternion quat) {
-        return new Quaterniond(quat.getX(), quat.getY(), quat.getZ(), quat.getW());
+        return new Quaterniond(quat.i(), quat.j(), quat.k(), quat.r());
     }
 }

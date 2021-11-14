@@ -1,11 +1,11 @@
 package net.sorenon.mcxr.play;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.SimpleFramebuffer;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.blaze3d.pipeline.TextureTarget;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.play.rendering.ExistingTexture;
 import net.sorenon.mcxr.play.rendering.XrCamera;
@@ -17,9 +17,9 @@ public class FlatGuiManager {
     public final int framebufferWidth = 1980;
     public final int framebufferHeight = 1080;
 
-    public final Identifier texture = new Identifier("mcxr", "gui");
-    public Framebuffer backFramebuffer;
-    public Framebuffer frontFramebuffer;
+    public final ResourceLocation texture = new ResourceLocation("mcxr", "gui");
+    public RenderTarget backFramebuffer;
+    public RenderTarget frontFramebuffer;
 
     public double guiScale;
 
@@ -33,7 +33,7 @@ public class FlatGuiManager {
     /**
      * The transform of the GUI in physical space
      */
-    public Vec3d position = null;
+    public Vec3 position = null;
     public Quaterniond orientation = new Quaterniond(0, 0, 0, 1);
 
     public void init() {
@@ -45,16 +45,16 @@ public class FlatGuiManager {
         int heightFloor = (int) (framebufferHeight / guiScale);
         scaledHeight = framebufferHeight / guiScale > heightFloor ? heightFloor + 1 : heightFloor;
 
-        backFramebuffer = new SimpleFramebuffer(framebufferWidth, framebufferHeight, true, MinecraftClient.IS_SYSTEM_MAC);
+        backFramebuffer = new TextureTarget(framebufferWidth, framebufferHeight, true, Minecraft.ON_OSX);
         backFramebuffer.setClearColor(0, 0, 0, 0);
-        frontFramebuffer = new SimpleFramebuffer(framebufferWidth, framebufferHeight, false, MinecraftClient.IS_SYSTEM_MAC);
-        MinecraftClient.getInstance().getTextureManager().registerTexture(texture, new ExistingTexture(frontFramebuffer.getColorAttachment()));
+        frontFramebuffer = new TextureTarget(framebufferWidth, framebufferHeight, false, Minecraft.ON_OSX);
+        Minecraft.getInstance().getTextureManager().register(texture, new ExistingTexture(frontFramebuffer.getColorTextureId()));
     }
 
     @SuppressWarnings("ConditionCoveredByFurtherCondition")
     public double calcGuiScale() {
         int guiScale = 4;
-        boolean forceUnicodeFont = MinecraftClient.getInstance().forcesUnicodeFont();
+        boolean forceUnicodeFont = Minecraft.getInstance().isEnforceUnicode();
 
         int scale;
         scale = 1;
@@ -69,7 +69,7 @@ public class FlatGuiManager {
     }
 
     public boolean isScreenOpen() {
-        return position != null && MinecraftClient.getInstance().currentScreen != null;
+        return position != null && Minecraft.getInstance().screen != null;
     }
 
     public void openScreen(@Nullable Screen screen) {
@@ -77,15 +77,15 @@ public class FlatGuiManager {
             position = null;
             orientation.set(0, 0, 0, 1);
             needsReset = false;
-        } else if (MinecraftClient.getInstance().currentScreen == null) {
+        } else if (Minecraft.getInstance().screen == null) {
             resetTransform();
         }
     }
 
     public void resetTransform() {
-        XrCamera camera = (XrCamera) MinecraftClient.getInstance().gameRenderer.getCamera();
-        if (camera.isReady()) {
-            orientation = JOMLUtil.convertd(camera.getRotation());
+        XrCamera camera = (XrCamera) Minecraft.getInstance().gameRenderer.getMainCamera();
+        if (camera.isInitialized()) {
+            orientation = JOMLUtil.convertd(camera.rotation());
             position = JOMLUtil.convert(MCXRPlayClient.viewSpacePoses.getUnscaledPhysicalPose().getPos().add(orientation.transform(new Vector3f(0, -0.5f, 1))));
             needsReset = false;
         } else {

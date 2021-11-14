@@ -1,6 +1,6 @@
 package net.sorenon.mcxr.play.input.actionsets;
 
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.resources.language.I18n;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.InputAction;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
@@ -50,14 +50,14 @@ public abstract class ActionSet implements AutoCloseable {
     public final void createHandle(OpenXRInstance instance) throws XrException {
         try (var stack = stackPush()) {
             String localizedName = "mcxr.actionset." + this.name;
-            if (I18n.hasTranslation(localizedName)) {
-                localizedName = I18n.translate(localizedName);
+            if (I18n.exists(localizedName)) {
+                localizedName = I18n.get(localizedName);
             }
 
             XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.malloc(stack).set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
                     NULL,
                     memUTF8("mcxr." + this.name),
-                    memUTF8(I18n.translate(localizedName)),
+                    memUTF8(I18n.get(localizedName)),
                     priority
             );
             PointerBuffer pp = stackMallocPointer(1);

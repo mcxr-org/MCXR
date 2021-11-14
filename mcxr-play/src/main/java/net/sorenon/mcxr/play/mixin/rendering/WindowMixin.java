@@ -1,10 +1,11 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.Window;
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.rendering.MainRenderTarget;
+import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
+import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,27 +20,25 @@ public class WindowMixin {
     @Unique
     private final FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
 
-    /**
-     * No vysnc >:(
-     */
-    @ModifyVariable(method = "setVsync", ordinal = 0, at = @At("HEAD"))
+    @ModifyVariable(method = "updateVsync", ordinal = 0, at = @At("HEAD"))
     boolean overwriteVsync(boolean v) {
+        GLFW.glfwSwapInterval(0);
         return false;
     }
 
-    @Inject(method = "getFramebufferWidth", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getScreenWidth", at = @At("HEAD"), cancellable = true)
     void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
-            MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
-            cir.setReturnValue(mainRenderTarget.viewportWidth);
+            MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) Minecraft.getInstance().getMainRenderTarget();
+            cir.setReturnValue(MCXRMainTarget.viewWidth);
         }
     }
 
-    @Inject(method = "getFramebufferHeight", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getScreenHeight", at = @At("HEAD"), cancellable = true)
     void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
-            MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
-            cir.setReturnValue(mainRenderTarget.viewportHeight);
+            MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) Minecraft.getInstance().getMainRenderTarget();
+            cir.setReturnValue(MCXRMainTarget.viewHeight);
         }
     }
 
@@ -54,35 +53,35 @@ public class WindowMixin {
     }
 
 
-    @Inject(method = "getScaledHeight", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getGuiScaledHeight", at = @At("HEAD"), cancellable = true)
     void getScaledHeight(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
             cir.setReturnValue(FGM.scaledHeight);
         }
     }
 
-    @Inject(method = "getScaledWidth", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getGuiScaledWidth", at = @At("HEAD"), cancellable = true)
     void getScaledWidth(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
             cir.setReturnValue(FGM.scaledWidth);
         }
     }
 
-    @Inject(method = "getScaleFactor", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getGuiScale", at = @At("HEAD"), cancellable = true)
     void getScaleFactor(CallbackInfoReturnable<Double> cir) {
         if (isCustomFramebuffer()) {
             cir.setReturnValue(FGM.guiScale);
         }
     }
 
-    @Inject(method = "onWindowFocusChanged", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "onFocus", at = @At("HEAD"), cancellable = true)
     void preventPauseOnUnFocus(long window, boolean focused, CallbackInfo ci) {
         ci.cancel();
     }
 
     @Unique
     boolean isCustomFramebuffer() {
-        MainRenderTarget mainRenderTarget = (MainRenderTarget) MinecraftClient.getInstance().getFramebuffer();
-        return mainRenderTarget != null && mainRenderTarget.isCustomFramebuffer();
+        MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) Minecraft.getInstance().getMainRenderTarget();
+        return MCXRMainTarget != null && MCXRMainTarget.isCustomFramebuffer();
     }
 }

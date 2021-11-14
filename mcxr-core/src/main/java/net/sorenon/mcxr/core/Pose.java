@@ -1,6 +1,6 @@
 package net.sorenon.mcxr.core;
 
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -31,7 +31,7 @@ public class Pose {
 
     public float getMCPitch() {
         Vector3f normal = orientation.transform(new Vector3f(0, 0, -1));
-        float pitch = (float) Math.asin(MathHelper.clamp(normal.y, -0.999999999, 0.999999999));
+        float pitch = (float) Math.asin(Mth.clamp(normal.y, -0.999999999, 0.999999999));
 
         return (float) -Math.toDegrees(pitch);
     }
@@ -41,7 +41,7 @@ public class Pose {
             return (float) java.lang.Math.atan(normal.x / normal.z);
         }
         if (normal.z == 0) {
-            return (float) (Math.PI / 2 * -MathHelper.sign(normal.x));
+            return (float) (Math.PI / 2 * -Mth.sign(normal.x));
         }
         if (normal.z > 0) {
             return (float) (java.lang.Math.atan(normal.x / normal.z) + Math.PI);

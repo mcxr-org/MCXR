@@ -1,12 +1,11 @@
 package net.sorenon.mcxr.play.rendering;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.Camera;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.world.BlockView;
+import com.mojang.math.Quaternion;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.core.Pose;
@@ -27,7 +26,7 @@ public class XrCamera extends Camera {
     /**
      * Called just before each render tick, sets the camera to the center of the headset for updating the sound engine and updates the pitch yaw of the player
      */
-    public void updateXR(BlockView area, Entity focusedEntity, Pose viewSpacePose) {
+    public void updateXR(BlockGetter area, Entity focusedEntity, Pose viewSpacePose) {
         CameraAcc thiz = (CameraAcc) this;
         thiz.ready(focusedEntity != null);
         thiz.area(area);
@@ -36,19 +35,19 @@ public class XrCamera extends Camera {
 
         setPose(viewSpacePose);
 
-        if (focusedEntity != null && MinecraftClient.getInstance().player == focusedEntity) {
-            Entity player = MinecraftClient.getInstance().player;
+        if (focusedEntity != null && Minecraft.getInstance().player == focusedEntity) {
+            Entity player = Minecraft.getInstance().player;
 
             float yaw = MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getMCYaw();
             float pitch = MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getMCPitch();
-            float dYaw = yaw - player.getYaw();
-            float dPitch = pitch - player.getPitch();
-            player.setYaw(yaw);
-            player.setPitch(pitch);
-            player.prevYaw += dYaw;
-            player.prevPitch = MathHelper.clamp(player.prevPitch + dPitch, -90, 90);
+            float dYaw = yaw - player.getYRot();
+            float dPitch = pitch - player.getXRot();
+            player.setYRot(yaw);
+            player.setXRot(pitch);
+            player.yRotO += dYaw;
+            player.xRotO = Mth.clamp(player.xRotO + dPitch, -90, 90);
             if (player.getVehicle() != null) {
-                player.getVehicle().onPassengerLookAround(player);
+                player.getVehicle().onPassengerTurned(player);
             }
         }
     }
@@ -60,22 +59,22 @@ public class XrCamera extends Camera {
 
         thiz.pitch(pose.getMCPitch());
         thiz.yaw(pose.getMCYaw());
-        this.getRotation().set(0.0F, 0.0F, 0.0F, 1.0F);
-        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_Y.getDegreesQuaternion(-pose.getMCYaw()));
-        this.getRotation().hamiltonProduct(Vec3f.POSITIVE_X.getDegreesQuaternion(pose.getMCPitch()));
+        this.rotation().set(0.0F, 0.0F, 0.0F, 1.0F);
+        this.rotation().mul(com.mojang.math.Vector3f.YP.rotationDegrees(-pose.getMCYaw()));
+        this.rotation().mul(com.mojang.math.Vector3f.XP.rotationDegrees(pose.getMCPitch()));
 
         Vector3f look = rawRotation.transform(new Vector3f(0, 0, -1));
         Vector3f up = rawRotation.transform(new Vector3f(0, 1, 0));
         Vector3f right = rawRotation.transform(new Vector3f(1, 0, 0));
-        this.getHorizontalPlane().set(look.x, look.y, look.z);
-        this.getVerticalPlane().set(up.x, up.y, up.z);
+        this.getLookVector().set(look.x, look.y, look.z);
+        this.getUpVector().set(up.x, up.y, up.z);
         thiz.diagonalPlane().set(right.x, right.y, right.z);
 
-        this.setPos(JOMLUtil.convert(pose.getPos()));
+        this.setPosition(JOMLUtil.convert(pose.getPos()));
     }
 
     @Override
-    public void update(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta) {
+    public void setup(BlockGetter area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta) {
         CameraAcc thiz = (CameraAcc) this;
         thiz.ready(true);
         thiz.area(area);

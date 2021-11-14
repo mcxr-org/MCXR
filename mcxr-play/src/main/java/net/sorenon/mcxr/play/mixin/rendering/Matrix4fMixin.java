@@ -1,7 +1,7 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.Matrix4f;
+import com.mojang.math.Matrix4f;
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.Matrix4fExt;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
@@ -22,90 +22,86 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
     private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
 
     @Shadow
-    protected float a00;
+    protected float m00;
 
     @Shadow
-    protected float a01;
+    protected float m01;
 
     @Shadow
-    protected float a02;
+    protected float m02;
 
     @Shadow
-    protected float a03;
+    protected float m03;
 
     @Shadow
-    protected float a13;
+    protected float m13;
 
     @Shadow
-    protected float a12;
+    protected float m12;
 
     @Shadow
-    protected float a11;
+    protected float m11;
 
     @Shadow
-    protected float a10;
+    protected float m10;
 
     @Shadow
-    protected float a20;
+    protected float m20;
 
     @Shadow
-    protected float a21;
+    protected float m21;
 
     @Shadow
-    protected float a22;
+    protected float m22;
 
     @Shadow
-    protected float a23;
+    protected float m23;
 
     @Shadow
-    protected float a30;
+    protected float m30;
 
     @Shadow
-    protected float a31;
+    protected float m31;
 
     @Shadow
-    protected float a32;
+    protected float m32;
 
     @Shadow
-    protected float a33;
+    protected float m33;
 
     @Override
     public void createProjectionFov(XrFovf fov, float nearZ, float farZ) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        nearZ = MCXRPlayClient.modifyProjectionMatrixDepth(nearZ, client.getCameraEntity(), client.getTickDelta());
+        Minecraft client = Minecraft.getInstance();
+        nearZ = MCXRPlayClient.modifyProjectionMatrixDepth(nearZ, client.getCameraEntity(), client.getFrameTime());
         float tanLeft = Math.tan(fov.angleLeft());
         float tanRight = Math.tan(fov.angleRight());
         float tanDown = Math.tan(fov.angleDown());
         float tanUp = Math.tan(fov.angleUp());
         float tanAngleWidth = tanRight - tanLeft;
         float tanAngleHeight = tanUp - tanDown;
-        a00 = 2.0f / tanAngleWidth;
-        a10 = 0.0f;
-        a20 = 0.0f;
-        a30 = 0.0f;
-        a01 = 0.0f;
-        a11 = 2.0f / tanAngleHeight;
-        a21 = 0.0f;
-        a31 = 0.0f;
-        a02 = (tanRight + tanLeft) / tanAngleWidth;
-        a12 = (tanUp + tanDown) / tanAngleHeight;
-        a22 = -(farZ + nearZ) / (farZ - nearZ);
-        a32 = -1.0f;
-        a03 = 0.0f;
-        a13 = 0.0f;
-        a23 = -(farZ * (nearZ + nearZ)) / (farZ - nearZ);
-        a33 = 0.0f;
+        m00 = 2.0f / tanAngleWidth;
+        m10 = 0.0f;
+        m20 = 0.0f;
+        m30 = 0.0f;
+        m01 = 0.0f;
+        m11 = 2.0f / tanAngleHeight;
+        m21 = 0.0f;
+        m31 = 0.0f;
+        m02 = (tanRight + tanLeft) / tanAngleWidth;
+        m12 = (tanUp + tanDown) / tanAngleHeight;
+        m22 = -(farZ + nearZ) / (farZ - nearZ);
+        m32 = -1.0f;
+        m03 = 0.0f;
+        m13 = 0.0f;
+        m23 = -(farZ * (nearZ + nearZ)) / (farZ - nearZ);
+        m33 = 0.0f;
     }
 
-    /**
-     * why does yarn have viewboxMatrix and projectionMatrix mixed up?
-     * mojmap time?
-     */
-    @Inject(method = "viewboxMatrix", cancellable = true, at = @At("HEAD"))
+    @Inject(method = "perspective", cancellable = true, at = @At("HEAD"))
     private static void overwriteProjectionMatrix(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
         if (XR_RENDERER.renderPass instanceof RenderPass.World renderPass) {
             Matrix4f mat = new Matrix4f();
-            mat.loadIdentity();
+            mat.setIdentity();
             ((Matrix4fExt) (Object) mat).createProjectionFov(renderPass.fov, cameraDepth, viewDistance);
             cir.setReturnValue(mat);
         }

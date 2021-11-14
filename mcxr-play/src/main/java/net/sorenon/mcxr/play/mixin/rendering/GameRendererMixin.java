@@ -1,16 +1,18 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.item.HeldItemRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Quaternion;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
-import net.sorenon.mcxr.play.rendering.MainRenderTarget;
+import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.XrCamera;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.accessor.Matrix4fExt;
@@ -33,74 +35,73 @@ public abstract class GameRendererMixin {
 
     @Shadow
     @Final
-    private Camera camera;
+    private Camera mainCamera;
 
-    @Shadow
-    public abstract float getViewDistance();
+    @Shadow public abstract float getRenderDistance();
 
-    @Shadow @Final private MinecraftClient client;
+    @Shadow @Final private Minecraft minecraft;
 
     /**
      * Replace the default camera with an XrCamera
      */
     @SuppressWarnings("UnresolvedMixinReference")
-    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/render/Camera"))
+    @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/Camera"))
     Camera createCamera() {
         return new XrCamera();
     }
 
-    @Redirect(method = "renderHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/HeldItemRenderer;renderItem(FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;Lnet/minecraft/client/network/ClientPlayerEntity;I)V"))
-    void cancelRenderHand(HeldItemRenderer heldItemRenderer, float tickDelta, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, ClientPlayerEntity player, int light) {
+    @Redirect(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))
+    void cancelRenderHand(ItemInHandRenderer heldItemRenderer, float tickDelta, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumers, LocalPlayer player, int light) {
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
-    void cancelBobView(MatrixStack matrixStack, float f, CallbackInfo ci) {
+    void cancelBobView(PoseStack matrixStack, float f, CallbackInfo ci) {
         ci.cancel();
     }
 
     /**
      * Replace the vanilla projection matrix
      */
-    @Inject(method = "getBasicProjectionMatrix", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getProjectionMatrix", at = @At("HEAD"), cancellable = true)
     void getXrProjectionMatrix(double d, CallbackInfoReturnable<Matrix4f> cir) {
         if (XR_RENDERER.renderPass instanceof RenderPass.World renderPass) {
             Matrix4f proj = new Matrix4f();
-            proj.loadIdentity();
+            proj.setIdentity();
             //noinspection ConstantConditions
-            ((Matrix4fExt) (Object) proj).createProjectionFov(renderPass.fov, 0.05F, this.getViewDistance() * 4);
+            ((Matrix4fExt) (Object) proj).createProjectionFov(renderPass.fov, 0.05F, this.getRenderDistance() * 4);
 
             cir.setReturnValue(proj);
         }
     }
 
-    @Inject(method = "onResized", at = @At("HEAD"))
+    @Inject(method = "resize", at = @At("HEAD"))
     void onResized(int i, int j, CallbackInfo ci) {
-        MainRenderTarget mainRenderTarget = (MainRenderTarget) client.getFramebuffer();
-        mainRenderTarget.gameWidth = i;
-        mainRenderTarget.gameHeight = j;
+        MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) minecraft.getMainRenderTarget();
+        MCXRMainTarget.gameWidth = i;
+        MCXRMainTarget.gameHeight = j;
     }
 
     /**
      * Rotate the matrix stack using a quaternion rather than pitch and yaw
      */
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 2), method = "renderWorld")
-    void multiplyPitch(MatrixStack matrixStack, Quaternion pitchQuat) {
+    @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lcom/mojang/math/Quaternion;)V", ordinal = 2), method = "renderLevel")
+    void multiplyPitch(PoseStack matrixStack, Quaternion pitchQuat) {
     }
 
-    @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/util/math/MatrixStack;multiply(Lnet/minecraft/util/math/Quaternion;)V", ordinal = 3), method = "renderWorld")
-    void multiplyYaw(MatrixStack matrixStack, Quaternion yawQuat) {
-        matrixStack.multiply(((XrCamera) camera).getRawRotationInverted());
+    @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lcom/mojang/math/Quaternion;)V", ordinal = 3), method = "renderLevel")
+    void multiplyYaw(PoseStack matrixStack, Quaternion yawQuat) {
+        matrixStack.mulPose(((XrCamera) mainCamera).getRawRotationInverted());
     }
 
     /**
      * If we are doing a gui render pass => return null to skip rendering the world
      */
-    @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;world:Lnet/minecraft/client/world/ClientWorld;", opcode = Opcodes.GETFIELD, ordinal = 0), method = "render")
-    public ClientWorld getWorld(MinecraftClient client) {
+    @Redirect(at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;level:Lnet/minecraft/client/multiplayer/ClientLevel;", opcode = Opcodes.GETFIELD, ordinal = 0), method = "render")
+    public ClientLevel getWorld(Minecraft client) {
         if (XR_RENDERER.renderPass == RenderPass.GUI) {
             return null;
         } else {
-            return client.world;
+            return client.level;
         }
     }
 

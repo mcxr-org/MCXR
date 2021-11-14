@@ -3,11 +3,11 @@ package net.sorenon.mcxr.play;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.Camera;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.sorenon.fart.FartRenderEvents;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
@@ -71,9 +71,9 @@ public class MCXRPlayClient implements ClientModInitializer {
         XR.create("openxr_loader");
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             if (RENDERER.renderPass instanceof RenderPass.World) {
-                if (!MinecraftClient.getInstance().options.hudHidden && !flatGuiManager.isScreenOpen()) {
+                if (!Minecraft.getInstance().options.hideGui && !flatGuiManager.isScreenOpen()) {
                     Camera camera = context.camera();
-                    if (camera.getFocusedEntity() instanceof ClientPlayerEntity player) {
+                    if (camera.getEntity() instanceof LocalPlayer player) {
                         vrFirstPersonRenderer.renderHandsAndItems(
                                 player,
                                 VrFirstPersonRenderer.getLight(camera, context.world()),
@@ -88,15 +88,15 @@ public class MCXRPlayClient implements ClientModInitializer {
 
         FartRenderEvents.LAST.register(context -> {
             if (RENDERER.renderPass instanceof RenderPass.World) {
-                if (!MinecraftClient.getInstance().options.hudHidden) {
+                if (!Minecraft.getInstance().options.hideGui) {
                     vrFirstPersonRenderer.renderFirstPerson(context);
                 }
             }
         });
     }
 
-    public static Identifier id(String name) {
-        return new Identifier("mcxr-play", name);
+    public static ResourceLocation id(String name) {
+        return new ResourceLocation("mcxr-play", name);
     }
 
     public static void resetView() {
@@ -112,7 +112,7 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static float getCameraScale(float delta) {
-        var cam = MinecraftClient.getInstance().cameraEntity;
+        var cam = Minecraft.getInstance().cameraEntity;
         if (cam == null) {
             return 1;
         } else {

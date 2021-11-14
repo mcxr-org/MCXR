@@ -1,7 +1,8 @@
 package net.sorenon.mcxr.core;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
+import virtuoel.pehkui.api.ScaleData;
 import virtuoel.pehkui.api.ScaleType;
 import virtuoel.pehkui.util.ScaleUtils;
 

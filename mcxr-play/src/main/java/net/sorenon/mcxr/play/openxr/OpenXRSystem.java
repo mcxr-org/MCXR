@@ -1,7 +1,5 @@
 package net.sorenon.mcxr.play.openxr;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.Window;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
@@ -16,6 +14,7 @@ import org.lwjgl.system.linux.X11;
 import org.lwjgl.system.windows.User32;
 
 import java.util.Objects;
+import net.minecraft.client.Minecraft;
 
 import static org.lwjgl.opengl.GLX13.*;
 import static org.lwjgl.system.APIUtil.apiGetFunctionAddress;
@@ -25,6 +24,8 @@ import static org.lwjgl.system.JNI.invokePP;
 import static org.lwjgl.system.MemoryStack.stackInts;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
+
+import com.mojang.blaze3d.platform.Window;
 
 public class OpenXRSystem {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -72,8 +73,8 @@ public class OpenXRSystem {
 
     public Struct createOpenGLBinding(MemoryStack stack) {
         //Bind the OpenGL context to the OpenXR instance and create the session
-        Window window = MinecraftClient.getInstance().getWindow();
-        long windowHandle = window.getHandle();
+        Window window = Minecraft.getInstance().getWindow();
+        long windowHandle = window.getWindow();
         if (Platform.get() == Platform.WINDOWS) {
             return XrGraphicsBindingOpenGLWin32KHR.malloc(stack).set(
                     KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,

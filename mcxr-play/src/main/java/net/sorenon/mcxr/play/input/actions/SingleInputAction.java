@@ -1,6 +1,6 @@
 package net.sorenon.mcxr.play.input.actions;
 
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.resources.language.I18n;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.PointerBuffer;
@@ -29,8 +29,8 @@ public abstract class SingleInputAction<T> extends Action implements InputAction
     public void createHandle(XrActionSet actionSet, OpenXRInstance instance) throws XrException {
         try (var stack = stackPush()) {
             String localizedName = "mcxr.action." + this.name;
-            if (I18n.hasTranslation(localizedName)) {
-                localizedName = I18n.translate(localizedName);
+            if (I18n.exists(localizedName)) {
+                localizedName = I18n.get(localizedName);
             }
 
             XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.malloc(stack).set(

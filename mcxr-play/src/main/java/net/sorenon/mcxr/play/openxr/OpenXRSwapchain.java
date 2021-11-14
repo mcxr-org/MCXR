@@ -1,8 +1,8 @@
 package net.sorenon.mcxr.play.openxr;
 
+import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.SimpleFramebuffer;
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.rendering.XrFramebuffer;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
@@ -20,7 +20,7 @@ public class OpenXRSwapchain implements AutoCloseable {
     public int height;
     public XrSwapchainImageOpenGLKHR.Buffer images;
     public XrFramebuffer innerFramebuffer;
-    public SimpleFramebuffer framebuffer;
+    public TextureTarget framebuffer;
 
     public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session) {
         this.handle = handle;
@@ -46,7 +46,7 @@ public class OpenXRSwapchain implements AutoCloseable {
             innerFramebuffer = new XrFramebuffer(width, height);
             innerFramebuffer.setClearColor(sRGBToLinear(239 / 255f), sRGBToLinear(50 / 255f), sRGBToLinear(61 / 255f), 255 / 255f);
 
-            framebuffer = new SimpleFramebuffer(width, height, true, MinecraftClient.IS_SYSTEM_MAC);
+            framebuffer = new TextureTarget(width, height, true, Minecraft.ON_OSX);
             framebuffer.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
         }
     }
@@ -67,8 +67,8 @@ public class OpenXRSwapchain implements AutoCloseable {
         }
         if (framebuffer != null) {
             RenderSystem.recordRenderCall(() -> {
-                innerFramebuffer.delete();
-                framebuffer.delete();
+                innerFramebuffer.destroyBuffers();
+                framebuffer.destroyBuffers();
             });
         }
     }

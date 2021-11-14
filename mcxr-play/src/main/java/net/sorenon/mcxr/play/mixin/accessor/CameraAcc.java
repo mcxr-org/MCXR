@@ -1,33 +1,33 @@
 package net.sorenon.mcxr.play.mixin.accessor;
 
-import net.minecraft.client.render.Camera;
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.world.BlockView;
+import com.mojang.math.Vector3f;
+import net.minecraft.client.Camera;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(Camera.class)
 public interface CameraAcc {
 
-    @Accessor("ready")
+    @Accessor("initialized")
     void ready(boolean ready);
 
-    @Accessor("area")
-    void area(BlockView area);
+    @Accessor("level")
+    void area(BlockGetter area);
 
-    @Accessor("focusedEntity")
+    @Accessor("entity")
     void focusedEntity(Entity entity);
 
-    @Accessor("thirdPerson")
+    @Accessor("detached")
     void thirdPerson(boolean thirdPerson);
 
-    @Accessor("pitch")
+    @Accessor("xRot")
     void pitch(float pitch);
 
-    @Accessor("yaw")
+    @Accessor("yRot")
     void yaw(float yaw);
 
-    @Accessor("diagonalPlane")
-    Vec3f diagonalPlane();
+    @Accessor("left")
+    Vector3f diagonalPlane();
 }

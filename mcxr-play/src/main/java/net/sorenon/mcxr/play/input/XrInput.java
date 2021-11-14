@@ -1,9 +1,8 @@
 package net.sorenon.mcxr.play.input;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
@@ -20,6 +19,7 @@ import net.sorenon.mcxr.play.openxr.XrException;
 import net.sorenon.mcxr.play.openxr.XrRuntimeException;
 import org.joml.Quaterniond;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -27,14 +27,18 @@ import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrActionSuggestedBinding;
 import org.lwjgl.openxr.XrInteractionProfileSuggestedBinding;
 import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
+import org.lwjgl.system.MemoryStack;
 import oshi.util.tuples.Pair;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
+
+import com.mojang.blaze3d.platform.InputConstants;
 
 public final class XrInput {
     public static final HandsActionSet handsActionSet = new HandsActionSet();
@@ -112,8 +116,8 @@ public final class XrInput {
         if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) {
             if (guiActionSet.exit.changedSinceLastSync) {
                 if (guiActionSet.exit.currentState) {
-                    if (MinecraftClient.getInstance().currentScreen != null) {
-                        MinecraftClient.getInstance().currentScreen.keyPressed(256, 0, 0);
+                    if (Minecraft.getInstance().screen != null) {
+                        Minecraft.getInstance().screen.keyPressed(256, 0, 0);
                     }
                 }
             }
@@ -152,20 +156,20 @@ public final class XrInput {
             if (actionSet.hotbarActivated) {
                 actionSet.hotbarActivated = Math.abs(value) > 0.15f;
             } else if (Math.abs(value) >= 0.7f) {
-                if (MinecraftClient.getInstance().player != null)
-                    MinecraftClient.getInstance().player.getInventory().scrollInHotbar(-value);
+                if (Minecraft.getInstance().player != null)
+                    Minecraft.getInstance().player.getInventory().swapPaint(-value);
                 actionSet.hotbarActivated = true;
             }
         }
         if (actionSet.inventory.changedSinceLastSync) {
             if (!actionSet.inventory.currentState) {
-                MinecraftClient client = MinecraftClient.getInstance();
-                if (client.currentScreen == null) {
-                    if (client.player != null && client.interactionManager != null) {
-                        if (client.interactionManager.hasRidingInventory()) {
-                            client.player.openRidingInventory();
+                Minecraft client = Minecraft.getInstance();
+                if (client.screen == null) {
+                    if (client.player != null && client.gameMode != null) {
+                        if (client.gameMode.isServerControlledInventory()) {
+                            client.player.sendOpenInventory();
                         } else {
-                            client.getTutorialManager().onInventoryOpened();
+                            client.getTutorial().onOpenInventory();
                             client.setScreen(new InventoryScreen(client.player));
                         }
                     }
@@ -173,19 +177,19 @@ public final class XrInput {
             }
         }
         if (actionSet.sprint.changedSinceLastSync) {
-            MinecraftClient client = MinecraftClient.getInstance();
+            Minecraft client = Minecraft.getInstance();
             if (actionSet.sprint.currentState) {
-                client.options.keySprint.setPressed(true);
+                client.options.keySprint.setDown(true);
             } else {
-                client.options.keySprint.setPressed(false);
+                client.options.keySprint.setDown(false);
                 if (client.player != null) {
                     client.player.setSprinting(false);
                 }
             }
         }
         if (actionSet.sneak.changedSinceLastSync) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            client.options.keySneak.setPressed(actionSet.sneak.currentState);
+            Minecraft client = Minecraft.getInstance();
+            client.options.keyShift.setDown(actionSet.sneak.currentState);
         }
 //        if (actionSet.attackState.changedSinceLastSync()) {
 //            MinecraftClient client = MinecraftClient.getInstance();
@@ -198,13 +202,13 @@ public final class XrInput {
 //            }
 //        }
         if (actionSet.use.changedSinceLastSync) {
-            MinecraftClient client = MinecraftClient.getInstance();
-            InputUtil.Key key = client.options.keyUse.getDefaultKey();
+            Minecraft client = Minecraft.getInstance();
+            InputConstants.Key key = client.options.keyUse.getDefaultKey();
             if (actionSet.use.currentState) {
-                KeyBinding.onKeyPressed(key);
-                KeyBinding.setKeyPressed(key, true);
+                KeyMapping.click(key);
+                KeyMapping.set(key, true);
             } else {
-                KeyBinding.setKeyPressed(key, false);
+                KeyMapping.set(key, false);
             }
         }
     }
@@ -214,7 +218,7 @@ public final class XrInput {
      */
     public static void postTick(long predictedDisplayTime) {
         FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
-        MouseExt mouse = (MouseExt) MinecraftClient.getInstance().mouse;
+        MouseExt mouse = (MouseExt) Minecraft.getInstance().mouseHandler;
         if (FGM.isScreenOpen()) {
             Pose pose = handsActionSet.gripPoses[MCXRPlayClient.mainHand].getUnscaledPhysicalPose();
             Vector3d pos = new Vector3d(pose.getPos());
@@ -228,7 +232,7 @@ public final class XrInput {
                 vec.x /= FGM.size;
                 vec.y /= FGM.size;
 
-                ((MouseExt) MinecraftClient.getInstance().mouse).cursorPos(
+                ((MouseExt) Minecraft.getInstance().mouseHandler).cursorPos(
                         FGM.framebufferWidth * (0.5 - vec.x),
                         FGM.framebufferHeight * (1 - vec.y)
                 );
@@ -268,7 +272,7 @@ public final class XrInput {
         if (actionSet.inventory.currentState) {
             long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
             if (heldTime * 1E-09 > 1) {
-                MinecraftClient.getInstance().openPauseMenu(false);
+                Minecraft.getInstance().pauseGame(false);
             }
         }
     }

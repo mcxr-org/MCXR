@@ -8,10 +8,10 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import net.sorenon.mcxr.core.config.MCXRCoreConfig;
 import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
@@ -23,9 +23,9 @@ import org.joml.Vector3f;
 
 public class MCXRCore implements ModInitializer {
 
-    public static final Identifier S2C_CONFIG = new Identifier("mcxr", "config");
+    public static final ResourceLocation S2C_CONFIG = new ResourceLocation("mcxr", "config");
 
-    public static final Identifier POSES = new Identifier("mcxr", "poses");
+    public static final ResourceLocation POSES = new ResourceLocation("mcxr", "poses");
     public static MCXRCore INSTANCE;
 
     private static final Logger LOGGER = LogManager.getLogger("MCXR Core");
@@ -42,7 +42,7 @@ public class MCXRCore implements ModInitializer {
         ServerLoginNetworking.registerGlobalReceiver(S2C_CONFIG, (server, handler, understood, buf, synchronizer, responseSender) -> {
             if (understood) {
                 boolean xr = buf.readBoolean();
-                var profile = ((ServerLoginNetworkHandlerAcc) handler).getProfile();
+                var profile = ((ServerLoginNetworkHandlerAcc) handler).getGameProfile();
                 if (xr) {
                     LOGGER.info("Received XR login packet from " + profile.getId());
                 } else {
@@ -52,7 +52,7 @@ public class MCXRCore implements ModInitializer {
         });
 
         ServerLoginConnectionEvents.QUERY_START.register((handler, server, sender, synchronizer) -> {
-            LOGGER.debug("Sending login packet to " + handler.getConnectionInfo());
+            LOGGER.debug("Sending login packet to " + handler.getUserName());
             var buf = PacketByteBufs.create();
             sender.sendPacket(S2C_CONFIG, buf);
         });
@@ -70,15 +70,15 @@ public class MCXRCore implements ModInitializer {
                 });
     }
 
-    public void setPlayerHeadPose(PlayerEntity player, Pose pose) {
+    public void setPlayerHeadPose(Player player, Pose pose) {
         PlayerEntityAcc acc = (PlayerEntityAcc) player;
         if (acc.getHeadPose() == null) {
             acc.markVR();
         }
         acc.getHeadPose().set(pose);
 
-        if (player.world.isClient && player instanceof ClientPlayerEntity) {
-            PacketByteBuf buf = PacketByteBufs.create();
+        if (player.level.isClientSide && player instanceof LocalPlayer) {
+            FriendlyByteBuf buf = PacketByteBufs.create();
             Vector3f pos = pose.pos;
             Quaternionf quat = pose.orientation;
             buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);

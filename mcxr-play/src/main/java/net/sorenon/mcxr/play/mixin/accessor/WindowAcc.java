@@ -1,6 +1,6 @@
 package net.sorenon.mcxr.play.mixin.accessor;
 
-import net.minecraft.client.util.Window;
+import com.mojang.blaze3d.platform.Window;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -9,13 +9,13 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface WindowAcc {
 
     @Accessor()
-    boolean getCurrentFullscreen();
+    boolean getActuallyFullscreen();
 
     @Accessor()
     boolean getVsync();
 
     @Accessor()
-    void setCurrentFullscreen(boolean currentFullscreen);
+    void setActuallyFullscreen(boolean currentFullscreen);
 
     @Invoker()
     void invokeUpdateFullscreen(boolean vsync);

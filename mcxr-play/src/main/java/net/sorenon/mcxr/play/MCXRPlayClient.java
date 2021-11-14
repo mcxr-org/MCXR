@@ -25,8 +25,6 @@ import virtuoel.pehkui.util.ScaleUtils;
 
 public class MCXRPlayClient implements ClientModInitializer {
 
-    public static boolean resourcesInitialized = false;
-
     private static final Logger LOGGER = LogManager.getLogger("MCXR");
 
     public static final OpenXR OPEN_XR = new OpenXR();

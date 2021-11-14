@@ -7,7 +7,6 @@
     "roomscale.ClientPlayerEntityMixin",
     "FramebufferMixin",
     "GameRendererMixin",
-    "SplashOverlayMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
     "VrKeyboardInputMixin",

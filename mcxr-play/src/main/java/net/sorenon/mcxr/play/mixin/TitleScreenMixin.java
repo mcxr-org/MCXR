@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(TitleScreen.class)
-public class TitleScreenMixin extends Screen {
+public abstract class TitleScreenMixin extends Screen {
 
     @Shadow
     @Final
@@ -39,6 +39,12 @@ public class TitleScreenMixin extends Screen {
 
     @Shadow
     private long backgroundFadeStart;
+
+    @Shadow
+    protected abstract void init();
+
+    @Unique
+    private static boolean initialized = false;
 
     protected TitleScreenMixin(Text title) {
         super(title);
@@ -58,6 +64,12 @@ public class TitleScreenMixin extends Screen {
 
     @Inject(method = "render", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/gui/screen/TitleScreen;drawStringWithShadow(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/font/TextRenderer;Ljava/lang/String;III)V"))
     void render(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if (!initialized) {
+            if (MCXRPlayClient.OPEN_XR.session == null) {
+                MCXRPlayClient.OPEN_XR.tryInitialize();
+            }
+            initialized = true;
+        }
         float f = this.doBackgroundFade ? (float) (Util.getMeasuringTimeMs() - this.backgroundFadeStart) / 1000.0F : 1.0F;
         float g = this.doBackgroundFade ? MathHelper.clamp(f - 1.0F, 0.0F, 1.0F) : 1.0F;
         int l = MathHelper.ceil(g * 255.0F) << 24;
@@ -109,17 +121,13 @@ public class TitleScreenMixin extends Screen {
         }
     }
 
-    /**
-     * These function may crash the game if a word in 'string' is longer than 'wrapLength'
-     */
-
     @Unique
     public List<String> wordWrap(String string, int wrapLength) {
-        return WordUtils.wrap(string, wrapLength).lines().toList();
+        return WordUtils.wrap(string, wrapLength, null, true).lines().toList();
     }
 
     @Unique
     public List<Text> wordWrapText(String string, int wrapLength) {
-        return WordUtils.wrap(string, wrapLength).lines().map(s -> (Text) (new LiteralText(s))).toList();
+        return WordUtils.wrap(string, wrapLength, null, true).lines().map(s -> (Text) (new LiteralText(s))).toList();
     }
 }

@@ -38,6 +38,7 @@ public class OpenXRSession implements AutoCloseable {
 
     public long glColorFormat;
     public XrView.Buffer views;
+    //TODO move to a texture array swapchain
     public OpenXRSwapchain[] swapchains;
 
     public int state;
@@ -75,18 +76,18 @@ public class OpenXRSession implements AutoCloseable {
         }
     }
 
-    public void createSwapchains() {
+    public void createSwapchains() throws XrException {
         try (MemoryStack stack = stackPush()) {
             IntBuffer intBuf = stack.mallocInt(1);
             instance.check(XR10.xrEnumerateViewConfigurationViews(instance.handle, system.handle, viewConfigurationType, intBuf, null), "xrEnumerateViewConfigurationViews");
             XrViewConfigurationView.Buffer viewConfigs = new XrViewConfigurationView.Buffer(
-                    OpenXR.mallocAndFillBufferStack(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
+                    OpenXR.bufferStack(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
             );
             instance.check(XR10.xrEnumerateViewConfigurationViews(instance.handle, system.handle, viewConfigurationType, intBuf, viewConfigs), "xrEnumerateViewConfigurationViews");
             int viewCountNumber = intBuf.get(0);
 
             views = new XrView.Buffer(
-                    OpenXR.mallocAndFillBufferHeap(viewCountNumber, XrView.SIZEOF, XR10.XR_TYPE_VIEW)
+                    OpenXR.bufferHeap(viewCountNumber, XrView.SIZEOF, XR10.XR_TYPE_VIEW)
             );
 
             if (viewCountNumber == 0) {
@@ -96,12 +97,13 @@ public class OpenXRSession implements AutoCloseable {
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
 
+            //TODO support SRGB formats and use texture arrays
             long[] desiredSwapchainFormats = {
                     GL11.GL_RGB10_A2,
                     GL30.GL_RGBA16F,
                     GL30.GL_RGB16F,
-//                    // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
-//                    // depth, thus leading to banding.
+                    // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
+                    // depth, thus leading to banding.
                     GL11.GL_RGBA8,
                     GL31.GL_RGBA8_SNORM
             };
@@ -120,7 +122,12 @@ public class OpenXRSession implements AutoCloseable {
             }
 
             if (glColorFormat == 0) {
-                throw new IllegalStateException("No compatible swapchain / framebuffer format availible");
+                var formats = new ArrayList<Long>();
+                swapchainFormats.rewind();
+                while (swapchainFormats.hasRemaining()) {
+                    formats.add(swapchainFormats.get());
+                }
+                throw new XrException(XR10.XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED, "No compatible swapchain / framebuffer format available: " + formats);
             }
 
             swapchains = new OpenXRSwapchain[viewCountNumber];
@@ -132,7 +139,7 @@ public class OpenXRSession implements AutoCloseable {
                         XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
                         NULL,
                         0,
-                        XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
+                        /*XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | */XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
                         glColorFormat,
                         viewConfig.recommendedSwapchainSampleCount(),
                         viewConfig.recommendedImageRectWidth(),
@@ -242,8 +249,12 @@ public class OpenXRSession implements AutoCloseable {
 
     @Override
     public void close() {
-        for (var swapchain : swapchains) {
-            swapchain.close();
+        if (swapchains != null) {
+            for (var swapchain : swapchains) {
+                if (swapchain != null) {
+                    swapchain.close();
+                }
+            }
         }
         if (views != null) {
             views.close();

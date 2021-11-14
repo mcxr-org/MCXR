@@ -2,7 +2,6 @@ package net.sorenon.mcxr.play.openxr;
 
 import net.minecraft.client.MinecraftClient;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,8 +35,8 @@ public class OpenXR {
     /**
      * Creates an array of XrStructs with their types pre set to @param type
      */
-    static ByteBuffer mallocAndFillBufferStack(int capacity, int sizeof, int type) {
-        ByteBuffer b = stackMalloc(capacity * sizeof);
+    static ByteBuffer bufferStack(int capacity, int sizeof, int type) {
+        ByteBuffer b = stackCalloc(capacity * sizeof);
 
         for (int i = 0; i < capacity; i++) {
             b.position(i * sizeof);
@@ -47,8 +46,8 @@ public class OpenXR {
         return b;
     }
 
-    static ByteBuffer mallocAndFillBufferHeap(int capacity, int sizeof, int type) {
-        ByteBuffer b = memAlloc(capacity * sizeof);
+    static ByteBuffer bufferHeap(int capacity, int sizeof, int type) {
+        ByteBuffer b = memCalloc(capacity * sizeof);
 
         for (int i = 0; i < capacity; i++) {
             b.position(i * sizeof);
@@ -59,10 +58,6 @@ public class OpenXR {
     }
 
     public void tryInitialize() {
-        if (!MCXRPlayClient.resourcesInitialized) {
-            return;
-        }
-
         if (instance != null) instance.close();
         instance = null;
         MCXRPlayClient.OPEN_XR.session = null;
@@ -91,7 +86,7 @@ public class OpenXR {
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
 
             XrExtensionProperties.Buffer properties = new XrExtensionProperties.Buffer(
-                    mallocAndFillBufferStack(numExtensions.get(0), XrExtensionProperties.SIZEOF, XR10.XR_TYPE_EXTENSION_PROPERTIES)
+                    bufferStack(numExtensions.get(0), XrExtensionProperties.SIZEOF, XR10.XR_TYPE_EXTENSION_PROPERTIES)
             );
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));

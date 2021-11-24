@@ -1,0 +1,80 @@
+name: Bug Report
+description: File a bug report
+labels: [bug]
+assignees:
+  - Sorenon
+# - BeansBeefBroccoli
+body:
+- type: markdown
+  attributes:
+    value: |
+      Before submitting a bug report, please make sure you have read this *entire* form, and that:
+      - Your bug is not a vanilla bug/another mod's bug
+      - Your issue has not been reported before (make sure to use the [search function](https://github.com/Sorenon/MCXR/issues)!)
+
+      **Do not forget to give your issue a descriptive title.** "there's a bug" isn't useful, and it makes it harder to distinguish issues at a glance.
+- type: dropdown
+  attributes:
+    label: "Operating System"
+    description: "Select the operating system(s) that this bug has occured on."
+    multiple: true
+    options:
+    - "Windows"
+    - "Linux"
+    - "Other"
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: "Minecraft Version"
+    placeholder: "Type Here"
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: "Fabric Version"
+    placeholder: "Type Here"
+  validations:
+    required: true
+- type: input
+  attributes:
+    label: "MCXR Version"
+    placeholder: "Type Here"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: "Description"
+    description: "What happened, and what did you expect to happen?"
+    placeholder: "Type Here"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: "Steps to Reproduce"
+    description: "A bulleted list of steps you took to produce the bug."
+    placeholder: "Type Here"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: "Other Mod(s) Involved"
+    description: "Do you require another mod/other mods to reproduce this crash? If you do, list the it/them here."
+    placeholder: "Type Here"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: "Suspected Cause"
+    description: "If you know what could be causing this bug, describe it here."
+    placeholder: "Type Here"
+  validations:
+    required: false
+- type: checkboxes
+  attributes:
+    label: "Confirm the Following"
+    options:
+      - label: "I have checked for other issues that are the same"
+        required: true
+      - label: "I am not using performance enhancers, such as Optifine, Sodium, MCMT, etc."
+        required: true

@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
-        java-version: [ '16', '17' ]
+        java-version: [ '16' ]
         java-distro: [ 'adopt-hotspot', 'temurin', 'zulu' ]
     name: Setup Java ${{ matrix.java-version }} (${{ matrix.os }})
     steps:

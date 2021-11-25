@@ -23,7 +23,7 @@ Alternatively, join the Subreddit [here.](https://reddit.com/r/MinecraftXR)
 | State                        | Released                                                | Released                                                                | Pre-Alpha                                   |
 | Platform                     | Bedrock                                                 | Java                                                                    | Java                                        |
 | Mod Support                  | Bedrock Add-Ons                                         | Forge                                                                   | Fabric                                      |
-| Performance                  | :1st_place_medal:                                       | :2nd_place_medal:                                                       | :3rd_place_medal: (With Sodium)             |
+| Performance                  | :1st_place_medal:                                       | :3rd_place_medal:                                                       | :2nd_place_medal: (With Sodium)             |
 | Supported Devices            | :-1: Oculus Headsets and WMR                            | :+1: OpenVR supported devices                                           | :+1: OpenXR Supported Devices               |
 | Shader Support               | :x:                                                     | :heavy_check_mark: (Optifine)                                           | :construction: (Canvas or Iris)             |
 | Vanilla Compatibility        | :heavy_check_mark:                                      | :heavy_check_mark:                                                      | :heavy_check_mark:                          |

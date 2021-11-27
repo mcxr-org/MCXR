@@ -1,5 +1,5 @@
 name: Java CI with Gradle
-on: [ push, pull_request ]
+on: [ 'push', 'pull_request' ]
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -8,20 +8,20 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
         java-version: [ '16' ]
         java-distro: [ 'adopt-hotspot', 'temurin', 'zulu' ]
-    name: Setup Java ${{ matrix.java-version }} (${{ matrix.os }})
+    name: Set Up Java ${{ matrix.java-version }} (${{ matrix.java-distro }}) on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Java
+      - name: Set Up Java
         uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.java-version }}
           distribution: ${{ matrix.java-distro }}
-      - name: Grant execute permission for gradlew
+      - name: Grant Execute Permission
         run: chmod +x gradlew
-      - name: Build with Gradle
+      - name: Build
         run: ./gradlew build --stacktrace
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v1
         with:
-          name: build-artifacts
+          name: Upload Path
           path: build/libs

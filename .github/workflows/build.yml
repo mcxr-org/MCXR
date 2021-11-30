@@ -4,7 +4,7 @@
 # against bad commits.
 
 name: build
-on: [pull_request, push]
+on: [ pull_request, push ]
 
 jobs:
   build:
@@ -12,10 +12,10 @@ jobs:
       matrix:
         # Use these Java versions
         java: [
-          17,    # Current Java LTS & minimum supported by Minecraft
+            17,    # Current Java LTS & minimum supported by Minecraft
         ]
         # and run on both Linux and Windows
-        os: [ubuntu-20.04, windows-2022]
+        os: [ ubuntu-20.04, windows-2022 ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: checkout repository
@@ -31,9 +31,15 @@ jobs:
         run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
-      - name: capture build artifacts
+      - name: capture core build artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
         uses: actions/upload-artifact@v2
         with:
-          name: Artifacts
-          path: build/libs/
+          name: Core Artifacts
+          path: mcxr-core/build/libs
+      - name: capture play build artifacts
+      if: ${{ runner.os == 'Linux' && matrix.java == '17' }} # Only upload artifacts built from latest java on one OS
+      uses: actions/upload-artifact@v2
+      with:
+        name: Play Artifacts
+        path: mcxr-play/build/libs

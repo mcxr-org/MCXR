@@ -5,8 +5,8 @@ plugins {
     id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = "mcxr-play"
 version = "${project.play_version}+${rootProject.getVersionMetadata(this)}"
@@ -30,7 +30,7 @@ dependencies {
     }
 
     implementation("org.joml:joml:${project.joml_version}")
-    include(modImplementation("com.github.Sorenon:fart:244de7eec8"))
+    include(modImplementation("com.github.Sorenon:fart:51f6a721e7"))
 }
 
 sourceSets {
@@ -51,8 +51,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-    it.options.release = 16
+    it.options.release = 17
 }
 
 java {

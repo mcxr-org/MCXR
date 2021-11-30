@@ -50,7 +50,7 @@ public class XrFramebuffer extends TextureTarget {
 
     @Override
     public void createBuffers(int width, int height, boolean getError) {
-        RenderSystem.assertThread(RenderSystem::isOnRenderThreadOrInit);
+        RenderSystem.assertOnRenderThreadOrInit();
         int i = RenderSystem.maxSupportedTextureSize();
         if (width > 0 && width <= i && height > 0 && height <= i) {
             this.viewWidth = width;

@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.core.mixin;
 
-import net.minecraft.util.RewindableStream;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -8,9 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.BooleanOp;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
@@ -23,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 @Mixin(Player.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityAcc {
@@ -64,12 +60,16 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
             }
 
             AABB currentSize = this.getBoundingBox();
-            CollisionContext shapeContext = CollisionContext.of(this);
-            VoxelShape voxelShape = this.level.getWorldBorder().getCollisionShape();
-            Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelShape, Shapes.create(currentSize.deflate(1.0E-7)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelShape);
-            Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0), entity -> true);
-            RewindableStream<VoxelShape> reusableStream = new RewindableStream<>(Stream.concat(stream2, stream));
-            double maxDeltaHeight = collideBoundingBox(new Vec3(0, deltaHeight, 0), currentSize, this.level, shapeContext, reusableStream).y;
+            List<VoxelShape> list = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0));
+            final double maxDeltaHeight = collideBoundingBox(this, new Vec3(0, deltaHeight, 0), currentSize, this.level, list).y;
+
+//            AABB currentSize = this.getBoundingBox();
+//            CollisionContext shapeContext = CollisionContext.of(this);
+//            VoxelShape voxelShape = this.level.getWorldBorder().getCollisionShape();
+//            Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelShape, Shapes.create(currentSize.deflate(1.0E-7)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelShape);
+//            Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0), entity -> true);
+//            RewindableStream<VoxelShape> reusableStream = new RewindableStream<>(Stream.concat(stream2, stream));
+//            double maxDeltaHeight = collideBoundingBox(new Vec3(0, deltaHeight, 0), currentSize, this.level, shapeContext, reusableStream).y;
 
             cir.setReturnValue(
                     EntityDimensions.scalable(0.6F * scale, Math.max(currentHeight + (float) maxDeltaHeight, minHeight))

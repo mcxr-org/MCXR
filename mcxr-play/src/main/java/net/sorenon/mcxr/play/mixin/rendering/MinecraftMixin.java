@@ -7,11 +7,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.Util;
-import net.minecraft.client.CloudStatus;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.Option;
-import net.minecraft.client.Options;
-import net.minecraft.client.Timer;
+import net.minecraft.client.*;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.Overlay;
@@ -24,7 +20,6 @@ import net.minecraft.util.FrameTimer;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
-import net.minecraft.world.Snooper;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
 import net.sorenon.mcxr.play.mixin.accessor.WindowAcc;
@@ -136,10 +131,6 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
     @Shadow
     public String fpsString;
-
-    @Shadow
-    @Final
-    private Snooper snooper;
 
     @Shadow
     @Nullable
@@ -255,7 +246,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
             this.profiler.pop();
         }
 
-        this.profiler.push("blit");
+//        this.profiler.push("blit");
         this.mainRenderTarget.unbindWrite();
         matrixStack.popPose();
 
@@ -298,10 +289,6 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
             this.fpsString = String.format("%d fps T: %s%s%s%s B: %d", fps, (double) this.options.framerateLimit == Option.FRAMERATE_LIMIT.getMaxValue() ? "inf" : this.options.framerateLimit, this.options.enableVsync ? " vsync" : "", this.options.graphicsMode.toString(), this.options.renderClouds == CloudStatus.OFF ? "" : (this.options.renderClouds == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius);
             this.lastTime += 1000L;
             this.frames = 0;
-            this.snooper.prepare();
-            if (!this.snooper.isStarted()) {
-                this.snooper.start();
-            }
         }
 
         this.profiler.pop();

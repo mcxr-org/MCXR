@@ -141,7 +141,7 @@ public class OpenXRSession implements AutoCloseable {
                         0,
                         /*XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | */XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
                         glColorFormat,
-                        viewConfig.recommendedSwapchainSampleCount(),
+                        1,
                         viewConfig.recommendedImageRectWidth(),
                         viewConfig.recommendedImageRectHeight(),
                         1,

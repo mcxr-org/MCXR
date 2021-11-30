@@ -155,33 +155,7 @@ public class XrRenderer {
 
         session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, scalePreTick);
         Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
-        if (cameraEntity != null) { //TODO seriously need to tidy up poses
-            Entity vehicle = cameraEntity.getVehicle();
-            if (MCXRCore.getCoreConfig().roomscaleMovement() && vehicle == null) {
-                MCXRPlayClient.xrOrigin.set(cameraEntity.getX() - MCXRPlayClient.roomscalePlayerOffset.x,
-                        cameraEntity.getY(),
-                        cameraEntity.getZ() - MCXRPlayClient.roomscalePlayerOffset.z);
-            } else {
-                MCXRPlayClient.xrOrigin.set(cameraEntity.getX(),
-                        cameraEntity.getY(),
-                        cameraEntity.getZ());
-            }
-            if (vehicle != null) {
-                if (vehicle instanceof LivingEntity) {
-                    MCXRPlayClient.xrOrigin.y += 0.60;
-                } else {
-                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getPassengersRidingOffset();
-                }
-            }
-
-            MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);
-            for (var poses : XrInput.handsActionSet.gripPoses) {
-                poses.updateGamePose(MCXRPlayClient.xrOrigin);
-            }
-            for (var poses : XrInput.handsActionSet.aimPoses) {
-                poses.updateGamePose(MCXRPlayClient.xrOrigin);
-            }
-        }
+        updatePoses(cameraEntity);
         XrCamera camera = (XrCamera) Minecraft.getInstance().gameRenderer.getMainCamera();
         camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getGamePose());
 
@@ -199,40 +173,7 @@ public class XrRenderer {
             );
         }
         clientExt.preRender(true);
-        if (camera.getEntity() != null) {
-            float tickDelta = client.getFrameTime();
-            Entity camEntity = camera.getEntity();
-
-            if (client.isPaused()) {
-                tickDelta = 0.0f;
-            }
-
-            Entity vehicle = camEntity.getVehicle();
-            if (MCXRCore.getCoreConfig().roomscaleMovement() && vehicle == null) {
-                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()) - MCXRPlayClient.roomscalePlayerOffset.x,
-                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
-                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()) - MCXRPlayClient.roomscalePlayerOffset.z);
-            } else {
-                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()),
-                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
-                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()));
-            }
-            if (vehicle != null) {
-                if (vehicle instanceof LivingEntity) {
-                    MCXRPlayClient.xrOrigin.y += 0.60;
-                } else {
-                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getPassengersRidingOffset();
-                }
-            }
-
-            MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);
-            for (var poses : XrInput.handsActionSet.gripPoses) {
-                poses.updateGamePose(MCXRPlayClient.xrOrigin);
-            }
-            for (var poses : XrInput.handsActionSet.aimPoses) {
-                poses.updateGamePose(MCXRPlayClient.xrOrigin);
-            }
-        }
+        updatePoses(camera.getEntity());
 
         client.getWindow().setErrorSection("Render");
         client.getProfiler().push("sound");
@@ -325,6 +266,42 @@ public class XrRenderer {
                 .space(session.xrAppSpace)
                 .views(projectionLayerViews);
 //        }
+    }
+
+    private void updatePoses(Entity camEntity) {
+        if (camEntity != null) { //TODO seriously need to tidy up poses
+            float tickDelta = client.getFrameTime();
+
+            if (client.isPaused()) {
+                tickDelta = 0.0f;
+            }
+
+            Entity vehicle = camEntity.getVehicle();
+            if (MCXRCore.getCoreConfig().roomscaleMovement() && vehicle == null) {
+                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()) - MCXRPlayClient.roomscalePlayerOffset.x,
+                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
+                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()) - MCXRPlayClient.roomscalePlayerOffset.z);
+            } else {
+                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()),
+                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
+                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()));
+            }
+            if (vehicle != null) {
+                if (vehicle instanceof LivingEntity) {
+                    MCXRPlayClient.xrOrigin.y += 0.60;
+                } else {
+                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getPassengersRidingOffset();
+                }
+            }
+
+            MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);
+            for (var poses : XrInput.handsActionSet.gripPoses) {
+                poses.updateGamePose(MCXRPlayClient.xrOrigin);
+            }
+            for (var poses : XrInput.handsActionSet.aimPoses) {
+                poses.updateGamePose(MCXRPlayClient.xrOrigin);
+            }
+        }
     }
 
     private Struct renderLayerBlankOpenXR(long predictedDisplayTime, MemoryStack stack) {

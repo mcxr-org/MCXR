@@ -44,6 +44,7 @@ public abstract class ClientPlayerEntityMixin extends Player {
     /**
      * Try to move the player to the position of the headset
      * We can do this entirely on the client because minecraft's anti cheat is non-existent
+     * TODO handle teleportation here for vanilla servers
      */
     @Inject(method = "tick", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V"))
     void applyRoomscaleMovement(CallbackInfo ci) {

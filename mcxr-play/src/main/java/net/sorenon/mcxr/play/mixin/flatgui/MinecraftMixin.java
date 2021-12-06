@@ -18,9 +18,11 @@ public class MinecraftMixin {
 
     @Shadow @Nullable public ClientLevel level;
 
-    @Inject(method = "setScreen", at = @At("HEAD"))
+    @Shadow @Nullable public Screen screen;
+
+    @Inject(method = "setScreen", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/BufferUploader;reset()V"))
     void openScreen(Screen screen, CallbackInfo ci) {
-        MCXRPlayClient.INSTANCE.flatGuiManager.openScreen(screen);
+        MCXRPlayClient.INSTANCE.flatGuiManager.openScreen(this.screen);
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;init(Lnet/minecraft/client/Minecraft;II)V"), method = "setScreen")

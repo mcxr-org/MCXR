@@ -26,7 +26,7 @@ public class FlatGuiManager {
     public int scaledWidth;
     public int scaledHeight;
 
-    public boolean needsReset = false;
+    public boolean needsReset = true;
 
     public float size = 1.5f;
 
@@ -69,7 +69,7 @@ public class FlatGuiManager {
     }
 
     public boolean isScreenOpen() {
-        return position != null && Minecraft.getInstance().screen != null;
+        return Minecraft.getInstance().screen != null;
     }
 
     public void openScreen(@Nullable Screen screen) {
@@ -77,7 +77,7 @@ public class FlatGuiManager {
             position = null;
             orientation.set(0, 0, 0, 1);
             needsReset = false;
-        } else if (Minecraft.getInstance().screen == null) {
+        } else if (position == null) {
             resetTransform();
         }
     }

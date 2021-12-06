@@ -24,7 +24,7 @@
     "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "rendering.WorldRendererMixin",
+    "rendering.LevelRendererMixin",
     "roomscale.ClientPlayerEntityMixin"
   ],
   "injectors": {

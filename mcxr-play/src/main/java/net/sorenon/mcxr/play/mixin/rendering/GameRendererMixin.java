@@ -41,17 +41,23 @@ public abstract class GameRendererMixin {
 
     @Shadow @Final private Minecraft minecraft;
 
+    @Shadow private boolean renderHand;
+
     /**
      * Replace the default camera with an XrCamera
      */
-    @SuppressWarnings("UnresolvedMixinReference")
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/Camera"))
     Camera createCamera() {
         return new XrCamera();
     }
 
-    @Redirect(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))
-    void cancelRenderHand(ItemInHandRenderer heldItemRenderer, float tickDelta, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumers, LocalPlayer player, int light) {
+//    @Redirect(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))
+//    void cancelRenderHand(ItemInHandRenderer heldItemRenderer, float tickDelta, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumers, LocalPlayer player, int light) {
+//    }
+
+    @Inject(method = "renderLevel", at = @At("HEAD"))
+    void cancelRenderHand(CallbackInfo ci) {
+        this.renderHand = !XR_RENDERER.isXrMode();
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)

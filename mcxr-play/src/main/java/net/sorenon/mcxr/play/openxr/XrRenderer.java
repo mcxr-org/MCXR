@@ -55,6 +55,8 @@ public class XrRenderer {
     public ShaderInstance blitShader;
     public ShaderInstance guiBlitShader;
 
+    public int eye = -1;
+
     public void setSession(OpenXRSession session) {
         this.session = session;
         this.instance = session.instance;
@@ -198,6 +200,8 @@ public class XrRenderer {
 
         // Render view to the appropriate part of the swapchain image.
         for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
+            this.eye = viewIndex;
+
             // Each view has a separate swapchain which is acquired, rendered to, and released.
             OpenXRSwapchain viewSwapchain = session.swapchains[viewIndex];
 
@@ -257,6 +261,7 @@ public class XrRenderer {
                             .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
             ), "xrReleaseSwapchainImage");
         }
+        this.eye = -1;
         MCXRMainTarget.resetFramebuffer();
         camera.setPose(MCXRPlayClient.viewSpacePoses.getGamePose());
         clientExt.postRender();

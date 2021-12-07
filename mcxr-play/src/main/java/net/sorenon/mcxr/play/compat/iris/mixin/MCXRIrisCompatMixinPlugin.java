@@ -2,8 +2,6 @@ package net.sorenon.mcxr.play.compat.iris.mixin;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
-import net.fabricmc.loader.api.Version;
-import net.fabricmc.loader.api.VersionParsingException;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -37,6 +35,9 @@ public class MCXRIrisCompatMixinPlugin implements IMixinConfigPlugin {
 
     @Override
     public List<String> getMixins() {
+        if (iris == null) {
+            return null;
+        }
         if (iris.getMetadata().getVersion().getFriendlyString().equals("1.1.3")) {
             return List.of("MixinCameraUniforms113");
         } else {

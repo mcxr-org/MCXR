@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play.input.actionsets;
 
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.BoolAction;
 import net.sorenon.mcxr.play.input.actions.Vec2fAction;
@@ -37,7 +38,7 @@ public class GuiActionSet extends ActionSet {
 
     @Override
     public boolean shouldSync() {
-        return MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen() | exit.currentState | pickup.currentState;
+        return (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen() | exit.currentState | pickup.currentState) && !XrInput.vanillaGameplayActionSet.inventory.currentState;
     }
 
     @Override

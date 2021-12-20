@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "mcxr-core",
+  "version": "${core_version}",
+  "name": "[MCXR] Core",
+  "description": "Lightweight XR friendly framework. Allows VR-players to use all vr features.\nThis mod does NOT let you play on vr by itself [MCXR] Play is needed too.",
+  "authors": [
+    "Sorenon"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Sorenon/MCXR",
+    "sources": "https://github.com/Sorenon/MCXR",
+    "issues": "https://github.com/Sorenon/MCXR/issues"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/CqEZbJwWx4"
+      },
+      "parent": "mcxr-play"
+    }
+  },
+  "license": "MIT",
+  "icon": "assets/mcxr-core/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.sorenon.mcxr.core.MCXRCore"
+    ],
+    "client": [
+      "net.sorenon.mcxr.core.client.MCXRCoreClient"
+    ]
+  },
+  "mixins": [
+    "mcxr-core.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.6",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  },
+  "suggests": {
+    "mcxr-play": "${play_version}"
+  }
+}

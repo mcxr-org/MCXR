@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "mcxr-play",
+  "version": "${play_version}",
+  "name": "[MCXR] Play",
+  "description": "VR!",
+  "authors": [
+    "Sorenon"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Sorenon/MCXR",
+    "sources": "https://github.com/Sorenon/MCXR",
+    "issues": "https://github.com/Sorenon/MCXR/issues"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/CqEZbJwWx4"
+      }
+    }
+  },
+  "license": "MIT",
+  "icon": "assets/mcxr-play/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.sorenon.mcxr.play.MCXRPlayClient"
+    ]
+  },
+  "mixins": [
+    "mcxr-play.mixins.json",
+    "mcxr-play.compat.iris.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.6",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "mcxr-core": ">=${core_version}",
+    "java": ">=17"
+  }
+}

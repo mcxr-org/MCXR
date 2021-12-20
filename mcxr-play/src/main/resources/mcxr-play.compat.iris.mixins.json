@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.sorenon.mcxr.play.compat.iris.mixin",
+  "plugin": "net.sorenon.mcxr.play.compat.iris.mixin.MCXRIrisCompatMixinPlugin",
+  "compatibilityLevel": "JAVA_16",
+  "client": [
+    "MixinShadowRenderer"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "conformVisibility": true
+  }
+}

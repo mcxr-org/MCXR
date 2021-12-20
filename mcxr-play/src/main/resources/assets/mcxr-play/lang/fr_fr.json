@@ -1,0 +1,33 @@
+{
+  "mcxr.menu.reload": "Redémarrer le casque",
+  "mcxr.menu.session_created": "Casque trouvé:",
+  "mcxr.menu.session_not_created": "Aucun casque trouvé:",
+
+  "openxr.form_factor.1": "Affichage classique (HMD)",
+  "openxr.form_factor.2": "Affichage tête haute (HUD)",
+
+  "mcxr.error.form_factor_unavailable": "Le périphérique est indisponible (causes communes: débranché ou éteins)",
+
+  "mcxr.actionset.vanilla_gameplay": "Gameplay Vanilla",
+  "mcxr.action.attack": "Attaquer",
+  "mcxr.action.use": "Utiliser",
+  "mcxr.action.inventory": "Inventaire (Garder appuyé pour pause)",
+  "mcxr.action.jump": "Sauter",
+  "mcxr.action.move": "Se déplacer",
+  "mcxr.action.turn": "Tourner",
+  "mcxr.action.hotbar": "Barre d'outils",
+  "mcxr.action.sneak": "S'accroupir",
+  "mcxr.action.sprint": "Courir",
+  "mcxr.action.reset_pos": "Réinitialiser la position",
+
+  "mcxr.actionset.gui": "Menu",
+  "mcxr.action.close": "Fermer",
+  "mcxr.action.pickup": "Ramasser / Lacher",
+  "mcxr.action.split": "Diviser",
+  "mcxr.action.quick_move": "Déplacement rapide",
+  "mcxr.action.scroll": "Faire défiler",
+
+  "mcxr.actionset.hands": "Mains",
+  "mcxr.action.aim": "Position viser",
+  "mcxr.action.grip": "Position grip"
+}

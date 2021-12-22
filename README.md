@@ -2,9 +2,18 @@
 A VR mod for Minecraft using OpenXR and fabric.
 
 # *Installation*
-Fetch the latest version of MCXR core and play from https://github.com/Sorenon/MCXR/releases and put them in the fabric mods folder. 
+## For VR Players
+Fetch the latest version of MCXR Core and Play from https://github.com/Sorenon/MCXR/releases and put them in the fabric mods folder. 
 <br/>
 For an in game title screen also install and set up a compatible version of https://github.com/Sorenon/TitleWorlds
+## For Servers and Non-VR Players
+MCXR is compatible with Vanilla servers and players but for the full experience install MCXR Core from https://github.com/Sorenon/MCXR/releases
+
+# *Known Issues*
+Vive Pro controllers are not yet supported <br/>
+Default WMR bindings are not great </br>
+No way to rebind controls without SteamVR</br>
+SteamVR on Linux crashes due to poor OpenXR implementation
 
 ## *Related Links*
 Join the Discord server [here.](https://discord.gg/fyBye2ptkS) <br/>

@@ -6,12 +6,12 @@ import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengles.GLES32;
 
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengles.GLES32.GL_FRAMEBUFFER;
+import static org.lwjgl.opengles.GLES32.*;
 
 /*
 The framebuffer class is most likely the largest cause of compatibility issues between rendering mods and the game itself.
@@ -91,7 +91,7 @@ public class XrFramebuffer extends TextureTarget {
 
     public void setColorAttachment(int colorAttachment) {
         ((FramebufferAcc) this).colorAttachment(colorAttachment);
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBufferId);
+        GlStateManager._glBindFramebuffer(GLES32.GL_FRAMEBUFFER, frameBufferId);
         GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
     }
 }

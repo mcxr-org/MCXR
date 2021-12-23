@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class MixinCameraUniforms {
 
     @SuppressWarnings("UnresolvedMixinReference")
-    @Redirect(method = "getUnshiftedCameraPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;getPosition()Lnet/minecraft/world/phys/Vec3;", remap = true))
+    @Redirect(method = "getUnshiftedCameraPosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Camera;getPosition()Lnet/minecraft/world/phys/Vec3;"))
     private static Vec3 mcxr$getPosition(Camera camera) {
         return JOMLUtil.convert(MCXRPlayClient.viewSpacePoses.getGamePose().getPos());
     }

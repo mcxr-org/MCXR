@@ -44,7 +44,7 @@ public class XR {
      * @see #create(FunctionProvider)
      */
     public static void create(String libName) {
-        SharedLibrary defaultOpenXRLoader = Library.loadNative(XR.class, libName, false);
+        SharedLibrary defaultOpenXRLoader = Library.loadNative(XR.class, "org.lwjgl.openxr", libName, false);
         XR.create(defaultOpenXRLoader);
     }
 
@@ -83,11 +83,26 @@ public class XR {
             if (xrGetInstanceProcAddr == NULL) {
                 throw new IllegalArgumentException("A critical function is missing. Make sure that OpenXR is available.");
             }
+            xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR", false);
+            if (xrInitializeLoaderKHR != NULL) {
+                try (MemoryStack stack = stackPush()) {
+                    long application_context = Long.parseLong(System.getenv("MCXR_APPLICATION_CTX_PTR"));
+                    long vm = Long.parseLong(System.getenv("MCXR_JAVA_VM_PTR"));
+
+                    var createInfo = XrLoaderInitInfoAndroidKHR
+                            .calloc(stack)
+                            .type$Default()
+                            .applicationContext(application_context)
+                            .applicationVM(vm);
+
+                    KHRLoaderInit.nxrInitializeLoaderKHR(createInfo.address());
+                }
+            }
+
 
             xrCreateInstance = library.getFunctionAddress("xrCreateInstance");
             xrEnumerateInstanceExtensionProperties = getFunctionAddress("xrEnumerateInstanceExtensionProperties");
             xrEnumerateApiLayerProperties = getFunctionAddress("xrEnumerateApiLayerProperties");
-            xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR", false);
         }
 
         private long getFunctionAddress(String name) { return getFunctionAddress(name, true); }

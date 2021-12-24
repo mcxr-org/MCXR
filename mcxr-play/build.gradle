@@ -14,6 +14,7 @@ group = project.maven_group
 
 repositories {
     maven { url 'https://jitpack.io' }
+    mavenCentral()
 }
 
 dependencies {
@@ -24,6 +25,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    implementation group: 'org.lwjgl', name: 'lwjgl', version: '3.2.3'
 
     modCompileOnly("com.github.Virtuoel:Pehkui:${project.pehkui_version}") {
         exclude(group: "net.fabricmc.fabric-api")

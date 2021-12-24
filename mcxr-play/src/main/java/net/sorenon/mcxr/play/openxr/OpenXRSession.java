@@ -10,9 +10,7 @@ import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL30;
-import org.lwjgl.opengl.GL31;
+import org.lwjgl.opengles.GLES32;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 
@@ -99,13 +97,13 @@ public class OpenXRSession implements AutoCloseable {
 
             //TODO support SRGB formats and use texture arrays
             long[] desiredSwapchainFormats = {
-                    GL11.GL_RGB10_A2,
-                    GL30.GL_RGBA16F,
-                    GL30.GL_RGB16F,
+                    GLES32.GL_RGB10_A2,
+                    GLES32.GL_RGBA16F,
+                    GLES32.GL_RGB16F,
                     // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
                     // depth, thus leading to banding.
-                    GL11.GL_RGBA8,
-                    GL31.GL_RGBA8_SNORM
+                    GLES32.GL_RGBA8,
+                    GLES32.GL_RGBA8_SNORM
             };
 
             for (long glFormatIter : desiredSwapchainFormats) {

@@ -11,8 +11,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -94,16 +92,11 @@ public class OpenXR {
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             boolean missingOpenGL = true;
-            PointerBuffer extensions = stackCallocPointer(2);
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
                 if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
-                    extensions.put(memAddress(stackUTF8(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)));
-                }
-                if (extensionName.equals(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
                 }
             }
 
@@ -115,6 +108,8 @@ public class OpenXR {
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
             applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
             applicationInfo.applicationVersion(1);
+            applicationInfo.engineName(stack.UTF8("Minecraft Java Edition"));
+            applicationInfo.engineVersion(117);
 
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
             createInfo.set(
@@ -123,7 +118,7 @@ public class OpenXR {
                     0,
                     applicationInfo,
                     null,
-                    extensions.flip()
+                    stackPointers(memAddress(stackUTF8(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)))
             );
 
             PointerBuffer instancePtr = stack.mallocPointer(1);

@@ -43,7 +43,7 @@ import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengles.GLES32;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -410,7 +410,7 @@ public class VrFirstPersonRenderer {
                 .setCullState(RenderStateShards.NO_CULL)
                 .setLightmapState(RenderStateShards.LIGHTMAP)
                 .setOverlayState(RenderStateShards.OVERLAY)
-                .setDepthTestState(RenderStateShards.depthTest("GL_GREATER", GL11.GL_GREATER));
+                .setDepthTestState(RenderStateShards.depthTest("GL_GREATER", GLES32.GL_GREATER));
         return renderTypeBuilder.build(true);
     });
 

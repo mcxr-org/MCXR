@@ -34,7 +34,7 @@
   "depends": {
     "fabricloader": ">=0.12.6",
     "fabric": "*",
-    "minecraft": "1.18.x",
+    "minecraft": "1.17.x",
     "mcxr-core": ">=${core_version}",
     "java": ">=17"
   }

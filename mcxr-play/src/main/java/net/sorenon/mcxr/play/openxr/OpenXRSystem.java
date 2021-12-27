@@ -15,6 +15,8 @@ import java.util.Objects;
 import net.minecraft.client.Minecraft;
 
 import static org.lwjgl.opengl.GLX13.*;
+import static org.lwjgl.system.Checks.check;
+import static org.lwjgl.system.JNI.invokePP;
 import static org.lwjgl.system.MemoryStack.stackInts;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -65,7 +67,7 @@ public class OpenXRSystem {
         }
     }
 
-    public Struct createOpenGLBinding(MemoryStack stack) {
+    public Struct createOpenGLESBinding(MemoryStack stack) {
         //Bind the OpenGL context to the OpenXR instance and create the session
         Window window = Minecraft.getInstance().getWindow();
         long windowHandle = window.getWindow();
@@ -90,13 +92,11 @@ public class OpenXRSystem {
             }
             long fbConfig = fbConfigBuf.get();
 
-            return XrGraphicsBindingOpenGLXlibKHR.calloc(stack).set(
-                    KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
+            return XrGraphicsBindingOpenGLESAndroidKHR.calloc(stack).set(
+                    KHROpenglEsEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR,
                     NULL,
                     xDisplay,
-                    (int) Objects.requireNonNull(glXGetVisualFromFBConfig(xDisplay, fbConfig)).visualid(),
-                    fbConfig,
-                    glXWindowHandle,
+                    Objects.requireNonNull(glXGetVisualFromFBConfig(xDisplay, fbConfig)).visualid(),
                     glXContext
             );
         } else {

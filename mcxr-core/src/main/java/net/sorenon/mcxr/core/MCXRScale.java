@@ -4,6 +4,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.entity.Entity;
 import virtuoel.pehkui.api.ScaleData;
 import virtuoel.pehkui.api.ScaleType;
+import virtuoel.pehkui.api.ScaleTypes;
 import virtuoel.pehkui.util.ScaleUtils;
 
 public class MCXRScale {
@@ -13,7 +14,7 @@ public class MCXRScale {
 
     public static float getScale(Entity entity, float delta) {
         if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-            var scaleData = ScaleType.BASE.getScaleData(entity);
+            var scaleData = ScaleTypes.BASE.getScaleData(entity);
             return scaleData.getScale(delta);
         } else {
             return 1;

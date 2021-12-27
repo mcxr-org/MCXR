@@ -4,10 +4,14 @@
  */
 package org.lwjgl.openxr;
 
+import net.sorenon.mcxr.play.MCXRPojavCompat;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
+import static org.lwjgl.system.JNI.callPI;
 
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -86,16 +90,19 @@ public class XR {
             xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR", false);
             if (xrInitializeLoaderKHR != NULL) {
                 try (MemoryStack stack = stackPush()) {
-                    long application_context = Long.parseLong(System.getenv("MCXR_APPLICATION_CTX_PTR"));
-                    long vm = Long.parseLong(System.getenv("MCXR_JAVA_VM_PTR"));
+                    long context = MCXRPojavCompat.freeNativeBuffer(true);
+                    long vm = MCXRPojavCompat.freeNativeBuffer(false);
+
+                    System.out.println("CTX Ptr:" + context);
+                    System.out.println("VM Ptr:" + vm);
 
                     var createInfo = XrLoaderInitInfoAndroidKHR
                             .calloc(stack)
                             .type$Default()
-                            .applicationContext(application_context)
+                            .applicationContext(context)
                             .applicationVM(vm);
 
-                    KHRLoaderInit.nxrInitializeLoaderKHR(createInfo.address());
+                    callPI(createInfo.address(), xrInitializeLoaderKHR);
                 }
             }
 

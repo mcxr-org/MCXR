@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.play;
 
-import it.unimi.dsi.fastutil.longs.LongArrays;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -21,12 +20,8 @@ import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.XR;
 import virtuoel.pehkui.util.ScaleUtils;
-
-import java.lang.reflect.Array;
-import java.util.Arrays;
 
 public class MCXRPlayClient implements ClientModInitializer {
 

@@ -1,7 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.input.ControllerPoses;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
@@ -60,7 +59,7 @@ public class OpenXRInstance implements AutoCloseable {
         try (MemoryStack stack = stackPush()) {
             XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.malloc(stack).set(
                     XR10.XR_TYPE_SESSION_CREATE_INFO,
-                    system.createOpenGLBinding(stack).address(),
+                    system.createOpenGLESBinding(stack).address(),
                     0,
                     system.handle
             );

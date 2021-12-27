@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeType;
+import org.lwjgl.system.Pointer;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -608,6 +609,21 @@ public class XR10 {
         return nxrEnumerateApiLayerProperties(remainingSafe(properties), memAddress(propertyCountOutput), memAddressSafe(properties));
     }
 
+    @NativeType("XrResult")
+    public static int xrEnumerateInstanceExtensionProperties(@Nullable @NativeType("char const *") CharSequence layerName, @NativeType("uint32_t *") IntBuffer propertyCountOutput, @Nullable @NativeType("XrExtensionProperties *") XrExtensionProperties.Buffer properties) {
+        if (CHECKS) {
+            check(propertyCountOutput, 1);
+        }
+        MemoryStack stack = stackGet(); int stackPointer = stack.getPointer();
+        try {
+            stack.nUTF8Safe(layerName, true);
+            long layerNameEncoded = layerName == null ? NULL : stack.getPointerAddress();
+            return nxrEnumerateInstanceExtensionProperties(layerNameEncoded, remainingSafe(properties), memAddress(propertyCountOutput), memAddressSafe(properties));
+        } finally {
+            stack.setPointer(stackPointer);
+        }
+    }
+
     // --- [ xrEnumerateInstanceExtensionProperties ] ---
 
     public static int nxrEnumerateInstanceExtensionProperties(long layerName, int propertyCapacityInput, long propertyCountOutput, long properties) {
@@ -624,19 +640,8 @@ public class XR10 {
         return nxrEnumerateInstanceExtensionProperties(memAddressSafe(layerName), remainingSafe(properties), memAddress(propertyCountOutput), memAddressSafe(properties));
     }
 
-    @NativeType("XrResult")
-    public static int xrEnumerateInstanceExtensionProperties(@Nullable @NativeType("char const *") CharSequence layerName, @NativeType("uint32_t *") IntBuffer propertyCountOutput, @Nullable @NativeType("XrExtensionProperties *") XrExtensionProperties.Buffer properties) {
-        if (CHECKS) {
-            check(propertyCountOutput, 1);
-        }
-        MemoryStack stack = stackGet(); int stackPointer = stack.getPointer();
-        try {
-            stack.nUTF8Safe(layerName, true);
-            long layerNameEncoded = layerName == null ? NULL : stack.getPointerAddress();
-            return nxrEnumerateInstanceExtensionProperties(layerNameEncoded, remainingSafe(properties), memAddress(propertyCountOutput), memAddressSafe(properties));
-        } finally {
-            stack.setPointer(stackPointer);
-        }
+    public static long getUnsignedIntFrom(IntBuffer ib) {
+        return (ib.get() & 0xFFFFFFFFL);
     }
 
     // --- [ xrCreateInstance ] ---

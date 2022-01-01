@@ -84,34 +84,6 @@ public class OpenXR {
 
     public OpenXRInstance createOpenXRInstance() throws XrException {
         try (MemoryStack stack = stackPush()) {
-            IntBuffer numExtensions = stack.mallocInt(1);
-            memSet(numExtensions, 0);
-            check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
-
-            XrExtensionProperties.Buffer properties = new XrExtensionProperties.Buffer(
-                    bufferStack(numExtensions.get(0), XrExtensionProperties.SIZEOF, XR10.XR_TYPE_EXTENSION_PROPERTIES)
-            );
-
-            check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
-
-            boolean missingOpenGL = true;
-            PointerBuffer extensions = stackCallocPointer(2);
-            while (properties.hasRemaining()) {
-                XrExtensionProperties prop = properties.get();
-                String extensionName = prop.extensionNameString();
-                if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
-                    missingOpenGL = false;
-                    extensions.put(memAddress(stackUTF8(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)));
-                }
-                if (extensionName.equals(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
-                }
-            }
-
-            if (missingOpenGL) {
-                throw new XrException(0, "OpenXR runtime does not support OpenGL, try using SteamVR instead");
-            }
-
             XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
             applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
@@ -124,7 +96,7 @@ public class OpenXR {
                     0,
                     applicationInfo,
                     null,
-                    extensions.flip()
+                    null
             );
 
             PointerBuffer instancePtr = stack.mallocPointer(1);

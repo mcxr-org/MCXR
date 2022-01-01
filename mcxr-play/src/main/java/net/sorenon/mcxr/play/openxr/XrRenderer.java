@@ -229,8 +229,8 @@ public class XrRenderer {
             subImage.imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
 
             {
-                XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
+                XrSwapchainImageOpenGLESKHR xrSwapchainImageOpenGLESKHR = viewSwapchain.images.get(swapchainImageIndex);
+                viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLESKHR.image());
                 viewSwapchain.innerFramebuffer.unbindWrite();
                 MCXRMainTarget.setXrFramebuffer(viewSwapchain.framebuffer);
                 worldRenderPass.fov = session.views.get(viewIndex).fov();
@@ -355,8 +355,8 @@ public class XrRenderer {
             projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
         }
 
-        XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-        viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
+        XrSwapchainImageOpenGLESKHR xrSwapchainImageOpenGLESKHR = viewSwapchain.images.get(swapchainImageIndex);
+        viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLESKHR.image());
         viewSwapchain.innerFramebuffer.clear(Minecraft.ON_OSX);
 
         instance.check(XR10.xrReleaseSwapchainImage(

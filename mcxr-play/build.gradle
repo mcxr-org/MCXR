@@ -26,8 +26,6 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    implementation group: 'org.lwjgl', name: 'lwjgl', version: '3.2.3'
-
     modCompileOnly("com.github.Virtuoel:Pehkui:${project.pehkui_version}") {
         exclude(group: "net.fabricmc.fabric-api")
     }
@@ -35,7 +33,15 @@ dependencies {
     implementation 'org.lwjgl:lwjgl-opengles:3.2.3'
     implementation("org.joml:joml:${project.joml_version}")
     include(modImplementation("com.github.Sorenon:fart:51f6a721e7"))
-    include 'org.lwjgl:lwjgl-opengles:3.2.2'
+    include 'org.lwjgl:lwjgl-opengles:3.2.3'
+
+    implementation group: 'org.lwjgl', name: 'lwjgl', version: '3.2.3'
+    implementation group: 'org.lwjgl', name: 'lwjgl-glfw', version: '3.2.3'
+    implementation group: 'org.lwjgl', name: 'lwjgl-jemalloc', version: '3.2.3'
+    implementation group: 'org.lwjgl', name: 'lwjgl-openal', version: '3.2.3'
+    implementation group: 'org.lwjgl', name: 'lwjgl-opengl', version: '3.2.3'
+    implementation group: 'org.lwjgl', name: 'lwjgl-stb', version: '3.2.3'
+    implementation(group: 'org.lwjgl', name: 'lwjgl-tinyfd', version: '3.2.3')
 }
 
 sourceSets {

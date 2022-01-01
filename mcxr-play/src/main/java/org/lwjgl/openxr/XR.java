@@ -4,10 +4,15 @@
  */
 package org.lwjgl.openxr;
 
+import com.sun.jna.JNIEnv;
+import com.sun.tools.attach.VirtualMachine;
+import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPojavCompat;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
+import org.lwjgl.system.jni.JNINativeInterface;
+
 import static org.lwjgl.system.JNI.callPI;
 
 import java.nio.ByteBuffer;
@@ -79,7 +84,7 @@ public class XR {
 
         final long xrCreateInstance;
         final long xrEnumerateInstanceExtensionProperties;
-        final long xrEnumerateApiLayerProperties;
+        final long xrEnumerateApiLayerProperties = NULL;
         final long xrInitializeLoaderKHR;
 
         GlobalCommands(FunctionProvider library) {
@@ -91,25 +96,27 @@ public class XR {
             if (xrInitializeLoaderKHR != NULL) {
                 try (MemoryStack stack = stackPush()) {
                     long context = MCXRPojavCompat.freeNativeBuffer(true);
-                    long vm = MCXRPojavCompat.freeNativeBuffer(false);
+                    PointerBuffer buf = stack.mallocPointer(1);
+                    JNINativeInterface.GetJavaVM(buf);
+                    long vm = buf.address();
 
                     System.out.println("CTX Ptr:" + context);
                     System.out.println("VM Ptr:" + vm);
 
                     var createInfo = XrLoaderInitInfoAndroidKHR
                             .calloc(stack)
+                            .next(NULL)
                             .type$Default()
                             .applicationContext(context)
                             .applicationVM(vm);
 
-                    callPI(createInfo.address(), xrInitializeLoaderKHR);
+                    System.out.println("XrResult:" + callPI(MCXRNativeLoad.getBaseHeaderAddress(createInfo), xrInitializeLoaderKHR));
                 }
             }
 
 
             xrCreateInstance = library.getFunctionAddress("xrCreateInstance");
             xrEnumerateInstanceExtensionProperties = getFunctionAddress("xrEnumerateInstanceExtensionProperties");
-            xrEnumerateApiLayerProperties = getFunctionAddress("xrEnumerateApiLayerProperties");
         }
 
         private long getFunctionAddress(String name) { return getFunctionAddress(name, true); }

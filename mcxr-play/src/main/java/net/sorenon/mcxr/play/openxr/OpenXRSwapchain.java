@@ -18,7 +18,7 @@ public class OpenXRSwapchain implements AutoCloseable {
     public final OpenXRSession session;
     public int width;
     public int height;
-    public XrSwapchainImageOpenGLKHR.Buffer images;
+    public XrSwapchainImageOpenGLESKHR.Buffer images;
     public XrFramebuffer innerFramebuffer;
     public TextureTarget framebuffer;
 
@@ -35,8 +35,8 @@ public class OpenXRSwapchain implements AutoCloseable {
             instance.check(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
 
             int imageCount = intBuf.get(0);
-            XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.create(imageCount);
-            for (XrSwapchainImageOpenGLKHR image : swapchainImageBuffer) {
+            XrSwapchainImageOpenGLESKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLESKHR.create(imageCount);
+            for (XrSwapchainImageOpenGLESKHR image : swapchainImageBuffer) {
                 image.type(KHROpenglEsEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_ES_KHR);
             }
 

@@ -1,12 +1,11 @@
 package net.sorenon.mcxr.play;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.openxr.XrLoaderInitInfoAndroidKHR;
-
 public class MCXRNativeLoad {
-    public static native long getBaseHeaderAddress(XrLoaderInitInfoAndroidKHR loader);
+    public static native int load(long ptr, long app);
 
     static {
         System.loadLibrary("mcxr_loader");
     }
+
+    public static native long castXrVoidFunctionType(long memAddress);
 }

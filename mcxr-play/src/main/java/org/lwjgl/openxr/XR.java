@@ -4,18 +4,16 @@
  */
 package org.lwjgl.openxr;
 
-import com.sun.jna.JNIEnv;
-import com.sun.tools.attach.VirtualMachine;
 import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPojavCompat;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
 import org.lwjgl.system.jni.JNINativeInterface;
+import org.lwjgl.system.macosx.ObjCRuntime;
 
 import static org.lwjgl.system.JNI.callPI;
 
-import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,6 +23,7 @@ import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
+import static org.lwjgl.system.Pointer.POINTER_SIZE;
 
 public class XR {
 
@@ -84,7 +83,7 @@ public class XR {
 
         final long xrCreateInstance;
         final long xrEnumerateInstanceExtensionProperties;
-        final long xrEnumerateApiLayerProperties = NULL;
+        final long xrEnumerateApiLayerProperties;
         final long xrInitializeLoaderKHR;
 
         GlobalCommands(FunctionProvider library) {
@@ -92,40 +91,30 @@ public class XR {
             if (xrGetInstanceProcAddr == NULL) {
                 throw new IllegalArgumentException("A critical function is missing. Make sure that OpenXR is available.");
             }
-            xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR", false);
+
+            xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR");
             if (xrInitializeLoaderKHR != NULL) {
-                try (MemoryStack stack = stackPush()) {
-                    long context = MCXRPojavCompat.freeNativeBuffer(true);
-                    PointerBuffer buf = stack.mallocPointer(1);
-                    JNINativeInterface.GetJavaVM(buf);
-                    long vm = buf.address();
+                try(MemoryStack stack = stackPush()) {
+                    long context = MCXRPojavCompat.freeNativeBuffer();
 
-                    System.out.println("CTX Ptr:" + context);
-                    System.out.println("VM Ptr:" + vm);
+                    System.out.println("CTX Ptr: " + context);
 
-                    var createInfo = XrLoaderInitInfoAndroidKHR
-                            .calloc(stack)
-                            .next(NULL)
-                            .type$Default()
-                            .applicationContext(context)
-                            .applicationVM(vm);
-
-                    System.out.println("XrResult:" + callPI(MCXRNativeLoad.getBaseHeaderAddress(createInfo), xrInitializeLoaderKHR));
+                    System.out.println("XrResult: " + MCXRNativeLoad.load(MCXRNativeLoad.castXrVoidFunctionType(xrInitializeLoaderKHR), context));
                 }
             }
 
-
             xrCreateInstance = library.getFunctionAddress("xrCreateInstance");
             xrEnumerateInstanceExtensionProperties = getFunctionAddress("xrEnumerateInstanceExtensionProperties");
+            xrEnumerateApiLayerProperties = getFunctionAddress("xrEnumerateApiLayerProperties");
         }
 
         private long getFunctionAddress(String name) { return getFunctionAddress(name, true); }
         private long getFunctionAddress(String name, boolean required) {
             try (MemoryStack stack = stackPush()) {
                 PointerBuffer pp = stack.mallocPointer(1);
-                callPPPI(NULL, memAddress(stack.ASCII(name)), memAddress(pp), xrGetInstanceProcAddr);
+                callPPPI(XR10.XR_NULL_HANDLE, memAddress(stack.ASCII(name)), memAddress(pp), xrGetInstanceProcAddr);
                 long address = pp.get();
-                if (address == NULL && required) {
+                if (address == XR10.XR_NULL_HANDLE && required) {
                     throw new IllegalArgumentException("A critical function is missing. Make sure that OpenXR is available.");
                 }
                 return address;

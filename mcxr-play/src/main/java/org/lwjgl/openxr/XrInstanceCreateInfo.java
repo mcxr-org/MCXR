@@ -303,11 +303,11 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
     /** Sets the specified value to the {@code enabledApiLayerCount} field of the specified {@code struct}. */
     public static void nenabledApiLayerCount(long struct, int value) { UNSAFE.putInt(null, struct + XrInstanceCreateInfo.ENABLEDAPILAYERCOUNT, value); }
     /** Unsafe version of {@link #enabledApiLayerNames(PointerBuffer) enabledApiLayerNames}. */
-    public static void nenabledApiLayerNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDAPILAYERNAMES, memAddressSafe(value)); nenabledApiLayerCount(struct, value == null ? 0 : value.remaining()); }
+    public static void nenabledApiLayerNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDAPILAYERNAMES, XR10.XR_NULL_HANDLE); nenabledApiLayerCount(struct, value == null ? 0 : value.remaining()); }
     /** Sets the specified value to the {@code enabledExtensionCount} field of the specified {@code struct}. */
     public static void nenabledExtensionCount(long struct, int value) { UNSAFE.putInt(null, struct + XrInstanceCreateInfo.ENABLEDEXTENSIONCOUNT, value); }
     /** Unsafe version of {@link #enabledExtensionNames(PointerBuffer) enabledExtensionNames}. */
-    public static void nenabledExtensionNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDEXTENSIONNAMES, memAddressSafe(value)); nenabledExtensionCount(struct, value == null ? 0 : value.remaining()); }
+    public static void nenabledExtensionNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDEXTENSIONNAMES, XR10.XR_NULL_HANDLE); nenabledExtensionCount(struct, value == null ? 0 : value.remaining()); }
 
     /**
      * Validates pointer members that should not be {@code NULL}.

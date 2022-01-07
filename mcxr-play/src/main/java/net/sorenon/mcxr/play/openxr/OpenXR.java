@@ -92,7 +92,7 @@ public class OpenXR {
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    0,
+                    XR10.XR_NULL_HANDLE,
                     0,
                     applicationInfo,
                     null,

@@ -16,8 +16,8 @@ public class MCXRPojavCompat {
 
             //Get direct byte buffer access using channel.map() operation
             MappedByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, 0, fileChannel.size());
-            System.out.println("Buffer Direct Mode: " + buffer.isDirect());
             buffer.order(ByteOrder.nativeOrder());
+            System.out.println("Buffer Direct Mode: " + buffer.isDirect());
             return buffer.getLong();
         }  catch (IOException e) {
             System.out.println(e);

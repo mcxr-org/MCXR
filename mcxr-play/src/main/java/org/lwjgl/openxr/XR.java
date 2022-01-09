@@ -10,20 +10,16 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
 import org.lwjgl.system.jni.JNINativeInterface;
-import org.lwjgl.system.macosx.ObjCRuntime;
 
 import static org.lwjgl.system.JNI.callPI;
 
-import java.nio.LongBuffer;
 import java.util.HashSet;
 import java.util.Set;
 
 import static java.lang.Math.min;
 import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.NULL;
-import static org.lwjgl.system.MemoryUtil.memAddress;
-import static org.lwjgl.system.Pointer.POINTER_SIZE;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class XR {
 
@@ -94,12 +90,23 @@ public class XR {
 
             xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR");
             if (xrInitializeLoaderKHR != NULL) {
-                try(MemoryStack stack = stackPush()) {
-                    long context = MCXRPojavCompat.freeNativeBuffer();
+                try (MemoryStack stack = stackPush()) {
+                    long context = memGetAddress(MCXRPojavCompat.freeNativeBuffer());
+                    PointerBuffer buf = stack.mallocPointer(1);
+                    JNINativeInterface.GetJavaVM(buf);
+                    long jvm = memGetAddress(buf.address());
 
-                    System.out.println("CTX Ptr: " + context);
+                    System.out.println("CTX Ptr:" + context);
+                    System.out.println("JVM Ptr:" + jvm);
 
-                    System.out.println("XrResult: " + MCXRNativeLoad.load(MCXRNativeLoad.castXrVoidFunctionType(xrInitializeLoaderKHR), context));
+                    var createInfo = XrLoaderInitInfoAndroidKHR
+                            .calloc(stack)
+                            .type$Default()
+                            .next(NULL)
+                            .applicationContext(context)
+                            .applicationVM(jvm);
+
+                    System.out.println("XrResult:" + callPI(createInfo.address(), xrInitializeLoaderKHR));
                 }
             }
 

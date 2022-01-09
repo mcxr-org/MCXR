@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play.openxr;
 
 import net.minecraft.client.Minecraft;
+import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
@@ -11,8 +12,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -84,24 +83,32 @@ public class OpenXR {
 
     public OpenXRInstance createOpenXRInstance() throws XrException {
         try (MemoryStack stack = stackPush()) {
-            XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
-            applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
+            XrApplicationInfo applicationInfo = XrApplicationInfo.calloc(stack);
             applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
             applicationInfo.applicationVersion(1);
+            applicationInfo.engineVersion(1);
+            applicationInfo.engineName(stack.UTF8("[MCXR] Minecraft VR"));
+            applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
 
-            XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
+            PointerBuffer extensions = stackMallocPointer(1);
+            extensions.put(memAddress(stackUTF8(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)));
+
+            XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.calloc(stack);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    XR10.XR_NULL_HANDLE,
+                    NULL,
                     0,
                     applicationInfo,
                     null,
-                    null
+                    extensions
             );
 
             PointerBuffer instancePtr = stack.mallocPointer(1);
 
-            int xrResult = XR10.xrCreateInstance(createInfo, instancePtr);
+            int xrResult = XR10.xrCreateInstance(
+                    createInfo,
+                    instancePtr
+            );
             if (xrResult == XR10.XR_ERROR_RUNTIME_FAILURE) {
                 throw new XrException(xrResult, "Failed to create xrInstance, are you sure your headset is plugged in?");
             } else if (xrResult == XR10.XR_ERROR_INSTANCE_LOST) {

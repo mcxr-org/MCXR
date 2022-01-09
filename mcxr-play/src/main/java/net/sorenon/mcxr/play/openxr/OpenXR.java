@@ -94,7 +94,7 @@ public class OpenXR {
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             boolean missingOpenGL = true;
-            PointerBuffer extensions = stackCallocPointer(2);
+            PointerBuffer extensions = stackCallocPointer(3);
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
@@ -104,6 +104,9 @@ public class OpenXR {
                 }
                 if (extensionName.equals(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
                     extensions.put(memAddress(stackUTF8(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
+                }
+                if (extensionName.equals(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)) {
+                    extensions.put(memAddress(stackUTF8(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)));
                 }
             }
 

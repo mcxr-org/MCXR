@@ -92,9 +92,7 @@ public class XR {
             if (xrInitializeLoaderKHR != NULL) {
                 try (MemoryStack stack = stackPush()) {
                     long context = memGetAddress(MCXRPojavCompat.freeNativeBuffer());
-                    PointerBuffer buf = stack.mallocPointer(1);
-                    JNINativeInterface.GetJavaVM(buf);
-                    long jvm = memGetAddress(buf.address());
+                    long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
 
                     System.out.println("CTX Ptr:" + context);
                     System.out.println("JVM Ptr:" + jvm);
@@ -103,8 +101,8 @@ public class XR {
                             .calloc(stack)
                             .type$Default()
                             .next(NULL)
-                            .applicationContext(context)
-                            .applicationVM(jvm);
+                            .applicationVM(jvm)
+                            .applicationContext(context);
 
                     System.out.println("XrResult:" + callPI(createInfo.address(), xrInitializeLoaderKHR));
                 }
@@ -115,7 +113,7 @@ public class XR {
             xrEnumerateApiLayerProperties = getFunctionAddress("xrEnumerateApiLayerProperties");
         }
 
-        private long getFunctionAddress(String name) { return getFunctionAddress(name, true); }
+        public long getFunctionAddress(String name) { return getFunctionAddress(name, true); }
         private long getFunctionAddress(String name, boolean required) {
             try (MemoryStack stack = stackPush()) {
                 PointerBuffer pp = stack.mallocPointer(1);

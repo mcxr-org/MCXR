@@ -93,13 +93,11 @@ public class OpenXR {
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             boolean missingOpenGL = true;
-            PointerBuffer extensions = stackCallocPointer(1);
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
                 if (extensionName.equals(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
-                    extensions.put(memAddress(stackUTF8(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)));
                 }
             }
 
@@ -123,7 +121,7 @@ public class OpenXR {
                     0,
                     applicationInfo,
                     null,
-                    extensions
+                    stackPointers(memAddress(stackUTF8(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)))
             );
 
             PointerBuffer instancePtr = stack.mallocPointer(1);

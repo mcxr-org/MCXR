@@ -1,9 +1,13 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.sorenon.mcxr.play.MCXRNativeLoad;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengles.GLES;
+import org.lwjgl.opengles.GLES32;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Platform;
@@ -11,6 +15,7 @@ import org.lwjgl.system.Struct;
 import org.lwjgl.system.linux.X11;
 import org.lwjgl.system.windows.User32;
 
+import java.lang.reflect.Method;
 import java.util.Objects;
 import net.minecraft.client.Minecraft;
 
@@ -79,26 +84,25 @@ public class OpenXRSystem {
                     GLFWNativeWGL.glfwGetWGLContext(windowHandle)
             );
         } else if (Platform.get() == Platform.LINUX) {
-            //Possible TODO Wayland + XCB (look at https://github.com/Admicos/minecraft-wayland)
-            long xDisplay = GLFWNativeX11.glfwGetX11Display();
-
-            long glXContext = GLFWNativeGLX.glfwGetGLXContext(windowHandle);
-            long glXWindowHandle = GLFWNativeGLX.glfwGetGLXWindow(windowHandle);
-
-            int fbXID = glXQueryDrawable(xDisplay, glXWindowHandle, GLX_FBCONFIG_ID);
-            PointerBuffer fbConfigBuf = glXChooseFBConfig(xDisplay, X11.XDefaultScreen(xDisplay), stackInts(GLX_FBCONFIG_ID, fbXID, 0));
-            if(fbConfigBuf == null) {
-                throw new IllegalStateException("Your framebuffer config was null, make a github issue");
+            try {
+                Class clazz = Class.forName("org.lwjgl.glfw.CallbackBridge");
+                Method eglDisplay = clazz.getDeclaredMethod("getEGLDisplayPtr");
+                Method eglConfig = clazz.getDeclaredMethod("getEGLConfigPtr");
+                Method eglContext = clazz.getDeclaredMethod("getEGLContextPtr");
+                long eglDisplayPtr = (long) eglDisplay.invoke(null);
+                long eglConfigPtr = (long) eglConfig.invoke(null);
+                long eglContextPtr = (long) eglContext.invoke(null);
+                return XrGraphicsBindingOpenGLESAndroidKHR.calloc(stack).set(
+                        KHROpenglEsEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR,
+                        NULL,
+                        eglDisplayPtr,
+                        eglConfigPtr,
+                        eglContextPtr
+                );
+            } catch(Exception e)  {
+                System.out.println(e);
             }
-            long fbConfig = fbConfigBuf.get();
-
-            return XrGraphicsBindingOpenGLESAndroidKHR.calloc(stack).set(
-                    KHROpenglEsEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR,
-                    NULL,
-                    xDisplay,
-                    Objects.requireNonNull(glXGetVisualFromFBConfig(xDisplay, fbConfig)).visualid(),
-                    glXContext
-            );
+            throw new IllegalStateException("Could not get the classes needed by reflection!");
         } else {
             throw new IllegalStateException("Macos not supported");
         }

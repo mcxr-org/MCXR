@@ -17,7 +17,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * <h3>Layout</h3>
- * 
+ *
  * <pre><code>
  * struct XrInstanceCreateInfo {
  *     XrStructureType type;
@@ -40,25 +40,25 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
 
     /** The struct member offsets. */
     public static final int
-        TYPE,
-        NEXT,
-        CREATEFLAGS,
-        APPLICATIONINFO,
-        ENABLEDAPILAYERCOUNT,
-        ENABLEDAPILAYERNAMES,
-        ENABLEDEXTENSIONCOUNT,
-        ENABLEDEXTENSIONNAMES;
+            TYPE,
+            NEXT,
+            CREATEFLAGS,
+            APPLICATIONINFO,
+            ENABLEDAPILAYERCOUNT,
+            ENABLEDAPILAYERNAMES,
+            ENABLEDEXTENSIONCOUNT,
+            ENABLEDEXTENSIONNAMES;
 
     static {
         Layout layout = __struct(
-            __member(4),
-            __member(POINTER_SIZE),
-            __member(8),
-            __member(XrApplicationInfo.SIZEOF, XrApplicationInfo.ALIGNOF),
-            __member(4),
-            __member(POINTER_SIZE),
-            __member(4),
-            __member(POINTER_SIZE)
+                __member(4),
+                __member(POINTER_SIZE),
+                __member(8),
+                __member(XrApplicationInfo.SIZEOF, XrApplicationInfo.ALIGNOF),
+                __member(4),
+                __member(POINTER_SIZE),
+                __member(4),
+                __member(POINTER_SIZE)
         );
 
         SIZEOF = layout.getSize();
@@ -132,12 +132,12 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
 
     /** Initializes this struct with the specified values. */
     public XrInstanceCreateInfo set(
-        int type,
-        long next,
-        long createFlags,
-        XrApplicationInfo applicationInfo,
-        @Nullable PointerBuffer enabledApiLayerNames,
-        @Nullable PointerBuffer enabledExtensionNames
+            int type,
+            long next,
+            long createFlags,
+            XrApplicationInfo applicationInfo,
+            @Nullable PointerBuffer enabledApiLayerNames,
+            @Nullable PointerBuffer enabledExtensionNames
     ) {
         type(type);
         next(next);
@@ -303,11 +303,11 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
     /** Sets the specified value to the {@code enabledApiLayerCount} field of the specified {@code struct}. */
     public static void nenabledApiLayerCount(long struct, int value) { UNSAFE.putInt(null, struct + XrInstanceCreateInfo.ENABLEDAPILAYERCOUNT, value); }
     /** Unsafe version of {@link #enabledApiLayerNames(PointerBuffer) enabledApiLayerNames}. */
-    public static void nenabledApiLayerNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDAPILAYERNAMES, XR10.XR_NULL_HANDLE); nenabledApiLayerCount(struct, value == null ? 0 : value.remaining()); }
+    public static void nenabledApiLayerNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDAPILAYERNAMES, memAddressSafe(value)); nenabledApiLayerCount(struct, value == null ? 0 : value.remaining()); }
     /** Sets the specified value to the {@code enabledExtensionCount} field of the specified {@code struct}. */
     public static void nenabledExtensionCount(long struct, int value) { UNSAFE.putInt(null, struct + XrInstanceCreateInfo.ENABLEDEXTENSIONCOUNT, value); }
     /** Unsafe version of {@link #enabledExtensionNames(PointerBuffer) enabledExtensionNames}. */
-    public static void nenabledExtensionNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDEXTENSIONNAMES, XR10.XR_NULL_HANDLE); nenabledExtensionCount(struct, value == null ? 0 : value.remaining()); }
+    public static void nenabledExtensionNames(long struct, @Nullable PointerBuffer value) { memPutAddress(struct + XrInstanceCreateInfo.ENABLEDEXTENSIONNAMES, memAddressSafe(value)); nenabledExtensionCount(struct, value == null ? 0 : value.remaining()); }
 
     /**
      * Validates pointer members that should not be {@code NULL}.

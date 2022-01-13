@@ -92,12 +92,21 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
+            PointerBuffer extensions = memAllocPointer(3);
+
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
                 if (extensionName.equals(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
+                    extensions.put(memAddress(stackUTF8(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)));
+                }
+                if (extensionName.equals(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)) {
+                    extensions.put(memAddress(stackUTF8(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)));
+                }
+                if (extensionName.equals(KHRLoaderInitAndroid.XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME)) {
+                    extensions.put(memAddress(stackUTF8(KHRLoaderInitAndroid.XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME)));
                 }
             }
 
@@ -121,7 +130,7 @@ public class OpenXR {
                     0,
                     applicationInfo,
                     null,
-                    stackPointers(memAddress(stackUTF8(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)))
+                    extensions.flip()
             );
 
             PointerBuffer instancePtr = stack.mallocPointer(1);

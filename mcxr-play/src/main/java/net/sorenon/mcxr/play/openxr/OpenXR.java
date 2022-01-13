@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.openxr;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.MCXRPojavCompat;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -92,7 +93,7 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
-            PointerBuffer extensions = memAllocPointer(3);
+            PointerBuffer extensions = stackCallocPointer(3);
 
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
@@ -122,11 +123,22 @@ public class OpenXR {
             applicationInfo.engineVersion(118);
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
 
+            long context = memGetAddress(MCXRNativeLoad.getCTXPtr());
+            long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
+
+            XrInstanceCreateInfoAndroidKHR androidCreateInfo = XrInstanceCreateInfoAndroidKHR.malloc(stack);
+            androidCreateInfo.set(
+                    KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
+                    NULL,
+                    jvm,
+                    context
+            );
+
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
             memSet(createInfo, 0);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    NULL,
+                    stackPointers(androidCreateInfo.address()).address(),
                     0,
                     applicationInfo,
                     null,

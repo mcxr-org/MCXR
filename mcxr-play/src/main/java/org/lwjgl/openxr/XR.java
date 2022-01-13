@@ -91,7 +91,7 @@ public class XR {
             xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR");
             if (xrInitializeLoaderKHR != NULL) {
                 try (MemoryStack stack = stackPush()) {
-                    long context = memGetAddress(MCXRPojavCompat.freeNativeBuffer());
+                    long context = memGetAddress(MCXRNativeLoad.getCTXPtr());
                     long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
 
                     System.out.println("CTX Ptr:" + context);

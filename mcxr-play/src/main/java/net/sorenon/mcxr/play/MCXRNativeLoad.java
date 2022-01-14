@@ -6,4 +6,7 @@ public class MCXRNativeLoad {
     }
 
     public static native long getJVMPtr();
+    public static native long getApplicationActivityPtr();
+
+    public static native long getCTXPtr();
 }

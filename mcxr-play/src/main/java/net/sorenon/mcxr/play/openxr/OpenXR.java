@@ -105,14 +105,17 @@ public class OpenXR {
                 if (extensionName.equals(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)) {
                     extensions.put(memAddress(stackUTF8(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)));
                 }
-                if (extensionName.equals(KHRLoaderInitAndroid.XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(KHRLoaderInitAndroid.XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME)));
+                if (extensionName.equals(KHRAndroidSurfaceSwapchain.XR_KHR_ANDROID_SURFACE_SWAPCHAIN_EXTENSION_NAME)) {
+                    extensions.put(memAddress(stackUTF8(KHRAndroidSurfaceSwapchain.XR_KHR_ANDROID_SURFACE_SWAPCHAIN_EXTENSION_NAME)));
                 }
             }
 
             if (missingOpenGL) {
                 throw new XrException(0, "OpenXR runtime does not support OpenGLES, try using the quest instead");
             }
+
+            long activity = memGetAddress(MCXRNativeLoad.getApplicationActivityPtr());
+            long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
             memSet(applicationInfo,0);
@@ -122,11 +125,19 @@ public class OpenXR {
             applicationInfo.engineVersion(118);
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
 
+            XrInstanceCreateInfoAndroidKHR androidCreateInfo = XrInstanceCreateInfoAndroidKHR.malloc(stack);
+            androidCreateInfo.set(
+                    KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
+                    NULL,
+                    jvm,
+                    activity
+            );
+
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
             memSet(createInfo, 0);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    NULL,
+                    androidCreateInfo.address(),
                     0,
                     applicationInfo,
                     null,

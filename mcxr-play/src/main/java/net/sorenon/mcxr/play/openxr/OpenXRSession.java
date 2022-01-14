@@ -148,7 +148,8 @@ public class OpenXRSession implements AutoCloseable {
                 );
 
                 PointerBuffer pp = stack.mallocPointer(1);
-                instance.check(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, pp), "xrCreateSwapchain");
+                PointerBuffer pp2 = stack.mallocPointer(1);
+                instance.check(KHRAndroidSurfaceSwapchain.xrCreateSwapchainAndroidSurfaceKHR(handle, swapchainCreateInfo, pp, pp2), "xrCreateSwapchain");
                 OpenXRSwapchain swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this);
                 swapchain.width = swapchainCreateInfo.width();
                 swapchain.height = swapchainCreateInfo.height();

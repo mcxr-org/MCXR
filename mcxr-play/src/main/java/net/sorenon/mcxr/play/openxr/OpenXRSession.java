@@ -131,13 +131,21 @@ public class OpenXRSession implements AutoCloseable {
             swapchains = new OpenXRSwapchain[viewCountNumber];
             for (int i = 0; i < viewCountNumber; i++) {
                 XrViewConfigurationView viewConfig = viewConfigs.get(i);
+                XrAndroidSurfaceSwapchainCreateInfoFB swapchainCreateInfoA = XrAndroidSurfaceSwapchainCreateInfoFB.malloc(stack);
+
                 XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
+
+                swapchainCreateInfoA.set(
+                        FBAndroidSurfaceSwapchainCreate.XR_TYPE_ANDROID_SURFACE_SWAPCHAIN_CREATE_INFO_FB,
+                        NULL,
+                        FBAndroidSurfaceSwapchainCreate.XR_ANDROID_SURFACE_SWAPCHAIN_SYNCHRONOUS_BIT_FB
+                );
 
                 swapchainCreateInfo.set(
                         XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
-                        NULL,
+                        swapchainCreateInfoA.address(),
                         0,
-                        /*XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | */XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
+                        XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
                         glColorFormat,
                         1,
                         viewConfig.recommendedImageRectWidth(),

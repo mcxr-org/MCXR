@@ -22,9 +22,7 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modCompileOnly("com.github.Virtuoel:Pehkui:${project.pehkui_version}") {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
+    modImplementation(files("libs/Pehkui-3.1.0+1.14.4-1.18.1.jar"))
 
     include(implementation("org.joml:joml:${project.joml_version}"))
 }

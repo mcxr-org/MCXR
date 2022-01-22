@@ -6,12 +6,12 @@ import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
-import org.lwjgl.opengles.GLES32;
+import org.lwjgl.opengl.GL30;
 
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengles.GLES32.GL_FRAMEBUFFER;
-import static org.lwjgl.opengles.GLES32.*;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL30.*;
 
 /*
 The framebuffer class is most likely the largest cause of compatibility issues between rendering mods and the game itself.
@@ -57,16 +57,29 @@ public class XrFramebuffer extends TextureTarget {
             this.viewHeight = height;
             this.width = width;
             this.height = height;
-            this.frameBufferId = GLES32.glGenFramebuffers();
+            this.frameBufferId = GlStateManager.glGenFramebuffers();
 //            this.colorAttachment = TextureUtil.generateTextureId();
+            if (this.useDepth) {
+                this.depthBufferId = TextureUtil.generateTextureId();
+                GlStateManager._bindTexture(this.depthBufferId);
+                GlStateManager._texParameter(3553, 10241, 9728);
+                GlStateManager._texParameter(3553, 10240, 9728);
+                GlStateManager._texParameter(3553, 34892, 0);
+                GlStateManager._texParameter(3553, 10242, 33071);
+                GlStateManager._texParameter(3553, 10243, 33071);
+                GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, (IntBuffer)null);
+            }
 
             this.setFilterMode(9728);
 //            GlStateManager._bindTexture(this.colorAttachment);
 //            GlStateManager._texParameter(3553, 10242, 33071);
 //            GlStateManager._texParameter(3553, 10243, 33071);
 //            GlStateManager._texImage2D(3553, 0, 32856, this.textureWidth, this.textureHeight, 0, 6408, 5121, (IntBuffer)null);
-            GLES32.glBindBuffer(36160, this.frameBufferId);
+            GlStateManager._glBindFramebuffer(36160, this.frameBufferId);
 //            GlStateManager._glFramebufferTexture2D(36160, 36064, 3553, this.colorAttachment, 0);
+            if (this.useDepth) {
+                GlStateManager._glFramebufferTexture2D(36160, 36096, 3553, this.depthBufferId, 0);
+            }
 
             this.checkStatus();
             this.clear(getError);
@@ -78,7 +91,7 @@ public class XrFramebuffer extends TextureTarget {
 
     public void setColorAttachment(int colorAttachment) {
         ((FramebufferAcc) this).colorAttachment(colorAttachment);
-        GLES32.glBindFramebuffer(GLES32.GL_FRAMEBUFFER, frameBufferId);
-        GLES32.glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorAttachment, 0);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBufferId);
+        GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
     }
 }

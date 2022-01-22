@@ -4,8 +4,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-import static org.lwjgl.opengles.GLES32.GL_RGBA16I;
-import static org.lwjgl.opengles.GLES32.GL_RGBA8;
+import static org.lwjgl.opengl.GL11C.GL_RGBA16;
+import static org.lwjgl.opengl.GL11C.GL_RGBA8;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
 
@@ -19,6 +19,6 @@ public class FramebufferMixin {
      */
     @ModifyConstant(method = "createBuffers", constant = @Constant(intValue = GL_RGBA8))
     int increaseColorBitDepth(int value) {
-        return GL_RGBA16I;
+        return GL_RGBA16;
     }
 }

@@ -320,6 +320,7 @@ public class XRCapabilities {
     public final boolean XR_FB_foveation;
     /** When true, {@link FBFoveationConfiguration} is supported. */
     public final boolean XR_FB_foveation_configuration;
+    /** When true, {@link FBFoveationVulkan} is supported. */
     public final boolean XR_FB_foveation_vulkan;
     /** When true, {@link FBHandTrackingAim} is supported. */
     public final boolean XR_FB_hand_tracking_aim;
@@ -337,6 +338,7 @@ public class XRCapabilities {
     public final boolean XR_FB_swapchain_update_state_android_surface;
     /** When true, {@link FBSwapchainUpdateStateOpenglEs} is supported. */
     public final boolean XR_FB_swapchain_update_state_opengl_es;
+    /** When true, {@link FBSwapchainUpdateStateVulkan} is supported. */
     public final boolean XR_FB_swapchain_update_state_vulkan;
     /** When true, {@link FBTriangleMesh} is supported. */
     public final boolean XR_FB_triangle_mesh;
@@ -380,8 +382,11 @@ public class XRCapabilities {
     public final boolean XR_KHR_swapchain_usage_input_attachment_bit;
     /** When true, {@link KHRVisibilityMask} is supported. */
     public final boolean XR_KHR_visibility_mask;
+    /** When true, {@link KHRVulkanEnable} is supported. */
     public final boolean XR_KHR_vulkan_enable;
+    /** When true, {@link KHRVulkanEnable2} is supported. */
     public final boolean XR_KHR_vulkan_enable2;
+    /** When true, {@link KHRVulkanSwapchainFormatList} is supported. */
     public final boolean XR_KHR_vulkan_swapchain_format_list;
     /** When true, {@link KHRWin32ConvertPerformanceCounterTime} is supported. */
     public final boolean XR_KHR_win32_convert_performance_counter_time;

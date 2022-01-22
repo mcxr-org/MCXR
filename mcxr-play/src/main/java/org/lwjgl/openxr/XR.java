@@ -5,18 +5,15 @@
 package org.lwjgl.openxr;
 
 import net.sorenon.mcxr.play.MCXRNativeLoad;
-import net.sorenon.mcxr.play.MCXRPojavCompat;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
-import org.lwjgl.system.jni.JNINativeInterface;
-
-import static org.lwjgl.system.JNI.callPI;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import static java.lang.Math.min;
+import static org.lwjgl.system.JNI.callPI;
 import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -91,7 +88,7 @@ public class XR {
             xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR");
             if (xrInitializeLoaderKHR != NULL) {
                 try (MemoryStack stack = stackPush()) {
-                    long context = memGetAddress(MCXRNativeLoad.getCTXPtr());
+                    long context = memGetAddress(MCXRNativeLoad.getApplicationActivityPtr());
                     long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
 
                     var createInfo = XrLoaderInitInfoAndroidKHR
@@ -110,13 +107,13 @@ public class XR {
             xrEnumerateApiLayerProperties = getFunctionAddress("xrEnumerateApiLayerProperties");
         }
 
-        public long getFunctionAddress(String name) { return getFunctionAddress(name, true); }
+        private long getFunctionAddress(String name) { return getFunctionAddress(name, true); }
         private long getFunctionAddress(String name, boolean required) {
             try (MemoryStack stack = stackPush()) {
                 PointerBuffer pp = stack.mallocPointer(1);
-                callPPPI(XR10.XR_NULL_HANDLE, memAddress(stack.ASCII(name)), memAddress(pp), xrGetInstanceProcAddr);
+                callPPPI(NULL, memAddress(stack.ASCII(name)), memAddress(pp), xrGetInstanceProcAddr);
                 long address = pp.get();
-                if (address == XR10.XR_NULL_HANDLE && required) {
+                if (address == NULL && required) {
                     throw new IllegalArgumentException("A critical function is missing. Make sure that OpenXR is available.");
                 }
                 return address;

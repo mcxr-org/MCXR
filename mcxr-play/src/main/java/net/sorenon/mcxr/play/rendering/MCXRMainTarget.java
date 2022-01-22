@@ -1,9 +1,9 @@
 package net.sorenon.mcxr.play.rendering;
 
-import net.minecraft.client.Minecraft;
-import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
 import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
+import net.minecraft.client.Minecraft;
+import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

@@ -17,7 +17,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 /**
  * <h3>Layout</h3>
- *
+ * 
  * <pre><code>
  * struct XrInstanceCreateInfo {
  *     XrStructureType type;
@@ -40,25 +40,25 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
 
     /** The struct member offsets. */
     public static final int
-            TYPE,
-            NEXT,
-            CREATEFLAGS,
-            APPLICATIONINFO,
-            ENABLEDAPILAYERCOUNT,
-            ENABLEDAPILAYERNAMES,
-            ENABLEDEXTENSIONCOUNT,
-            ENABLEDEXTENSIONNAMES;
+        TYPE,
+        NEXT,
+        CREATEFLAGS,
+        APPLICATIONINFO,
+        ENABLEDAPILAYERCOUNT,
+        ENABLEDAPILAYERNAMES,
+        ENABLEDEXTENSIONCOUNT,
+        ENABLEDEXTENSIONNAMES;
 
     static {
         Layout layout = __struct(
-                __member(4),
-                __member(POINTER_SIZE),
-                __member(8),
-                __member(XrApplicationInfo.SIZEOF, XrApplicationInfo.ALIGNOF),
-                __member(4),
-                __member(POINTER_SIZE),
-                __member(4),
-                __member(POINTER_SIZE)
+            __member(4),
+            __member(POINTER_SIZE),
+            __member(8),
+            __member(XrApplicationInfo.SIZEOF, XrApplicationInfo.ALIGNOF),
+            __member(4),
+            __member(POINTER_SIZE),
+            __member(4),
+            __member(POINTER_SIZE)
         );
 
         SIZEOF = layout.getSize();
@@ -132,12 +132,12 @@ public class XrInstanceCreateInfo extends Struct implements NativeResource {
 
     /** Initializes this struct with the specified values. */
     public XrInstanceCreateInfo set(
-            int type,
-            long next,
-            long createFlags,
-            XrApplicationInfo applicationInfo,
-            @Nullable PointerBuffer enabledApiLayerNames,
-            @Nullable PointerBuffer enabledExtensionNames
+        int type,
+        long next,
+        long createFlags,
+        XrApplicationInfo applicationInfo,
+        @Nullable PointerBuffer enabledApiLayerNames,
+        @Nullable PointerBuffer enabledExtensionNames
     ) {
         type(type);
         next(next);

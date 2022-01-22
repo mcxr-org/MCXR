@@ -10,6 +10,9 @@ import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.opengles.GLES32;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
@@ -94,7 +97,6 @@ public class OpenXRSession implements AutoCloseable {
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
-
             //TODO support SRGB formats and use texture arrays
             long[] desiredSwapchainFormats = {
                     GLES32.GL_RGB10_A2,
@@ -103,6 +105,7 @@ public class OpenXRSession implements AutoCloseable {
                     // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
                     // depth, thus leading to banding.
                     GLES32.GL_RGBA8,
+
                     GLES32.GL_RGBA8_SNORM
             };
 
@@ -131,21 +134,13 @@ public class OpenXRSession implements AutoCloseable {
             swapchains = new OpenXRSwapchain[viewCountNumber];
             for (int i = 0; i < viewCountNumber; i++) {
                 XrViewConfigurationView viewConfig = viewConfigs.get(i);
-                XrAndroidSurfaceSwapchainCreateInfoFB swapchainCreateInfoA = XrAndroidSurfaceSwapchainCreateInfoFB.malloc(stack);
-
                 XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
-
-                swapchainCreateInfoA.set(
-                        FBAndroidSurfaceSwapchainCreate.XR_TYPE_ANDROID_SURFACE_SWAPCHAIN_CREATE_INFO_FB,
-                        NULL,
-                        FBAndroidSurfaceSwapchainCreate.XR_ANDROID_SURFACE_SWAPCHAIN_SYNCHRONOUS_BIT_FB
-                );
 
                 swapchainCreateInfo.set(
                         XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
-                        swapchainCreateInfoA.address(),
+                        NULL,
                         0,
-                        XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
+                        /*XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT |*/ XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
                         glColorFormat,
                         1,
                         viewConfig.recommendedImageRectWidth(),

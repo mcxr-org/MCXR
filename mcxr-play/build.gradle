@@ -39,6 +39,7 @@ dependencies {
     implementation group: 'org.lwjgl', name: 'lwjgl-glfw', version: '3.2.3'
     implementation group: 'org.lwjgl', name: 'lwjgl-jemalloc', version: '3.2.3'
     implementation group: 'org.lwjgl', name: 'lwjgl-openal', version: '3.2.3'
+    include implementation('org.lwjgl:lwjgl-egl:3.2.3')
     implementation group: 'org.lwjgl', name: 'lwjgl-opengl', version: '3.2.3'
     implementation group: 'org.lwjgl', name: 'lwjgl-stb', version: '3.2.3'
     implementation(group: 'org.lwjgl', name: 'lwjgl-tinyfd', version: '3.2.3')

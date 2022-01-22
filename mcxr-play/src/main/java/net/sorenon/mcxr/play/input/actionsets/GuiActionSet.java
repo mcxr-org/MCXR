@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play.input.actionsets;
 
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.BoolAction;
 import net.sorenon.mcxr.play.input.actions.Vec2fAction;
@@ -37,7 +38,7 @@ public class GuiActionSet extends ActionSet {
 
     @Override
     public boolean shouldSync() {
-        return MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen() | exit.currentState | pickup.currentState;
+        return (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen() | exit.currentState | pickup.currentState) && !XrInput.vanillaGameplayActionSet.inventory.currentState;
     }
 
     @Override
@@ -69,5 +70,16 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                 )
         );
+        if (MCXRPlayClient.OPEN_XR.instance.handle.getCapabilities().XR_EXT_hp_mixed_reality_controller) {
+            map.computeIfAbsent("/interaction_profiles/hp/mixed_reality_controller", aLong -> new ArrayList<>()).addAll(
+                    List.of(
+                            new Pair<>(pickup, "/user/hand/right/input/a/click"),
+                            new Pair<>(split, "/user/hand/right/input/b/click"),
+                            new Pair<>(quickMove, "/user/hand/left/input/x/click"),
+                            new Pair<>(exit, "/user/hand/left/input/y/click"),
+                            new Pair<>(scroll, "/user/hand/right/input/thumbstick")
+                    )
+            );
+        }
     }
 }

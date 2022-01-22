@@ -92,7 +92,7 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
-            PointerBuffer extensions = memAllocPointer(3);
+            PointerBuffer extensions = memAllocPointer(2);
 
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {
@@ -105,17 +105,20 @@ public class OpenXR {
                 if (extensionName.equals(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)) {
                     extensions.put(memAddress(stackUTF8(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)));
                 }
-                if (extensionName.equals(KHRAndroidSurfaceSwapchain.XR_KHR_ANDROID_SURFACE_SWAPCHAIN_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(KHRAndroidSurfaceSwapchain.XR_KHR_ANDROID_SURFACE_SWAPCHAIN_EXTENSION_NAME)));
-                }
             }
 
             if (missingOpenGL) {
                 throw new XrException(0, "OpenXR runtime does not support OpenGLES, try using the quest instead");
             }
 
-            long activity = memGetAddress(MCXRNativeLoad.getApplicationActivityPtr());
-            long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
+            XrInstanceCreateInfoAndroidKHR createInfoAndroidKHR = XrInstanceCreateInfoAndroidKHR.malloc(stack);
+            memSet(createInfoAndroidKHR, 0);
+            createInfoAndroidKHR.set(
+                    KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
+                    NULL,
+                    memGetAddress(MCXRNativeLoad.getJVMPtr()),
+                    memGetAddress(MCXRNativeLoad.getApplicationActivityPtr())
+            );
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
             memSet(applicationInfo,0);
@@ -125,19 +128,11 @@ public class OpenXR {
             applicationInfo.engineVersion(118);
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
 
-            XrInstanceCreateInfoAndroidKHR androidCreateInfo = XrInstanceCreateInfoAndroidKHR.malloc(stack);
-            androidCreateInfo.set(
-                    KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
-                    NULL,
-                    jvm,
-                    activity
-            );
-
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
             memSet(createInfo, 0);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    androidCreateInfo.address(),
+                    createInfoAndroidKHR.address(),
                     0,
                     applicationInfo,
                     null,

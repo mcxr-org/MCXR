@@ -1,32 +1,21 @@
 package net.sorenon.mcxr.play.openxr;
 
-import net.sorenon.mcxr.play.MCXRNativeLoad;
+import com.mojang.blaze3d.platform.Window;
+import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengles.GLES;
-import org.lwjgl.opengles.GLES32;
+import org.lwjgl.glfw.GLFWNativeWGL;
+import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Platform;
 import org.lwjgl.system.Struct;
-import org.lwjgl.system.linux.X11;
 import org.lwjgl.system.windows.User32;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
-import net.minecraft.client.Minecraft;
 
-import static org.lwjgl.opengl.GLX13.*;
-import static org.lwjgl.system.Checks.check;
-import static org.lwjgl.system.JNI.invokePP;
-import static org.lwjgl.system.MemoryStack.stackInts;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
-
-import com.mojang.blaze3d.platform.Window;
 
 public class OpenXRSystem {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -74,37 +63,24 @@ public class OpenXRSystem {
 
     public Struct createOpenGLESBinding(MemoryStack stack) {
         //Bind the OpenGL context to the OpenXR instance and create the session
-        Window window = Minecraft.getInstance().getWindow();
-        long windowHandle = window.getWindow();
-        if (Platform.get() == Platform.WINDOWS) {
-            return XrGraphicsBindingOpenGLWin32KHR.malloc(stack).set(
-                    KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
+        try {
+            Class<?> clazz = Class.forName("org.lwjgl.glfw.CallbackBridge");
+            Method eglDisplay = clazz.getDeclaredMethod("getEGLDisplayPtr");
+            Method eglConfig = clazz.getDeclaredMethod("getEGLConfigPtr");
+            Method eglContext = clazz.getDeclaredMethod("getEGLContextPtr");
+            long eglDisplayPtr = (long) eglDisplay.invoke(null);
+            long eglConfigPtr = (long) eglConfig.invoke(null);
+            long eglContextPtr = (long) eglContext.invoke(null);
+            return XrGraphicsBindingOpenGLESAndroidKHR.calloc(stack).set(
+                    KHROpenglEsEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR,
                     NULL,
-                    User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),
-                    GLFWNativeWGL.glfwGetWGLContext(windowHandle)
+                    eglDisplayPtr,
+                    eglConfigPtr,
+                    eglContextPtr
             );
-        } else if (Platform.get() == Platform.LINUX) {
-            try {
-                Class clazz = Class.forName("org.lwjgl.glfw.CallbackBridge");
-                Method eglDisplay = clazz.getDeclaredMethod("getEGLDisplayPtr");
-                Method eglConfig = clazz.getDeclaredMethod("getEGLConfigPtr");
-                Method eglContext = clazz.getDeclaredMethod("getEGLContextPtr");
-                long eglDisplayPtr = (long) eglDisplay.invoke(null);
-                long eglConfigPtr = (long) eglConfig.invoke(null);
-                long eglContextPtr = (long) eglContext.invoke(null);
-                return XrGraphicsBindingOpenGLESAndroidKHR.calloc(stack).set(
-                        KHROpenglEsEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR,
-                        NULL,
-                        eglDisplayPtr,
-                        eglConfigPtr,
-                        eglContextPtr
-                );
-            } catch(Exception e)  {
-                System.out.println(e);
-            }
-            throw new IllegalStateException("Could not get the classes needed by reflection!");
-        } else {
-            throw new IllegalStateException("Macos not supported");
+        } catch(Exception e)  {
+            System.out.println(e);
         }
+        throw new IllegalStateException("Could not get the classes needed by reflection!");
     }
 }

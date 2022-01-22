@@ -24,9 +24,9 @@ public class XR10 {
 
     /**
      * XrResult
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_SUCCESS SUCCESS}</li>
      * <li>{@link #XR_TIMEOUT_EXPIRED TIMEOUT_EXPIRED}</li>
@@ -86,67 +86,67 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_SUCCESS                                   = 0,
-            XR_TIMEOUT_EXPIRED                           = 1,
-            XR_SESSION_LOSS_PENDING                      = 3,
-            XR_EVENT_UNAVAILABLE                         = 4,
-            XR_SPACE_BOUNDS_UNAVAILABLE                  = 7,
-            XR_SESSION_NOT_FOCUSED                       = 8,
-            XR_FRAME_DISCARDED                           = 9,
-            XR_ERROR_VALIDATION_FAILURE                  = -1,
-            XR_ERROR_RUNTIME_FAILURE                     = -2,
-            XR_ERROR_OUT_OF_MEMORY                       = -3,
-            XR_ERROR_API_VERSION_UNSUPPORTED             = -4,
-            XR_ERROR_INITIALIZATION_FAILED               = -6,
-            XR_ERROR_FUNCTION_UNSUPPORTED                = -7,
-            XR_ERROR_FEATURE_UNSUPPORTED                 = -8,
-            XR_ERROR_EXTENSION_NOT_PRESENT               = -9,
-            XR_ERROR_LIMIT_REACHED                       = -10,
-            XR_ERROR_SIZE_INSUFFICIENT                   = -11,
-            XR_ERROR_HANDLE_INVALID                      = -12,
-            XR_ERROR_INSTANCE_LOST                       = -13,
-            XR_ERROR_SESSION_RUNNING                     = -14,
-            XR_ERROR_SESSION_NOT_RUNNING                 = -16,
-            XR_ERROR_SESSION_LOST                        = -17,
-            XR_ERROR_SYSTEM_INVALID                      = -18,
-            XR_ERROR_PATH_INVALID                        = -19,
-            XR_ERROR_PATH_COUNT_EXCEEDED                 = -20,
-            XR_ERROR_PATH_FORMAT_INVALID                 = -21,
-            XR_ERROR_PATH_UNSUPPORTED                    = -22,
-            XR_ERROR_LAYER_INVALID                       = -23,
-            XR_ERROR_LAYER_LIMIT_EXCEEDED                = -24,
-            XR_ERROR_SWAPCHAIN_RECT_INVALID              = -25,
-            XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED        = -26,
-            XR_ERROR_ACTION_TYPE_MISMATCH                = -27,
-            XR_ERROR_SESSION_NOT_READY                   = -28,
-            XR_ERROR_SESSION_NOT_STOPPING                = -29,
-            XR_ERROR_TIME_INVALID                        = -30,
-            XR_ERROR_REFERENCE_SPACE_UNSUPPORTED         = -31,
-            XR_ERROR_FILE_ACCESS_ERROR                   = -32,
-            XR_ERROR_FILE_CONTENTS_INVALID               = -33,
-            XR_ERROR_FORM_FACTOR_UNSUPPORTED             = -34,
-            XR_ERROR_FORM_FACTOR_UNAVAILABLE             = -35,
-            XR_ERROR_API_LAYER_NOT_PRESENT               = -36,
-            XR_ERROR_CALL_ORDER_INVALID                  = -37,
-            XR_ERROR_GRAPHICS_DEVICE_INVALID             = -38,
-            XR_ERROR_POSE_INVALID                        = -39,
-            XR_ERROR_INDEX_OUT_OF_RANGE                  = -40,
-            XR_ERROR_VIEW_CONFIGURATION_TYPE_UNSUPPORTED = -41,
-            XR_ERROR_ENVIRONMENT_BLEND_MODE_UNSUPPORTED  = -42,
-            XR_ERROR_NAME_DUPLICATED                     = -44,
-            XR_ERROR_NAME_INVALID                        = -45,
-            XR_ERROR_ACTIONSET_NOT_ATTACHED              = -46,
-            XR_ERROR_ACTIONSETS_ALREADY_ATTACHED         = -47,
-            XR_ERROR_LOCALIZED_NAME_DUPLICATED           = -48,
-            XR_ERROR_LOCALIZED_NAME_INVALID              = -49,
-            XR_ERROR_GRAPHICS_REQUIREMENTS_CALL_MISSING  = -50,
-            XR_ERROR_RUNTIME_UNAVAILABLE                 = -51;
+        XR_SUCCESS                                   = 0,
+        XR_TIMEOUT_EXPIRED                           = 1,
+        XR_SESSION_LOSS_PENDING                      = 3,
+        XR_EVENT_UNAVAILABLE                         = 4,
+        XR_SPACE_BOUNDS_UNAVAILABLE                  = 7,
+        XR_SESSION_NOT_FOCUSED                       = 8,
+        XR_FRAME_DISCARDED                           = 9,
+        XR_ERROR_VALIDATION_FAILURE                  = -1,
+        XR_ERROR_RUNTIME_FAILURE                     = -2,
+        XR_ERROR_OUT_OF_MEMORY                       = -3,
+        XR_ERROR_API_VERSION_UNSUPPORTED             = -4,
+        XR_ERROR_INITIALIZATION_FAILED               = -6,
+        XR_ERROR_FUNCTION_UNSUPPORTED                = -7,
+        XR_ERROR_FEATURE_UNSUPPORTED                 = -8,
+        XR_ERROR_EXTENSION_NOT_PRESENT               = -9,
+        XR_ERROR_LIMIT_REACHED                       = -10,
+        XR_ERROR_SIZE_INSUFFICIENT                   = -11,
+        XR_ERROR_HANDLE_INVALID                      = -12,
+        XR_ERROR_INSTANCE_LOST                       = -13,
+        XR_ERROR_SESSION_RUNNING                     = -14,
+        XR_ERROR_SESSION_NOT_RUNNING                 = -16,
+        XR_ERROR_SESSION_LOST                        = -17,
+        XR_ERROR_SYSTEM_INVALID                      = -18,
+        XR_ERROR_PATH_INVALID                        = -19,
+        XR_ERROR_PATH_COUNT_EXCEEDED                 = -20,
+        XR_ERROR_PATH_FORMAT_INVALID                 = -21,
+        XR_ERROR_PATH_UNSUPPORTED                    = -22,
+        XR_ERROR_LAYER_INVALID                       = -23,
+        XR_ERROR_LAYER_LIMIT_EXCEEDED                = -24,
+        XR_ERROR_SWAPCHAIN_RECT_INVALID              = -25,
+        XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED        = -26,
+        XR_ERROR_ACTION_TYPE_MISMATCH                = -27,
+        XR_ERROR_SESSION_NOT_READY                   = -28,
+        XR_ERROR_SESSION_NOT_STOPPING                = -29,
+        XR_ERROR_TIME_INVALID                        = -30,
+        XR_ERROR_REFERENCE_SPACE_UNSUPPORTED         = -31,
+        XR_ERROR_FILE_ACCESS_ERROR                   = -32,
+        XR_ERROR_FILE_CONTENTS_INVALID               = -33,
+        XR_ERROR_FORM_FACTOR_UNSUPPORTED             = -34,
+        XR_ERROR_FORM_FACTOR_UNAVAILABLE             = -35,
+        XR_ERROR_API_LAYER_NOT_PRESENT               = -36,
+        XR_ERROR_CALL_ORDER_INVALID                  = -37,
+        XR_ERROR_GRAPHICS_DEVICE_INVALID             = -38,
+        XR_ERROR_POSE_INVALID                        = -39,
+        XR_ERROR_INDEX_OUT_OF_RANGE                  = -40,
+        XR_ERROR_VIEW_CONFIGURATION_TYPE_UNSUPPORTED = -41,
+        XR_ERROR_ENVIRONMENT_BLEND_MODE_UNSUPPORTED  = -42,
+        XR_ERROR_NAME_DUPLICATED                     = -44,
+        XR_ERROR_NAME_INVALID                        = -45,
+        XR_ERROR_ACTIONSET_NOT_ATTACHED              = -46,
+        XR_ERROR_ACTIONSETS_ALREADY_ATTACHED         = -47,
+        XR_ERROR_LOCALIZED_NAME_DUPLICATED           = -48,
+        XR_ERROR_LOCALIZED_NAME_INVALID              = -49,
+        XR_ERROR_GRAPHICS_REQUIREMENTS_CALL_MISSING  = -50,
+        XR_ERROR_RUNTIME_UNAVAILABLE                 = -51;
 
     /**
      * XrStructureType
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_TYPE_UNKNOWN TYPE_UNKNOWN}</li>
      * <li>{@link #XR_TYPE_API_LAYER_PROPERTIES TYPE_API_LAYER_PROPERTIES}</li>
@@ -201,90 +201,90 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_TYPE_UNKNOWN                                   = 0,
-            XR_TYPE_API_LAYER_PROPERTIES                      = 1,
-            XR_TYPE_EXTENSION_PROPERTIES                      = 2,
-            XR_TYPE_INSTANCE_CREATE_INFO                      = 3,
-            XR_TYPE_SYSTEM_GET_INFO                           = 4,
-            XR_TYPE_SYSTEM_PROPERTIES                         = 5,
-            XR_TYPE_VIEW_LOCATE_INFO                          = 6,
-            XR_TYPE_VIEW                                      = 7,
-            XR_TYPE_SESSION_CREATE_INFO                       = 8,
-            XR_TYPE_SWAPCHAIN_CREATE_INFO                     = 9,
-            XR_TYPE_SESSION_BEGIN_INFO                        = 10,
-            XR_TYPE_VIEW_STATE                                = 11,
-            XR_TYPE_FRAME_END_INFO                            = 12,
-            XR_TYPE_HAPTIC_VIBRATION                          = 13,
-            XR_TYPE_EVENT_DATA_BUFFER                         = 16,
-            XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING          = 17,
-            XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED          = 18,
-            XR_TYPE_ACTION_STATE_BOOLEAN                      = 23,
-            XR_TYPE_ACTION_STATE_FLOAT                        = 24,
-            XR_TYPE_ACTION_STATE_VECTOR2F                     = 25,
-            XR_TYPE_ACTION_STATE_POSE                         = 27,
-            XR_TYPE_ACTION_SET_CREATE_INFO                    = 28,
-            XR_TYPE_ACTION_CREATE_INFO                        = 29,
-            XR_TYPE_INSTANCE_PROPERTIES                       = 32,
-            XR_TYPE_FRAME_WAIT_INFO                           = 33,
-            XR_TYPE_COMPOSITION_LAYER_PROJECTION              = 35,
-            XR_TYPE_COMPOSITION_LAYER_QUAD                    = 36,
-            XR_TYPE_REFERENCE_SPACE_CREATE_INFO               = 37,
-            XR_TYPE_ACTION_SPACE_CREATE_INFO                  = 38,
-            XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING = 40,
-            XR_TYPE_VIEW_CONFIGURATION_VIEW                   = 41,
-            XR_TYPE_SPACE_LOCATION                            = 42,
-            XR_TYPE_SPACE_VELOCITY                            = 43,
-            XR_TYPE_FRAME_STATE                               = 44,
-            XR_TYPE_VIEW_CONFIGURATION_PROPERTIES             = 45,
-            XR_TYPE_FRAME_BEGIN_INFO                          = 46,
-            XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW         = 48,
-            XR_TYPE_EVENT_DATA_EVENTS_LOST                    = 49,
-            XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING     = 51,
-            XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED    = 52,
-            XR_TYPE_INTERACTION_PROFILE_STATE                 = 53,
-            XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO              = 55,
-            XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO                 = 56,
-            XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO              = 57,
-            XR_TYPE_ACTION_STATE_GET_INFO                     = 58,
-            XR_TYPE_HAPTIC_ACTION_INFO                        = 59,
-            XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO           = 60,
-            XR_TYPE_ACTIONS_SYNC_INFO                         = 61,
-            XR_TYPE_BOUND_SOURCES_FOR_ACTION_ENUMERATE_INFO   = 62,
-            XR_TYPE_INPUT_SOURCE_LOCALIZED_NAME_GET_INFO      = 63;
+        XR_TYPE_UNKNOWN                                   = 0,
+        XR_TYPE_API_LAYER_PROPERTIES                      = 1,
+        XR_TYPE_EXTENSION_PROPERTIES                      = 2,
+        XR_TYPE_INSTANCE_CREATE_INFO                      = 3,
+        XR_TYPE_SYSTEM_GET_INFO                           = 4,
+        XR_TYPE_SYSTEM_PROPERTIES                         = 5,
+        XR_TYPE_VIEW_LOCATE_INFO                          = 6,
+        XR_TYPE_VIEW                                      = 7,
+        XR_TYPE_SESSION_CREATE_INFO                       = 8,
+        XR_TYPE_SWAPCHAIN_CREATE_INFO                     = 9,
+        XR_TYPE_SESSION_BEGIN_INFO                        = 10,
+        XR_TYPE_VIEW_STATE                                = 11,
+        XR_TYPE_FRAME_END_INFO                            = 12,
+        XR_TYPE_HAPTIC_VIBRATION                          = 13,
+        XR_TYPE_EVENT_DATA_BUFFER                         = 16,
+        XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING          = 17,
+        XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED          = 18,
+        XR_TYPE_ACTION_STATE_BOOLEAN                      = 23,
+        XR_TYPE_ACTION_STATE_FLOAT                        = 24,
+        XR_TYPE_ACTION_STATE_VECTOR2F                     = 25,
+        XR_TYPE_ACTION_STATE_POSE                         = 27,
+        XR_TYPE_ACTION_SET_CREATE_INFO                    = 28,
+        XR_TYPE_ACTION_CREATE_INFO                        = 29,
+        XR_TYPE_INSTANCE_PROPERTIES                       = 32,
+        XR_TYPE_FRAME_WAIT_INFO                           = 33,
+        XR_TYPE_COMPOSITION_LAYER_PROJECTION              = 35,
+        XR_TYPE_COMPOSITION_LAYER_QUAD                    = 36,
+        XR_TYPE_REFERENCE_SPACE_CREATE_INFO               = 37,
+        XR_TYPE_ACTION_SPACE_CREATE_INFO                  = 38,
+        XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING = 40,
+        XR_TYPE_VIEW_CONFIGURATION_VIEW                   = 41,
+        XR_TYPE_SPACE_LOCATION                            = 42,
+        XR_TYPE_SPACE_VELOCITY                            = 43,
+        XR_TYPE_FRAME_STATE                               = 44,
+        XR_TYPE_VIEW_CONFIGURATION_PROPERTIES             = 45,
+        XR_TYPE_FRAME_BEGIN_INFO                          = 46,
+        XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW         = 48,
+        XR_TYPE_EVENT_DATA_EVENTS_LOST                    = 49,
+        XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING     = 51,
+        XR_TYPE_EVENT_DATA_INTERACTION_PROFILE_CHANGED    = 52,
+        XR_TYPE_INTERACTION_PROFILE_STATE                 = 53,
+        XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO              = 55,
+        XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO                 = 56,
+        XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO              = 57,
+        XR_TYPE_ACTION_STATE_GET_INFO                     = 58,
+        XR_TYPE_HAPTIC_ACTION_INFO                        = 59,
+        XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO           = 60,
+        XR_TYPE_ACTIONS_SYNC_INFO                         = 61,
+        XR_TYPE_BOUND_SOURCES_FOR_ACTION_ENUMERATE_INFO   = 62,
+        XR_TYPE_INPUT_SOURCE_LOCALIZED_NAME_GET_INFO      = 63;
 
     /**
      * XrFormFactor
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY FORM_FACTOR_HEAD_MOUNTED_DISPLAY}</li>
      * <li>{@link #XR_FORM_FACTOR_HANDHELD_DISPLAY FORM_FACTOR_HANDHELD_DISPLAY}</li>
      * </ul>
      */
     public static final int
-            XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY = 1,
-            XR_FORM_FACTOR_HANDHELD_DISPLAY     = 2;
+        XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY = 1,
+        XR_FORM_FACTOR_HANDHELD_DISPLAY     = 2;
 
     /**
      * XrViewConfigurationType
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO VIEW_CONFIGURATION_TYPE_PRIMARY_MONO}</li>
      * <li>{@link #XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO}</li>
      * </ul>
      */
     public static final int
-            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO   = 1,
-            XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO = 2;
+        XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO   = 1,
+        XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO = 2;
 
     /**
      * XrEnvironmentBlendMode
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_ENVIRONMENT_BLEND_MODE_OPAQUE ENVIRONMENT_BLEND_MODE_OPAQUE}</li>
      * <li>{@link #XR_ENVIRONMENT_BLEND_MODE_ADDITIVE ENVIRONMENT_BLEND_MODE_ADDITIVE}</li>
@@ -292,29 +292,29 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_ENVIRONMENT_BLEND_MODE_OPAQUE      = 1,
-            XR_ENVIRONMENT_BLEND_MODE_ADDITIVE    = 2,
-            XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND = 3;
+        XR_ENVIRONMENT_BLEND_MODE_OPAQUE      = 1,
+        XR_ENVIRONMENT_BLEND_MODE_ADDITIVE    = 2,
+        XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND = 3;
 
     /**
      * XrSpaceVelocityFlagBits
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_SPACE_VELOCITY_LINEAR_VALID_BIT SPACE_VELOCITY_LINEAR_VALID_BIT}</li>
      * <li>{@link #XR_SPACE_VELOCITY_ANGULAR_VALID_BIT SPACE_VELOCITY_ANGULAR_VALID_BIT}</li>
      * </ul>
      */
     public static final int
-            XR_SPACE_VELOCITY_LINEAR_VALID_BIT  = 0x1,
-            XR_SPACE_VELOCITY_ANGULAR_VALID_BIT = 0x2;
+        XR_SPACE_VELOCITY_LINEAR_VALID_BIT  = 0x1,
+        XR_SPACE_VELOCITY_ANGULAR_VALID_BIT = 0x2;
 
     /**
      * XrReferenceSpaceType
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_REFERENCE_SPACE_TYPE_VIEW REFERENCE_SPACE_TYPE_VIEW}</li>
      * <li>{@link #XR_REFERENCE_SPACE_TYPE_LOCAL REFERENCE_SPACE_TYPE_LOCAL}</li>
@@ -322,15 +322,15 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_REFERENCE_SPACE_TYPE_VIEW  = 1,
-            XR_REFERENCE_SPACE_TYPE_LOCAL = 2,
-            XR_REFERENCE_SPACE_TYPE_STAGE = 3;
+        XR_REFERENCE_SPACE_TYPE_VIEW  = 1,
+        XR_REFERENCE_SPACE_TYPE_LOCAL = 2,
+        XR_REFERENCE_SPACE_TYPE_STAGE = 3;
 
     /**
      * XrSpaceLocationFlagBits
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_SPACE_LOCATION_ORIENTATION_VALID_BIT SPACE_LOCATION_ORIENTATION_VALID_BIT}</li>
      * <li>{@link #XR_SPACE_LOCATION_POSITION_VALID_BIT SPACE_LOCATION_POSITION_VALID_BIT}</li>
@@ -339,30 +339,30 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_SPACE_LOCATION_ORIENTATION_VALID_BIT   = 0x1,
-            XR_SPACE_LOCATION_POSITION_VALID_BIT      = 0x2,
-            XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT = 0x4,
-            XR_SPACE_LOCATION_POSITION_TRACKED_BIT    = 0x8;
+        XR_SPACE_LOCATION_ORIENTATION_VALID_BIT   = 0x1,
+        XR_SPACE_LOCATION_POSITION_VALID_BIT      = 0x2,
+        XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT = 0x4,
+        XR_SPACE_LOCATION_POSITION_TRACKED_BIT    = 0x8;
 
     /**
      * XrSwapchainCreateFlagBits
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT}</li>
      * <li>{@link #XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT SWAPCHAIN_CREATE_STATIC_IMAGE_BIT}</li>
      * </ul>
      */
     public static final int
-            XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT = 0x1,
-            XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT      = 0x2;
+        XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT = 0x1,
+        XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT      = 0x2;
 
     /**
      * XrSwapchainUsageFlagBits
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT}</li>
      * <li>{@link #XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT}</li>
@@ -374,19 +374,19 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT         = 0x1,
-            XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = 0x2,
-            XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT         = 0x4,
-            XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT             = 0x8,
-            XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT             = 0x10,
-            XR_SWAPCHAIN_USAGE_SAMPLED_BIT                  = 0x20,
-            XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT           = 0x40;
+        XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT         = 0x1,
+        XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT = 0x2,
+        XR_SWAPCHAIN_USAGE_UNORDERED_ACCESS_BIT         = 0x4,
+        XR_SWAPCHAIN_USAGE_TRANSFER_SRC_BIT             = 0x8,
+        XR_SWAPCHAIN_USAGE_TRANSFER_DST_BIT             = 0x10,
+        XR_SWAPCHAIN_USAGE_SAMPLED_BIT                  = 0x20,
+        XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT           = 0x40;
 
     /**
      * XrCompositionLayerFlagBits
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT}</li>
      * <li>{@link #XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT}</li>
@@ -394,15 +394,15 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT = 0x1,
-            XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT   = 0x2,
-            XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT        = 0x4;
+        XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT = 0x1,
+        XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT   = 0x2,
+        XR_COMPOSITION_LAYER_UNPREMULTIPLIED_ALPHA_BIT        = 0x4;
 
     /**
      * XrViewStateFlagBits
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_VIEW_STATE_ORIENTATION_VALID_BIT VIEW_STATE_ORIENTATION_VALID_BIT}</li>
      * <li>{@link #XR_VIEW_STATE_POSITION_VALID_BIT VIEW_STATE_POSITION_VALID_BIT}</li>
@@ -411,16 +411,16 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_VIEW_STATE_ORIENTATION_VALID_BIT   = 0x1,
-            XR_VIEW_STATE_POSITION_VALID_BIT      = 0x2,
-            XR_VIEW_STATE_ORIENTATION_TRACKED_BIT = 0x4,
-            XR_VIEW_STATE_POSITION_TRACKED_BIT    = 0x8;
+        XR_VIEW_STATE_ORIENTATION_VALID_BIT   = 0x1,
+        XR_VIEW_STATE_POSITION_VALID_BIT      = 0x2,
+        XR_VIEW_STATE_ORIENTATION_TRACKED_BIT = 0x4,
+        XR_VIEW_STATE_POSITION_TRACKED_BIT    = 0x8;
 
     /**
      * XrActionType
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_ACTION_TYPE_BOOLEAN_INPUT ACTION_TYPE_BOOLEAN_INPUT}</li>
      * <li>{@link #XR_ACTION_TYPE_FLOAT_INPUT ACTION_TYPE_FLOAT_INPUT}</li>
@@ -430,17 +430,17 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_ACTION_TYPE_BOOLEAN_INPUT    = 1,
-            XR_ACTION_TYPE_FLOAT_INPUT      = 2,
-            XR_ACTION_TYPE_VECTOR2F_INPUT   = 3,
-            XR_ACTION_TYPE_POSE_INPUT       = 4,
-            XR_ACTION_TYPE_VIBRATION_OUTPUT = 100;
+        XR_ACTION_TYPE_BOOLEAN_INPUT    = 1,
+        XR_ACTION_TYPE_FLOAT_INPUT      = 2,
+        XR_ACTION_TYPE_VECTOR2F_INPUT   = 3,
+        XR_ACTION_TYPE_POSE_INPUT       = 4,
+        XR_ACTION_TYPE_VIBRATION_OUTPUT = 100;
 
     /**
      * XrInputSourceLocalizedNameFlagBits
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_INPUT_SOURCE_LOCALIZED_NAME_USER_PATH_BIT INPUT_SOURCE_LOCALIZED_NAME_USER_PATH_BIT}</li>
      * <li>{@link #XR_INPUT_SOURCE_LOCALIZED_NAME_INTERACTION_PROFILE_BIT INPUT_SOURCE_LOCALIZED_NAME_INTERACTION_PROFILE_BIT}</li>
@@ -448,15 +448,15 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_INPUT_SOURCE_LOCALIZED_NAME_USER_PATH_BIT           = 0x1,
-            XR_INPUT_SOURCE_LOCALIZED_NAME_INTERACTION_PROFILE_BIT = 0x2,
-            XR_INPUT_SOURCE_LOCALIZED_NAME_COMPONENT_BIT           = 0x4;
+        XR_INPUT_SOURCE_LOCALIZED_NAME_USER_PATH_BIT           = 0x1,
+        XR_INPUT_SOURCE_LOCALIZED_NAME_INTERACTION_PROFILE_BIT = 0x2,
+        XR_INPUT_SOURCE_LOCALIZED_NAME_COMPONENT_BIT           = 0x4;
 
     /**
      * XrEyeVisibility
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_EYE_VISIBILITY_BOTH EYE_VISIBILITY_BOTH}</li>
      * <li>{@link #XR_EYE_VISIBILITY_LEFT EYE_VISIBILITY_LEFT}</li>
@@ -464,15 +464,15 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_EYE_VISIBILITY_BOTH  = 0,
-            XR_EYE_VISIBILITY_LEFT  = 1,
-            XR_EYE_VISIBILITY_RIGHT = 2;
+        XR_EYE_VISIBILITY_BOTH  = 0,
+        XR_EYE_VISIBILITY_LEFT  = 1,
+        XR_EYE_VISIBILITY_RIGHT = 2;
 
     /**
      * XrSessionState
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_SESSION_STATE_UNKNOWN SESSION_STATE_UNKNOWN}</li>
      * <li>{@link #XR_SESSION_STATE_IDLE SESSION_STATE_IDLE}</li>
@@ -486,21 +486,21 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_SESSION_STATE_UNKNOWN      = 0,
-            XR_SESSION_STATE_IDLE         = 1,
-            XR_SESSION_STATE_READY        = 2,
-            XR_SESSION_STATE_SYNCHRONIZED = 3,
-            XR_SESSION_STATE_VISIBLE      = 4,
-            XR_SESSION_STATE_FOCUSED      = 5,
-            XR_SESSION_STATE_STOPPING     = 6,
-            XR_SESSION_STATE_LOSS_PENDING = 7,
-            XR_SESSION_STATE_EXITING      = 8;
+        XR_SESSION_STATE_UNKNOWN      = 0,
+        XR_SESSION_STATE_IDLE         = 1,
+        XR_SESSION_STATE_READY        = 2,
+        XR_SESSION_STATE_SYNCHRONIZED = 3,
+        XR_SESSION_STATE_VISIBLE      = 4,
+        XR_SESSION_STATE_FOCUSED      = 5,
+        XR_SESSION_STATE_STOPPING     = 6,
+        XR_SESSION_STATE_LOSS_PENDING = 7,
+        XR_SESSION_STATE_EXITING      = 8;
 
     /**
      * XrObjectType
-     *
+     * 
      * <h5>Enum values:</h5>
-     *
+     * 
      * <ul>
      * <li>{@link #XR_OBJECT_TYPE_UNKNOWN OBJECT_TYPE_UNKNOWN}</li>
      * <li>{@link #XR_OBJECT_TYPE_INSTANCE OBJECT_TYPE_INSTANCE}</li>
@@ -512,48 +512,48 @@ public class XR10 {
      * </ul>
      */
     public static final int
-            XR_OBJECT_TYPE_UNKNOWN    = 0,
-            XR_OBJECT_TYPE_INSTANCE   = 1,
-            XR_OBJECT_TYPE_SESSION    = 2,
-            XR_OBJECT_TYPE_SWAPCHAIN  = 3,
-            XR_OBJECT_TYPE_SPACE      = 4,
-            XR_OBJECT_TYPE_ACTION_SET = 5,
-            XR_OBJECT_TYPE_ACTION     = 6;
+        XR_OBJECT_TYPE_UNKNOWN    = 0,
+        XR_OBJECT_TYPE_INSTANCE   = 1,
+        XR_OBJECT_TYPE_SESSION    = 2,
+        XR_OBJECT_TYPE_SWAPCHAIN  = 3,
+        XR_OBJECT_TYPE_SPACE      = 4,
+        XR_OBJECT_TYPE_ACTION_SET = 5,
+        XR_OBJECT_TYPE_ACTION     = 6;
 
     /** XR_CURRENT_API_VERSION is the current version of the OpenXR API. */
     public static final long XR_CURRENT_API_VERSION = XR_MAKE_VERSION(1, 0, 14);
 
     /** API Constants */
     public static final int
-            XR_TRUE                               = 1,
-            XR_FALSE                              = 0,
-            XR_MAX_EXTENSION_NAME_SIZE            = 128,
-            XR_MAX_API_LAYER_NAME_SIZE            = 256,
-            XR_MAX_API_LAYER_DESCRIPTION_SIZE     = 256,
-            XR_MAX_SYSTEM_NAME_SIZE               = 256,
-            XR_MAX_APPLICATION_NAME_SIZE          = 128,
-            XR_MAX_ENGINE_NAME_SIZE               = 128,
-            XR_MAX_RUNTIME_NAME_SIZE              = 128,
-            XR_MAX_PATH_LENGTH                    = 256,
-            XR_MAX_STRUCTURE_NAME_SIZE            = 64,
-            XR_MAX_RESULT_STRING_SIZE             = 64,
-            XR_MAX_GRAPHICS_APIS_SUPPORTED        = 32,
-            XR_MAX_ACTION_SET_NAME_SIZE           = 64,
-            XR_MAX_ACTION_NAME_SIZE               = 64,
-            XR_MAX_LOCALIZED_ACTION_SET_NAME_SIZE = 128,
-            XR_MAX_LOCALIZED_ACTION_NAME_SIZE     = 128,
-            XR_MIN_COMPOSITION_LAYERS_SUPPORTED   = 16;
+        XR_TRUE                               = 1,
+        XR_FALSE                              = 0,
+        XR_MAX_EXTENSION_NAME_SIZE            = 128,
+        XR_MAX_API_LAYER_NAME_SIZE            = 256,
+        XR_MAX_API_LAYER_DESCRIPTION_SIZE     = 256,
+        XR_MAX_SYSTEM_NAME_SIZE               = 256,
+        XR_MAX_APPLICATION_NAME_SIZE          = 128,
+        XR_MAX_ENGINE_NAME_SIZE               = 128,
+        XR_MAX_RUNTIME_NAME_SIZE              = 128,
+        XR_MAX_PATH_LENGTH                    = 256,
+        XR_MAX_STRUCTURE_NAME_SIZE            = 64,
+        XR_MAX_RESULT_STRING_SIZE             = 64,
+        XR_MAX_GRAPHICS_APIS_SUPPORTED        = 32,
+        XR_MAX_ACTION_SET_NAME_SIZE           = 64,
+        XR_MAX_ACTION_NAME_SIZE               = 64,
+        XR_MAX_LOCALIZED_ACTION_SET_NAME_SIZE = 128,
+        XR_MAX_LOCALIZED_ACTION_NAME_SIZE     = 128,
+        XR_MIN_COMPOSITION_LAYERS_SUPPORTED   = 16;
 
     public static final long
-            XR_NULL_SYSTEM_ID        = 0,
-            XR_NULL_PATH             = 0,
-            XR_NO_DURATION           = 0,
-            XR_INFINITE_DURATION     = 0x7fffffffffffffffL,
-            XR_MIN_HAPTIC_DURATION   = -1,
-            XR_FREQUENCY_UNSPECIFIED = 0;
+        XR_NULL_SYSTEM_ID        = 0,
+        XR_NULL_PATH             = 0,
+        XR_NO_DURATION           = 0,
+        XR_INFINITE_DURATION     = 0x7fffffffffffffffL,
+        XR_MIN_HAPTIC_DURATION   = -1,
+        XR_FREQUENCY_UNSPECIFIED = 0;
 
     /**
-     * {@code XR_NULL_HANDLE} is a reserved value representing a non-valid object handle. It may be passed to and returned from API functions only when
+     * {@code XR_NULL_HANDLE} is a reserved value representing a non-valid object handle. It may be passed to and returned from API functions only when 
      * specifically allowed.
      */
     public static final long XR_NULL_HANDLE = 0x0L;
@@ -1353,7 +1353,7 @@ public class XR10 {
 
     /**
      * Constructs an API version number.
-     *
+     * 
      * <p>This macro <b>can</b> be used when constructing the {@link XrApplicationInfo}{@code ::pname:apiVersion} parameter passed to {@link #xrCreateInstance CreateInstance}.</p>
      *
      * @param major the major version number

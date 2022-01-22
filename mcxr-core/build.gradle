@@ -2,7 +2,6 @@ plugins {
     id 'fabric-loom' version '0.10-SNAPSHOT'
     id 'io.github.juuxel.loom-quiltflower-mini' version '1.1.0'
     id 'maven-publish'
-    id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -23,7 +22,7 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation("com.github.Virtuoel:Pehkui:${project.pehkui_version}") {
+    modCompileOnly("com.github.Virtuoel:Pehkui:${project.pehkui_version}") {
         exclude(group: "net.fabricmc.fabric-api")
     }
 

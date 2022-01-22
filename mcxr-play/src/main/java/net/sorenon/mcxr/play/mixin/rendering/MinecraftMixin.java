@@ -174,6 +174,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     }
 
     /**
+     * @see Minecraft#runTick
      * To help performance and make debugging easier, render has been split into these three functions
      * This could have some compatibility issues, but I have only found one mixin (computercraft) which this may affect
      * ASMR's more advanced transformers could help with this in the future

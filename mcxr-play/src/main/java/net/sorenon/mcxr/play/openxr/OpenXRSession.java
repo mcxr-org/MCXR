@@ -97,7 +97,6 @@ public class OpenXRSession implements AutoCloseable {
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
-
             //TODO support SRGB formats and use texture arrays
             long[] desiredSwapchainFormats = {
                     GLES32.GL_RGB10_A2,
@@ -106,6 +105,7 @@ public class OpenXRSession implements AutoCloseable {
                     // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
                     // depth, thus leading to banding.
                     GLES32.GL_RGBA8,
+
                     GLES32.GL_RGBA8_SNORM
             };
 

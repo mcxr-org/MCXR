@@ -92,7 +92,7 @@ public class OpenXR {
 
             check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
-            PointerBuffer extensions = memAllocPointer(3);
+            PointerBuffer extensions = memAllocPointer(2);
 
             boolean missingOpenGL = true;
             while (properties.hasRemaining()) {

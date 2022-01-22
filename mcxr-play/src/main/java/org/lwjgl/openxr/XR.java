@@ -88,7 +88,7 @@ public class XR {
             xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR");
             if (xrInitializeLoaderKHR != NULL) {
                 try (MemoryStack stack = stackPush()) {
-                    long context = memGetAddress(MCXRNativeLoad.getCTXPtr());
+                    long context = memGetAddress(MCXRNativeLoad.getApplicationActivityPtr());
                     long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
 
                     var createInfo = XrLoaderInitInfoAndroidKHR

@@ -26,11 +26,13 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modCompileOnly(files("libs/Pehkui-3.1.0+1.14.4-1.18.1.jar"))
+    modCompileOnly("com.github.Virtuoel:Pehkui:${project.pehkui_version}") {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
 
     implementation 'org.lwjgl:lwjgl-opengles:3.2.3'
     implementation("org.joml:joml:${project.joml_version}")
-    include(modImplementation(files("libs/fart-1.0.0.jar")))
+    include(modImplementation("com.github.Sorenon:fart:51f6a721e7"))
     include implementation('org.lwjgl:lwjgl-opengles:3.2.3')
 
     implementation group: 'org.lwjgl', name: 'lwjgl', version: '3.2.3'

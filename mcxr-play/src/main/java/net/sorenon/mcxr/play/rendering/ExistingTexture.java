@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.play.rendering;
 
-import java.io.IOException;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.server.packs.resources.ResourceManager;
 

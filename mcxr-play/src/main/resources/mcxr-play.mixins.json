@@ -19,12 +19,12 @@
     "hands.GameRendererMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
+    "rendering.LevelRendererMixin",
     "rendering.Matrix4fMixin",
     "rendering.MinecraftMixin",
     "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "rendering.LevelRendererMixin",
     "roomscale.ClientPlayerEntityMixin"
   ],
   "injectors": {

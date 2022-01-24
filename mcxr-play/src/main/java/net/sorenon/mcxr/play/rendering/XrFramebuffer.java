@@ -44,6 +44,7 @@ If method 3 has too great of a performance issue (which i doubt) i will look at 
  */
 public class XrFramebuffer extends TextureTarget {
 
+
     public XrFramebuffer(int width, int height) {
         super(width, height, true, Minecraft.ON_OSX);
     }

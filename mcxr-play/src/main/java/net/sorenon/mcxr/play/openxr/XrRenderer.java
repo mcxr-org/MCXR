@@ -5,12 +5,7 @@ import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -243,11 +238,6 @@ public class XrRenderer {
 
             viewSwapchain.innerFramebuffer.bindWrite(true);
             this.blitShader.setSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorTextureId());
-            Uniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
-            if (inverseScreenSize != null) {
-                inverseScreenSize.set(1f / viewSwapchain.innerFramebuffer.width, 1f / viewSwapchain.innerFramebuffer.height);
-            }
-            viewSwapchain.framebuffer.setFilterMode(GlConst.GL_LINEAR);
             this.blit(viewSwapchain.innerFramebuffer, blitShader);
             viewSwapchain.innerFramebuffer.unbindWrite();
 

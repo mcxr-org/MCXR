@@ -13,7 +13,6 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
-import org.lwjgl.opengles.GLES32;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 
@@ -97,16 +96,16 @@ public class OpenXRSession implements AutoCloseable {
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
+
             //TODO support SRGB formats and use texture arrays
             long[] desiredSwapchainFormats = {
-                    GLES32.GL_RGB10_A2,
-                    GLES32.GL_RGBA16F,
-                    GLES32.GL_RGB16F,
+                    GL11.GL_RGB10_A2,
+                    GL30.GL_RGBA16F,
+                    GL30.GL_RGB16F,
                     // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
                     // depth, thus leading to banding.
-                    GLES32.GL_RGBA8,
-
-                    GLES32.GL_RGBA8_SNORM
+                    GL11.GL_RGBA8,
+                    GL31.GL_RGBA8_SNORM
             };
 
             for (long glFormatIter : desiredSwapchainFormats) {
@@ -153,8 +152,8 @@ public class OpenXRSession implements AutoCloseable {
                 PointerBuffer pp = stack.mallocPointer(1);
                 instance.check(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, pp), "xrCreateSwapchain");
                 OpenXRSwapchain swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this);
-                swapchain.width = swapchainCreateInfo.width();
-                swapchain.height = swapchainCreateInfo.height();
+                swapchain.width = 1216;
+                swapchain.height = 1344;
                 swapchain.createImages();
                 swapchains[i] = swapchain;
             }

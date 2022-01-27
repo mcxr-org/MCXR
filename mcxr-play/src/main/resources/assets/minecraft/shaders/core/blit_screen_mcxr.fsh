@@ -1,13 +1,11 @@
-#version 150
+#version 100
 
 uniform sampler2D DiffuseSampler;
 
 uniform vec4 ColorModulator;
 
-in vec2 texCoord;
-in vec4 vertexColor;
-
-out vec4 fragColor;
+varying vec2 texCoord;
+varying vec4 vertexColor;
 
 float sRGBToLinear(float f) {
     if (f < 0.04045f) {
@@ -23,5 +21,5 @@ void main() {
 
     // blit final output of compositor into displayed back buffer
     // apply inverse gamma correction since minecraft renders in sRGB space but we want our output to be linear
-    fragColor = vec4(sRGBToLinear(mcColor.r), sRGBToLinear(mcColor.g), sRGBToLinear(mcColor.b), mcColor.a);
+    gl_FragColor = vec4(sRGBToLinear(mcColor.r), sRGBToLinear(mcColor.g), sRGBToLinear(mcColor.b), mcColor.a);
 }

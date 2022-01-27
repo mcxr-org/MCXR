@@ -1,12 +1,12 @@
-#version 150
+#version 100
 
-in vec3 Position;
-in vec2 UV;
+attribute vec3 Position;
+attribute vec2 UV;
 
 uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 
-out vec2 texCoord;
+varying vec2 texCoord;
 
 void main() {
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);

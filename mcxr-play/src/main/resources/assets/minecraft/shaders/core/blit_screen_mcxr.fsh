@@ -1,5 +1,7 @@
 #version 100
 
+#moj_import <precision.glsl>
+
 uniform sampler2D DiffuseSampler;
 
 uniform vec4 ColorModulator;
@@ -16,7 +18,7 @@ float sRGBToLinear(float f) {
 }
 
 void main() {
-    vec4 color = texture(DiffuseSampler, texCoord) * vertexColor;
+    vec4 color = texture2D(DiffuseSampler, texCoord) * vertexColor;
     vec4 mcColor = color * ColorModulator;
 
     // blit final output of compositor into displayed back buffer

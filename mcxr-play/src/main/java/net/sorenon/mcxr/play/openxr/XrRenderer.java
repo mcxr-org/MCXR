@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.openxr;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -25,6 +26,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengles.GLES32;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
@@ -225,6 +228,10 @@ public class XrRenderer {
 
             {
                 XrSwapchainImageOpenGLESKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
+                GlStateManager._bindTexture(xrSwapchainImageOpenGLKHR.image());
+                GlStateManager._texParameter(3553, 10242, 33071);
+                GlStateManager._texParameter(3553, 10243, 33071);
+                GlStateManager._texImage2D(3553, 0, 6402, viewSwapchain.width, viewSwapchain.height, 0, 6402, 5126, null);
                 viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
                 viewSwapchain.innerFramebuffer.unbindWrite();
                 MCXRMainTarget.setXrFramebuffer(viewSwapchain.framebuffer);
@@ -248,7 +255,7 @@ public class XrRenderer {
             instance.check(XR10.xrReleaseSwapchainImage(
                     viewSwapchain.handle,
                     XrSwapchainImageReleaseInfo.calloc(stack)
-                            .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
+                           .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
             ), "xrReleaseSwapchainImage");
         }
         this.eye = -1;

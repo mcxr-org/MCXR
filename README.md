@@ -1,4 +1,5 @@
-![MCXR Logo Banner](https://user-images.githubusercontent.com/51373236/114272119-ad237800-9a0c-11eb-8786-6275555a594b.png)
+[![#MinecraftXR](https://user-images.githubusercontent.com/51373236/114272119-ad237800-9a0c-11eb-8786-6275555a594b.png)](#)
+
 A VR mod for Minecraft using OpenXR and fabric.
 
 # *Installation*
@@ -36,8 +37,8 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | Immersive UI                | ⛔                               | ⛔                             | 🚧In development        |
 | Immersive Controls          | ⛔                               | ✅                             | 🚧In development        |
 | Open Source                 | ⛔                               | ✅                             | ✅                      |
-| Versions                    | N/A                             | 1.7.10, and 1.10 through 1.17 | 1.18                     |
-| Linkless Quest Support      | ⛔                               | ⛔                           | 🚧[In development](https://discord.gg/ppWG7DyJ)|
+| Versions                    | N/A                             | 1.7.10, and 1.10 through [1.18](https://github.com/jrbudda/Vivecraft_118/releases) | 1.18                     |
+| Linkless Quest Support      | ⛔                               | ⛔                           | 🚧[In development](https://discord.gg/fEmGTWk38j)|
 | Special VR player models in multiplayer| ⛔                    | ✅                             | 🚧In development        |
 | Spigot Plugin               | N/A                             | ✅                             | ⛔                       |
 | Patch Method                | N/A                             | Jar mod                       | Mixins                   |

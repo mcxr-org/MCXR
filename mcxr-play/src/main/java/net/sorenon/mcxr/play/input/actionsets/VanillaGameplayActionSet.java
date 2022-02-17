@@ -22,9 +22,16 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction resetPos = new BoolAction("reset_pos");
     public final BoolAction teleport = new BoolAction("teleport"); //TODO switch to Alyx-like bindings
 
-    public final FloatAction turn = new FloatAction("turn"); //TODO split into turn left / right
+    public final FloatAction turn = new FloatAction("turn");
+    //TODO remove this with new input system
     public final FloatAction hotbar = new FloatAction("hotbar");
     public final Vec2fAction move = new Vec2fAction("move");
+
+    public final BoolAction hotbarLeft = new BoolAction("hotbar_left");
+    public final BoolAction hotbarRight = new BoolAction("hotbar_right");
+    //TODO remove these with new input system
+    public final BoolAction turnLeft = new BoolAction("turn_left");
+    public final BoolAction turnRight = new BoolAction("turn_right");
 
     public boolean turnActivated = false;
     public boolean hotbarActivated;
@@ -40,7 +47,11 @@ public class VanillaGameplayActionSet extends ActionSet {
             turn,
             hotbar,
             move,
-            teleport
+            teleport,
+            hotbarLeft,
+            hotbarRight,
+            turnLeft,
+            turnRight
             );
 
     public VanillaGameplayActionSet() {

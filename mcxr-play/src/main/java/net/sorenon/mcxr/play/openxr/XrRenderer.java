@@ -77,6 +77,7 @@ public class XrRenderer {
             if (isXrMode()) {
                 GLFW.glfwSwapBuffers(Minecraft.getInstance().getWindow().getWindow());
             }
+            //TODO tick game and poll input during xrWaitFrame (this might not work due to the gl context belonging to the xrWaitFrame thread)
             instance.check(XR10.xrWaitFrame(
                     session.handle,
                     XrFrameWaitInfo.calloc(stack).type(XR10.XR_TYPE_FRAME_WAIT_INFO),
@@ -103,14 +104,19 @@ public class XrRenderer {
             }
             layers.flip();
 
-            instance.check(XR10.xrEndFrame(
+            int result = XR10.xrEndFrame(
                     session.handle,
                     XrFrameEndInfo.calloc(stack)
                             .type(XR10.XR_TYPE_FRAME_END_INFO)
                             .displayTime(frameState.predictedDisplayTime())
                             .environmentBlendMode(XR10.XR_ENVIRONMENT_BLEND_MODE_OPAQUE)
                             .layers(layers)
-            ), "xrEndFrame");
+            );
+            if (result != XR10.XR_ERROR_TIME_INVALID) {
+                instance.check(result, "xrEndFrame");
+            } else {
+                LOGGER.warn("Rendering frame took too long! (probably)");
+            }
         }
     }
 

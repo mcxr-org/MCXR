@@ -238,11 +238,14 @@ public class OpenXRSession implements AutoCloseable {
     public void setPosesFromSpace(XrSpace handSpace, long time, ControllerPoses result, float scale) {
         try (var stack = stackPush()) {
             XrSpaceLocation space_location = XrSpaceLocation.calloc(stack).type(XR10.XR_TYPE_SPACE_LOCATION);
-            instance.check(XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location), "xrLocateSpace");
-            if ((space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
-                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
+            var res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+            if (res != XR10.XR_ERROR_TIME_INVALID) {
+                instance.check(res, "xrLocateSpace");
+                if ((space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
+                        (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
 
-                result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn, scale);
+                    result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn, scale);
+                }
             }
         }
     }

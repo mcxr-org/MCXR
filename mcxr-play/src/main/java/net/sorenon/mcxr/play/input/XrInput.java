@@ -161,6 +161,31 @@ public final class XrInput {
                 actionSet.hotbarActivated = true;
             }
         }
+        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+            if (Minecraft.getInstance().player != null)
+                Minecraft.getInstance().player.getInventory().swapPaint(1);
+        }
+        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+            if (Minecraft.getInstance().player != null)
+                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+        }
+        if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {
+            MCXRPlayClient.yawTurn += Math.toRadians(22);
+            var scale = MCXRPlayClient.getCameraScale();
+            Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f()).mul(scale);
+            Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos());
+
+            MCXRPlayClient.xrOffset = wantedPos.sub(newPos).mul(1, 0, 1);
+        }
+        if (actionSet.turnRight.currentState && actionSet.turnRight.changedSinceLastSync) {
+            MCXRPlayClient.yawTurn -= Math.toRadians(22);
+            var scale = MCXRPlayClient.getCameraScale();
+            Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.yawTurn).transform(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos(), new Vector3f()).mul(scale);
+            Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos());
+
+            MCXRPlayClient.xrOffset = wantedPos.sub(newPos).mul(1, 0, 1);
+        }
+
         if (actionSet.inventory.changedSinceLastSync) {
             if (!actionSet.inventory.currentState) {
                 Minecraft client = Minecraft.getInstance();

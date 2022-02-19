@@ -81,5 +81,16 @@ public class GuiActionSet extends ActionSet {
                     )
             );
         }
+        if (MCXRPlayClient.OPEN_XR.instance.handle.getCapabilities().XR_HTC_vive_cosmos_controller_interaction) {
+            map.computeIfAbsent("/interaction_profiles/htc/vive_cosmos_controller", aLong -> new ArrayList<>()).addAll(
+                    List.of(
+                            new Pair<>(pickup, "/user/hand/right/input/a/click"),
+                            new Pair<>(split, "/user/hand/right/input/b/click"),
+                            new Pair<>(quickMove, "/user/hand/left/input/x/click"),
+                            new Pair<>(exit, "/user/hand/left/input/y/click"),
+                            new Pair<>(scroll, "/user/hand/right/input/thumbstick")
+                    )
+            );
+        }
     }
 }

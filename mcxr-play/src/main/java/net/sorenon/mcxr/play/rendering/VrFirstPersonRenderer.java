@@ -24,12 +24,16 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
@@ -48,6 +52,7 @@ import org.lwjgl.opengl.GL11;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
 import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
 //TODO third person renderer
@@ -104,8 +109,6 @@ public class VrFirstPersonRenderer {
         ClientLevel world = context.world();
         assert consumers != null;
 
-        int light = getLight(camera, world);
-
         //Render gui
         if (FGM.position != null) {
             matrices.pushPose();
@@ -146,10 +149,41 @@ public class VrFirstPersonRenderer {
 
                 matrices.popPose();
             }
+
+            var hitResult = Minecraft.getInstance().hitResult;
+            if (hitResult != null && !FGM.isScreenOpen()) {
+                Vec3 camPos = context.camera().getPosition();
+                matrices.pushPose();
+
+                double x = hitResult.getLocation().x();
+                double y = hitResult.getLocation().y();
+                double z = hitResult.getLocation().z();
+                matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
+
+                if (hitResult.getType() == HitResult.Type.BLOCK) {
+                    matrices.mulPose(((BlockHitResult) hitResult).getDirection().getRotation());
+                } else {
+                    matrices.mulPose(camera.rotation());
+                    matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(90.0F));
+                }
+
+                matrices.scale(0.5f, 1, 0.5f);
+                RenderType SHADOW_LAYER = RenderType.entityCutoutNoCull(GUI_ICONS_LOCATION);
+                VertexConsumer vertexConsumer = context.consumers().getBuffer(SHADOW_LAYER);
+
+                PoseStack.Pose entry = matrices.last();
+
+                vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+
+                matrices.popPose();
+            }
         }
 
         if (camEntity instanceof LocalPlayer player && FGM.isScreenOpen()) {
-            renderHandsAndItems(player, light, matrices, consumers, context.tickDelta());
+            renderHandsAndItems(player, getLight(camera, world), matrices, consumers, context.tickDelta());
         }
 
         for (int hand = 0; hand < 2; hand++) {
@@ -170,13 +204,14 @@ public class VrFirstPersonRenderer {
 
             matrices.pushPose(); //2
             matrices.mulPose(
-                    JOMLUtil.convert(
+                    convert(
                             pose.getOrientation()
                                     .rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
                     )
             );
+            boolean debug = Minecraft.getInstance().options.renderDebug;
 
-            if (hand == MCXRPlayClient.mainHand && (MCXRCore.getCoreConfig().controllerRaytracing() || FGM.isScreenOpen())) {
+            if (hand == MCXRPlayClient.mainHand && (FGM.isScreenOpen() || debug)) {
                 Matrix4f model = matrices.last().pose();
                 Matrix3f normal = matrices.last().normal();
 
@@ -189,7 +224,6 @@ public class VrFirstPersonRenderer {
                 consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
             }
 
-            boolean debug = Minecraft.getInstance().options.renderDebug;
 
             if (debug) {
                 FartUtil.renderCrosshair(consumers, context.matrixStack(), 0.05f, false);
@@ -199,7 +233,7 @@ public class VrFirstPersonRenderer {
 
             if (debug) {
                 matrices.mulPose(
-                        JOMLUtil.convert(
+                        convert(
                                 pose.getOrientation()
                         )
                 );
@@ -309,7 +343,11 @@ public class VrFirstPersonRenderer {
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).uv(1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
     }
 
-    public void renderHandsAndItems(LocalPlayer player, int light, PoseStack matrices, MultiBufferSource consumers, float deltaTick) {
+    public void renderHandsAndItems(LocalPlayer player,
+                                    int light,
+                                    PoseStack matrices,
+                                    MultiBufferSource consumers,
+                                    float deltaTick) {
         //Render held items
         for (int hand = 0; hand < 2; hand++) {
             if (!XrInput.handsActionSet.grip.isActive[hand]) {

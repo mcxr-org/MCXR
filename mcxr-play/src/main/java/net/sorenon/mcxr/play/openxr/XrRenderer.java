@@ -26,8 +26,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL20C;
-import org.lwjgl.opengles.GLES32;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;

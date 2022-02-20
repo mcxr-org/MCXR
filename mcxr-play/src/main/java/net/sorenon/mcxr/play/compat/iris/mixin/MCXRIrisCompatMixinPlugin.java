@@ -38,11 +38,7 @@ public class MCXRIrisCompatMixinPlugin implements IMixinConfigPlugin {
         if (iris == null) {
             return null;
         }
-        if (iris.getMetadata().getVersion().getFriendlyString().equals("1.1.3")) {
-            return List.of("MixinCameraUniforms113");
-        } else {
-            return List.of("MixinCameraUniforms");
-        }
+        return List.of("MixinCameraUniforms");
     }
 
     @Override

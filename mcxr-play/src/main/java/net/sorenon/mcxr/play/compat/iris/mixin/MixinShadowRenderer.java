@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.compat.iris.mixin;
 
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.openxr.XrRenderer;
 import net.sorenon.mcxr.play.rendering.RenderPass;
@@ -23,5 +24,8 @@ public class MixinShadowRenderer {
         if (XR_RENDERER.renderPass != RenderPass.VANILLA && XR_RENDERER.eye != 0) {
             ci.cancel();
         }
+//        if (Minecraft.getInstance().options.keyShift.isDown()) {
+//            ci.cancel();
+//        }
     }
 }

@@ -9,6 +9,9 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glGenTextures;
+import static org.lwjgl.opengl.GL43.glTextureView;
 import static org.lwjgl.system.MemoryStack.stackInts;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
@@ -18,31 +21,53 @@ public class OpenXRSwapchain implements AutoCloseable {
     public final OpenXRSession session;
     public int width;
     public int height;
-    public XrSwapchainImageOpenGLKHR.Buffer images;
     public XrFramebuffer innerFramebuffer;
     public TextureTarget framebuffer;
+    public final int format;
 
-    public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session) {
+    public int[] arrayImages;
+    public int[] leftImages;
+    public int[] rightImages;
+
+    //TODO make two swapchains path for GL4ES compat
+
+    public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session, int format) {
         this.handle = handle;
         this.session = session;
         this.instance = session.instance;
+        this.format = format;
     }
 
     public void createImages() {
-        try (MemoryStack ignored = stackPush()) {
+        try (MemoryStack stack = stackPush()) {
             IntBuffer intBuf = stackInts(0);
 
             instance.check(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
 
             int imageCount = intBuf.get(0);
-            XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.create(imageCount);
+            XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.calloc(imageCount, stack);
             for (XrSwapchainImageOpenGLKHR image : swapchainImageBuffer) {
                 image.type(KHROpenglEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
             }
 
             instance.check(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
 
-            images = swapchainImageBuffer;
+            this.arrayImages = new int[imageCount];
+            this.leftImages = new int[imageCount];
+            this.rightImages = new int[imageCount];
+
+            for (int i = 0; i < imageCount; i++) {
+                var openxrImage = swapchainImageBuffer.get(i);
+                arrayImages[i] = openxrImage.image();
+                int[] textures = new int[2];
+                glGenTextures(textures);
+
+                glTextureView(textures[0], GL_TEXTURE_2D, arrayImages[i], this.format, 0, 1, 0, 1);
+                glTextureView(textures[1], GL_TEXTURE_2D, arrayImages[i], this.format, 0, 1, 1, 1);
+                leftImages[i] = textures[0];
+                rightImages[i] = textures[1];
+            }
+
             innerFramebuffer = new XrFramebuffer(width, height);
             innerFramebuffer.setClearColor(sRGBToLinear(239 / 255f), sRGBToLinear(50 / 255f), sRGBToLinear(61 / 255f), 255 / 255f);
 
@@ -62,9 +87,6 @@ public class OpenXRSwapchain implements AutoCloseable {
     @Override
     public void close() {
         XR10.xrDestroySwapchain(handle);
-        if (images != null) {
-            images.close();
-        }
         if (framebuffer != null) {
             RenderSystem.recordRenderCall(() -> {
                 innerFramebuffer.destroyBuffers();

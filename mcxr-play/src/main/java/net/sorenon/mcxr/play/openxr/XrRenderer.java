@@ -204,41 +204,46 @@ public class XrRenderer {
 
         RenderPass.World worldRenderPass = RenderPass.World.create();
 
+        OpenXRSwapchain swapchain = session.swapchain;
+        instance.check(XR10.xrAcquireSwapchainImage(
+                swapchain.handle,
+                XrSwapchainImageAcquireInfo.calloc(stack).type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
+                intBuf
+        ), "xrAcquireSwapchainImage");
+        instance.check(XR10.xrWaitSwapchainImage(swapchain.handle,
+                XrSwapchainImageWaitInfo.calloc(stack)
+                        .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO)
+                        .timeout(XR10.XR_INFINITE_DURATION)
+        ), "xrWaitSwapchainImage");
+
         // Render view to the appropriate part of the swapchain image.
         for (int viewIndex = 0; viewIndex < viewCountOutput; viewIndex++) {
             this.eye = viewIndex;
 
             // Each view has a separate swapchain which is acquired, rendered to, and released.
-            OpenXRSwapchain viewSwapchain = session.swapchains[viewIndex];
-
-            instance.check(XR10.xrAcquireSwapchainImage(
-                    viewSwapchain.handle,
-                    XrSwapchainImageAcquireInfo.calloc(stack).type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
-                    intBuf
-            ), "xrAcquireSwapchainImage");
 
             int swapchainImageIndex = intBuf.get(0);
-
-            instance.check(XR10.xrWaitSwapchainImage(viewSwapchain.handle,
-                    XrSwapchainImageWaitInfo.calloc(stack)
-                            .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO)
-                            .timeout(XR10.XR_INFINITE_DURATION)
-            ), "xrWaitSwapchainImage");
 
             var subImage = projectionLayerViews.get(viewIndex)
                     .type(XR10.XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW)
                     .pose(session.views.get(viewIndex).pose())
                     .fov(session.views.get(viewIndex).fov())
                     .subImage();
-            subImage.swapchain(viewSwapchain.handle);
+            subImage.swapchain(swapchain.handle);
             subImage.imageRect().offset().set(0, 0);
-            subImage.imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
+            subImage.imageRect().extent().set(swapchain.width, swapchain.height);
+            subImage.imageArrayIndex(viewIndex);
 
             {
-                XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
-                viewSwapchain.innerFramebuffer.unbindWrite();
-                MCXRMainTarget.setXrFramebuffer(viewSwapchain.framebuffer);
+                int swapchainImage;
+                if (viewIndex == 0) {
+                    swapchainImage = swapchain.leftImages[swapchainImageIndex];
+                } else {
+                    swapchainImage = swapchain.rightImages[swapchainImageIndex];
+                }
+                swapchain.innerFramebuffer.setColorAttachment(swapchainImage);
+                swapchain.innerFramebuffer.unbindWrite();
+                MCXRMainTarget.setXrFramebuffer(swapchain.framebuffer);
                 worldRenderPass.fov = session.views.get(viewIndex).fov();
                 worldRenderPass.eyePoses.updatePhysicalPose(session.views.get(viewIndex).pose(), MCXRPlayClient.yawTurn, scalePreTick);
                 worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin);
@@ -247,26 +252,27 @@ public class XrRenderer {
                 clientExt.doRender(true, frameStartTime, worldRenderPass);
             }
 
-            viewSwapchain.innerFramebuffer.bindWrite(true);
-            this.blitShader.setSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorTextureId());
+            swapchain.innerFramebuffer.bindWrite(true);
+            this.blitShader.setSampler("DiffuseSampler", swapchain.framebuffer.getColorTextureId());
             Uniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
             if (inverseScreenSize != null) {
-                inverseScreenSize.set(1f / viewSwapchain.innerFramebuffer.width, 1f / viewSwapchain.innerFramebuffer.height);
+                inverseScreenSize.set(1f / swapchain.innerFramebuffer.width, 1f / swapchain.innerFramebuffer.height);
             }
-            viewSwapchain.framebuffer.setFilterMode(GlConst.GL_LINEAR);
-            this.blit(viewSwapchain.innerFramebuffer, blitShader);
-            viewSwapchain.innerFramebuffer.unbindWrite();
+            swapchain.framebuffer.setFilterMode(GlConst.GL_LINEAR);
+            this.blit(swapchain.innerFramebuffer, blitShader);
+            swapchain.innerFramebuffer.unbindWrite();
 
             if (viewIndex == viewCountOutput - 1) {
-                blitToBackbuffer(viewSwapchain.framebuffer);
+                blitToBackbuffer(swapchain.framebuffer);
             }
-
-            instance.check(XR10.xrReleaseSwapchainImage(
-                    viewSwapchain.handle,
-                    XrSwapchainImageReleaseInfo.calloc(stack)
-                            .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
-            ), "xrReleaseSwapchainImage");
         }
+
+        instance.check(XR10.xrReleaseSwapchainImage(
+                swapchain.handle,
+                XrSwapchainImageReleaseInfo.calloc(stack)
+                        .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
+        ), "xrReleaseSwapchainImage");
+
         this.eye = -1;
         MCXRMainTarget.resetFramebuffer();
         camera.setPose(MCXRPlayClient.viewSpacePoses.getGamePose());
@@ -336,7 +342,7 @@ public class XrRenderer {
 
         var projectionLayerViews = XrCompositionLayerProjectionView.calloc(viewCountOutput);
 
-        OpenXRSwapchain viewSwapchain = session.swapchains[0];
+        OpenXRSwapchain viewSwapchain = session.swapchain;
         instance.check(XR10.xrAcquireSwapchainImage(
                 viewSwapchain.handle,
                 XrSwapchainImageAcquireInfo.calloc(stack).type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
@@ -359,10 +365,11 @@ public class XrRenderer {
             projectionLayerView.subImage().swapchain(viewSwapchain.handle);
             projectionLayerView.subImage().imageRect().offset().set(0, 0);
             projectionLayerView.subImage().imageRect().extent().set(viewSwapchain.width, viewSwapchain.height);
+            projectionLayerView.subImage().imageArrayIndex(0);
         }
 
-        XrSwapchainImageOpenGLKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-        viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
+        int swapchainImage = viewSwapchain.leftImages[swapchainImageIndex];
+        viewSwapchain.innerFramebuffer.setColorAttachment(swapchainImage);
         viewSwapchain.innerFramebuffer.clear(Minecraft.ON_OSX);
 
         instance.check(XR10.xrReleaseSwapchainImage(
@@ -457,10 +464,10 @@ public class XrRenderer {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferBuilder.vertex(0.0, height, 0.0).uv(0.0F, v).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width, height, 0.0).uv(1, v).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width, 0.0, 0.0).uv(1, 1 - v).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, 1 - v).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(0.0, height, 0.0).uv(0.0F, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width, height, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width, 0.0, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, 1.0F).color(255, 255, 255, 255).endVertex();
         bufferBuilder.end();
         BufferUploader._endInternal(bufferBuilder);
         shader.clear();

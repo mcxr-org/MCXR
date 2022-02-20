@@ -38,8 +38,7 @@ public class OpenXRSession implements AutoCloseable {
 
     public long glColorFormat;
     public XrView.Buffer views;
-    //TODO move to a texture array swapchain
-    public OpenXRSwapchain[] swapchains;
+    public OpenXRSwapchain swapchain;
 
     public int state;
     public boolean running;
@@ -130,33 +129,29 @@ public class OpenXRSession implements AutoCloseable {
                 throw new XrException(XR10.XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED, "No compatible swapchain / framebuffer format available: " + formats);
             }
 
-            swapchains = new OpenXRSwapchain[viewCountNumber];
-            for (int i = 0; i < viewCountNumber; i++) {
-                XrViewConfigurationView viewConfig = viewConfigs.get(i);
-                XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
+            XrViewConfigurationView viewConfig = viewConfigs.get(0);
+            XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
 
-                swapchainCreateInfo.set(
-                        XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
-                        NULL,
-                        0,
-                        /*XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | */XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
-                        glColorFormat,
-                        1,
-                        viewConfig.recommendedImageRectWidth(),
-                        viewConfig.recommendedImageRectHeight(),
-                        1,
-                        1,
-                        1
-                );
+            swapchainCreateInfo.set(
+                    XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
+                    NULL,
+                    0,
+                    XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
+                    glColorFormat,
+                    1,
+                    viewConfig.recommendedImageRectWidth(),
+                    viewConfig.recommendedImageRectHeight(),
+                    1,
+                    viewCountNumber,
+                    1
+            );
 
-                PointerBuffer pp = stack.mallocPointer(1);
-                instance.check(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, pp), "xrCreateSwapchain");
-                OpenXRSwapchain swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this);
-                swapchain.width = swapchainCreateInfo.width();
-                swapchain.height = swapchainCreateInfo.height();
-                swapchain.createImages();
-                swapchains[i] = swapchain;
-            }
+            PointerBuffer pp = stack.mallocPointer(1);
+            instance.check(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, pp), "xrCreateSwapchain");
+            swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this, (int) glColorFormat);
+            swapchain.width = swapchainCreateInfo.width();
+            swapchain.height = swapchainCreateInfo.height();
+            swapchain.createImages();
         }
     }
 
@@ -252,12 +247,8 @@ public class OpenXRSession implements AutoCloseable {
 
     @Override
     public void close() {
-        if (swapchains != null) {
-            for (var swapchain : swapchains) {
-                if (swapchain != null) {
-                    swapchain.close();
-                }
-            }
+        if (swapchain != null) {
+            swapchain.close();
         }
         if (views != null) {
             views.close();

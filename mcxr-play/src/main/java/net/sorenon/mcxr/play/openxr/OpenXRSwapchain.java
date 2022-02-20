@@ -19,26 +19,28 @@ public class OpenXRSwapchain implements AutoCloseable {
     public final XrSwapchain handle;
     public final OpenXRInstance instance;
     public final OpenXRSession session;
-    public int width;
-    public int height;
-    public XrFramebuffer innerFramebuffer;
-    public TextureTarget framebuffer;
+
+    public final int width;
+    public final int height;
     public final int format;
 
-    public int[] arrayImages;
-    public int[] leftImages;
-    public int[] rightImages;
+    public final int[] arrayImages;
+    public final int[] leftImages;
+    public final int[] rightImages;
+
+    public XrFramebuffer innerFramebuffer;
+    public TextureTarget framebuffer;
 
     //TODO make two swapchains path for GL4ES compat
 
-    public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session, int format) {
+    public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session, int format, int width, int height) {
         this.handle = handle;
         this.session = session;
         this.instance = session.instance;
         this.format = format;
-    }
+        this.width = width;
+        this.height = height;
 
-    public void createImages() {
         try (MemoryStack stack = stackPush()) {
             IntBuffer intBuf = stackInts(0);
 

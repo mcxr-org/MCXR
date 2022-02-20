@@ -89,8 +89,8 @@ public class OpenXRSession implements AutoCloseable {
                     OpenXR.bufferHeap(viewCountNumber, XrView.SIZEOF, XR10.XR_TYPE_VIEW)
             );
 
-            if (viewCountNumber == 0) {
-                return;
+            if (viewCountNumber != 2) {
+                throw new XrRuntimeException("Tried to create swapchain from " + viewCountNumber + " views");
             }
             instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
@@ -142,16 +142,13 @@ public class OpenXRSession implements AutoCloseable {
                     viewConfig.recommendedImageRectWidth(),
                     viewConfig.recommendedImageRectHeight(),
                     1,
-                    viewCountNumber,
+                    2,
                     1
             );
 
             PointerBuffer pp = stack.mallocPointer(1);
             instance.check(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, pp), "xrCreateSwapchain");
-            swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this, (int) glColorFormat);
-            swapchain.width = swapchainCreateInfo.width();
-            swapchain.height = swapchainCreateInfo.height();
-            swapchain.createImages();
+            swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this, (int) glColorFormat, swapchainCreateInfo.width(), swapchainCreateInfo.height());
         }
     }
 

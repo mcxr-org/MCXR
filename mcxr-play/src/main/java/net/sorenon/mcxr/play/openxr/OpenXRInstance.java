@@ -1,7 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.input.ControllerPoses;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;

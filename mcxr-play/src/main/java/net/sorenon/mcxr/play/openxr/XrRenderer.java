@@ -234,10 +234,6 @@ public class XrRenderer {
 
             {
                 XrSwapchainImageOpenGLESKHR xrSwapchainImageOpenGLKHR = viewSwapchain.images.get(swapchainImageIndex);
-                GlStateManager._bindTexture(xrSwapchainImageOpenGLKHR.image());
-                GlStateManager._texParameter(3553, 10242, 33071);
-                GlStateManager._texParameter(3553, 10243, 33071);
-                GlStateManager._texImage2D(3553, 0, 6402, viewSwapchain.width, viewSwapchain.height, 0, 6402, 5126, null);
                 viewSwapchain.innerFramebuffer.setColorAttachment(xrSwapchainImageOpenGLKHR.image());
                 viewSwapchain.innerFramebuffer.unbindWrite();
                 MCXRMainTarget.setXrFramebuffer(viewSwapchain.framebuffer);
@@ -251,6 +247,7 @@ public class XrRenderer {
 
             viewSwapchain.innerFramebuffer.bindWrite(true);
             this.blitShader.setSampler("DiffuseSampler", viewSwapchain.framebuffer.getColorTextureId());
+            viewSwapchain.framebuffer.setFilterMode(GlConst.GL_LINEAR);
             this.blit(viewSwapchain.innerFramebuffer, blitShader);
             viewSwapchain.innerFramebuffer.unbindWrite();
 
@@ -404,10 +401,11 @@ public class XrRenderer {
         float v = (float) framebuffer.viewHeight / (float) framebuffer.height;
         Tesselator tessellator = RenderSystem.renderThreadTesselator();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferBuilder.vertex(0.0, height * 2, 0.0).uv(0.0F, 1 - v * 2).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width * 2, 0.0, 0.0).uv(u * 2, 1).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, 1).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferBuilder.vertex(0.0, height, 0.0).uv(0.0F, 0.0F).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width, height, 0.0).uv(u, 0.0F).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width, 0.0, 0.0).uv(u, v).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, v).color(255, 255, 255, 255).endVertex();
         bufferBuilder.end();
         BufferUploader._endInternal(bufferBuilder);
         shader.clear();

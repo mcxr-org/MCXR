@@ -7,4 +7,5 @@ public class MCXRNativeLoad {
 
     public static native long getJVMPtr();
     public static native long getApplicationActivityPtr();
+    public static native void renderImage(int colorAttachment);
 }

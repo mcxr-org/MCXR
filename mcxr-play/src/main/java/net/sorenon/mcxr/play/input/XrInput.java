@@ -61,12 +61,6 @@ public final class XrInput {
         vanillaGameplayActionSet.getDefaultBindings(defaultBindings);
         guiActionSet.getDefaultBindings(defaultBindings);
 
-        for (var action : handsActionSet.actions()) {
-            if (action instanceof SessionAwareAction sessionAwareAction) {
-                sessionAwareAction.createHandleSession(session);
-            }
-        }
-
         try (var stack = stackPush()) {
             for (var entry : defaultBindings.entrySet()) {
                 var bindingsSet = entry.getValue();
@@ -106,6 +100,12 @@ public final class XrInput {
             );
             // Attach the action set we just made to the session
             instance.check(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
+
+            for (var action : handsActionSet.actions()) {
+                if (action instanceof SessionAwareAction sessionAwareAction) {
+                    sessionAwareAction.createHandleSession(session);
+                }
+            }
         }
     }
 
@@ -176,6 +176,9 @@ public final class XrInput {
             Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos());
 
             MCXRPlayClient.xrOffset = wantedPos.sub(newPos).mul(1, 0, 1);
+        }
+        if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
+            Minecraft.getInstance().pauseGame(false);
         }
         if (actionSet.turnRight.currentState && actionSet.turnRight.changedSinceLastSync) {
             MCXRPlayClient.yawTurn -= Math.toRadians(22);

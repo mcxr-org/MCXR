@@ -20,7 +20,6 @@ import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import org.lwjgl.egl.EGL;
 import org.lwjgl.openxr.XR;
 import virtuoel.pehkui.util.ScaleUtils;
 

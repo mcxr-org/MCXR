@@ -114,7 +114,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(inventory, "/user/hand/right/input/trackpad/click")
                 )
         );
-        if (MCXRPlayClient.OPEN_XR.instance.handle.getCapabilities().XR_EXT_hp_mixed_reality_controller) {
+        if (MCXRPlayClient.OPEN_XR_STATE.instance.handle.getCapabilities().XR_EXT_hp_mixed_reality_controller) {
             map.computeIfAbsent("/interaction_profiles/hp/mixed_reality_controller", aLong -> new ArrayList<>()).addAll(
                     List.of(
                             new Pair<>(use, "/user/hand/left/input/trigger/value"),

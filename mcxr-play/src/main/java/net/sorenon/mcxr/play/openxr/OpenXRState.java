@@ -11,8 +11,6 @@ import org.lwjgl.system.MemoryStack;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -20,8 +18,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 /**
  * This class is where most of the OpenXR stuff happens
  */
-public class OpenXR {
-
+public class OpenXRState {
     public OpenXRInstance instance;
     public OpenXRSession session;
 
@@ -29,7 +26,7 @@ public class OpenXR {
 
     public static Logger LOGGER = LogManager.getLogger("MCXR");
 
-    public static final XrPosef identityPose = XrPosef.malloc().set(
+    public static final XrPosef POSE_IDENTITY = XrPosef.malloc().set(
             XrQuaternionf.malloc().set(0, 0, 0, 1),
             XrVector3f.calloc()
     );
@@ -60,17 +57,18 @@ public class OpenXR {
     }
 
     public void tryInitialize() {
+        if (session != null) session.close();
         if (instance != null) instance.close();
         instance = null;
-        MCXRPlayClient.OPEN_XR.session = null;
+        session = null;
 
         try {
             instance = createOpenXRInstance();
-            session = instance.createSession(XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, instance.getSystem(XR10.XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY));
+            session = instance.createSession(instance.getSystem(XR10.XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY));
             session.createXRReferenceSpaces();
-            session.createSwapchains();
+            session.createSwapchain();
             XrInput.trySetSession(session);
-            MCXRPlayClient.RENDERER.setSession(session);
+            MCXRPlayClient.MCXR_GAME_RENDERER.setSession(session);
         } catch (Exception e) {
             LOGGER.error("Exception caught while initializing OpenXR", e);
             if (e instanceof XrException xrException) {
@@ -78,7 +76,7 @@ public class OpenXR {
             }
             if (instance != null) instance.close();
             instance = null;
-            MCXRPlayClient.OPEN_XR.session = null;
+            MCXRPlayClient.OPEN_XR_STATE.session = null;
         }
     }
 
@@ -159,8 +157,8 @@ public class OpenXR {
 
         if (session.running) {
             session.pollActions();
-            MCXRPlayClient.RENDERER.renderFrame();
-            return !MCXRPlayClient.RENDERER.isXrMode();
+            MCXRPlayClient.MCXR_GAME_RENDERER.renderFrame();
+            return !MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode();
         }
         return true;
     }

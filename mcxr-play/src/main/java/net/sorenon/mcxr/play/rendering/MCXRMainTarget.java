@@ -20,7 +20,7 @@ public class MCXRMainTarget extends MainTarget {
     public static final Logger LOGGER = Logger.getLogger("MCXR");
 
     //The framebuffer used for rendering to the window
-    public final MainTarget windowFramebuffer;
+    public final MainTarget minecraftMainRenderTarget;
 
     //The framebuffer that is affected by draw calls
     private RenderTarget currentFramebuffer;
@@ -31,8 +31,8 @@ public class MCXRMainTarget extends MainTarget {
 
     public MCXRMainTarget(int width, int height) {
         super(width, height);
-        windowFramebuffer = new MainTarget(width, height);
-        setFramebuffer(windowFramebuffer);
+        minecraftMainRenderTarget = new MainTarget(width, height);
+        setFramebuffer(minecraftMainRenderTarget);
         gameWidth = width;
         gameHeight = height;
     }
@@ -68,29 +68,29 @@ public class MCXRMainTarget extends MainTarget {
     }
 
     public void resetFramebuffer() {
-        setFramebuffer(windowFramebuffer);
+        setFramebuffer(minecraftMainRenderTarget);
     }
 
     public RenderTarget getFramebuffer() {
         return currentFramebuffer;
     }
 
-    public RenderTarget getWindowFramebuffer() {
-        return windowFramebuffer;
+    public RenderTarget getMinecraftMainRenderTarget() {
+        return minecraftMainRenderTarget;
     }
 
     public boolean isCustomFramebuffer() {
-        return currentFramebuffer != windowFramebuffer;
+        return currentFramebuffer != minecraftMainRenderTarget;
     }
 
     public void resize(int width, int height, boolean getError) {
-        if (windowFramebuffer != null) {
-            windowFramebuffer.resize(width, height, getError);
+        if (minecraftMainRenderTarget != null) {
+            minecraftMainRenderTarget.resize(width, height, getError);
         }
     }
 
     public void destroyBuffers() {
-        windowFramebuffer.destroyBuffers();
+        minecraftMainRenderTarget.destroyBuffers();
     }
 
     public void copyDepthFrom(RenderTarget framebuffer) {

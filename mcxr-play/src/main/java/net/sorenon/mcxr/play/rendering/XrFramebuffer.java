@@ -13,39 +13,24 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL30.*;
 
-/*
-The framebuffer class is most likely the largest cause of compatibility issues between rendering mods and the game itself.
-This is due to Minecraft and these mods expecting the framebuffer to be the same size between frames (excluding after a resize)
-they are designed with a constantly sized framebuffer in mind despite the fact that in an XR environment the size of the
-framebuffer can change between draws in the same frame
-
-These are the methods that i can think of to deal with this:
-1. Redesign each mod to be able to handle multiple sizes of framebuffer
-2. Assume all swapchain images are the same size
-3. Resize the framebuffer between draws if needed
-4. Don't do anything and let the world burn
-5. Allocate each framebuffer according to the largest swapchain image and then just change
-the size of the viewport rather than the size of the framebuffer
-
-And my thoughts on each:
-1. God no
-2. Easiest solution and works well with iris
-3. Also an easy solution and only effects a small demographic of players
-4. Eh maybe
-5. Difficult but could work
-
-Method 3 has been implemented
-If method 3 has too great of a performance issue (which i doubt) i will look at method 5
- */
-
-/**
- * XrFramebuffer is a framebuffer which accepts a color texture for rendering to rather than creating its own
- * TODO accept depth textures as well
- */
 public class XrFramebuffer extends TextureTarget {
 
-    public XrFramebuffer(int width, int height) {
+    public XrFramebuffer(int width, int height, int color) {
         super(width, height, true, Minecraft.ON_OSX);
+
+        ((FramebufferAcc) this).colorAttachment(color);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBufferId);
+        GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+
+        this.setClearColor(sRGBToLinear(239 / 255f), sRGBToLinear(50 / 255f), sRGBToLinear(61 / 255f), 255 / 255f);
+    }
+
+    private float sRGBToLinear(float f) {
+        if (f < 0.04045f) {
+            return f / 12.92f;
+        } else {
+            return (float) Math.pow((f + 0.055f) / 1.055f, 2.4f);
+        }
     }
 
     @Override
@@ -87,11 +72,5 @@ public class XrFramebuffer extends TextureTarget {
         } else {
             throw new IllegalArgumentException("Window " + width + "x" + height + " size out of bounds (max. size: " + i + ")");
         }
-    }
-
-    public void setColorAttachment(int colorAttachment) {
-        ((FramebufferAcc) this).colorAttachment(colorAttachment);
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBufferId);
-        GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment, 0);
     }
 }

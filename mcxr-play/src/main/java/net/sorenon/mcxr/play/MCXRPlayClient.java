@@ -11,12 +11,10 @@ import net.minecraft.world.entity.Entity;
 import net.sorenon.fart.FartRenderEvents;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
-import net.sorenon.mcxr.play.openxr.OpenXR;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
+import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -25,10 +23,8 @@ import virtuoel.pehkui.util.ScaleUtils;
 
 public class MCXRPlayClient implements ClientModInitializer {
 
-    private static final Logger LOGGER = LogManager.getLogger("MCXR");
-
-    public static final OpenXR OPEN_XR = new OpenXR();
-    public static final XrRenderer RENDERER = new XrRenderer();
+    public static final OpenXRState OPEN_XR_STATE = new OpenXRState();
+    public static final MCXRGameRenderer MCXR_GAME_RENDERER = new MCXRGameRenderer();
 
     public static MCXRPlayClient INSTANCE;
     public FlatGuiManager flatGuiManager = new FlatGuiManager();
@@ -69,8 +65,10 @@ public class MCXRPlayClient implements ClientModInitializer {
     public void onInitializeClient() {
         INSTANCE = this;
         XR.create("openxr_loader");
+        MCXR_GAME_RENDERER.initialize(Minecraft.getInstance());
+
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            if (RENDERER.renderPass instanceof RenderPass.World) {
+            if (MCXR_GAME_RENDERER.renderPass instanceof RenderPass.World) {
                 if (!Minecraft.getInstance().options.hideGui && !flatGuiManager.isScreenOpen()) {
                     Camera camera = context.camera();
                     if (camera.getEntity() instanceof LocalPlayer player) {
@@ -87,7 +85,7 @@ public class MCXRPlayClient implements ClientModInitializer {
         });
 
         FartRenderEvents.LAST.register(context -> {
-            if (RENDERER.renderPass instanceof RenderPass.World) {
+            if (MCXR_GAME_RENDERER.renderPass instanceof RenderPass.World) {
                 vrFirstPersonRenderer.renderFirstPerson(context);
             }
         });

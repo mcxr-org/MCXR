@@ -6,14 +6,11 @@ import com.mojang.math.Quaternion;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.ItemInHandRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
-import net.sorenon.mcxr.play.rendering.XrCamera;
+import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.accessor.Matrix4fExt;
 import org.objectweb.asm.Opcodes;
@@ -31,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class GameRendererMixin {
 
     @Unique
-    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+    private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
     @Shadow
     @Final
@@ -48,7 +45,7 @@ public abstract class GameRendererMixin {
      */
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/Camera"))
     Camera createCamera() {
-        return new XrCamera();
+        return new MCXRCamera();
     }
 
 //    @Redirect(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))
@@ -96,7 +93,7 @@ public abstract class GameRendererMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lcom/mojang/math/Quaternion;)V", ordinal = 3), method = "renderLevel")
     void multiplyYaw(PoseStack matrixStack, Quaternion yawQuat) {
-        matrixStack.mulPose(((XrCamera) mainCamera).getRawRotationInverted());
+        matrixStack.mulPose(((MCXRCamera) mainCamera).getRawRotationInverted());
     }
 
     /**

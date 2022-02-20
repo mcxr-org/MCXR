@@ -22,11 +22,11 @@ public class VrKeyboardInputMixin extends Input {
         this.forwardImpulse = thumbstick.y();
         this.leftImpulse = -thumbstick.x();
 
-        this.up = thumbstick.y() > 0;
-        this.down = thumbstick.y() < 0;
-        this.right = thumbstick.x() > 0;
-        this.left = thumbstick.y() < 0;
+        this.up |= thumbstick.y() > 0;
+        this.down |= thumbstick.y() < 0;
+        this.right |= thumbstick.x() > 0;
+        this.left |= thumbstick.y() < 0;
 
-        this.jumping = XrInput.vanillaGameplayActionSet.jump.currentState;
+        this.jumping |= XrInput.vanillaGameplayActionSet.jump.currentState;
     }
 }

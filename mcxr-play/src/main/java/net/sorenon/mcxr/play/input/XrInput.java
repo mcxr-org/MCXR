@@ -19,7 +19,6 @@ import net.sorenon.mcxr.play.openxr.XrException;
 import net.sorenon.mcxr.play.openxr.XrRuntimeException;
 import org.joml.Quaterniond;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -27,12 +26,10 @@ import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrActionSuggestedBinding;
 import org.lwjgl.openxr.XrInteractionProfileSuggestedBinding;
 import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
-import org.lwjgl.system.MemoryStack;
 import oshi.util.tuples.Pair;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -89,7 +86,7 @@ public final class XrInput {
                 );
 
                 try {
-                    instance.check(XR10.xrSuggestInteractionProfileBindings(instance.handle, suggested_binds), "xrSuggestInteractionProfileBindings");
+                    instance.checkPanic(XR10.xrSuggestInteractionProfileBindings(instance.handle, suggested_binds), "xrSuggestInteractionProfileBindings");
                 } catch (XrRuntimeException e) {
                     StringBuilder out = new StringBuilder(e.getMessage() + "\ninteractionProfile: " + entry.getKey());
                     for (var pair : bindingsSet) {
@@ -105,7 +102,7 @@ public final class XrInput {
                     stackPointers(vanillaGameplayActionSet.getHandle().address(), guiActionSet.getHandle().address(), handsActionSet.getHandle().address())
             );
             // Attach the action set we just made to the session
-            instance.check(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
+            instance.checkPanic(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
         }
     }
 

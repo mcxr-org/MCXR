@@ -69,6 +69,6 @@ public class GameRendererMixin {
 
     @Unique
     private boolean enabled() {
-        return MCXRCore.getCoreConfig().controllerRaytracing() && MCXRPlayClient.RENDERER.isXrMode();
+        return MCXRCore.getCoreConfig().controllerRaytracing() && MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode();
     }
 }

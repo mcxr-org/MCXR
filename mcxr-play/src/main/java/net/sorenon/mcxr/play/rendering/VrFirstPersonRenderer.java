@@ -44,7 +44,7 @@ import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
@@ -58,7 +58,7 @@ import static net.sorenon.mcxr.core.JOMLUtil.convert;
 //TODO third person renderer
 public class VrFirstPersonRenderer {
 
-    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+    private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
     private final FlatGuiManager FGM;
 

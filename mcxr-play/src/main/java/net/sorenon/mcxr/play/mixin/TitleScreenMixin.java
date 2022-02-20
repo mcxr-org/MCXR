@@ -13,7 +13,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.openxr.OpenXR;
+import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
 import org.apache.commons.lang3.text.WordUtils;
@@ -52,14 +52,14 @@ public abstract class TitleScreenMixin extends Screen {
                 90,
                 20,
                 new TranslatableComponent("mcxr.menu.reload"),
-                button -> MCXRPlayClient.OPEN_XR.tryInitialize()));
+                button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/gui/screens/TitleScreen;drawString(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))
     void render(PoseStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if (!initialized) {
-            if (MCXRPlayClient.OPEN_XR.session == null) {
-                MCXRPlayClient.OPEN_XR.tryInitialize();
+            if (MCXRPlayClient.OPEN_XR_STATE.session == null) {
+                MCXRPlayClient.OPEN_XR_STATE.tryInitialize();
             }
             initialized = true;
         }
@@ -69,7 +69,7 @@ public abstract class TitleScreenMixin extends Screen {
         int y = this.height / 4 + 48;
         int x = this.width / 2 + 104;
 
-        OpenXR OPEN_XR = MCXRPlayClient.OPEN_XR;
+        OpenXRState OPEN_XR = MCXRPlayClient.OPEN_XR_STATE;
 
         if (!FabricLoader.getInstance().isModLoaded("modmenu")) {
             y += 12;

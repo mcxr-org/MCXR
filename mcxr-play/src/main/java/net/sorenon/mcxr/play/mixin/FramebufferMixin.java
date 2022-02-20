@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.mixin;
 
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
@@ -12,13 +13,12 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 @Mixin(RenderTarget.class)
 public class FramebufferMixin {
 
-    /**
-     * Increasing the bit depth of the diffuse target prevents banding in dark areas
-     * ATM this is only really fixable on VR headsets since they offer a higher bit depth
-     * than most consumer monitors
-     */
     @ModifyConstant(method = "createBuffers", constant = @Constant(intValue = GL_RGBA8))
-    int increaseColorBitDepth(int value) {
-        return GL_RGBA16;
+    int modifyColorDepth(int value) {
+        if (MCXRPlayClient.OPEN_XR_STATE.session != null && MCXRPlayClient.OPEN_XR_STATE.session.hdr) {
+            return GL_RGBA16;
+        } else {
+            return GL_RGBA8;
+        }
     }
 }

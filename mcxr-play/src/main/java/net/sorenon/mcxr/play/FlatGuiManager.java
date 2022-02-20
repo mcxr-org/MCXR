@@ -8,7 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.play.rendering.ExistingTexture;
-import net.sorenon.mcxr.play.rendering.XrCamera;
+import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 
@@ -83,7 +83,7 @@ public class FlatGuiManager {
     }
 
     public void resetTransform() {
-        XrCamera camera = (XrCamera) Minecraft.getInstance().gameRenderer.getMainCamera();
+        MCXRCamera camera = (MCXRCamera) Minecraft.getInstance().gameRenderer.getMainCamera();
         if (camera.isInitialized()) {
             orientation = JOMLUtil.convertd(camera.rotation());
             position = JOMLUtil.convert(MCXRPlayClient.viewSpacePoses.getUnscaledPhysicalPose().getPos().add(orientation.transform(new Vector3f(0, -0.5f, 1))));

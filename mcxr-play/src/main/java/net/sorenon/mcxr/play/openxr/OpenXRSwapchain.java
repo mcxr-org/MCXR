@@ -12,8 +12,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glGenTextures;
 import static org.lwjgl.opengl.GL43.glTextureView;
-import static org.lwjgl.system.MemoryStack.stackInts;
-import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.lwjgl.system.MemoryStack.*;
 
 public class OpenXRSwapchain implements AutoCloseable {
     public final XrSwapchain handle;
@@ -25,11 +24,10 @@ public class OpenXRSwapchain implements AutoCloseable {
     public final int format;
 
     public final int[] arrayImages;
-    public final int[] leftImages;
-    public final int[] rightImages;
+    public final XrFramebuffer[] leftFramebuffers;
+    public final XrFramebuffer[] rightFramebuffers;
 
-    public XrFramebuffer innerFramebuffer;
-    public TextureTarget framebuffer;
+    public TextureTarget renderTarget;
 
     //TODO make two swapchains path for GL4ES compat
 
@@ -44,7 +42,7 @@ public class OpenXRSwapchain implements AutoCloseable {
         try (MemoryStack stack = stackPush()) {
             IntBuffer intBuf = stackInts(0);
 
-            instance.check(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
+            instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
 
             int imageCount = intBuf.get(0);
             XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.calloc(imageCount, stack);
@@ -52,11 +50,11 @@ public class OpenXRSwapchain implements AutoCloseable {
                 image.type(KHROpenglEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
             }
 
-            instance.check(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
+            instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
 
             this.arrayImages = new int[imageCount];
-            this.leftImages = new int[imageCount];
-            this.rightImages = new int[imageCount];
+            this.leftFramebuffers = new XrFramebuffer[imageCount];
+            this.rightFramebuffers = new XrFramebuffer[imageCount];
 
             for (int i = 0; i < imageCount; i++) {
                 var openxrImage = swapchainImageBuffer.get(i);
@@ -66,33 +64,45 @@ public class OpenXRSwapchain implements AutoCloseable {
 
                 glTextureView(textures[0], GL_TEXTURE_2D, arrayImages[i], this.format, 0, 1, 0, 1);
                 glTextureView(textures[1], GL_TEXTURE_2D, arrayImages[i], this.format, 0, 1, 1, 1);
-                leftImages[i] = textures[0];
-                rightImages[i] = textures[1];
+
+                leftFramebuffers[i] = new XrFramebuffer(width, height, textures[0]);
+                rightFramebuffers[i] = new XrFramebuffer(width, height, textures[1]);
             }
 
-            innerFramebuffer = new XrFramebuffer(width, height);
-            innerFramebuffer.setClearColor(sRGBToLinear(239 / 255f), sRGBToLinear(50 / 255f), sRGBToLinear(61 / 255f), 255 / 255f);
-
-            framebuffer = new TextureTarget(width, height, true, Minecraft.ON_OSX);
-            framebuffer.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
+            renderTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
+            renderTarget.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
         }
     }
 
-    float sRGBToLinear(float f) {
-        if (f < 0.04045f) {
-            return f / 12.92f;
-        } else {
-            return (float) Math.pow((f + 0.055f) / 1.055f, 2.4f);
+    int acquireImage() {
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer intBuf = stackCallocInt(1);
+            instance.checkPanic(XR10.xrAcquireSwapchainImage(
+                    handle,
+                    XrSwapchainImageAcquireInfo.calloc(stack).type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO),
+                    intBuf
+            ), "xrAcquireSwapchainImage");
+            instance.checkPanic(XR10.xrWaitSwapchainImage(handle,
+                    XrSwapchainImageWaitInfo.calloc(stack)
+                            .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO)
+                            .timeout(XR10.XR_INFINITE_DURATION)
+            ), "xrWaitSwapchainImage");
+            return intBuf.get(0);
         }
     }
 
     @Override
     public void close() {
         XR10.xrDestroySwapchain(handle);
-        if (framebuffer != null) {
+        if (renderTarget != null) {
             RenderSystem.recordRenderCall(() -> {
-                innerFramebuffer.destroyBuffers();
-                framebuffer.destroyBuffers();
+                for (var fb : rightFramebuffers) {
+                    fb.destroyBuffers();
+                }
+                for (var fb : leftFramebuffers) {
+                    fb.destroyBuffers();
+                }
+                renderTarget.destroyBuffers();
             });
         }
     }

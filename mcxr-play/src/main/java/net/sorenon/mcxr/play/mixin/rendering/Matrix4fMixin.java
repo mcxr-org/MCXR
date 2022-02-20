@@ -4,7 +4,7 @@ import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.Matrix4fExt;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.joml.Math;
 import org.lwjgl.openxr.XrFovf;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class Matrix4fMixin implements Matrix4fExt {
 
     @Unique
-    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+    private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
     @Shadow
     protected float m00;

@@ -19,14 +19,14 @@ import org.joml.Vector3f;
  * wants to do alter the camera then chances are what they're doing wont translate well to an XR scenario.
  * But if they do need to alter the camera in an XR scenario then they can always mixin this class.
  */
-public class XrCamera extends Camera {
+public class MCXRCamera extends Camera {
 
     private final Quaternionf rawRotation = new Quaternionf();
 
     /**
      * Called just before each render tick, sets the camera to the center of the headset for updating the sound engine and updates the pitch yaw of the player
      */
-    public void updateXR(BlockGetter area, Entity focusedEntity, Pose viewSpacePose) {
+    public void updateMCXR(BlockGetter area, Entity focusedEntity, Pose viewSpacePose) {
         CameraAcc thiz = (CameraAcc) this;
         thiz.ready(focusedEntity != null);
         thiz.area(area);

@@ -21,10 +21,10 @@ import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
+import net.sorenon.mcxr.play.accessor.MinecraftExt;
 import net.sorenon.mcxr.play.mixin.accessor.WindowAcc;
-import net.sorenon.mcxr.play.openxr.OpenXR;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
+import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +39,7 @@ import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(Minecraft.class)
-public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnable> implements MinecraftClientExt {
+public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnable> implements MinecraftExt {
 
     public MinecraftMixin(String string) {
         super(string);
@@ -152,7 +152,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     public Options options;
 
     @Unique
-    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+    private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "com/mojang/blaze3d/pipeline/MainTarget"))
     MainTarget createFramebuffer(int width, int height) {
@@ -166,8 +166,8 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;runTick(Z)V"), method = "run")
     void loop(Minecraft minecraftClient, boolean tick) {
-        OpenXR openXR = MCXRPlayClient.OPEN_XR;
-        if (openXR.loop()) {
+        OpenXRState openXRState = MCXRPlayClient.OPEN_XR_STATE;
+        if (openXRState.loop()) {
             //Just render normally
             runTick(tick);
         }

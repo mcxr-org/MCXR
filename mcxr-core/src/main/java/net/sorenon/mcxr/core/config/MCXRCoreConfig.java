@@ -1,7 +1,7 @@
 package net.sorenon.mcxr.core.config;
 
 public interface MCXRCoreConfig {
-    boolean xrAllowed();
+    boolean supportsMCXR();
 
     boolean dynamicPlayerHeight();
 

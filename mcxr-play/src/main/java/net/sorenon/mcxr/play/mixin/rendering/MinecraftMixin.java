@@ -161,7 +161,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
-        MCXRPlayClient.INSTANCE.flatGuiManager.init();
+        MCXRPlayClient.INSTANCE.MCXRGuiManager.init();
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;runTick(Z)V"), method = "run")

@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Camera;
@@ -8,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.sorenon.fart.FartRenderEvents;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
@@ -27,31 +29,39 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static final MCXRGameRenderer MCXR_GAME_RENDERER = new MCXRGameRenderer();
 
     public static MCXRPlayClient INSTANCE;
-    public FlatGuiManager flatGuiManager = new FlatGuiManager();
-    public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer(flatGuiManager);
+    public MCXRGuiManager MCXRGuiManager = new MCXRGuiManager();
+    public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer(MCXRGuiManager);
     public static final ControllerPoses viewSpacePoses = new ControllerPoses();
 
+    //Stage space => Unscaled Physical Space => Physical Space => Minecraft Space
+    //OpenXR         GUI                        Roomscale Logic   Minecraft Logic
+    //      Rotated + Translated           Scaled          Translated
+
     /**
-     * The center of the STAGE set at the same height of the PlayerEntity's feet in in-game space
-     * This value is added to translate a physical position to an in-game position
+     * The yaw rotation of STAGE space in physical space
+     * Used to let the user turn
+     */
+    public static float stageTurn = 0;
+
+    /**
+     * The position of STAGE space in physical space
+     * Used to let the user turn around one physical space position and
+     * to let the user snap to the player entity position when roomscale movement is off
+     */
+    public static Vector3f stagePosition = new Vector3f(0, 0, 0);
+
+    /**
+     * The position of physical space in Minecraft space
+     * xrOrigin = camaraEntity.pos - playerPhysicalPosition
      */
     public static Vector3d xrOrigin = new Vector3d(0, 0, 0);
 
     /**
-     * Allows the player to rotate around a central point or 'reset' their position to the center of the PlayerEntity
+     * The position of the player entity in physical space
+     * If roomscale movement is disabled this vector is zero (meaning the player is at xrOrigin)
+     * This is used to calculate xrOrigin
      */
-    public static Vector3f xrOffset = new Vector3f(0, 0, 0);
-
-    /**
-     * (if roomscale movement is enabled)
-     * The negated position of the player entity in physical space
-     */
-    public static Vector3d roomscalePlayerOffset = new Vector3d();
-
-    /**
-     * Allows the player to turn in-game without turning IRL
-     */
-    public static float yawTurn = 0;
+    public static Vector3d playerPhysicalPosition = new Vector3d();
 
     /**
      * The angle to rotate the player's in-game hand for a more comfortable experience
@@ -59,20 +69,28 @@ public class MCXRPlayClient implements ClientModInitializer {
      */
     public static float handPitchAdjust = 30;
 
-    public static int mainHand = 1;
+    public static int getMainHand() {
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            return player.getMainArm().ordinal();
+        } else {
+            return HumanoidArm.RIGHT.ordinal();
+        }
+    }
 
     @Override
     public void onInitializeClient() {
         INSTANCE = this;
         XR.create("openxr_loader");
-        MCXR_GAME_RENDERER.initialize(Minecraft.getInstance());
+
+        ClientLifecycleEvents.CLIENT_STARTED.register(MCXR_GAME_RENDERER::initialize);
 
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
-            if (MCXR_GAME_RENDERER.renderPass instanceof RenderPass.World) {
-                if (!Minecraft.getInstance().options.hideGui && !flatGuiManager.isScreenOpen()) {
+            if (MCXR_GAME_RENDERER.renderPass instanceof RenderPass.XrWorld) {
+                if (!Minecraft.getInstance().options.hideGui && !MCXRGuiManager.isScreenOpen()) {
                     Camera camera = context.camera();
                     if (camera.getEntity() instanceof LocalPlayer player) {
-                        vrFirstPersonRenderer.renderHandsAndItems(
+                        vrFirstPersonRenderer.render(
                                 player,
                                 VrFirstPersonRenderer.getLight(camera, context.world()),
                                 context.matrixStack(),
@@ -85,8 +103,8 @@ public class MCXRPlayClient implements ClientModInitializer {
         });
 
         FartRenderEvents.LAST.register(context -> {
-            if (MCXR_GAME_RENDERER.renderPass instanceof RenderPass.World) {
-                vrFirstPersonRenderer.renderFirstPerson(context);
+            if (MCXR_GAME_RENDERER.renderPass instanceof RenderPass.XrWorld) {
+                vrFirstPersonRenderer.renderLast(context);
             }
         });
     }
@@ -96,11 +114,10 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static void resetView() {
-        Vector3f pos = new Vector3f(MCXRPlayClient.viewSpacePoses.getRawPhysicalPose().getPos());
-        new Quaternionf().rotateLocalY(yawTurn).transform(pos);
-        pos.mul(getCameraScale());
-
-        MCXRPlayClient.xrOffset = new Vector3f(0, 0, 0).sub(pos).mul(1, 0, 1);
+        Vector3f pos = new Vector3f(MCXRPlayClient.viewSpacePoses.getStagePose().getPos());
+        new Quaternionf().rotateLocalY(stageTurn).transform(pos);
+        playerPhysicalPosition.zero();
+        MCXRPlayClient.stagePosition = new Vector3f(0, 0, 0).sub(pos).mul(1, 0, 1);
     }
 
     public static float getCameraScale() {

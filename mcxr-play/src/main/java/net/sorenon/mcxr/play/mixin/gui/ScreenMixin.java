@@ -1,4 +1,4 @@
-package net.sorenon.mcxr.play.mixin.flatgui;
+package net.sorenon.mcxr.play.mixin.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiComponent;

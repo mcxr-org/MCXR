@@ -3,15 +3,13 @@ package net.sorenon.mcxr.play.openxr;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.sorenon.mcxr.play.rendering.XrFramebuffer;
+import net.sorenon.mcxr.play.rendering.XrRenderTarget;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.glGenTextures;
-import static org.lwjgl.opengl.GL43.glTextureView;
 import static org.lwjgl.system.MemoryStack.*;
 
 public class OpenXRSwapchain implements AutoCloseable {
@@ -24,8 +22,8 @@ public class OpenXRSwapchain implements AutoCloseable {
     public final int format;
 
     public final int[] arrayImages;
-    public final XrFramebuffer[] leftFramebuffers;
-    public final XrFramebuffer[] rightFramebuffers;
+    public final XrRenderTarget[] leftFramebuffers;
+    public final XrRenderTarget[] rightFramebuffers;
 
     public TextureTarget renderTarget;
 
@@ -53,20 +51,14 @@ public class OpenXRSwapchain implements AutoCloseable {
             instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
 
             this.arrayImages = new int[imageCount];
-            this.leftFramebuffers = new XrFramebuffer[imageCount];
-            this.rightFramebuffers = new XrFramebuffer[imageCount];
+            this.leftFramebuffers = new XrRenderTarget[imageCount];
+            this.rightFramebuffers = new XrRenderTarget[imageCount];
 
             for (int i = 0; i < imageCount; i++) {
                 var openxrImage = swapchainImageBuffer.get(i);
                 arrayImages[i] = openxrImage.image();
-                int[] textures = new int[2];
-                glGenTextures(textures);
-
-                glTextureView(textures[0], GL_TEXTURE_2D, arrayImages[i], this.format, 0, 1, 0, 1);
-                glTextureView(textures[1], GL_TEXTURE_2D, arrayImages[i], this.format, 0, 1, 1, 1);
-
-                leftFramebuffers[i] = new XrFramebuffer(width, height, textures[0]);
-                rightFramebuffers[i] = new XrFramebuffer(width, height, textures[1]);
+                leftFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 0);
+                rightFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 1);
             }
 
             renderTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);

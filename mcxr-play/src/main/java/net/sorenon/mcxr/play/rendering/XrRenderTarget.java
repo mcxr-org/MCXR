@@ -5,22 +5,21 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
+import net.sorenon.mcxr.play.mixin.accessor.RenderTargetAcc;
 import org.lwjgl.opengl.GL30;
 
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL30.*;
 
-public class XrFramebuffer extends TextureTarget {
+public class XrRenderTarget extends TextureTarget {
 
-    public XrFramebuffer(int width, int height, int color) {
+    public XrRenderTarget(int width, int height, int color, int index) {
         super(width, height, true, Minecraft.ON_OSX);
 
-        ((FramebufferAcc) this).colorAttachment(color);
+        ((RenderTargetAcc) this).setColorTextureId(color);
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBufferId);
-        GlStateManager._glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+        GL30.glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color, 0, index);
 
         this.setClearColor(sRGBToLinear(239 / 255f), sRGBToLinear(50 / 255f), sRGBToLinear(61 / 255f), 255 / 255f);
     }
@@ -52,7 +51,7 @@ public class XrFramebuffer extends TextureTarget {
                 GlStateManager._texParameter(3553, 34892, 0);
                 GlStateManager._texParameter(3553, 10242, 33071);
                 GlStateManager._texParameter(3553, 10243, 33071);
-                GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, (IntBuffer)null);
+                GlStateManager._texImage2D(3553, 0, 6402, this.width, this.height, 0, 6402, 5126, (IntBuffer) null);
             }
 
             this.setFilterMode(9728);

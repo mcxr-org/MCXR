@@ -13,6 +13,7 @@ import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.accessor.Matrix4fExt;
+import org.joml.Quaternionf;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,35 +32,46 @@ public abstract class GameRendererMixin {
     private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
     @Shadow
+    public abstract float getRenderDistance();
+
+    @Shadow
     @Final
-    private Camera mainCamera;
+    private Minecraft minecraft;
 
-    @Shadow public abstract float getRenderDistance();
-
-    @Shadow @Final private Minecraft minecraft;
-
-    @Shadow private boolean renderHand;
+    @Shadow
+    private boolean renderHand;
 
     /**
-     * Replace the default camera with an XrCamera
+     * Replace the default camera with an MCXRCamera
      */
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/client/Camera"))
-    Camera createCamera() {
+    Camera replaceCamera() {
         return new MCXRCamera();
     }
 
-//    @Redirect(method = "renderItemInHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;renderHandsWithItems(FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource$BufferSource;Lnet/minecraft/client/player/LocalPlayer;I)V"))
-//    void cancelRenderHand(ItemInHandRenderer heldItemRenderer, float tickDelta, PoseStack matrices, MultiBufferSource.BufferSource vertexConsumers, LocalPlayer player, int light) {
-//    }
+    /**
+     * Update the window dimensions in MCXRMainTarget so we know framebuffers need resizing
+     */
+    @Inject(method = "resize", at = @At("HEAD"))
+    void onResized(int i, int j, CallbackInfo ci) {
+        MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) minecraft.getMainRenderTarget();
+        MCXRMainTarget.windowWidth = i;
+        MCXRMainTarget.windowHeight = j;
+    }
 
+    /**
+     * Cancels both vanilla and Iris hand rendering
+     */
     @Inject(method = "renderLevel", at = @At("HEAD"))
     void cancelRenderHand(CallbackInfo ci) {
-        this.renderHand = !XR_RENDERER.isXrMode();
+        this.renderHand = XR_RENDERER.renderPass == RenderPass.VANILLA;
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
     void cancelBobView(PoseStack matrixStack, float f, CallbackInfo ci) {
-        ci.cancel();
+        if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
+            ci.cancel();
+        }
     }
 
     /**
@@ -67,21 +79,11 @@ public abstract class GameRendererMixin {
      */
     @Inject(method = "getProjectionMatrix", at = @At("HEAD"), cancellable = true)
     void getXrProjectionMatrix(double d, CallbackInfoReturnable<Matrix4f> cir) {
-        if (XR_RENDERER.renderPass instanceof RenderPass.World renderPass) {
+        if (XR_RENDERER.renderPass instanceof RenderPass.XrWorld renderPass) {
             Matrix4f proj = new Matrix4f();
-            proj.setIdentity();
-            //noinspection ConstantConditions
-            ((Matrix4fExt) (Object) proj).createProjectionFov(renderPass.fov, 0.05F, this.getRenderDistance() * 4);
-
+            ((Matrix4fExt) (Object) proj).setXrProjection(renderPass.fov, 0.05F, this.getRenderDistance() * 4);
             cir.setReturnValue(proj);
         }
-    }
-
-    @Inject(method = "resize", at = @At("HEAD"))
-    void onResized(int i, int j, CallbackInfo ci) {
-        MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) minecraft.getMainRenderTarget();
-        MCXRMainTarget.gameWidth = i;
-        MCXRMainTarget.gameHeight = j;
     }
 
     /**
@@ -89,11 +91,19 @@ public abstract class GameRendererMixin {
      */
     @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lcom/mojang/math/Quaternion;)V", ordinal = 2), method = "renderLevel")
     void multiplyPitch(PoseStack matrixStack, Quaternion pitchQuat) {
+        if (XR_RENDERER.renderPass == RenderPass.VANILLA) {
+            matrixStack.mulPose(pitchQuat);
+        }
     }
 
     @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lcom/mojang/math/Quaternion;)V", ordinal = 3), method = "renderLevel")
     void multiplyYaw(PoseStack matrixStack, Quaternion yawQuat) {
-        matrixStack.mulPose(((MCXRCamera) mainCamera).getRawRotationInverted());
+        if (XR_RENDERER.renderPass instanceof RenderPass.XrWorld xrWorldPass) {
+            var inv = xrWorldPass.eyePoses.getMinecraftPose().getOrientation().invert(new Quaternionf());
+            matrixStack.mulPose(new Quaternion(inv.x, inv.y, inv.z, inv.w));
+        } else {
+            matrixStack.mulPose(yawQuat);
+        }
     }
 
     /**
@@ -113,7 +123,7 @@ public abstract class GameRendererMixin {
      */
     @Inject(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 0, shift = At.Shift.BEFORE), method = "render", cancellable = true)
     public void guiRenderStart(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if (XR_RENDERER.renderPass instanceof RenderPass.World) {
+        if (XR_RENDERER.renderPass instanceof RenderPass.XrWorld) {
             ci.cancel();
         }
     }

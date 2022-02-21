@@ -21,14 +21,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
 
-    @Shadow @Final private Minecraft minecraft;
+    @Shadow
+    @Final
+    private Minecraft minecraft;
+
+    @Unique
+    private boolean enabled() {
+        return MCXRCore.getCoreConfig().controllerRaytracing() && MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode();
+    }
 
     @Inject(method = "pick", at = @At(value = "INVOKE_ASSIGN", shift = At.Shift.AFTER, target = "Lnet/minecraft/world/entity/Entity;pick(DFZ)Lnet/minecraft/world/phys/HitResult;"))
     private void overrideEntity$raycast(float tickDelta, CallbackInfo ci) {
         if (enabled()) {
             Entity entity = this.minecraft.getCameraEntity();
-            int hand = 1;
-            Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
+            Pose pose = XrInput.handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getMinecraftPose();
             Vec3 pos = JOMLUtil.convert(pose.getPos());
             Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
             Vec3 dir = new Vec3(dir1.x, dir1.y, dir1.z);
@@ -42,8 +48,7 @@ public class GameRendererMixin {
     )
     private Vec3 alterStartPosVec(Vec3 value) {
         if (enabled()) {
-            int hand = 1;
-            Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
+            Pose pose = XrInput.handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getMinecraftPose();
             return JOMLUtil.convert(pose.getPos());
         } else {
             return value;
@@ -55,8 +60,7 @@ public class GameRendererMixin {
     )
     private Vec3 alterDirVec(Vec3 value) {
         if (enabled()) {
-            int hand = 1;
-            Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
+            Pose pose = XrInput.handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getMinecraftPose();
             return JOMLUtil.convert(
                     pose.getOrientation()
                             .rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
@@ -65,10 +69,5 @@ public class GameRendererMixin {
         } else {
             return value;
         }
-    }
-
-    @Unique
-    private boolean enabled() {
-        return MCXRCore.getCoreConfig().controllerRaytracing() && MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode();
     }
 }

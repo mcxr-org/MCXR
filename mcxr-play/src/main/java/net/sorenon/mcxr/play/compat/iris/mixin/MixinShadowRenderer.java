@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.play.compat.iris.mixin;
 
-import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import net.sorenon.mcxr.play.rendering.RenderPass;
@@ -21,7 +20,7 @@ public class MixinShadowRenderer {
     @SuppressWarnings("UnresolvedMixinReference")
     @Inject(method = "renderShadows", at = @At(value = "HEAD"), cancellable = true)
     void mcxr$cancelRenderShadows(CallbackInfo ci) {
-        if (XR_RENDERER.renderPass instanceof RenderPass.World renderPass && renderPass.viewIndex != 0) {
+        if (XR_RENDERER.renderPass instanceof RenderPass.XrWorld renderPass && renderPass.viewIndex != 0) {
             ci.cancel();
         }
 //        if (Minecraft.getInstance().options.keyShift.isDown()) {

@@ -65,7 +65,7 @@ public class VanillaGameplayActionSet extends ActionSet {
 
     @Override
     public boolean shouldSync() {
-        return !MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen();
+        return !MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen();
     }
 
     public void getDefaultBindings(HashMap<String, List<Pair<Action, String>>> map) {
@@ -131,7 +131,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                     )
             );
         }
-        if (MCXRPlayClient.OPEN_XR.instance.handle.getCapabilities().XR_HTC_vive_cosmos_controller_interaction) {
+        if (MCXRPlayClient.OPEN_XR_STATE.instance.handle.getCapabilities().XR_HTC_vive_cosmos_controller_interaction) {
             map.computeIfAbsent("/interaction_profiles/htc/vive_cosmos_controller", aLong -> new ArrayList<>()).addAll(
                     List.of(
                             new Pair<>(use, "/user/hand/left/input/trigger/value"),

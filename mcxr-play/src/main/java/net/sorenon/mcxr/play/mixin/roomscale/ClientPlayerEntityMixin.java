@@ -21,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import virtuoel.pehkui.util.ScaleUtils;
 
 @Mixin(LocalPlayer.class)
 public abstract class ClientPlayerEntityMixin extends Player {
@@ -48,33 +47,42 @@ public abstract class ClientPlayerEntityMixin extends Player {
      */
     @Inject(method = "tick", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V"))
     void applyRoomscaleMovement(CallbackInfo ci) {
-        Vector3d roomscaleOffset = MCXRPlayClient.roomscalePlayerOffset;
+        Vector3d playerPhysicalPosition = MCXRPlayClient.playerPhysicalPosition;
         if (MCXRCore.getCoreConfig().roomscaleMovement() && !this.isPassenger()) {
-            Vector3f viewPos = MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos();
+            //Get the user's position in physical space
+            Vector3f viewPos = MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos();
 
+            //Store the player entity's position
             double oldX = this.getX();
             double oldZ = this.getZ();
 
+            //Force the player to sneak to they don't accidentally fall
             boolean onGround = this.onGround;
             Input input = this.input;
             this.input = sneakingInput;
             sneakingInput.shiftKeyDown = true;
 
-            final float invScale = 1.0f / MCXRScale.getMotionScale(this); //Counter out the method pehuki uses for scaling movement
-            this.move(MoverType.SELF, new Vec3(viewPos.x - roomscaleOffset.x, 0, viewPos.z - roomscaleOffset.z).scale(invScale));
+            //We want to move the player entity to the user's position in physical space
+            Vec3 wantedMovement = new Vec3(viewPos.x - playerPhysicalPosition.x, 0, viewPos.z - playerPhysicalPosition.z);
+
+            //Counter out the mixin pehuki uses for scaling movement
+            float invScale = 1.0f / MCXRScale.getMotionScale(this);
+
+            this.move(MoverType.SELF, wantedMovement.scale(invScale));
             this.input = input;
             this.onGround = onGround;
 
             double deltaX = this.getX() - oldX;
             double deltaZ = this.getZ() - oldZ;
 
-            roomscaleOffset.x += deltaX;
-            roomscaleOffset.z += deltaZ;
+            //Store the position of the player in physical space
+            playerPhysicalPosition.x += deltaX;
+            playerPhysicalPosition.z += deltaZ;
 
             this.xo += deltaX;
             this.zo += deltaZ;
         } else {
-            roomscaleOffset.zero();
+            playerPhysicalPosition.zero();
         }
     }
 

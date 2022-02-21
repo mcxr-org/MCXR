@@ -1,7 +1,7 @@
 package net.sorenon.mcxr.play.rendering;
 
 import net.minecraft.client.Minecraft;
-import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
+import net.sorenon.mcxr.play.mixin.accessor.RenderTargetAcc;
 import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 
@@ -26,15 +26,15 @@ public class MCXRMainTarget extends MainTarget {
     private RenderTarget currentFramebuffer;
 
     //The current dimensions of all the vanilla framebuffers
-    public int gameWidth;
-    public int gameHeight;
+    public int windowWidth;
+    public int windowHeight;
 
     public MCXRMainTarget(int width, int height) {
         super(width, height);
         minecraftMainRenderTarget = new MainTarget(width, height);
         setFramebuffer(minecraftMainRenderTarget);
-        gameWidth = width;
-        gameHeight = height;
+        windowWidth = width;
+        windowHeight = height;
     }
 
     //Used to set the current framebuffer without resizing the dimensions of the other framebuffers
@@ -53,15 +53,15 @@ public class MCXRMainTarget extends MainTarget {
 //        this.clearColor[3] = framebuffer.clearColor[3];
         this.filterMode = framebuffer.filterMode;
 
-        FramebufferAcc thiz = ((FramebufferAcc) this);
-        thiz.colorAttachment(framebuffer.getColorTextureId());
-        thiz.depthAttachment(framebuffer.getDepthTextureId());
+        RenderTargetAcc acc = ((RenderTargetAcc) this);
+        acc.setColorTextureId(framebuffer.getColorTextureId());
+        acc.setDepthBufferId(framebuffer.getDepthTextureId());
     }
 
     public void setXrFramebuffer(RenderTarget framebuffer) {
         setFramebuffer(framebuffer);
-        if (framebuffer.width != gameWidth ||
-                framebuffer.height != gameHeight) {
+        if (framebuffer.width != windowWidth ||
+                framebuffer.height != windowHeight) {
             Minecraft.getInstance().gameRenderer.resize(framebuffer.width, framebuffer.height);
             LOGGER.log(Level.FINE, "Resizing GameRenderer");
         }

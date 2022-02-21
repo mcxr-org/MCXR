@@ -74,7 +74,7 @@ public class HandsActionSet extends ActionSet {
                     )
             );
         }
-        if (MCXRPlayClient.OPEN_XR.instance.handle.getCapabilities().XR_HTC_vive_cosmos_controller_interaction) {
+        if (MCXRPlayClient.OPEN_XR_STATE.instance.handle.getCapabilities().XR_HTC_vive_cosmos_controller_interaction) {
             map.computeIfAbsent("/interaction_profiles/htc/vive_cosmos_controller", aLong -> new ArrayList<>()).addAll(
                     List.of(
                             new Pair<>(grip, "/user/hand/left/input/grip/pose"),

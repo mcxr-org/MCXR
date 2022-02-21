@@ -6,13 +6,13 @@
   "client": [
     "FramebufferMixin",
     "GameRendererMixin",
+    "KeyboardInputMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
-    "KeyboardInputMixin",
     "accessor.CameraAcc",
+    "accessor.MouseHandlerAcc",
     "accessor.RenderTargetAcc",
     "accessor.WindowAcc",
-    "accessor.MouseHandlerAcc",
     "gui.InputConstantsMixin",
     "gui.MinecraftMixin",
     "gui.ScreenMixin",
@@ -28,5 +28,8 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "PauseScreenMixin"
+  ]
 }

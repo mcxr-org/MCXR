@@ -239,21 +239,19 @@ public class MCXRGameRenderer {
             subImage.imageArrayIndex(viewIndex);
 
             XrRenderTarget swapchainFramebuffer;
-            {
-                if (viewIndex == 0) {
-                    swapchainFramebuffer = swapchain.leftFramebuffers[swapchainImageIndex];
-                } else {
-                    swapchainFramebuffer = swapchain.rightFramebuffers[swapchainImageIndex];
-                }
-                mainRenderTarget.setXrFramebuffer(swapchain.renderTarget);
-                RenderPass.XrWorld worldRenderPass = RenderPass.XrWorld.create();
-                worldRenderPass.fov = session.viewBuffer.get(viewIndex).fov();
-                worldRenderPass.eyePoses.updatePhysicalPose(session.viewBuffer.get(viewIndex).pose(), MCXRPlayClient.stageTurn, frameUserScale);
-                worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin);
-                worldRenderPass.viewIndex = viewIndex;
-                camera.setPose(worldRenderPass.eyePoses.getMinecraftPose());
-                clientExt.doRender(true, frameStartTime, worldRenderPass);
+            if (viewIndex == 0) {
+                swapchainFramebuffer = swapchain.leftFramebuffers[swapchainImageIndex];
+            } else {
+                swapchainFramebuffer = swapchain.rightFramebuffers[swapchainImageIndex];
             }
+            mainRenderTarget.setXrFramebuffer(swapchain.renderTarget);
+            RenderPass.XrWorld worldRenderPass = RenderPass.XrWorld.create();
+            worldRenderPass.fov = session.viewBuffer.get(viewIndex).fov();
+            worldRenderPass.eyePoses.updatePhysicalPose(session.viewBuffer.get(viewIndex).pose(), MCXRPlayClient.stageTurn, frameUserScale);
+            worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin);
+            worldRenderPass.viewIndex = viewIndex;
+            camera.setPose(worldRenderPass.eyePoses.getMinecraftPose());
+            clientExt.doRender(true, frameStartTime, worldRenderPass);
 
             swapchainFramebuffer.bindWrite(true);
             this.blitShader.setSampler("DiffuseSampler", swapchain.renderTarget.getColorTextureId());
@@ -264,11 +262,9 @@ public class MCXRGameRenderer {
             swapchain.renderTarget.setFilterMode(GlConst.GL_LINEAR);
             this.blit(swapchainFramebuffer, blitShader);
             swapchainFramebuffer.unbindWrite();
-
-            if (viewIndex == 0) {
-                blitToBackbuffer(swapchain.renderTarget);
-            }
         }
+
+        blitToBackbuffer(swapchain.renderTarget);
 
         instance.checkPanic(XR10.xrReleaseSwapchainImage(
                 swapchain.handle,

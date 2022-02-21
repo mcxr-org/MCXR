@@ -37,3 +37,5 @@ jobs:
         with:
           name: mcxr-core
           path: mcxr-core/build/libs/mcxr-core-0.1.1+null.jar
+          archive: tar
+          compression: xz

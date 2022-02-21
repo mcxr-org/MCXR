@@ -1,13 +1,20 @@
 package net.sorenon.mcxr.play;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.sorenon.fart.FartRenderEvents;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
@@ -22,6 +29,8 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.XR;
 import virtuoel.pehkui.util.ScaleUtils;
+
+import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
 
 public class MCXRPlayClient implements ClientModInitializer {
 
@@ -73,6 +82,40 @@ public class MCXRPlayClient implements ClientModInitializer {
             if (RENDERER.renderPass instanceof RenderPass.World) {
                 if (!Minecraft.getInstance().options.hideGui && !flatGuiManager.isScreenOpen()) {
                     Camera camera = context.camera();
+
+                    var matrices = context.matrixStack();
+
+                    var hitResult = Minecraft.getInstance().hitResult;
+                    if (hitResult != null && !this.flatGuiManager.isScreenOpen()) {
+                        Vec3 camPos = camera.getPosition();
+                        matrices.pushPose();
+
+                        double x = hitResult.getLocation().x();
+                        double y = hitResult.getLocation().y();
+                        double z = hitResult.getLocation().z();
+                        matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
+
+                        if (hitResult.getType() == HitResult.Type.BLOCK) {
+                            matrices.mulPose(((BlockHitResult) hitResult).getDirection().getRotation());
+                        } else {
+                            matrices.mulPose(camera.rotation());
+                            matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(90.0F));
+                        }
+
+                        matrices.scale(0.5f, 1, 0.5f);
+                        RenderType cursorLayer = RenderType.entityCutoutNoCull(GUI_ICONS_LOCATION);
+                        VertexConsumer vertexConsumer = context.consumers().getBuffer(cursorLayer);
+
+                        PoseStack.Pose entry = matrices.last();
+
+                        vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                        vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                        vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                        vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+
+                        matrices.popPose();
+                    }
+
                     if (camera.getEntity() instanceof LocalPlayer player) {
                         vrFirstPersonRenderer.renderHandsAndItems(
                                 player,

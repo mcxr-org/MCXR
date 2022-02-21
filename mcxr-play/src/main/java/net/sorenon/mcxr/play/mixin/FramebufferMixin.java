@@ -14,7 +14,7 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 public class FramebufferMixin {
 
     @ModifyConstant(method = "createBuffers", constant = @Constant(intValue = GL_RGBA8))
-    int modifyColorDepth(int value) {
+    int increaseColorDepth(int value) {
         if (MCXRPlayClient.OPEN_XR_STATE.session != null && MCXRPlayClient.OPEN_XR_STATE.session.hdr) {
             return GL_RGBA16;
         } else {

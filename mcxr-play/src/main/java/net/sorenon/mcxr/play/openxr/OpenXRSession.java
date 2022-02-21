@@ -238,7 +238,7 @@ public class OpenXRSession implements AutoCloseable {
                 if ((space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
                         (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
 
-                    result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn, scale);
+                    result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.stageTurn, scale);
                 }
             }
         }

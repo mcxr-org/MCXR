@@ -18,8 +18,8 @@ public class LevelRendererMixin {
     @Inject(method = "graphicsChanged()V", at = @At("RETURN"))
     void onGraphicsChanged(CallbackInfo ci) {
         MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) minecraft.getMainRenderTarget();
-        MCXRMainTarget.windowWidth = minecraft.getMainRenderTarget().width;
-        MCXRMainTarget.windowHeight = minecraft.getMainRenderTarget().height;
+        MCXRMainTarget.minecraftFramebufferWidth = minecraft.getMainRenderTarget().width;
+        MCXRMainTarget.minecraftFramebufferHeight = minecraft.getMainRenderTarget().height;
     }
 
 //    @Inject(method = "setupRender", at = @At("HEAD"), cancellable = true)

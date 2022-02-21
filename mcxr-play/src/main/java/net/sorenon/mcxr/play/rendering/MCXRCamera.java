@@ -22,7 +22,7 @@ public class MCXRCamera extends Camera {
     /**
      * Called just before each render tick, sets the camera to the center of the headset for updating the sound engine and updates the pitch yaw of the player
      */
-    public void updateMCXR(BlockGetter area, Entity focusedEntity, Pose viewSpacePose) {
+    public void updateXR(BlockGetter area, Entity focusedEntity, Pose viewSpacePose) {
         CameraAcc thiz = (CameraAcc) this;
         thiz.ready(focusedEntity != null);
         thiz.area(area);
@@ -69,10 +69,14 @@ public class MCXRCamera extends Camera {
 
     @Override
     public void setup(BlockGetter area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickDelta) {
-        CameraAcc thiz = (CameraAcc) this;
-        thiz.ready(true);
-        thiz.area(area);
-        thiz.focusedEntity(focusedEntity);
-        thiz.thirdPerson(false);
+        if (MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) {
+            CameraAcc thiz = (CameraAcc) this;
+            thiz.ready(true);
+            thiz.area(area);
+            thiz.focusedEntity(focusedEntity);
+            thiz.thirdPerson(false);
+        } else {
+            super.setup(area, focusedEntity, thirdPerson, inverseView, tickDelta);
+        }
     }
 }

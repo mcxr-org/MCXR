@@ -90,7 +90,7 @@ public class OpenXRSession implements AutoCloseable {
             );
 
             if (viewCountNumber != 2) {
-                throw new XrRuntimeException("Tried to create swapchain from " + viewCountNumber + " views");
+                throw new IllegalStateException("Tried to create swapchain from " + viewCountNumber + " views");
             }
             instance.checkPanic(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));

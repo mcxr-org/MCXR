@@ -50,13 +50,13 @@ public abstract class GameRendererMixin {
     }
 
     /**
-     * Update the window dimensions in MCXRMainTarget so we know framebuffers need resizing
+     * Update the framebuffer dimensions in MCXRMainTarget so we know if framebuffers need resizing
      */
     @Inject(method = "resize", at = @At("HEAD"))
     void onResized(int i, int j, CallbackInfo ci) {
         MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) minecraft.getMainRenderTarget();
-        MCXRMainTarget.windowWidth = i;
-        MCXRMainTarget.windowHeight = j;
+        MCXRMainTarget.minecraftFramebufferWidth = i;
+        MCXRMainTarget.minecraftFramebufferHeight = j;
     }
 
     /**

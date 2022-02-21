@@ -12,13 +12,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
@@ -54,6 +58,8 @@ public class MCXRGameRenderer {
     public ShaderInstance blitShader;
     public ShaderInstance guiBlitShader;
 
+    private boolean xrReady = true;
+
     public void initialize(Minecraft client) {
         this.client = client;
         this.clientExt = (MinecraftExt) client;
@@ -63,11 +69,15 @@ public class MCXRGameRenderer {
 
     public void setSession(OpenXRSession session) {
         this.session = session;
-        this.instance = session.instance;
+        if (session != null) {
+            this.instance = session.instance;
+        } else {
+            this.instance = null;
+        }
     }
 
     public boolean isXrMode() {
-        return Minecraft.getInstance().level != null && session != null;
+        return Minecraft.getInstance().level != null && session != null && session.running && xrReady;
     }
 
     public void renderFrame() {
@@ -83,6 +93,8 @@ public class MCXRGameRenderer {
                     XrFrameWaitInfo.calloc(stack).type(XR10.XR_TYPE_FRAME_WAIT_INFO),
                     frameState
             ), "xrWaitFrame");
+
+            xrReady = frameState.shouldRender();
 
             instance.checkPanic(XR10.xrBeginFrame(
                     session.handle,
@@ -160,7 +172,7 @@ public class MCXRGameRenderer {
 
         Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
         updatePoses(cameraEntity);
-        camera.updateMCXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getMinecraftPose());
+        camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getMinecraftPose());
 
         MCXRGuiManager FGM = MCXRPlayClient.INSTANCE.MCXRGuiManager;
 
@@ -170,6 +182,13 @@ public class MCXRGameRenderer {
 
         long frameStartTime = Util.getNanos();
         if (Minecraft.getInstance().player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
+            PlayerEntityAcc acc = (PlayerEntityAcc) Minecraft.getInstance().player;
+            if (!acc.isXR()) {
+                FriendlyByteBuf buf = PacketByteBufs.create();
+                buf.writeBoolean(true);
+                ClientPlayNetworking.send(MCXRCore.IS_XR_PLAYER, buf);
+                acc.setIsXr(true);
+            }
             MCXRCore.INSTANCE.setPlayerHeadPose(
                     Minecraft.getInstance().player,
                     MCXRPlayClient.viewSpacePoses.getPhysicalPose()

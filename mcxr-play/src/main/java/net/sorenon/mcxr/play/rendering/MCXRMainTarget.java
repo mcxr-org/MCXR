@@ -26,15 +26,15 @@ public class MCXRMainTarget extends MainTarget {
     private RenderTarget currentFramebuffer;
 
     //The current dimensions of all the vanilla framebuffers
-    public int windowWidth;
-    public int windowHeight;
+    public int minecraftFramebufferWidth;
+    public int minecraftFramebufferHeight;
 
     public MCXRMainTarget(int width, int height) {
         super(width, height);
         minecraftMainRenderTarget = new MainTarget(width, height);
         setFramebuffer(minecraftMainRenderTarget);
-        windowWidth = width;
-        windowHeight = height;
+        minecraftFramebufferWidth = width;
+        minecraftFramebufferHeight = height;
     }
 
     //Used to set the current framebuffer without resizing the dimensions of the other framebuffers
@@ -60,8 +60,8 @@ public class MCXRMainTarget extends MainTarget {
 
     public void setXrFramebuffer(RenderTarget framebuffer) {
         setFramebuffer(framebuffer);
-        if (framebuffer.width != windowWidth ||
-                framebuffer.height != windowHeight) {
+        if (framebuffer.width != minecraftFramebufferWidth ||
+                framebuffer.height != minecraftFramebufferHeight) {
             Minecraft.getInstance().gameRenderer.resize(framebuffer.width, framebuffer.height);
             LOGGER.log(Level.FINE, "Resizing GameRenderer");
         }

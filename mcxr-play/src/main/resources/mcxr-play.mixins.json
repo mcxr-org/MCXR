@@ -22,7 +22,6 @@
     "rendering.LevelRendererMixin",
     "rendering.Matrix4fMixin",
     "rendering.MinecraftMixin",
-    "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
     "roomscale.ClientPlayerEntityMixin"

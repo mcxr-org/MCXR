@@ -1,6 +1,5 @@
 {
   "mcxr.menu.reload": "Reload Headset",
-  "mcxr.menu.session_created": "Headset found:",
   "mcxr.menu.session_not_created": "No headset found:",
 
   "openxr.form_factor.1": "Head mounted display",

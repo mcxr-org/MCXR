@@ -6,5 +6,7 @@ public interface PlayerEntityAcc {
 
     Pose getHeadPose();
 
-    void markVR();
+    void setIsXr(boolean isXr);
+
+    boolean isXR();
 }

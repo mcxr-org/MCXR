@@ -27,7 +27,7 @@ public class MinecraftMixin {
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;init(Lnet/minecraft/client/Minecraft;II)V"), method = "setScreen")
     void alterScreenSize(Screen screen, Minecraft client, int widthIn, int heightIn) {
-        if (level != null) {
+        if (MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) {
             MCXRGuiManager FGM = MCXRPlayClient.INSTANCE.MCXRGuiManager;
             screen.init(client, FGM.scaledWidth, FGM.scaledHeight);
         } else {

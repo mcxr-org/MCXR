@@ -88,8 +88,6 @@ public abstract class TitleScreenMixin extends Screen {
 
         if (OPEN_XR.session != null) {
             OpenXRSystem system = OPEN_XR.session.system;
-            GuiComponent.drawString(matrices, font, I18n.get("mcxr.menu.session_created"), x + 1, y + 12, 16777215 | l);
-            y += 12;
             for (String line : wordWrap(system.systemName, 20)) {
                 GuiComponent.drawString(matrices, font, line, x + 1, y + 12, 16777215 | l);
                 y += 12;

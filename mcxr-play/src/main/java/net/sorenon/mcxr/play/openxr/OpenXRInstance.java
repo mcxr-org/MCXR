@@ -76,10 +76,7 @@ public class OpenXRInstance implements AutoCloseable {
             switch (event.type()) {
                 case XR10.XR_TYPE_EVENT_DATA_INSTANCE_LOSS_PENDING: {
                     XrEventDataInstanceLossPending instanceLossPending = XrEventDataInstanceLossPending.create(event.address());
-                    LOGGER.warn("XrEventDataInstanceLossPending by " + instanceLossPending.lossTime());
-
-                    close();
-                    MCXRPlayClient.OPEN_XR_STATE.instance = null;
+                    LOGGER.info("XrEventDataInstanceLossPending by " + instanceLossPending.lossTime());
                     return true;
                 }
                 case XR10.XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED: {
@@ -89,7 +86,7 @@ public class OpenXRInstance implements AutoCloseable {
                     break;
                 case XR10.XR_TYPE_EVENT_DATA_REFERENCE_SPACE_CHANGE_PENDING:
                 default: {
-                    LOGGER.debug(String.format("Ignoring event type %d", event.type()));
+                    LOGGER.info(String.format("Ignoring event type %d", event.type()));
                     break;
                 }
             }
@@ -125,7 +122,7 @@ public class OpenXRInstance implements AutoCloseable {
                 LongBuffer buf = stackMallocLong(1);
                 int xrResult = XR10.xrStringToPath(handle, pathString, buf);
                 if (xrResult == XR10.XR_ERROR_PATH_FORMAT_INVALID) {
-                    throw new XrRuntimeException("Invalid path:\"" + pathString + "\"");
+                    throw new XrRuntimeException(xrResult, "Invalid path:\"" + pathString + "\"");
                 } else {
                     checkPanic(xrResult, "xrStringToPath");
                 }
@@ -148,7 +145,7 @@ public class OpenXRInstance implements AutoCloseable {
 
         ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
         if (XR10.xrResultToString(handle, result, str) >= 0) {
-            throw new XrRuntimeException(method + " returned:" + memUTF8(memAddress(str)));
+            throw new XrRuntimeException(result, method + " returned:" + memUTF8(memAddress(str)));
         }
     }
 

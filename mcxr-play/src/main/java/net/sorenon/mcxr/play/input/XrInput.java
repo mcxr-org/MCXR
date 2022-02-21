@@ -46,7 +46,7 @@ public final class XrInput {
     }
 
     //TODO registryify this
-    public static void trySetSession(OpenXRSession session) throws XrException {
+    public static void reinitialize(OpenXRSession session) throws XrException {
         OpenXRInstance instance = session.instance;
 
         handsActionSet.createHandle(instance);
@@ -92,7 +92,7 @@ public final class XrInput {
                     for (var pair : bindingsSet) {
                         out.append("\n").append(pair.getB());
                     }
-                    throw new XrRuntimeException(out.toString());
+                    throw new XrRuntimeException(e.result, out.toString());
                 }
             }
 

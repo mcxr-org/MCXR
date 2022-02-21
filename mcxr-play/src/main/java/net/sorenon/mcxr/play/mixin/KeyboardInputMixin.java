@@ -15,6 +15,7 @@ public class KeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
     void overwriteMovement(boolean slowDown, CallbackInfo ci) {
+        if (!MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) return;
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) return;
 
         var move = XrInput.vanillaGameplayActionSet.move.currentState;

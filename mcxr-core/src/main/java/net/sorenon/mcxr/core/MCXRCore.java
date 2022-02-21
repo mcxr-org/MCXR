@@ -25,7 +25,9 @@ public class MCXRCore implements ModInitializer {
 
     public static final ResourceLocation S2C_CONFIG = new ResourceLocation("mcxr", "config");
 
+    public static final ResourceLocation IS_XR_PLAYER = new ResourceLocation("mcxr", "is_xr_player");
     public static final ResourceLocation POSES = new ResourceLocation("mcxr", "poses");
+
     public static MCXRCore INSTANCE;
 
     private static final Logger LOGGER = LogManager.getLogger("MCXR Core");
@@ -57,6 +59,19 @@ public class MCXRCore implements ModInitializer {
             sender.sendPacket(S2C_CONFIG, buf);
         });
 
+        ServerPlayNetworking.registerGlobalReceiver(IS_XR_PLAYER,
+                (server, player, handler, buf, responseSender) -> {
+                    boolean isXr = buf.readBoolean();
+                    server.execute(() -> {
+                        PlayerEntityAcc acc = (PlayerEntityAcc) player;
+                        boolean wasXr = acc.isXR();
+                        acc.setIsXr(isXr);
+                        if (wasXr && !isXr) {
+                            player.refreshDimensions();
+                        }
+                    });
+                });
+
         ServerPlayNetworking.registerGlobalReceiver(POSES,
                 (server, player, handler, buf, responseSender) -> {
                     Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
@@ -72,9 +87,6 @@ public class MCXRCore implements ModInitializer {
 
     public void setPlayerHeadPose(Player player, Pose pose) {
         PlayerEntityAcc acc = (PlayerEntityAcc) player;
-        if (acc.getHeadPose() == null) {
-            acc.markVR();
-        }
         acc.getHeadPose().set(pose);
 
         if (player.level.isClientSide && player instanceof LocalPlayer) {

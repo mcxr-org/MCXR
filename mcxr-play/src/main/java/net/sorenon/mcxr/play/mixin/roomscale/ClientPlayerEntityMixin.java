@@ -47,9 +47,13 @@ public abstract class ClientPlayerEntityMixin extends Player {
      */
     @Inject(method = "tick", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V"))
     void applyRoomscaleMovement(CallbackInfo ci) {
+        if (!MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) {
+            return;
+        }
+
         Vector3d playerPhysicalPosition = MCXRPlayClient.playerPhysicalPosition;
         if (MCXRCore.getCoreConfig().roomscaleMovement() && !this.isPassenger()) {
-            //Get the user's position in physical space
+            //Get the user's head's position in physical space
             Vector3f viewPos = MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos();
 
             //Store the player entity's position
@@ -57,6 +61,8 @@ public abstract class ClientPlayerEntityMixin extends Player {
             double oldZ = this.getZ();
 
             //Force the player to sneak to they don't accidentally fall
+            //This is because the player entity is under the user's head, not their body, so they will full if they just look over
+            //TODO improve this so that if the player entity is a certain distance over a gap they fall anyway
             boolean onGround = this.onGround;
             Input input = this.input;
             this.input = sneakingInput;

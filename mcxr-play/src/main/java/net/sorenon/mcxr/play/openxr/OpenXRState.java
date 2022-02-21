@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.play.openxr;
 
-import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
@@ -58,16 +57,16 @@ public class OpenXRState {
 
     public void tryInitialize() {
         if (session != null) session.close();
+        session = null;
         if (instance != null) instance.close();
         instance = null;
-        session = null;
 
         try {
             instance = createOpenXRInstance();
             session = instance.createSession(instance.getSystem(XR10.XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY));
             session.createXRReferenceSpaces();
             session.createSwapchain();
-            XrInput.trySetSession(session);
+            XrInput.reinitialize(session);
             MCXRPlayClient.MCXR_GAME_RENDERER.setSession(session);
         } catch (Exception e) {
             LOGGER.error("Exception caught while initializing OpenXR", e);
@@ -83,13 +82,13 @@ public class OpenXRState {
     public OpenXRInstance createOpenXRInstance() throws XrException {
         try (MemoryStack stack = stackPush()) {
             IntBuffer numExtensions = stack.mallocInt(1);
-            check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
+            checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
 
             XrExtensionProperties.Buffer properties = new XrExtensionProperties.Buffer(
                     bufferStack(numExtensions.get(0), XrExtensionProperties.SIZEOF, XR10.XR_TYPE_EXTENSION_PROPERTIES)
             );
 
-            check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
+            checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             boolean missingOpenGL = true;
             PointerBuffer extensions = stackCallocPointer(3);
@@ -151,8 +150,7 @@ public class OpenXRState {
         }
 
         if (instance.pollEvents()) {
-            Minecraft.getInstance().stop();
-            return false;
+            throw new XrRuntimeException(XR10.XR_ERROR_INSTANCE_LOST, "Instance loss pending");
         }
 
         if (session.running) {
@@ -163,15 +161,15 @@ public class OpenXRState {
         return true;
     }
 
-    private void check(int result) throws XrRuntimeException {
+    private void checkPanic(int result) {
         if (result >= 0) return;
 
         if (instance != null) {
             ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
             if (XR10.xrResultToString(instance.handle, result, str) >= 0) {
-                throw new XrRuntimeException(memUTF8Safe(str));
+                throw new XrRuntimeException(result, memUTF8Safe(str));
             }
         }
-        throw new XrRuntimeException("XR method returned " + result);
+        throw new XrRuntimeException(result, "XR method returned " + result);
     }
 }

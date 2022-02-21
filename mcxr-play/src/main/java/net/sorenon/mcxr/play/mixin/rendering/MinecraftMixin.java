@@ -6,6 +6,8 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.Util;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
@@ -13,22 +15,28 @@ import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.Overlay;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.FrameTimer;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
+import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
 import net.sorenon.mcxr.play.mixin.accessor.WindowAcc;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
+import net.sorenon.mcxr.play.openxr.XrRuntimeException;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.openxr.XR10;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -151,6 +159,19 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     @Final
     public Options options;
 
+    @Shadow
+    protected abstract void openChatScreen(String string);
+
+    @Shadow
+    public abstract void resizeDisplay();
+
+    @Shadow
+    @Nullable
+    public LocalPlayer player;
+
+    @Shadow
+    public abstract void prepareForMultiplayer();
+
     @Unique
     private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
@@ -164,12 +185,44 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         MCXRPlayClient.INSTANCE.MCXRGuiManager.init();
     }
 
+    private boolean renderedNormallyLastFrame = true;
+
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;runTick(Z)V"), method = "run")
     void loop(Minecraft minecraftClient, boolean tick) {
         OpenXRState openXRState = MCXRPlayClient.OPEN_XR_STATE;
-        if (openXRState.loop()) {
-            //Just render normally
-            runTick(tick);
+        //TODO build a more rusty error system to handle this
+        try {
+            if (openXRState.loop()) {
+                if (!renderedNormallyLastFrame) {
+                    this.resizeDisplay();
+                }
+                if (this.player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
+                    PlayerEntityAcc acc = (PlayerEntityAcc) this.player;
+                    if (acc.isXR()) {
+                        FriendlyByteBuf buf = PacketByteBufs.create();
+                        buf.writeBoolean(false);
+                        ClientPlayNetworking.send(MCXRCore.IS_XR_PLAYER, buf);
+                        acc.setIsXr(false);
+                        this.player.refreshDimensions();
+                    }
+                }
+                //Just render normally
+                runTick(tick);
+                renderedNormallyLastFrame = true;
+            } else {
+                renderedNormallyLastFrame = false;
+            }
+        } catch (XrRuntimeException runtimeException) {
+            openXRState.session.close();
+            openXRState.session = null;
+            MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
+
+            if (runtimeException.result != XR10.XR_ERROR_SESSION_LOST) {
+                openXRState.instance.close();
+                openXRState.instance = null;
+            }
+
+            runtimeException.printStackTrace();
         }
     }
 

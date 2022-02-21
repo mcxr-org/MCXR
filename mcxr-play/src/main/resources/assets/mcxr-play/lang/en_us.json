@@ -1,4 +1,8 @@
 {
+  "mcxr.options.title": "MCXR Options",
+  "mcxr.disable": "Disable MCXR",
+  "mcxr.enable": "Enable MCXR",
+
   "mcxr.menu.reload": "Reload Headset",
   "mcxr.menu.session_not_created": "No headset found:",
 

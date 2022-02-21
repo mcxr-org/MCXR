@@ -194,7 +194,7 @@ public class OpenXRSession implements AutoCloseable {
         }
     }
 
-    public void pollActions() {
+    public void pollActions(boolean xrDisabled) {
         if (state != XR10.XR_SESSION_STATE_FOCUSED) {
             return;
         }
@@ -204,10 +204,14 @@ public class OpenXRSession implements AutoCloseable {
             GuiActionSet guiActionSet = XrInput.guiActionSet;
             HandsActionSet handsActionSet = XrInput.handsActionSet;
             List<ActionSet> toSync = new ArrayList<>();
-            toSync.add(vcActionSet);
+
             toSync.add(handsActionSet);
-            if (guiActionSet.shouldSync()) {
-                toSync.add(guiActionSet);
+
+            if (!xrDisabled) {
+                toSync.add(vcActionSet);
+                if (guiActionSet.shouldSync()) {
+                    toSync.add(guiActionSet);
+                }
             }
 
             XrActiveActionSet.Buffer sets = XrActiveActionSet.calloc(toSync.size(), stack);
@@ -215,9 +219,8 @@ public class OpenXRSession implements AutoCloseable {
                 sets.get(i).set(toSync.get(i).getHandle(), NULL);
             }
 
-            XrActionsSyncInfo syncInfo = XrActionsSyncInfo.calloc()
-                    .type(XR10.XR_TYPE_ACTIONS_SYNC_INFO)
-                    .activeActionSets(sets);
+            XrActionsSyncInfo syncInfo = XrActionsSyncInfo.calloc(stack)
+                    .type(XR10.XR_TYPE_ACTIONS_SYNC_INFO).activeActionSets(sets);
 
             instance.checkPanic(XR10.xrSyncActions(handle, syncInfo), "xrSyncActions");
 
@@ -246,6 +249,10 @@ public class OpenXRSession implements AutoCloseable {
 
     @Override
     public void close() {
+        XrInput.vanillaGameplayActionSet.close();
+        XrInput.guiActionSet.close();
+        XrInput.handsActionSet.close();
+
         if (swapchain != null) {
             swapchain.close();
         }

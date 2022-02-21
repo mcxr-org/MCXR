@@ -58,6 +58,7 @@ public class MCXRGameRenderer {
     public ShaderInstance blitShader;
     public ShaderInstance guiBlitShader;
 
+    private boolean xrDisabled = false;
     private boolean xrReady = true;
 
     public void initialize(Minecraft client) {
@@ -77,10 +78,15 @@ public class MCXRGameRenderer {
     }
 
     public boolean isXrMode() {
-        return Minecraft.getInstance().level != null && session != null && session.running && xrReady;
+        return Minecraft.getInstance().level != null && session != null && session.running && xrReady && !xrDisabled;
     }
 
-    public void renderFrame() {
+    public void renderFrame(boolean xrDisabled) {
+        if (this.xrDisabled != xrDisabled) {
+            MCXRPlayClient.resetView();
+        }
+        this.xrDisabled = xrDisabled;
+
         try (MemoryStack stack = stackPush()) {
             var frameState = XrFrameState.calloc(stack).type(XR10.XR_TYPE_FRAME_STATE);
 
@@ -104,7 +110,7 @@ public class MCXRGameRenderer {
             PointerBuffer layers = stack.callocPointer(1);
 
             if (frameState.shouldRender()) {
-                if (this.isXrMode()) {
+                if (this.isXrMode() && !xrDisabled) {
                     var layer = renderXrGame(frameState.predictedDisplayTime(), stack);
                     if (layer != null) {
                         layers.put(layer.address());

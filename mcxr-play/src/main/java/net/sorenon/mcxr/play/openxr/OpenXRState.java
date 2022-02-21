@@ -55,9 +55,11 @@ public class OpenXRState {
         return b;
     }
 
+    //TODO do this in own thread
     public void tryInitialize() {
         if (session != null) session.close();
         session = null;
+        MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
         if (instance != null) instance.close();
         instance = null;
 
@@ -154,8 +156,9 @@ public class OpenXRState {
         }
 
         if (session.running) {
-            session.pollActions();
-            MCXRPlayClient.MCXR_GAME_RENDERER.renderFrame();
+            boolean disabled = MCXRPlayClient.xrDisabled;
+            session.pollActions(disabled);
+            MCXRPlayClient.MCXR_GAME_RENDERER.renderFrame(disabled);
             return !MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode();
         }
         return true;

@@ -11,12 +11,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.sorenon.fart.FartRenderEvents;
+import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -25,8 +28,12 @@ import virtuoel.pehkui.util.ScaleUtils;
 
 public class MCXRPlayClient implements ClientModInitializer {
 
+    public static Logger LOGGER = LogManager.getLogger("MCXR");
+
     public static final OpenXRState OPEN_XR_STATE = new OpenXRState();
     public static final MCXRGameRenderer MCXR_GAME_RENDERER = new MCXRGameRenderer();
+
+    public static boolean xrDisabled = false;
 
     public static MCXRPlayClient INSTANCE;
     public MCXRGuiManager MCXRGuiManager = new MCXRGuiManager();
@@ -116,7 +123,12 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static void resetView() {
         Vector3f pos = new Vector3f(MCXRPlayClient.viewSpacePoses.getStagePose().getPos());
         new Quaternionf().rotateLocalY(stageTurn).transform(pos);
-        playerPhysicalPosition.zero();
+        if (MCXRCore.getCoreConfig().roomscaleMovement()) {
+            playerPhysicalPosition.set(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos());
+        } else {
+            playerPhysicalPosition.zero();
+        }
+
         MCXRPlayClient.stagePosition = new Vector3f(0, 0, 0).sub(pos).mul(1, 0, 1);
     }
 

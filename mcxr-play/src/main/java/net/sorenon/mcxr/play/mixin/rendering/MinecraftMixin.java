@@ -194,6 +194,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         try {
             if (openXRState.loop()) {
                 if (!renderedNormallyLastFrame) {
+                    MCXRPlayClient.LOGGER.info("Resizing framebuffers due to XR -> Pancake transition");
                     this.resizeDisplay();
                 }
                 if (this.player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
@@ -210,6 +211,14 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
                 runTick(tick);
                 renderedNormallyLastFrame = true;
             } else {
+                if (renderedNormallyLastFrame) {
+                    if (this.screen != null) {
+                        MCXRPlayClient.LOGGER.info("Resizing gui due to Pancake -> XR transition");
+                        var fgm = MCXRPlayClient.INSTANCE.MCXRGuiManager;
+                        this.screen.resize((Minecraft) (Object) this, fgm.scaledWidth, fgm.scaledHeight);
+                        fgm.needsReset = true;
+                    }
+                }
                 renderedNormallyLastFrame = false;
             }
         } catch (XrRuntimeException runtimeException) {

@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.XrInput;
@@ -152,8 +153,8 @@ public class OpenXRSession implements AutoCloseable {
                 PointerBuffer pp = stack.mallocPointer(1);
                 instance.check(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, pp), "xrCreateSwapchain");
                 OpenXRSwapchain swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this);
-                swapchain.width = 1216;
-                swapchain.height = 1344;
+                swapchain.width = swapchainCreateInfo.width();
+                swapchain.height = swapchainCreateInfo.height();
                 swapchain.createImages();
                 swapchains[i] = swapchain;
             }
@@ -188,6 +189,9 @@ public class OpenXRSession implements AutoCloseable {
             }
             case XR10.XR_SESSION_STATE_EXITING: {
                 // Do not attempt to restart because user closed this session.
+                // QCXR: Exit the game on XR_SESSION_STATE_EXITING, because
+                // otherwise the game will run in the background
+                Minecraft.getInstance().stop();
                 return true;
             }
             case XR10.XR_SESSION_STATE_LOSS_PENDING: {
@@ -238,11 +242,14 @@ public class OpenXRSession implements AutoCloseable {
     public void setPosesFromSpace(XrSpace handSpace, long time, ControllerPoses result, float scale) {
         try (var stack = stackPush()) {
             XrSpaceLocation space_location = XrSpaceLocation.calloc(stack).type(XR10.XR_TYPE_SPACE_LOCATION);
-            instance.check(XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location), "xrLocateSpace");
-            if ((space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
-                    (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
+            var res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
+            if (res != XR10.XR_ERROR_TIME_INVALID) {
+                instance.check(res, "xrLocateSpace");
+                if ((space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
+                        (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
 
-                result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn, scale);
+                    result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn, scale);
+                }
             }
         }
     }

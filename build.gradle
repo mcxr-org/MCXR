@@ -1,3 +1,6 @@
 static def getVersionMetadata(var project) {
     return null;
 }
+plugins {
+    id 'maven-publish'
+}

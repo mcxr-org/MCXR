@@ -89,10 +89,12 @@ public class MCXRCore implements ModInitializer {
         PlayerEntityAcc acc = (PlayerEntityAcc) player;
         acc.getHeadPose().set(pose);
 
-        if (player.level.isClientSide && player instanceof LocalPlayer) {
+        if (player instanceof LocalPlayer) {
+            acc.getHeadPose().getPos().sub(JOMLUtil.convert(player.position()).get(new Vector3f()));
+
             FriendlyByteBuf buf = PacketByteBufs.create();
-            Vector3f pos = pose.pos;
-            Quaternionf quat = pose.orientation;
+            Vector3f pos = acc.getHeadPose().getPos();
+            Quaternionf quat = acc.getHeadPose().getOrientation();
             buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
             buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
 

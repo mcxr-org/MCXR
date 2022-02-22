@@ -5,12 +5,7 @@ import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -23,13 +18,14 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.mixin.LivingEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
 import net.sorenon.mcxr.play.input.XrInput;
+import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
-import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -162,24 +158,6 @@ public class MCXRGameRenderer {
 
         var projectionLayerViews = XrCompositionLayerProjectionView.calloc(2, stack);
 
-        float frameUserScale = MCXRPlayClient.getCameraScale();
-
-
-        if (session.state == XR10.XR_SESSION_STATE_FOCUSED) {
-            for (int i = 0; i < 2; i++) {
-                if (!XrInput.handsActionSet.grip.isActive[i]) {
-                    continue;
-                }
-                session.setPosesFromSpace(XrInput.handsActionSet.grip.spaces[i], predictedDisplayTime, XrInput.handsActionSet.gripPoses[i], frameUserScale);
-                session.setPosesFromSpace(XrInput.handsActionSet.aim.spaces[i], predictedDisplayTime, XrInput.handsActionSet.aimPoses[i], frameUserScale);
-            }
-        }
-        session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, frameUserScale);
-
-        Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
-        updatePoses(cameraEntity);
-        camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getMinecraftPose());
-
         MCXRGuiManager FGM = MCXRPlayClient.INSTANCE.MCXRGuiManager;
 
         if (FGM.needsReset) {
@@ -187,30 +165,46 @@ public class MCXRGameRenderer {
         }
 
         long frameStartTime = Util.getNanos();
-        if (Minecraft.getInstance().player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
-            PlayerEntityAcc acc = (PlayerEntityAcc) Minecraft.getInstance().player;
-            if (!acc.isXR()) {
-                FriendlyByteBuf buf = PacketByteBufs.create();
-                buf.writeBoolean(true);
-                ClientPlayNetworking.send(MCXRCore.IS_XR_PLAYER, buf);
-                acc.setIsXr(true);
-            }
-            MCXRCore.INSTANCE.setPlayerHeadPose(
-                    Minecraft.getInstance().player,
-                    MCXRPlayClient.viewSpacePoses.getPhysicalPose()
-            );
-        }
 
         //Ticks the game
-        clientExt.preRender(true);
+        clientExt.preRender(true, () -> {
+            //Pre-tick
+            //Update poses for tick
+            updatePoses(camera.getEntity(), false, predictedDisplayTime, 1.0f, MCXRPlayClient.getCameraScale());
 
-        updatePoses(camera.getEntity());
+            //Update the server-side player poses
+            if (Minecraft.getInstance().player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
+                PlayerEntityAcc acc = (PlayerEntityAcc) Minecraft.getInstance().player;
+                if (!acc.isXR()) {
+                    FriendlyByteBuf buf = PacketByteBufs.create();
+                    buf.writeBoolean(true);
+                    ClientPlayNetworking.send(MCXRCore.IS_XR_PLAYER, buf);
+                    acc.setIsXr(true);
+                }
+                MCXRCore.INSTANCE.setPlayerHeadPose(
+                        Minecraft.getInstance().player,
+                        MCXRPlayClient.viewSpacePoses.getMinecraftPose()
+                );
+            }
+        });
+
+        Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
+        boolean calculate = false;
+        if (XrInput.vanillaGameplayActionSet.stand.changedSinceLastSync && XrInput.vanillaGameplayActionSet.stand.currentState) {
+            MCXRPlayClient.heightAdjustStand = !MCXRPlayClient.heightAdjustStand;
+            if (MCXRPlayClient.heightAdjustStand) {
+                calculate = true;
+            }
+        }
+
+        float frameUserScale = MCXRPlayClient.getCameraScale(client.getFrameTime());
+        updatePoses(cameraEntity, calculate, predictedDisplayTime, client.getFrameTime(), frameUserScale);
+        camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getMinecraftPose());
 
         client.getWindow().setErrorSection("Render");
         client.getProfiler().push("sound");
         client.getSoundManager().updateSource(client.gameRenderer.getMainCamera());
         client.getProfiler().pop();
-
 
         //Render GUI
         mainRenderTarget.setFramebuffer(FGM.guiRenderTarget);
@@ -289,23 +283,43 @@ public class MCXRGameRenderer {
 //        }
     }
 
-    private void updatePoses(Entity camEntity) {
-        if (camEntity != null) { //TODO seriously need to tidy up poses
-            float tickDelta = client.getFrameTime();
+    private void updatePoses(Entity camEntity,
+                             boolean calculateHeightAdjust,
+                             long predictedDisplayTime,
+                             float delta,
+                             float scale) {
+        if (session.state == XR10.XR_SESSION_STATE_FOCUSED) {
+            for (int i = 0; i < 2; i++) {
+                if (!XrInput.handsActionSet.grip.isActive[i]) {
+                    continue;
+                }
+                session.setPosesFromSpace(XrInput.handsActionSet.grip.spaces[i], predictedDisplayTime, XrInput.handsActionSet.gripPoses[i], scale);
+                session.setPosesFromSpace(XrInput.handsActionSet.aim.spaces[i], predictedDisplayTime, XrInput.handsActionSet.aimPoses[i], scale);
+            }
+            session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, scale);
+        }
 
+        if (camEntity != null) { //TODO seriously need to tidy up poses
             if (client.isPaused()) {
-                tickDelta = 0.0f;
+                delta = 1.0f;
+            }
+
+            if (calculateHeightAdjust && MCXRPlayClient.heightAdjustStand && camEntity instanceof LivingEntity livingEntity) {
+                float userHeight = MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().y();
+                float playerEyeHeight = ((LivingEntityAcc) livingEntity).callGetStandingEyeHeight(livingEntity.getPose(), livingEntity.getDimensions(livingEntity.getPose()));
+
+                MCXRPlayClient.heightAdjust = playerEyeHeight - userHeight;
             }
 
             Entity vehicle = camEntity.getVehicle();
             if (MCXRCore.getCoreConfig().roomscaleMovement() && vehicle == null) {
-                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()) - MCXRPlayClient.playerPhysicalPosition.x,
-                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
-                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()) - MCXRPlayClient.playerPhysicalPosition.z);
+                MCXRPlayClient.xrOrigin.set(Mth.lerp(delta, camEntity.xo, camEntity.getX()) - MCXRPlayClient.playerPhysicalPosition.x,
+                        Mth.lerp(delta, camEntity.yo, camEntity.getY()),
+                        Mth.lerp(delta, camEntity.zo, camEntity.getZ()) - MCXRPlayClient.playerPhysicalPosition.z);
             } else {
-                MCXRPlayClient.xrOrigin.set(Mth.lerp(tickDelta, camEntity.xo, camEntity.getX()),
-                        Mth.lerp(tickDelta, camEntity.yo, camEntity.getY()),
-                        Mth.lerp(tickDelta, camEntity.zo, camEntity.getZ()));
+                MCXRPlayClient.xrOrigin.set(Mth.lerp(delta, camEntity.xo, camEntity.getX()),
+                        Mth.lerp(delta, camEntity.yo, camEntity.getY()),
+                        Mth.lerp(delta, camEntity.zo, camEntity.getZ()));
             }
             if (vehicle != null) {
                 if (vehicle instanceof LivingEntity) {
@@ -313,6 +327,9 @@ public class MCXRGameRenderer {
                 } else {
                     MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getPassengersRidingOffset();
                 }
+            }
+            if (MCXRPlayClient.heightAdjustStand) {
+                MCXRPlayClient.xrOrigin.y += MCXRPlayClient.heightAdjust;
             }
 
             MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);

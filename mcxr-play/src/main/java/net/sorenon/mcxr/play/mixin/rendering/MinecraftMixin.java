@@ -242,7 +242,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
      * ASMR's more advanced transformers could help with this in the future
      */
     @Override
-    public void preRender(boolean tick) {
+    public void preRender(boolean tick, Runnable preTick) {
         this.window.setErrorSection("Pre render");
         if (this.window.shouldClose()) {
             this.stop();
@@ -270,6 +270,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
             for (int j = 0; j < Math.min(10, i); ++j) {
                 this.profiler.incrementCounter("clientTick");
+                preTick.run();
                 this.tick();
             }
 

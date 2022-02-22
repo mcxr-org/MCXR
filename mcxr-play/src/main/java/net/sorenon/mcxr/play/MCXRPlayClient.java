@@ -44,6 +44,10 @@ public class MCXRPlayClient implements ClientModInitializer {
     //OpenXR         GUI                        Roomscale Logic   Minecraft Logic
     //      Rotated + Translated           Scaled          Translated
 
+    public static boolean heightAdjustStand = false;
+
+    public static float heightAdjust = 0;
+
     /**
      * The yaw rotation of STAGE space in physical space
      * Used to let the user turn

@@ -1,6 +1,25 @@
 static def getVersionMetadata(var project) {
     return null;
 }
-plugins {
-    id 'maven-publish'
+
+allprojects {
+    group = 'com.github.QuestCraftPlusPlus'
 }
+
+subprojects {
+
+    apply plugin: 'maven-publish'
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                groupId project.group
+                artifactId project.name
+                version project.questcraft_version
+            }
+        }
+    }
+
+}
+
+

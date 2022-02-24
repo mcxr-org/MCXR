@@ -74,14 +74,16 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(use, "/user/hand/left/input/trigger/value"),
                         new Pair<>(attack, "/user/hand/right/input/trigger/value"),
                         new Pair<>(move, "/user/hand/left/input/thumbstick"),
-                        new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
+                        new Pair<>(hotbarLeft, "/user/hand/left/input/grip/pose"),
+                        new Pair<>(hotbarRight, "/user/hand/right/input/grip/pose"),
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
                         new Pair<>(inventory, "/user/hand/left/input/y/click"),
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
-                        new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
-                        new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-                        new Pair<>(teleport, "/user/hand/right/input/b/click")
+                        new Pair<>(teleport, "/user/hand/right/input/b/click"),
+                        new Pair<>(menu, "/user/hand/left/input/menu/click")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(

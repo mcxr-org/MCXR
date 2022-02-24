@@ -8,7 +8,6 @@ import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MouseExt;
-import net.sorenon.mcxr.play.gui.KeyboardHandler;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
@@ -242,7 +241,6 @@ public final class XrInput {
                 KeyMapping.set(key, false);
             }
         }
-        KeyboardHandler.processGui();
     }
 
     /**

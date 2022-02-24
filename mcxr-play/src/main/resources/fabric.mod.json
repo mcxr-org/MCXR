@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "mcxr-play",
-  "version": "QuestCraft ${play_version}",
+  "version": "${play_version}",
   "name": "[MCXR/QCXR] Play",
   "description": "VR!",
   "authors": [
@@ -39,7 +39,7 @@
     "fabricloader": ">=0.12.6",
     "fabric": "*",
     "minecraft": "1.18.x",
-    "mcxr-core": ">=QuestCraft ${core_version}",
+    "mcxr-core": ">=${core_version}",
     "java": ">=17"
   }
 }

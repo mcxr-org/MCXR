@@ -51,18 +51,6 @@ public abstract class TitleScreenMixin extends Screen {
         super(title);
     }
 
-    @Inject(method = "init", at = @At("HEAD"))
-    void init(CallbackInfo ci) {
-        int y = this.height / 4 + 48;
-        this.addRenderableWidget(new Button(
-                this.width / 2 + 104,
-                y,
-                90,
-                20,
-                new TranslatableComponent("mcxr.menu.reload"),
-                button -> MCXRPlayClient.OPEN_XR.tryInitialize()));
-    }
-
     @Inject(at=@At("RETURN"), method = "createNormalMenuOptions")
     private void addCustomButton(int i, int j, CallbackInfo ci) {
 

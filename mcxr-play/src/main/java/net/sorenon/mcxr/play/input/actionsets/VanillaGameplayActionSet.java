@@ -26,6 +26,8 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
     public final FloatAction hotbar = new FloatAction("hotbar");
+    public final FloatAction hapticRight = new FloatAction("haptic_right");
+    public final FloatAction hapticLeft = new FloatAction("haptic_left");
     public final Vec2fAction move = new Vec2fAction("move");
 
     public final BoolAction hotbarLeft = new BoolAction("hotbar_left");
@@ -84,7 +86,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/right/input/b/click"),
-                        new Pair<>(menu, "/user/hand/left/input/menu/click")
+                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
+                        new Pair<>(hapticLeft, "/user/hand/left/output/haptic"),
+                        new Pair<>(hapticRight, "/user/hand/right/output/haptic")
                 )
         );
         //  map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(

@@ -1,21 +1,25 @@
 {
   "schemaVersion": 1,
   "id": "mcxr-play",
-  "version": "${play_version}",
-  "name": "[MCXR] Play",
+  "version": "QuestCraft ${play_version}",
+  "name": "[MCXR/QCXR] Play",
   "description": "VR!",
   "authors": [
-    "Sorenon"
+    "Sorenon",
+    "TheJudge",
+    "CADIndie",
+    "IzzyDotExe",
+    "Flamgop"
   ],
   "contact": {
-    "homepage": "https://github.com/Sorenon/MCXR",
+    "homepage": "https://github.com/QuestCraftPlusPlus/MCXR",
     "sources": "https://github.com/Sorenon/MCXR",
-    "issues": "https://github.com/Sorenon/MCXR/issues"
+    "issues": "https://github.com/QuestCraftPlusPlus/MCXR/issues"
   },
   "custom": {
     "modmenu": {
       "links": {
-        "modmenu.discord": "https://discord.gg/CqEZbJwWx4"
+        "modmenu.discord": "https://discord.gg/questcraft"
       }
     }
   },
@@ -35,7 +39,7 @@
     "fabricloader": ">=0.12.6",
     "fabric": "*",
     "minecraft": "1.18.x",
-    "mcxr-core": ">=${core_version}",
+    "mcxr-core": ">=QuestCraft ${core_version}",
     "java": ">=17"
   }
 }

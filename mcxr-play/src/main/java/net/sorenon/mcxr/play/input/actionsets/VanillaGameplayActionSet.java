@@ -84,7 +84,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/right/input/b/click"),
-                        new Pair<>(menu, "/user/hand/left/input/x/click")
+                        new Pair<>(menu, "/user/hand/left/input/menu/click")
                 )
         );
         //  map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(

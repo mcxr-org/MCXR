@@ -7,6 +7,7 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.resources.language.I18n;
@@ -28,6 +29,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
@@ -61,9 +63,10 @@ public abstract class TitleScreenMixin extends Screen {
                 button -> MCXRPlayClient.OPEN_XR.tryInitialize()));
     }
 
-
     @Inject(at=@At("RETURN"), method = "createNormalMenuOptions")
     private void addCustomButton(int i, int j, CallbackInfo ci) {
+
+
         this.addRenderableWidget(
                 new Button(this.width/2 + 127, this.height / 4 + 48 + 73 + 12, 45, 20, new TranslatableComponent("Reset"), (button -> {
                     assert this.minecraft != null;
@@ -91,6 +94,13 @@ public abstract class TitleScreenMixin extends Screen {
 
                 }))
         );
+    }
+
+    @Redirect(method="createNormalMenuOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/TitleScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 2))
+    public GuiEventListener nerfRealmsButton(TitleScreen instance, GuiEventListener guiEventListener) {
+        Button wig = new Button(this.width / 2 - 100, this.height / 4 + 48 + 24 * 2, 200, 20, new TranslatableComponent("menu.online"), (button) -> {});
+        wig.visible = false;
+        return this.addRenderableWidget(wig);
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/gui/screens/TitleScreen;drawString(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))

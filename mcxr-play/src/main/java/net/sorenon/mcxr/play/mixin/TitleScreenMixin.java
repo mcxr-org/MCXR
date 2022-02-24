@@ -2,6 +2,8 @@ package net.sorenon.mcxr.play.mixin;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
+import net.minecraft.client.CloudStatus;
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
@@ -17,6 +19,8 @@ import net.sorenon.mcxr.play.openxr.OpenXR;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
 import org.apache.commons.lang3.text.WordUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.openxr.XR10;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,6 +43,8 @@ public abstract class TitleScreenMixin extends Screen {
     @Unique
     private static boolean initialized = false;
 
+    private static final Logger LOGGER = LogManager.getLogger();
+
     protected TitleScreenMixin(Component title) {
         super(title);
     }
@@ -53,6 +59,38 @@ public abstract class TitleScreenMixin extends Screen {
                 20,
                 new TranslatableComponent("mcxr.menu.reload"),
                 button -> MCXRPlayClient.OPEN_XR.tryInitialize()));
+    }
+
+
+    @Inject(at=@At("RETURN"), method = "createNormalMenuOptions")
+    private void addCustomButton(int i, int j, CallbackInfo ci) {
+        this.addRenderableWidget(
+                new Button(this.width/2 + 127, this.height / 4 + 48 + 73 + 12, 45, 20, new TranslatableComponent("Reset"), (button -> {
+                    assert this.minecraft != null;
+
+                    OpenXR OPEN_XR = MCXRPlayClient.OPEN_XR;
+                    OpenXRSystem system = OPEN_XR.session.system;
+
+                    String sys = system.systemName;
+
+                    if (sys.equalsIgnoreCase("oculus quest2")) {
+                        this.minecraft.options.renderDistance = 6;
+                        this.minecraft.options.simulationDistance = 8;
+                        this.minecraft.options.graphicsMode = GraphicsStatus.FABULOUS;
+                        this.minecraft.options.framerateLimit = 72;
+                        this.minecraft.options.renderClouds = CloudStatus.OFF;
+                    } else if (sys.equalsIgnoreCase("oculus quest")) {
+                        this.minecraft.options.renderDistance = 2;
+                        this.minecraft.options.simulationDistance = 4;
+                        this.minecraft.options.graphicsMode = GraphicsStatus.FABULOUS;
+                        this.minecraft.options.framerateLimit = 72;
+                        this.minecraft.options.renderClouds = CloudStatus.OFF;
+                    } else {
+                        LOGGER.error(sys);
+                    }
+
+                }))
+        );
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/gui/screens/TitleScreen;drawString(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))

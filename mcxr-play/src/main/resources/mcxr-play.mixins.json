@@ -8,6 +8,7 @@
     "GameRendererMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
+    "GameMenuMixin",
     "VrKeyboardInputMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",

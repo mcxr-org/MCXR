@@ -55,7 +55,9 @@ public class VanillaGameplayActionSet extends ActionSet {
             hotbarLeft,
             hotbarRight,
             turnLeft,
-            turnRight
+            turnRight,
+            hapticLeft,
+            hapticRight
             );
 
     public VanillaGameplayActionSet() {
@@ -91,69 +93,5 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(hapticRight, "/user/hand/right/output/haptic")
                 )
         );
-        //  map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
-        //          List.of(
-        //                  new Pair<>(use, "/user/hand/left/input/trigger/value"),
-        //                  new Pair<>(attack, "/user/hand/right/input/trigger/value"),
-        //                  new Pair<>(move, "/user/hand/left/input/thumbstick"),
-        //                  new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
-        //                  new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-        //                  new Pair<>(inventory, "/user/hand/left/input/b/click"),
-        //                  new Pair<>(jump, "/user/hand/right/input/a/click"),
-        //                  new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
-        //                  new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
-        //                  new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-        //                  new Pair<>(teleport, "/user/hand/right/input/b/click")
-        //          )
-        //  );
-        //  map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
-        //          List.of(
-        //                  new Pair<>(use, "/user/hand/left/input/trigger/value"),
-        //                  new Pair<>(attack, "/user/hand/right/input/trigger/value"),
-        //                  new Pair<>(move, "/user/hand/left/input/thumbstick"),
-        //                  new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
-        //                  new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-        //                  new Pair<>(inventory, "/user/hand/left/input/trackpad/click"),
-        //                  new Pair<>(jump, "/user/hand/right/input/trackpad/click"),
-        //                  new Pair<>(sprint, "/user/hand/right/input/squeeze/click"),
-        //                  new Pair<>(sneak, "/user/hand/left/input/squeeze/click"),
-        //                  new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-        //                  new Pair<>(inventory, "/user/hand/right/input/trackpad/click")
-        //          )
-        //  );
-        //  if (MCXRPlayClient.OPEN_XR.instance.handle.getCapabilities().XR_EXT_hp_mixed_reality_controller) {
-        //      map.computeIfAbsent("/interaction_profiles/hp/mixed_reality_controller", aLong -> new ArrayList<>()).addAll(
-        //              List.of(
-        //                      new Pair<>(use, "/user/hand/left/input/trigger/value"),
-        //                      new Pair<>(attack, "/user/hand/right/input/trigger/value"),
-        //                      new Pair<>(move, "/user/hand/left/input/thumbstick"),
-        //                      new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
-        //                      new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-        //                      new Pair<>(inventory, "/user/hand/left/input/y/click"),
-        //                      new Pair<>(jump, "/user/hand/right/input/a/click"),
-        //                      new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
-        //                      new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
-        //                      new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-        //                      new Pair<>(teleport, "/user/hand/right/input/b/click")
-        //              )
-        //      );
-        //  }
-        //  if (MCXRPlayClient.OPEN_XR.instance.handle.getCapabilities().XR_HTC_vive_cosmos_controller_interaction) {
-        //      map.computeIfAbsent("/interaction_profiles/htc/vive_cosmos_controller", aLong -> new ArrayList<>()).addAll(
-        //              List.of(
-        //                      new Pair<>(use, "/user/hand/left/input/trigger/value"),
-        //                      new Pair<>(attack, "/user/hand/right/input/trigger/value"),
-        //                      new Pair<>(move, "/user/hand/left/input/thumbstick"),
-        //                      new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
-        //                      new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-        //                      new Pair<>(inventory, "/user/hand/left/input/y/click"),
-        //                      new Pair<>(jump, "/user/hand/right/input/a/click"),
-        //                      new Pair<>(sprint, "/user/hand/right/input/squeeze/click"),
-        //                      new Pair<>(sneak, "/user/hand/left/input/squeeze/click"),
-        //                      new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-        //                      new Pair<>(teleport, "/user/hand/right/input/b/click")
-        //              )
-        //      );
-        //  }
     }
 }

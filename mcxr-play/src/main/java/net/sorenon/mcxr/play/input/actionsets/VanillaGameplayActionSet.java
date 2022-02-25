@@ -15,6 +15,7 @@ public class VanillaGameplayActionSet extends ActionSet {
 
     public final BoolAction jump = new BoolAction("jump");
     public final BoolAction inventory = new BoolAction("inventory");
+    public final BoolAction chat = new BoolAction("chat");
     public final BoolAction menu = new BoolAction("menu");
     public final BoolAction attack = new BoolAction("attack");
     public final BoolAction use = new BoolAction("use");
@@ -57,7 +58,8 @@ public class VanillaGameplayActionSet extends ActionSet {
             turnLeft,
             turnRight,
             hapticLeft,
-            hapticRight
+            hapticRight,
+            chat
             );
 
     public VanillaGameplayActionSet() {
@@ -91,7 +93,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(teleport, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
                         new Pair<>(hapticLeft, "/user/hand/left/output/haptic"),
-                        new Pair<>(hapticRight, "/user/hand/right/output/haptic")
+                        new Pair<>(hapticRight, "/user/hand/right/output/haptic"),
+                        new Pair<>(chat, "/user/hand/left/input/x/click")
                 )
         );
         //  map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(

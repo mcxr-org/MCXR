@@ -154,10 +154,10 @@ public final class XrInput {
         if (actionSet.hotbar.changedSinceLastSync) {
             var value = actionSet.hotbar.currentState;
             if (actionSet.hotbarLeft.currentState) {
-                actionSet.hotbarActivated = Math.abs(value) > 0.15f;
-            } else if (Math.abs(value) >= 0.7f) {
+                actionSet.hotbarActivated = value;
+            } else if (value) {
                 if (Minecraft.getInstance().player != null)
-                    Minecraft.getInstance().player.getInventory().swapPaint(-value);
+                    Minecraft.getInstance().player.getInventory().swapPaint(-1);
                 actionSet.hotbarActivated = true;
             }
         }

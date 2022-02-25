@@ -25,11 +25,11 @@ public class VanillaGameplayActionSet extends ActionSet {
 
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
-    public final FloatAction hotbar = new FloatAction("hotbar");
+    //public final FloatAction hotbar = new FloatAction("hotbar");
     public final Vec2fAction move = new Vec2fAction("move");
 
-    public final BoolAction hotbarLeft = new BoolAction("hotbar_left");
-    public final BoolAction hotbarRight = new BoolAction("hotbar_right");
+    public final FloatAction hotbarLeft = new FloatAction("hotbar_left");
+    public final FloatAction hotbarRight = new FloatAction("hotbar_right");
     //TODO remove these with new input system
     public final BoolAction turnLeft = new BoolAction("turn_left");
     public final BoolAction turnRight = new BoolAction("turn_right");
@@ -47,7 +47,7 @@ public class VanillaGameplayActionSet extends ActionSet {
             sneak,
             resetPos,
             turn,
-            hotbar,
+            //hotbar,
             move,
             teleport,
             hotbarLeft,

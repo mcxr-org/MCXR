@@ -151,21 +151,21 @@ public final class XrInput {
             }
         }
 
-        if (actionSet.hotbar.changedSinceLastSync) {
-            var value = actionSet.hotbar.currentState;
-            if (actionSet.hotbarActivated) {
-                actionSet.hotbarActivated = Math.abs(value) > 0.15f;
-            } else if (Math.abs(value) >= 0.7f) {
-                if (Minecraft.getInstance().player != null)
-                    Minecraft.getInstance().player.getInventory().swapPaint(-value);
-                actionSet.hotbarActivated = true;
-            }
-        }
-        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+//        if (actionSet.hotbar.changedSinceLastSync) {
+//            var value = actionSet.hotbar.currentState;
+//            if (actionSet.hotbarActivated) {
+//                actionSet.hotbarActivated = Math.abs(value) > 0.15f;
+//            } else if (Math.abs(value) >= 0.7f) {
+//                if (Minecraft.getInstance().player != null)
+//                    Minecraft.getInstance().player.getInventory().swapPaint(-value);
+//                actionSet.hotbarActivated = true;
+//            }
+//        }
+        if (actionSet.hotbarLeft.currentState >0.1f && actionSet.hotbarLeft.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(1);
         }
-        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+        if (actionSet.hotbarRight.currentState >0.1f && actionSet.hotbarRight.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }

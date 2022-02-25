@@ -5,10 +5,11 @@
   "compatibilityLevel": "JAVA_16",
   "client": [
     "FramebufferMixin",
+    "GameMenuMixin",
+    "ChatScreenMixin",
     "GameRendererMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
-    "GameMenuMixin",
     "VrKeyboardInputMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
@@ -30,5 +31,8 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+
+  ]
 }

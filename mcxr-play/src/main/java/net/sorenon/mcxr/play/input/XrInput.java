@@ -2,6 +2,7 @@ package net.sorenon.mcxr.play.input;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
@@ -204,6 +205,18 @@ public final class XrInput {
                 }
             }
         }
+
+        if (actionSet.chat.changedSinceLastSync) {
+            if (!actionSet.chat.currentState) {
+                Minecraft client = Minecraft.getInstance();
+                if (client.screen == null) {
+                    if (client.player != null) {
+                        client.setScreen(new ChatScreen(""));
+                    }
+                }
+            }
+        }
+
         if (actionSet.sprint.changedSinceLastSync) {
             Minecraft client = Minecraft.getInstance();
             if (actionSet.sprint.currentState) {

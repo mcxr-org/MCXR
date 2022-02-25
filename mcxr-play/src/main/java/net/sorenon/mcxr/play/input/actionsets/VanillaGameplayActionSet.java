@@ -25,17 +25,19 @@ public class VanillaGameplayActionSet extends ActionSet {
 
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
-    //public final FloatAction hotbar = new FloatAction("hotbar");
+    public final BoolAction hotbar = new BoolAction("hotbar");
     public final Vec2fAction move = new Vec2fAction("move");
 
-    public final FloatAction hotbarLeft = new FloatAction("hotbar_left");
-    public final FloatAction hotbarRight = new FloatAction("hotbar_right");
+    public final BoolAction hotbarLeft = new BoolAction("hotbar_left");
+    public final BoolAction hotbarRight = new BoolAction("hotbar_right");
     //TODO remove these with new input system
     public final BoolAction turnLeft = new BoolAction("turn_left");
     public final BoolAction turnRight = new BoolAction("turn_right");
 
     public boolean turnActivated = false;
     public boolean hotbarActivated;
+    public final FloatAction hapticLeft =new FloatAction("haptic_left");
+    public final FloatAction hapticRight  =new FloatAction("haptic_right");
 
     public final List<Action> actions = List.of(
             jump,
@@ -47,13 +49,15 @@ public class VanillaGameplayActionSet extends ActionSet {
             sneak,
             resetPos,
             turn,
-            //hotbar,
+            hotbar,
             move,
             teleport,
             hotbarLeft,
             hotbarRight,
             turnLeft,
-            turnRight
+            turnRight,
+            hapticLeft,
+            hapticRight
             );
 
     public VanillaGameplayActionSet() {
@@ -76,8 +80,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(use, "/user/hand/left/input/trigger/value"),
                         new Pair<>(attack, "/user/hand/right/input/trigger/value"),
                         new Pair<>(move, "/user/hand/left/input/thumbstick"),
-                        new Pair<>(hotbarLeft, "/user/hand/left/input/grip/pose"),
-                        new Pair<>(hotbarRight, "/user/hand/right/input/grip/pose"),
+                        new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze"),
+                        new Pair<>(hotbarRight, "/user/hand/right/input/squeeze"),
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
                         new Pair<>(inventory, "/user/hand/left/input/y/click"),
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
@@ -85,7 +89,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/right/input/b/click"),
-                        new Pair<>(menu, "/user/hand/left/input/menu/click")
+                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
+                        new Pair<>(hapticLeft, "/user/hand/left/output/haptic"),
+                        new Pair<>(hapticRight, "/user/hand/right/output/haptic")
                 )
         );
         //  map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(

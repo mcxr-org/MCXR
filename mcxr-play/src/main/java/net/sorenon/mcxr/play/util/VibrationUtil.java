@@ -30,7 +30,9 @@ public class VibrationUtil {
             XrHapticActionInfo info = new XrHapticActionInfo(infoBuf);
             info.action(action);
 
-            XR10.xrApplyHapticFeedback(MCXRPlayClient.OPEN_XR.session.handle, info, vibration);
+            XrHapticBaseHeader vibrationHeader = XrHapticBaseHeader.create(vibration.address());
+
+            XR10.xrApplyHapticFeedback(MCXRPlayClient.OPEN_XR.session.handle, info, vibrationHeader);
         }
     }
 }

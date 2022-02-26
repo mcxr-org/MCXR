@@ -34,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 
+// Izzy was here :)
 @Mixin(TitleScreen.class)
 public abstract class TitleScreenMixin extends Screen {
 
@@ -52,42 +53,49 @@ public abstract class TitleScreenMixin extends Screen {
     }
 
     @Inject(at=@At("RETURN"), method = "createNormalMenuOptions")
-    private void addCustomButton(int i, int j, CallbackInfo ci) {
+    private void addResetButton(int i, int j, CallbackInfo ci) {
 
-
+        // Creates our reset button
         this.addRenderableWidget(
                 new Button(this.width/2 + 127, this.height / 4 + 48 + 73 + 12, 45, 20, new TranslatableComponent("Reset"), (button -> {
                     assert this.minecraft != null;
-
+                    // First we fetch the name of the system from OpenXR
                     OpenXR OPEN_XR = MCXRPlayClient.OPEN_XR;
                     OpenXRSystem system = OPEN_XR.session.system;
-
                     String sys = system.systemName;
 
+                    // Since we can assume users are on a quest 1 or 2, we will set our video settings based on those two options.
                     if (sys.equalsIgnoreCase("oculus quest2")) {
+
+                        // quest 2 gets 6 render distance 8 sim distance.
                         this.minecraft.options.renderDistance = 6;
                         this.minecraft.options.simulationDistance = 8;
-                        this.minecraft.options.graphicsMode = GraphicsStatus.FABULOUS;
-                        this.minecraft.options.framerateLimit = 72;
-                        this.minecraft.options.renderClouds = CloudStatus.OFF;
+
                     } else if (sys.equalsIgnoreCase("oculus quest")) {
+
+                        // quest 1 gets 2 render distance and 4 sim distance
                         this.minecraft.options.renderDistance = 2;
                         this.minecraft.options.simulationDistance = 4;
-                        this.minecraft.options.graphicsMode = GraphicsStatus.FABULOUS;
-                        this.minecraft.options.framerateLimit = 72;
-                        this.minecraft.options.renderClouds = CloudStatus.OFF;
-                    } else {
-                        LOGGER.error(sys);
+
                     }
+
+                    // Common options for both platforms.
+                    this.minecraft.options.graphicsMode = GraphicsStatus.FABULOUS;
+                    this.minecraft.options.framerateLimit = 72;
+                    this.minecraft.options.renderClouds = CloudStatus.OFF;
 
                 }))
         );
     }
 
+
     @Redirect(method="createNormalMenuOptions", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/TitleScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 2))
     public GuiEventListener nerfRealmsButton(TitleScreen instance, GuiEventListener guiEventListener) {
+        // Creates a new empty button and hites it.
         Button wig = new Button(this.width / 2 - 100, this.height / 4 + 48 + 24 * 2, 200, 20, new TranslatableComponent("menu.online"), (button) -> {});
         wig.visible = false;
+
+        // Returns our new button as the renderable widget. We do this because the ModMenu mod relies on the realms button being present even if its hidden.
         return this.addRenderableWidget(wig);
     }
 

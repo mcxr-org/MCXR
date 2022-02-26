@@ -27,7 +27,8 @@
     "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "roomscale.ClientPlayerEntityMixin"
+    "roomscale.ClientPlayerEntityMixin",
+    "TutorialToastMixin"
   ],
   "injectors": {
     "defaultRequire": 1

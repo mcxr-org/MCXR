@@ -1,11 +1,8 @@
 package net.sorenon.mcxr.play.input.actionsets;
 
-import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.MultiPoseAction;
-import org.lwjgl.openxr.EXTHpMixedRealityController;
-import org.lwjgl.openxr.XR10;
 import oshi.util.tuples.Pair;
 
 import java.util.ArrayList;

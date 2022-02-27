@@ -175,6 +175,14 @@ public class XrRenderer {
                     Minecraft.getInstance().player,
                     MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose()
             );
+            for(int i = 0; i < 2; i++) {
+                if(i == 0) {
+                    MCXRCore.INSTANCE.setPlayerLeftArmPose(Minecraft.getInstance().player, XrInput.handsActionSet.aimPoses[i].getGamePose(), XrInput.handsActionSet.gripPoses[i].getGamePose());
+                }
+                else {
+                    MCXRCore.INSTANCE.setPlayerRightArmPose(Minecraft.getInstance().player, XrInput.handsActionSet.aimPoses[i].getGamePose(), XrInput.handsActionSet.gripPoses[i].getGamePose());
+                }
+            }
         }
         clientExt.preRender(true);
         updatePoses(camera.getEntity());

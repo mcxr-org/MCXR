@@ -27,6 +27,12 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     @Unique
     public Pose headPose = null;
 
+    @Unique
+    public Pose leftArmPose = null;
+
+    @Unique
+    public Pose rightArmPose = null;
+
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
@@ -87,6 +93,27 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         headPose = new Pose();
     }
 
+    @Override
+    public Pose getLArmPose() {
+        return leftArmPose;
+    }
+
+    @Override
+    public void markLArm() {
+        leftArmPose = new Pose();
+    }
+
+    @Override
+    public Pose getRArmPose() {
+        return rightArmPose;
+    }
+
+    @Override
+    public void markRArm() {
+        rightArmPose = new Pose();
+    }
+
+    @Override
     public boolean isXR() {
         return headPose != null;
     }

@@ -5,7 +5,7 @@ import net.sorenon.mcxr.play.input.XrInput;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class VibrationUtil {
     /**
@@ -13,22 +13,25 @@ public class VibrationUtil {
      * @param duration The duration of the vibration in millis.
      * @param amplitude The strength of the vibration.
      * @param frequency The frequency of the vibration in hertz.
-     * @param controllerIndex The index of the controller to vibrate 0 being left and 1 being right.
      */
-    public static void vibrate(int duration, float amplitude, int frequency, int controllerIndex) {
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            ByteBuffer buf = stack.calloc(XrHapticVibration.SIZEOF);
-            ByteBuffer infoBuf = stack.calloc(XrHapticActionInfo.SIZEOF);
+    public static void vibrate(int duration, float amplitude, int frequency) {
+        try (MemoryStack ignored = MemoryStack.stackPush()) {
+            var action = XrInput.vanillaGameplayActionSet.haptics.getHandle();
 
-            var action = controllerIndex == 0 ? XrInput.vanillaGameplayActionSet.hapticLeft.getHandle() : XrInput.vanillaGameplayActionSet.hapticRight.getHandle();
+            XrHapticVibration vibration = XrHapticVibration.malloc().set(
+                    XR10.XR_TYPE_HAPTIC_VIBRATION,
+                    NULL,
+                    duration,
+                    frequency,
+                    amplitude
+            );
 
-            XrHapticVibration vibration = new XrHapticVibration(buf);
-            vibration.duration(duration);
-            vibration.amplitude(amplitude);
-            vibration.frequency(frequency);
-
-            XrHapticActionInfo info = new XrHapticActionInfo(infoBuf);
-            info.action(action);
+            XrHapticActionInfo info = XrHapticActionInfo.malloc().set(
+                    XR10.XR_TYPE_HAPTIC_ACTION_INFO,
+                    NULL,
+                    action,
+                    NULL
+            );
 
             XrHapticBaseHeader vibrationHeader = XrHapticBaseHeader.create(vibration.address());
 

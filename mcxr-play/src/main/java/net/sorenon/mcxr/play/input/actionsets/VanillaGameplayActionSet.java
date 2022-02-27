@@ -1,10 +1,7 @@
 package net.sorenon.mcxr.play.input.actionsets;
 
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.input.actions.Action;
-import net.sorenon.mcxr.play.input.actions.BoolAction;
-import net.sorenon.mcxr.play.input.actions.FloatAction;
-import net.sorenon.mcxr.play.input.actions.Vec2fAction;
+import net.sorenon.mcxr.play.input.actions.*;
 import oshi.util.tuples.Pair;
 
 import java.util.ArrayList;
@@ -37,8 +34,7 @@ public class VanillaGameplayActionSet extends ActionSet {
 
     public boolean turnActivated = false;
     public boolean hotbarActivated;
-    public final FloatAction hapticLeft =new FloatAction("haptic_left");
-    public final FloatAction hapticRight  =new FloatAction("haptic_right");
+    public final MultiHapticAction haptics = new MultiHapticAction("haptics", new String[]{"/user/hand/left", "/user/hand/right"});
 
     public final List<Action> actions = List.of(
             jump,
@@ -57,8 +53,7 @@ public class VanillaGameplayActionSet extends ActionSet {
             hotbarRight,
             turnLeft,
             turnRight,
-            hapticLeft,
-            hapticRight,
+            haptics,
             chat
             );
 
@@ -92,8 +87,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(hapticLeft, "/user/hand/left/output/haptic"),
-                        new Pair<>(hapticRight, "/user/hand/right/output/haptic"),
+                        new Pair<>(haptics, "/user/hand/left/output/haptic"),
+                        new Pair<>(haptics, "/user/hand/right/output/haptic"),
                         new Pair<>(chat, "/user/hand/left/input/x/click")
                 )
         );

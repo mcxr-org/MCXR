@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import org.apache.logging.log4j.LogManager;
@@ -125,6 +126,7 @@ public class OpenXRInstance implements AutoCloseable {
 
         ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
         if (XR10.xrResultToString(handle, result, str) >= 0) {
+            Minecraft.getInstance().close();
             throw new XrException(result, method + " returned " + memUTF8(memAddress(str)));
         }
     }
@@ -149,6 +151,7 @@ public class OpenXRInstance implements AutoCloseable {
 
         ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
         if (XR10.xrResultToString(handle, result, str) >= 0) {
+            Minecraft.getInstance().close();
             throw new XrRuntimeException(method + " returned:" + memUTF8(memAddress(str)));
         }
     }

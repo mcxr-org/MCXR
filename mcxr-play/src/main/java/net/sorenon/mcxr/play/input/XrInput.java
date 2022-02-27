@@ -18,9 +18,9 @@ import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRSession;
 import net.sorenon.mcxr.play.openxr.XrException;
 import net.sorenon.mcxr.play.openxr.XrRuntimeException;
+import net.sorenon.mcxr.play.util.VibrationUtil;
 import org.joml.Quaterniond;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -28,12 +28,10 @@ import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrActionSuggestedBinding;
 import org.lwjgl.openxr.XrInteractionProfileSuggestedBinding;
 import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
-import org.lwjgl.system.MemoryStack;
 import oshi.util.tuples.Pair;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -47,6 +45,7 @@ public final class XrInput {
     public static final GuiActionSet guiActionSet = new GuiActionSet();
 
     private XrInput() {
+
     }
 
     //TODO registryify this
@@ -231,6 +230,8 @@ public final class XrInput {
         if (actionSet.sneak.changedSinceLastSync) {
             Minecraft client = Minecraft.getInstance();
             client.options.keyShift.setDown(actionSet.sneak.currentState);
+            VibrationUtil.vibrate(250, 0.025f, 1000, 0);
+            VibrationUtil.vibrate(250, 0.025f, 1000, 1);
         }
 //        if (actionSet.attackState.changedSinceLastSync()) {
 //            MinecraftClient client = MinecraftClient.getInstance();
@@ -246,6 +247,7 @@ public final class XrInput {
             Minecraft client = Minecraft.getInstance();
             InputConstants.Key key = client.options.keyUse.getDefaultKey();
             if (actionSet.use.currentState) {
+                VibrationUtil.vibrate(250, 0.15f, 1000, 0);
                 KeyMapping.click(key);
                 KeyMapping.set(key, true);
             } else {
@@ -281,6 +283,7 @@ public final class XrInput {
             GuiActionSet actionSet = guiActionSet;
             if (actionSet.pickup.changedSinceLastSync || actionSet.quickMove.changedSinceLastSync) {
                 if (actionSet.pickup.currentState || actionSet.quickMove.currentState) {
+                    VibrationUtil.vibrate(250, 0.025f, 1000, 1);
                     mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                 } else {
                     mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
@@ -305,6 +308,7 @@ public final class XrInput {
         VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
         if (actionSet.attack.changedSinceLastSync) {
             if (actionSet.attack.currentState) {
+                VibrationUtil.vibrate(250, 0.25f, 1000, 1);
                 mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
             } else {
                 mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);

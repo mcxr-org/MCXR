@@ -230,8 +230,9 @@ public final class XrInput {
         if (actionSet.sneak.changedSinceLastSync) {
             Minecraft client = Minecraft.getInstance();
             client.options.keyShift.setDown(actionSet.sneak.currentState);
-            VibrationUtil.vibrate(250, 0.5f, 3000);
-            VibrationUtil.vibrate(250, 0.5f, 3000);
+            if(client.player != null) {
+                client.player.setShiftKeyDown(actionSet.sneak.currentState);
+            }
         }
 //        if (actionSet.attackState.changedSinceLastSync()) {
 //            MinecraftClient client = MinecraftClient.getInstance();

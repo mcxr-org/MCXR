@@ -177,10 +177,10 @@ public class XrRenderer {
             );
             for(int i = 0; i < 2; i++) {
                 if(i == 0) {
-                    MCXRCore.INSTANCE.setPlayerLeftArmPose(Minecraft.getInstance().player, XrInput.handsActionSet.aimPoses[i].getGamePose(), XrInput.handsActionSet.gripPoses[i].getGamePose());
+                    MCXRCore.INSTANCE.setPlayerLeftArmPose(Minecraft.getInstance().player, XrInput.handsActionSet.aimPoses[i].getGamePose(), XrInput.handsActionSet.gripPoses[i].getRawPhysicalPose());
                 }
                 else {
-                    MCXRCore.INSTANCE.setPlayerRightArmPose(Minecraft.getInstance().player, XrInput.handsActionSet.aimPoses[i].getGamePose(), XrInput.handsActionSet.gripPoses[i].getGamePose());
+                    MCXRCore.INSTANCE.setPlayerRightArmPose(Minecraft.getInstance().player, XrInput.handsActionSet.aimPoses[i].getGamePose(), XrInput.handsActionSet.gripPoses[i].getRawPhysicalPose());
                 }
             }
         }

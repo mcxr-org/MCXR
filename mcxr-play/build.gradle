@@ -31,7 +31,7 @@ dependencies {
     }
 
     implementation("org.joml:joml:${project.joml_version}")
-    include(modImplementation("com.github.Sorenon:fart:51f6a721e7"))
+    include(modImplementation("com.github.Sorenon:fart:cf9165a7ab"))
 
     implementation group: 'org.lwjgl', name: 'lwjgl', version: '3.2.3'
     implementation group: 'org.lwjgl', name: 'lwjgl-glfw', version: '3.2.3'

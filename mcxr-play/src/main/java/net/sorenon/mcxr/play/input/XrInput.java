@@ -2,6 +2,7 @@ package net.sorenon.mcxr.play.input;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
@@ -17,9 +18,9 @@ import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRSession;
 import net.sorenon.mcxr.play.openxr.XrException;
 import net.sorenon.mcxr.play.openxr.XrRuntimeException;
+import net.sorenon.mcxr.play.util.VibrationUtil;
 import org.joml.Quaterniond;
 import org.joml.Quaternionf;
-import org.joml.Vector2f;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
@@ -27,12 +28,10 @@ import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrActionSuggestedBinding;
 import org.lwjgl.openxr.XrInteractionProfileSuggestedBinding;
 import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
-import org.lwjgl.system.MemoryStack;
 import oshi.util.tuples.Pair;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -46,6 +45,7 @@ public final class XrInput {
     public static final GuiActionSet guiActionSet = new GuiActionSet();
 
     private XrInput() {
+
     }
 
     //TODO registryify this
@@ -60,12 +60,6 @@ public final class XrInput {
         handsActionSet.getDefaultBindings(defaultBindings);
         vanillaGameplayActionSet.getDefaultBindings(defaultBindings);
         guiActionSet.getDefaultBindings(defaultBindings);
-
-        for (var action : handsActionSet.actions()) {
-            if (action instanceof SessionAwareAction sessionAwareAction) {
-                sessionAwareAction.createHandleSession(session);
-            }
-        }
 
         try (var stack = stackPush()) {
             for (var entry : defaultBindings.entrySet()) {
@@ -106,6 +100,12 @@ public final class XrInput {
             );
             // Attach the action set we just made to the session
             instance.check(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
+
+            for (var action : handsActionSet.actions()) {
+                if (action instanceof SessionAwareAction sessionAwareAction) {
+                    sessionAwareAction.createHandleSession(session);
+                }
+            }
         }
     }
 
@@ -153,11 +153,11 @@ public final class XrInput {
 
         if (actionSet.hotbar.changedSinceLastSync) {
             var value = actionSet.hotbar.currentState;
-            if (actionSet.hotbarActivated) {
-                actionSet.hotbarActivated = Math.abs(value) > 0.15f;
-            } else if (Math.abs(value) >= 0.7f) {
+            if (actionSet.hotbarLeft.currentState) {
+                actionSet.hotbarActivated = value;
+            } else if (value) {
                 if (Minecraft.getInstance().player != null)
-                    Minecraft.getInstance().player.getInventory().swapPaint(-value);
+                    Minecraft.getInstance().player.getInventory().swapPaint(-1);
                 actionSet.hotbarActivated = true;
             }
         }
@@ -165,7 +165,7 @@ public final class XrInput {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(1);
         }
-        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }
@@ -176,6 +176,9 @@ public final class XrInput {
             Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getScaledPhysicalPose().getPos());
 
             MCXRPlayClient.xrOffset = wantedPos.sub(newPos).mul(1, 0, 1);
+        }
+        if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
+            Minecraft.getInstance().pauseGame(false);
         }
         if (actionSet.turnRight.currentState && actionSet.turnRight.changedSinceLastSync) {
             MCXRPlayClient.yawTurn -= Math.toRadians(22);
@@ -201,6 +204,18 @@ public final class XrInput {
                 }
             }
         }
+
+        if (actionSet.chat.changedSinceLastSync) {
+            if (!actionSet.chat.currentState) {
+                Minecraft client = Minecraft.getInstance();
+                if (client.screen == null) {
+                    if (client.player != null) {
+                        client.setScreen(new ChatScreen(""));
+                    }
+                }
+            }
+        }
+
         if (actionSet.sprint.changedSinceLastSync) {
             Minecraft client = Minecraft.getInstance();
             if (actionSet.sprint.currentState) {
@@ -215,7 +230,7 @@ public final class XrInput {
         if (actionSet.sneak.changedSinceLastSync) {
             Minecraft client = Minecraft.getInstance();
             client.options.keyShift.setDown(actionSet.sneak.currentState);
-            if (client.player != null) {
+            if(client.player != null) {
                 client.player.setShiftKeyDown(actionSet.sneak.currentState);
             }
         }
@@ -233,6 +248,7 @@ public final class XrInput {
             Minecraft client = Minecraft.getInstance();
             InputConstants.Key key = client.options.keyUse.getDefaultKey();
             if (actionSet.use.currentState) {
+                VibrationUtil.vibrate(250, 0.4f, 3000);
                 KeyMapping.click(key);
                 KeyMapping.set(key, true);
             } else {
@@ -268,6 +284,7 @@ public final class XrInput {
             GuiActionSet actionSet = guiActionSet;
             if (actionSet.pickup.changedSinceLastSync || actionSet.quickMove.changedSinceLastSync) {
                 if (actionSet.pickup.currentState || actionSet.quickMove.currentState) {
+                    VibrationUtil.vibrate(250, 0.25f, 3000);
                     mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                 } else {
                     mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
@@ -292,6 +309,7 @@ public final class XrInput {
         VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
         if (actionSet.attack.changedSinceLastSync) {
             if (actionSet.attack.currentState) {
+                VibrationUtil.vibrate(250, 0.6f, 3000);
                 mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
             } else {
                 mouse.mouseButton(GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);

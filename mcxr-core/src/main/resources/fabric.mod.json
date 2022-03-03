@@ -39,7 +39,7 @@
     "mcxr-core.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.12.6",
+    "fabricloader": ">=0.13.0",
     "fabric": "*",
     "minecraft": "1.18.x",
     "java": ">=17"

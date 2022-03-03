@@ -216,7 +216,7 @@ public final class XrInput {
             Minecraft client = Minecraft.getInstance();
             client.options.keyShift.setDown(actionSet.sneak.currentState);
             if (client.player != null) {
-                client.player.setShiftKeyDown(true);
+                client.player.setShiftKeyDown(actionSet.sneak.currentState);
             }
         }
 //        if (actionSet.attackState.changedSinceLastSync()) {

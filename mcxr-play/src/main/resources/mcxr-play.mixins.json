@@ -9,6 +9,7 @@
     "KeyboardInputMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
+    "PauseScreenMixin",
     "accessor.CameraAcc",
     "accessor.MouseHandlerAcc",
     "accessor.RenderTargetAcc",
@@ -17,6 +18,9 @@
     "gui.MinecraftMixin",
     "gui.ScreenMixin",
     "hands.GameRendererMixin",
+    "hands.FireworkRocketEntityMixin",
+    "hands.LivingEntityMixin",
+    "hands.PlayerMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
     "rendering.LevelRendererMixin",
@@ -28,8 +32,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-    "PauseScreenMixin"
-  ]
+  }
 }

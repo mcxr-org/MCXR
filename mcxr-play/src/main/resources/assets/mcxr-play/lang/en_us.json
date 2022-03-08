@@ -1,7 +1,13 @@
 {
   "mcxr.options.title": "MCXR Options",
-  "mcxr.disable": "Disable MCXR",
-  "mcxr.enable": "Enable MCXR",
+  "mcxr.options.disable": "Disable MCXR",
+  "mcxr.options.enable": "Enable MCXR",
+  "mcxr.options.walk_direction": "Walk Direction: %s",
+  "mcxr.options.swim_direction": "Swim Direction: %s",
+  "mcxr.options.fly_direction": "Fly Direction: %s",
+  "mcxr.move_direction.head" : "Head",
+  "mcxr.move_direction.right_hand" : "Right Hand",
+  "mcxr.move_direction.left_hand" : "Left Hand",
 
   "mcxr.menu.reload": "Reload Headset",
   "mcxr.menu.session_not_created": "No headset found:",

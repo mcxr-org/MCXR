@@ -12,4 +12,6 @@ public interface MCXRCoreConfig {
     boolean controllerRaytracing();
 
     boolean roomscaleMovement();
+
+    //TODO independent look direction
 }

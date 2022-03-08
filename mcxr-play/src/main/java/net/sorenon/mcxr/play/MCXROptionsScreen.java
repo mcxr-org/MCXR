@@ -1,25 +1,33 @@
 package net.sorenon.mcxr.play;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.CycleOption;
+import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Option;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.entity.HumanoidArm;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
 import org.apache.commons.lang3.text.WordUtils;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.openxr.XR10;
 
 import java.util.List;
 
 public class MCXROptionsScreen extends Screen {
+
     public MCXROptionsScreen() {
         super(new TranslatableComponent("mcxr.options.title"));
     }
@@ -27,28 +35,56 @@ public class MCXROptionsScreen extends Screen {
     @Override
     protected void init() {
         this.addRenderableWidget(new Button(
-                this.width / 2 + 5,
-                this.height / 6 + 48 - 6,
+                this.width / 2 - 155,
+                this.height / 6 - 12,
                 150,
                 20,
                 new TranslatableComponent("mcxr.menu.reload"),
                 button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));
         this.addRenderableWidget(new Button(
-                this.width / 2 - 155,
-                this.height / 6 + 48 - 6,
+                this.width / 2 + 5,
+                this.height / 6 - 12,
                 150,
                 20,
-                MCXRPlayClient.xrDisabled ? new TranslatableComponent("mcxr.enable") : new TranslatableComponent("mcxr.disable"),
+                MCXRPlayClient.xrDisabled ? new TranslatableComponent("mcxr.options.enable") : new TranslatableComponent("mcxr.options.disable"),
                 button -> {
                     MCXRPlayClient.xrDisabled = !MCXRPlayClient.xrDisabled;
-                    if (MCXRPlayClient.xrDisabled) {
-                        button.setMessage(new TranslatableComponent("mcxr.enable"));
-                    } else {
-                        button.setMessage(new TranslatableComponent("mcxr.disable"));
-                    }
+                    button.setMessage(MCXRPlayClient.xrDisabled ? new TranslatableComponent("mcxr.options.enable") : new TranslatableComponent("mcxr.options.disable"));
+                }));
+        this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(null)));
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 155,
+                this.height / 6 + 54,
+                150,
+                20,
+                new TranslatableComponent("mcxr.options.walk_direction", MCXRPlayClient.walkDirection.toComponent()),
+                button -> {
+                    MCXRPlayClient.walkDirection = MCXRPlayClient.walkDirection.iterate();
+                    button.setMessage(new TranslatableComponent("mcxr.options.walk_direction", MCXRPlayClient.walkDirection.toComponent()));
+                }));
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 155,
+                this.height / 6 + 54 + 24,
+                150,
+                20,
+                new TranslatableComponent("mcxr.options.swim_direction", MCXRPlayClient.swimDirection.toComponent()),
+                button -> {
+                    MCXRPlayClient.swimDirection = MCXRPlayClient.swimDirection.iterate();
+                    button.setMessage(new TranslatableComponent("mcxr.options.swim_direction", MCXRPlayClient.swimDirection.toComponent()));
+                }));
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 155,
+                this.height / 6 + 54 + 24 * 2,
+                150,
+                20,
+                new TranslatableComponent("mcxr.options.fly_direction", MCXRPlayClient.flyDirection.toComponent()),
+                button -> {
+                    MCXRPlayClient.flyDirection = MCXRPlayClient.flyDirection.iterate();
+                    button.setMessage(new TranslatableComponent("mcxr.options.fly_direction", MCXRPlayClient.flyDirection.toComponent()));
                 }));
 
-        this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(null)));
+        assert this.minecraft != null;
+        this.addRenderableWidget(Option.MAIN_HAND.createButton(this.minecraft.options, this.width / 2 - 155 + 160, this.height / 6 + 54, 150));
     }
 
     @Override
@@ -58,8 +94,8 @@ public class MCXROptionsScreen extends Screen {
 
         drawCenteredString(poseStack, this.font, this.title, this.width / 2, 15, 16777215);
 
-        int y = this.height / 6 + 48 - 6 + 12;
-        int x = this.width / 2 + 5;
+        int y = this.height / 6 - 12 + 12;
+        int x = this.width / 2 - 155;
 
         MCXROptionsScreen.renderStatus(this, this.font, poseStack, mouseX, mouseY, x, y, 0, 60);
     }

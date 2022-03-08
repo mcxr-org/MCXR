@@ -34,6 +34,9 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static final MCXRGameRenderer MCXR_GAME_RENDERER = new MCXRGameRenderer();
 
     public static boolean xrDisabled = false;
+    public static MoveDirectionPose walkDirection = MoveDirectionPose.LeftHand;
+    public static MoveDirectionPose flyDirection = MoveDirectionPose.RightHand;
+    public static MoveDirectionPose swimDirection = MoveDirectionPose.LeftHand;
 
     public static MCXRPlayClient INSTANCE;
     public MCXRGuiManager MCXRGuiManager = new MCXRGuiManager();
@@ -78,6 +81,7 @@ public class MCXRPlayClient implements ClientModInitializer {
      * The angle to rotate the player's in-game hand for a more comfortable experience
      * May be different for different controllers -> needs testing
      */
+    //TODO store adjusted hand poses at pre-tick
     public static float handPitchAdjust = 30;
 
     public static int getMainHand() {

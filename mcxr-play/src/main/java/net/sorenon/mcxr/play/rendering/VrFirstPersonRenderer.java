@@ -27,6 +27,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
@@ -36,13 +37,17 @@ import net.minecraft.world.phys.Vec3;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
+import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.MoveDirectionPose;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
+import org.joml.Math;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
@@ -181,6 +186,64 @@ public class VrFirstPersonRenderer {
 
         if (camEntity instanceof LocalPlayer player && FGM.isScreenOpen()) {
             render(player, getLight(camera, world), matrices, consumers, context.tickDelta());
+        }
+
+        {
+            matrices.pushPose(); //1
+
+            Pose pose = XrInput.handsActionSet.gripPoses[1].getMinecraftPose();
+            Vec3 gripPos = convert(pose.getPos());
+            Vector3f eyePos = ((RenderPass.XrWorld) XR_RENDERER.renderPass).eyePoses.getMinecraftPose().getPos();
+            matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
+
+            float scale = MCXRPlayClient.getCameraScale();
+            matrices.scale(scale, scale, scale);
+
+            {
+                matrices.pushPose(); //2
+                matrices.mulPose(
+                        convert(
+                                pose.getOrientation()
+                                        .rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
+                        )
+                );
+
+                Matrix4f model = matrices.last().pose();
+                Matrix3f normal = matrices.last().normal();
+                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
+                consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                matrices.popPose(); //2
+            }
+
+            {
+                matrices.pushPose(); //2
+                matrices.mulPose(
+                        convert(
+                                pose.getOrientation()
+                                        .rotateX((float) -Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
+                        )
+                );
+
+                Matrix4f model = matrices.last().pose();
+                Matrix3f normal = matrices.last().normal();
+                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
+                consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                consumer.vertex(model, 0, 0, 0).color(0f, 1f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                matrices.popPose(); //2
+            }
+
+            matrices.popPose(); //1
         }
 
         for (int handIndex = 0; handIndex < 2; handIndex++) {

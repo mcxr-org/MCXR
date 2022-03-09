@@ -1,35 +1,34 @@
 package net.sorenon.mcxr.play;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.CycleOption;
-import net.minecraft.client.KeyboardHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Option;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.entity.HumanoidArm;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
 import org.apache.commons.lang3.text.WordUtils;
-import org.lwjgl.glfw.GLFW;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.openxr.XR10;
 
 import java.util.List;
 
 public class MCXROptionsScreen extends Screen {
 
-    public MCXROptionsScreen() {
+    @Nullable
+    private final Screen previous;
+
+    public MCXROptionsScreen(@Nullable Screen previous) {
         super(new TranslatableComponent("mcxr.options.title"));
+        this.previous = previous;
     }
 
     @Override
@@ -51,7 +50,7 @@ public class MCXROptionsScreen extends Screen {
                     MCXRPlayClient.xrDisabled = !MCXRPlayClient.xrDisabled;
                     button.setMessage(MCXRPlayClient.xrDisabled ? new TranslatableComponent("mcxr.options.enable") : new TranslatableComponent("mcxr.options.disable"));
                 }));
-        this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(null)));
+        this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.previous)));
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
                 this.height / 6 + 54,

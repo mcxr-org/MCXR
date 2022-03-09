@@ -28,7 +28,7 @@ public class PauseScreenMixin extends Screen {
                 90,
                 20,
                 new TranslatableComponent("mcxr.options.title"),
-                button -> this.minecraft.setScreen(new MCXROptionsScreen())));
+                button -> this.minecraft.setScreen(new MCXROptionsScreen(this))));
     }
 
     @Inject(method = "render", at = @At("RETURN"))

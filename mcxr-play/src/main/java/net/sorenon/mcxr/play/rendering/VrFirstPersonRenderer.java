@@ -188,64 +188,6 @@ public class VrFirstPersonRenderer {
             render(player, getLight(camera, world), matrices, consumers, context.tickDelta());
         }
 
-        {
-            matrices.pushPose(); //1
-
-            Pose pose = XrInput.handsActionSet.gripPoses[1].getMinecraftPose();
-            Vec3 gripPos = convert(pose.getPos());
-            Vector3f eyePos = ((RenderPass.XrWorld) XR_RENDERER.renderPass).eyePoses.getMinecraftPose().getPos();
-            matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
-
-            float scale = MCXRPlayClient.getCameraScale();
-            matrices.scale(scale, scale, scale);
-
-            {
-                matrices.pushPose(); //2
-                matrices.mulPose(
-                        convert(
-                                pose.getOrientation()
-                                        .rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
-                        )
-                );
-
-                Matrix4f model = matrices.last().pose();
-                Matrix3f normal = matrices.last().normal();
-                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
-                consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
-                consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                matrices.popPose(); //2
-            }
-
-            {
-                matrices.pushPose(); //2
-                matrices.mulPose(
-                        convert(
-                                pose.getOrientation()
-                                        .rotateX((float) -Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
-                        )
-                );
-
-                Matrix4f model = matrices.last().pose();
-                Matrix3f normal = matrices.last().normal();
-                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
-                consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
-                consumer.vertex(model, 0, 0, 0).color(0f, 1f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                matrices.popPose(); //2
-            }
-
-            matrices.popPose(); //1
-        }
-
         for (int handIndex = 0; handIndex < 2; handIndex++) {
             if (!XrInput.handsActionSet.grip.isActive[handIndex]) {
                 continue;
@@ -266,22 +208,33 @@ public class VrFirstPersonRenderer {
             matrices.mulPose(
                     convert(
                             pose.getOrientation()
-                                    .rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
+                                    .rotateX(Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
                     )
             );
             boolean debug = Minecraft.getInstance().options.renderDebug;
 
-            if (handIndex == MCXRPlayClient.getMainHand() && (FGM.isScreenOpen() || debug)) {
+            if (handIndex == MCXRPlayClient.getMainHand()) {
                 Matrix4f model = matrices.last().pose();
                 Matrix3f normal = matrices.last().normal();
 
-                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
-                consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                if (debug) {
+                    VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
+                    consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
 
-                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
-                consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                    consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
+                }
+                if (FGM.isScreenOpen()) {
+                    VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(2.0));
+                    consumer.vertex(model, 0, 0, 0).color(0.1f, 0.1f, 0.1f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -0.5f, 0).color(0.1f, 0.1f, 0.1f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
+                    consumer.vertex(model, 0, 0, 0).color(1f, 1f, 1f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -1, 0).color(1f, 1f, 1f, 1f).normal(normal, 0, -1, 0).endVertex();
+                }
             }
 
 

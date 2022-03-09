@@ -47,7 +47,7 @@ public abstract class TitleScreenMixin extends Screen {
                 90,
                 20,
                 new TranslatableComponent("mcxr.options.title"),
-                button -> this.minecraft.setScreen(new MCXROptionsScreen())));
+                button -> this.minecraft.setScreen(new MCXROptionsScreen(this))));
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/gui/screens/TitleScreen;drawString(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))

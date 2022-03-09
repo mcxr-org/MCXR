@@ -36,7 +36,7 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static boolean xrDisabled = false;
     public static MoveDirectionPose walkDirection = MoveDirectionPose.LeftHand;
     public static MoveDirectionPose flyDirection = MoveDirectionPose.RightHand;
-    public static MoveDirectionPose swimDirection = MoveDirectionPose.LeftHand;
+    public static MoveDirectionPose swimDirection = MoveDirectionPose.RightHand;
 
     public static MCXRPlayClient INSTANCE;
     public MCXRGuiManager MCXRGuiManager = new MCXRGuiManager();

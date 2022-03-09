@@ -7,16 +7,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.sorenon.mcxr.core.JOMLUtil;
-import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.MoveDirectionPose;
-import net.sorenon.mcxr.play.input.XrInput;
-import net.sorenon.mcxr.play.rendering.VrFirstPersonRenderer;
 import org.joml.Math;
-import org.joml.Quaternionf;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,6 +19,8 @@ import java.util.Optional;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
+
+    //TODO figure out if this should just be the direction of the player's head
 
     @Shadow
     public abstract boolean isAlive();
@@ -61,10 +55,12 @@ public abstract class LivingEntityMixin extends Entity {
             if (val.isPresent()) {
                 Vec3 inputVector = getInputVector(move, speed, val.get());
                 this.setDeltaMovement(this.getDeltaMovement().add(inputVector));
-                return;
+            } else {
+                this.moveRelative(speed, move);
             }
+        } else {
+            this.moveRelativeLand(instance, speed, move);
         }
-        moveRelativeLand(instance, speed, move);
     }
 
     @Redirect(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getLookAngle()Lnet/minecraft/world/phys/Vec3;"))

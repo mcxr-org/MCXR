@@ -84,6 +84,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click")
                 )
         );
+        /*
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(use, "/user/hand/left/input/trigger/value"),
@@ -148,5 +149,6 @@ public class VanillaGameplayActionSet extends ActionSet {
                     )
             );
         }
+         */
     }
 }

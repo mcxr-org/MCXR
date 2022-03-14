@@ -58,12 +58,6 @@ public final class XrInput {
         vanillaGameplayActionSet.getDefaultBindings(defaultBindings);
         guiActionSet.getDefaultBindings(defaultBindings);
 
-        for (var action : handsActionSet.actions()) {
-            if (action instanceof SessionAwareAction sessionAwareAction) {
-                sessionAwareAction.createHandleSession(session);
-            }
-        }
-
         try (var stack = stackPush()) {
             for (var entry : defaultBindings.entrySet()) {
                 var bindingsSet = entry.getValue();
@@ -103,6 +97,12 @@ public final class XrInput {
             );
             // Attach the action set we just made to the session
             instance.checkPanic(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
+        }
+
+        for (var action : handsActionSet.actions()) {
+            if (action instanceof SessionAwareAction sessionAwareAction) {
+                sessionAwareAction.createHandleSession(session);
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
@@ -93,24 +94,21 @@ public class OpenXRState {
             checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             boolean missingOpenGL = true;
-            PointerBuffer extensions = stackCallocPointer(3);
+            PointerBuffer extensions = stackCallocPointer(2);
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
-                if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
+                if (extensionName.equals(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
-                    extensions.put(memAddress(stackUTF8(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)));
+                    extensions.put(memAddress(stackUTF8(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)));
                 }
-                if (extensionName.equals(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
-                }
-                if (extensionName.equals(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)));
+                if (extensionName.equals(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)) {
+                    extensions.put(memAddress(stackUTF8(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)));
                 }
             }
 
             if (missingOpenGL) {
-                throw new XrException(0, "OpenXR runtime does not support OpenGL, try using SteamVR instead");
+                throw new XrException(0, "OpenXR runtime does not support OpenGLES, try using Quest instead");
             }
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
@@ -118,10 +116,18 @@ public class OpenXRState {
             applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
             applicationInfo.applicationVersion(1);
 
+            XrInstanceCreateInfoAndroidKHR androidCreateInfo = XrInstanceCreateInfoAndroidKHR.malloc(stack);
+            androidCreateInfo.set(
+                    KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
+                    NULL,
+                    memGetAddress(MCXRNativeLoad.getJVMPtr()),
+                    memGetAddress(MCXRNativeLoad.getApplicationActivityPtr())
+            );
+
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    0,
+                    androidCreateInfo.address(),
                     0,
                     applicationInfo,
                     null,

@@ -45,7 +45,7 @@ public class MCXRCoreClient implements ClientModInitializer {
                 ((MCXRCoreConfigImpl) MCXRCore.getCoreConfig()).xrEnabled = false
         );
 
-        ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSE_HEAD, (client, handler, buf, listenerAdder)  -> {
+        ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSES, (client, handler, buf, listenerAdder)  -> {
             if(client.level != null) {
                 Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
                 Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
@@ -53,7 +53,7 @@ public class MCXRCoreClient implements ClientModInitializer {
                 if(player != null) {
                     PlayerEntityAcc acc = (PlayerEntityAcc) player;
                     if(acc.getHeadPose() == null) {
-                        acc.markVR();
+                        acc.setIsXr(true);
                     }
                     Pose pose = new Pose();
                     pose.pos.set(vec);
@@ -61,50 +61,6 @@ public class MCXRCoreClient implements ClientModInitializer {
                     acc.getHeadPose().set(pose);
                 }
             }
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSE_LHAND, (client, handler, buf, listenerAdder)  -> {
-            if(client.level != null) {
-                Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
-                Player player  = client.level.getPlayerByUUID(buf.readUUID());
-                if(player != null) {
-                    PlayerEntityAcc acc = (PlayerEntityAcc) player;
-                    if(acc.getLArmPose() == null) {
-                        acc.markLArm();
-                    }
-                    Pose pose = new Pose();
-                    pose.pos.set(vec);
-                    pose.orientation.set(quat);
-                    acc.getLArmPose().set(pose);
-                }
-            }
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSE_RHAND, (client, handler, buf, listenerAdder)  -> {
-            if(client.level != null) {
-                Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
-                Player player  = client.level.getPlayerByUUID(buf.readUUID());
-                if(player != null) {
-                    PlayerEntityAcc acc = (PlayerEntityAcc) player;
-                    if(acc.getRArmPose() == null) {
-                        acc.markRArm();
-                    }
-                    Pose pose = new Pose();
-                    pose.pos.set(vec);
-                    pose.orientation.set(quat);
-                    acc.getRArmPose().set(pose);
-                }
-            }
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSE_LHAND, (client, handler, buf, listenerAdder)  -> {
-
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSE_RHAND, (client, handler, buf, listenerAdder)  -> {
-
         });
     }
 }

@@ -12,11 +12,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //TODO have a look at https://github.com/LambdAurora/LambdaControls compat
 @Mixin(KeyboardInput.class)
-public class VrKeyboardInputMixin extends Input {
+public class KeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
     void overwriteMovement(boolean slowDown, CallbackInfo ci) {
-        if (MCXRPlayClient.INSTANCE.flatGuiManager.isScreenOpen()) return;
+        if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) return;
 
         var thumbstick = XrInput.vanillaGameplayActionSet.move.currentState;
         this.forwardImpulse = thumbstick.y();

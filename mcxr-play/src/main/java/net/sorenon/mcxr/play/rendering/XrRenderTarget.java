@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.mixin.accessor.RenderTargetAcc;
 import org.lwjgl.opengl.GL30;
 
@@ -19,7 +20,7 @@ public class XrRenderTarget extends TextureTarget {
 
         ((RenderTargetAcc) this).setColorTextureId(color);
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBufferId);
-        GL30.glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color, 0, index);
+        MCXRNativeLoad.renderImage(color, index);
 
         this.setClearColor(sRGBToLinear(239 / 255f), sRGBToLinear(50 / 255f), sRGBToLinear(61 / 255f), 255 / 255f);
     }

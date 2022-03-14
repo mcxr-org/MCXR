@@ -43,8 +43,8 @@ public class OpenXRSwapchain implements AutoCloseable {
             instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
 
             int imageCount = intBuf.get(0);
-            XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.calloc(imageCount, stack);
-            for (XrSwapchainImageOpenGLKHR image : swapchainImageBuffer) {
+            XrSwapchainImageOpenGLESKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLESKHR.calloc(imageCount, stack);
+            for (XrSwapchainImageOpenGLESKHR image : swapchainImageBuffer) {
                 image.type(KHROpenglEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
             }
 

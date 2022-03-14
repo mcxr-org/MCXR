@@ -35,7 +35,7 @@ public class HumanoidModelMixin<T extends LivingEntity> extends AgeableListModel
 
     @Inject(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", at = @At(value = "TAIL"))
     public void setupAnimInject(T livingEntity, float f, float g, float h, float i, float j, CallbackInfo ci) {
-        if(livingEntity instanceof Player player) {
+        /* if(livingEntity instanceof Player player) {
             PlayerEntityAcc acc = (PlayerEntityAcc) player;
             if(acc.isXR()) {
                 if (acc.getLArmPose() != null) {
@@ -88,6 +88,7 @@ public class HumanoidModelMixin<T extends LivingEntity> extends AgeableListModel
                 }
             }
         }
+        */
     }
 
     @Shadow

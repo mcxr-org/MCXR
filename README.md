@@ -38,7 +38,7 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | Immersive Controls          | ⛔                               | ✅                             | 🚧In development        |
 | Open Source                 | ⛔                               | ✅                             | ✅                      |
 | Versions                    | N/A                             | 1.7.10, and 1.10 through [1.18](https://github.com/jrbudda/Vivecraft_118/releases) | 1.18                     |
-| Linkless Quest Support      | ⛔                               | ⛔                           | 🚧[In development](https://discord.gg/fEmGTWk38j)|
+| Standalone Quest Support    | ⛔                               | ⛔                           | ✅[QuestCraft](https://sidequestvr.com/app/7150/questcraft)|
 | Special VR player models in multiplayer| ⛔                    | ✅                             | 🚧In development        |
 | Spigot Plugin               | N/A                             | ✅                             | ⛔                       |
 | Patch Method                | N/A                             | Jar mod                       | Mixins                   |

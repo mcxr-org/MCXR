@@ -1,21 +1,27 @@
 package net.sorenon.mcxr.play.openxr;
 
-import com.mojang.blaze3d.platform.Window;
-import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFWNativeWGL;
-import org.lwjgl.glfw.GLFWNativeWin32;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.glfw.*;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Platform;
 import org.lwjgl.system.Struct;
+import org.lwjgl.system.linux.X11;
 import org.lwjgl.system.windows.User32;
 
-import java.lang.reflect.Method;
+import java.util.Objects;
+import net.minecraft.client.Minecraft;
 
+import static org.lwjgl.opengl.GLX13.*;
+import static org.lwjgl.system.Checks.check;
+import static org.lwjgl.system.JNI.invokePP;
+import static org.lwjgl.system.MemoryStack.stackInts;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
+
+import com.mojang.blaze3d.platform.Window;
 
 public class OpenXRSystem {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -38,11 +44,11 @@ public class OpenXRSystem {
         this.handle = handle;
 
         try (var stack = stackPush()) {
-            XrGraphicsRequirementsOpenGLESKHR graphicsRequirements = XrGraphicsRequirementsOpenGLESKHR.calloc(stack).type(KHROpenglEsEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR).next(NULL);
-            instance.check(KHROpenglEsEnable.xrGetOpenGLESGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLESGraphicsRequirementsKHR");
+            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.calloc(stack).type(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
+            instance.checkPanic(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
 
             XrSystemProperties systemProperties = XrSystemProperties.calloc(stack).type(XR10.XR_TYPE_SYSTEM_PROPERTIES);
-            instance.check(XR10.xrGetSystemProperties(instance.handle, handle, systemProperties), "xrGetSystemProperties");
+            instance.checkPanic(XR10.xrGetSystemProperties(instance.handle, handle, systemProperties), "xrGetSystemProperties");
             XrSystemTrackingProperties trackingProperties = systemProperties.trackingProperties();
             XrSystemGraphicsProperties graphicsProperties = systemProperties.graphicsProperties();
 
@@ -61,26 +67,42 @@ public class OpenXRSystem {
         }
     }
 
-    public Struct createOpenGLESBinding(MemoryStack stack) {
+    public Struct createOpenGLBinding(MemoryStack stack) {
         //Bind the OpenGL context to the OpenXR instance and create the session
-        try {
-            Class<?> clazz = Class.forName("org.lwjgl.glfw.CallbackBridge");
-            Method eglDisplay = clazz.getDeclaredMethod("getEGLDisplayPtr");
-            Method eglConfig = clazz.getDeclaredMethod("getEGLConfigPtr");
-            Method eglContext = clazz.getDeclaredMethod("getEGLContextPtr");
-            long eglDisplayPtr = (long) eglDisplay.invoke(null);
-            long eglConfigPtr = (long) eglConfig.invoke(null);
-            long eglContextPtr = (long) eglContext.invoke(null);
-            return XrGraphicsBindingOpenGLESAndroidKHR.calloc(stack).set(
-                    KHROpenglEsEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_ES_ANDROID_KHR,
+        Window window = Minecraft.getInstance().getWindow();
+        long windowHandle = window.getWindow();
+        if (Platform.get() == Platform.WINDOWS) {
+            return XrGraphicsBindingOpenGLWin32KHR.malloc(stack).set(
+                    KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
                     NULL,
-                    eglDisplayPtr,
-                    eglConfigPtr,
-                    eglContextPtr
+                    User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),
+                    GLFWNativeWGL.glfwGetWGLContext(windowHandle)
             );
-        } catch(Exception e)  {
-            System.out.println(e);
+        } else if (Platform.get() == Platform.LINUX) {
+            //Possible TODO Wayland + XCB (look at https://github.com/Admicos/minecraft-wayland)
+            long xDisplay = GLFWNativeX11.glfwGetX11Display();
+
+            long glXContext = GLFWNativeGLX.glfwGetGLXContext(windowHandle);
+            long glXWindowHandle = GLFWNativeGLX.glfwGetGLXWindow(windowHandle);
+
+            int fbXID = glXQueryDrawable(xDisplay, glXWindowHandle, GLX_FBCONFIG_ID);
+            PointerBuffer fbConfigBuf = glXChooseFBConfig(xDisplay, X11.XDefaultScreen(xDisplay), stackInts(GLX_FBCONFIG_ID, fbXID, 0));
+            if(fbConfigBuf == null) {
+                throw new IllegalStateException("Your framebuffer config was null, make a github issue");
+            }
+            long fbConfig = fbConfigBuf.get();
+
+            return XrGraphicsBindingOpenGLXlibKHR.calloc(stack).set(
+                    KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
+                    NULL,
+                    xDisplay,
+                    (int) Objects.requireNonNull(glXGetVisualFromFBConfig(xDisplay, fbConfig)).visualid(),
+                    fbConfig,
+                    glXWindowHandle,
+                    glXContext
+            );
+        } else {
+            throw new IllegalStateException("Macos not supported");
         }
-        throw new IllegalStateException("Could not get the classes needed by reflection!");
     }
 }

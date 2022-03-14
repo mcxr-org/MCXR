@@ -1,9 +1,9 @@
 package net.sorenon.mcxr.play.rendering;
 
+import net.minecraft.client.Minecraft;
+import net.sorenon.mcxr.play.mixin.accessor.RenderTargetAcc;
 import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import net.minecraft.client.Minecraft;
-import net.sorenon.mcxr.play.mixin.accessor.FramebufferAcc;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,21 +20,21 @@ public class MCXRMainTarget extends MainTarget {
     public static final Logger LOGGER = Logger.getLogger("MCXR");
 
     //The framebuffer used for rendering to the window
-    public final MainTarget windowFramebuffer;
+    public final MainTarget minecraftMainRenderTarget;
 
     //The framebuffer that is affected by draw calls
     private RenderTarget currentFramebuffer;
 
     //The current dimensions of all the vanilla framebuffers
-    public int gameWidth;
-    public int gameHeight;
+    public int minecraftFramebufferWidth;
+    public int minecraftFramebufferHeight;
 
     public MCXRMainTarget(int width, int height) {
         super(width, height);
-        windowFramebuffer = new MainTarget(width, height);
-        setFramebuffer(windowFramebuffer);
-        gameWidth = width;
-        gameHeight = height;
+        minecraftMainRenderTarget = new MainTarget(width, height);
+        setFramebuffer(minecraftMainRenderTarget);
+        minecraftFramebufferWidth = width;
+        minecraftFramebufferHeight = height;
     }
 
     //Used to set the current framebuffer without resizing the dimensions of the other framebuffers
@@ -53,44 +53,44 @@ public class MCXRMainTarget extends MainTarget {
 //        this.clearColor[3] = framebuffer.clearColor[3];
         this.filterMode = framebuffer.filterMode;
 
-        FramebufferAcc thiz = ((FramebufferAcc) this);
-        thiz.colorAttachment(framebuffer.getColorTextureId());
-        thiz.depthAttachment(framebuffer.getDepthTextureId());
+        RenderTargetAcc acc = ((RenderTargetAcc) this);
+        acc.setColorTextureId(framebuffer.getColorTextureId());
+        acc.setDepthBufferId(framebuffer.getDepthTextureId());
     }
 
     public void setXrFramebuffer(RenderTarget framebuffer) {
         setFramebuffer(framebuffer);
-        if (framebuffer.width != gameWidth ||
-                framebuffer.height != gameHeight) {
+        if (framebuffer.width != minecraftFramebufferWidth ||
+                framebuffer.height != minecraftFramebufferHeight) {
             Minecraft.getInstance().gameRenderer.resize(framebuffer.width, framebuffer.height);
             LOGGER.log(Level.FINE, "Resizing GameRenderer");
         }
     }
 
     public void resetFramebuffer() {
-        setFramebuffer(windowFramebuffer);
+        setFramebuffer(minecraftMainRenderTarget);
     }
 
     public RenderTarget getFramebuffer() {
         return currentFramebuffer;
     }
 
-    public RenderTarget getWindowFramebuffer() {
-        return windowFramebuffer;
+    public RenderTarget getMinecraftMainRenderTarget() {
+        return minecraftMainRenderTarget;
     }
 
     public boolean isCustomFramebuffer() {
-        return currentFramebuffer != windowFramebuffer;
+        return currentFramebuffer != minecraftMainRenderTarget;
     }
 
     public void resize(int width, int height, boolean getError) {
-        if (windowFramebuffer != null) {
-            windowFramebuffer.resize(width, height, getError);
+        if (minecraftMainRenderTarget != null) {
+            minecraftMainRenderTarget.resize(width, height, getError);
         }
     }
 
     public void destroyBuffers() {
-        windowFramebuffer.destroyBuffers();
+        minecraftMainRenderTarget.destroyBuffers();
     }
 
     public void copyDepthFrom(RenderTarget framebuffer) {

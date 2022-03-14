@@ -7,19 +7,20 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.JOMLUtil;
-import net.sorenon.mcxr.play.rendering.ExistingTexture;
-import net.sorenon.mcxr.play.rendering.XrCamera;
+import net.sorenon.mcxr.play.rendering.UnownedTexture;
+import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import org.jetbrains.annotations.Nullable;
 import org.joml.*;
 
-public class FlatGuiManager {
+public class MCXRGuiManager {
 
-    public final int framebufferWidth = 1980;
-    public final int framebufferHeight = 1080;
+    public final int guiFramebufferWidth = 1980;
+    public final int guiFramebufferHeight = 1080;
 
-    public final ResourceLocation texture = new ResourceLocation("mcxr", "gui");
-    public RenderTarget backFramebuffer;
-    public RenderTarget frontFramebuffer;
+    public final ResourceLocation guiRenderTexture = new ResourceLocation("mcxr", "gui");
+
+    public RenderTarget guiRenderTarget;
+    public RenderTarget guiPostProcessRenderTarget;
 
     public double guiScale;
 
@@ -39,16 +40,16 @@ public class FlatGuiManager {
     public void init() {
         guiScale = calcGuiScale();
 
-        int widthFloor = (int) (framebufferWidth / guiScale);
-        scaledWidth = framebufferWidth / guiScale > widthFloor ? widthFloor + 1 : widthFloor;
+        int widthFloor = (int) (guiFramebufferWidth / guiScale);
+        scaledWidth = guiFramebufferWidth / guiScale > widthFloor ? widthFloor + 1 : widthFloor;
 
-        int heightFloor = (int) (framebufferHeight / guiScale);
-        scaledHeight = framebufferHeight / guiScale > heightFloor ? heightFloor + 1 : heightFloor;
+        int heightFloor = (int) (guiFramebufferHeight / guiScale);
+        scaledHeight = guiFramebufferHeight / guiScale > heightFloor ? heightFloor + 1 : heightFloor;
 
-        backFramebuffer = new TextureTarget(framebufferWidth, framebufferHeight, true, Minecraft.ON_OSX);
-        backFramebuffer.setClearColor(0, 0, 0, 0);
-        frontFramebuffer = new TextureTarget(framebufferWidth, framebufferHeight, false, Minecraft.ON_OSX);
-        Minecraft.getInstance().getTextureManager().register(texture, new ExistingTexture(frontFramebuffer.getColorTextureId()));
+        guiRenderTarget = new TextureTarget(guiFramebufferWidth, guiFramebufferHeight, true, Minecraft.ON_OSX);
+        guiRenderTarget.setClearColor(0, 0, 0, 0);
+        guiPostProcessRenderTarget = new TextureTarget(guiFramebufferWidth, guiFramebufferHeight, false, Minecraft.ON_OSX);
+        Minecraft.getInstance().getTextureManager().register(guiRenderTexture, new UnownedTexture(guiPostProcessRenderTarget.getColorTextureId()));
     }
 
     @SuppressWarnings("ConditionCoveredByFurtherCondition")
@@ -58,7 +59,7 @@ public class FlatGuiManager {
 
         int scale;
         scale = 1;
-        while (scale != guiScale && scale < framebufferWidth && scale < framebufferHeight && framebufferWidth / (scale + 1) >= 320 && framebufferHeight / (scale + 1) >= 240) {
+        while (scale != guiScale && scale < guiFramebufferWidth && scale < guiFramebufferHeight && guiFramebufferWidth / (scale + 1) >= 320 && guiFramebufferHeight / (scale + 1) >= 240) {
             ++scale;
         }
 
@@ -72,7 +73,7 @@ public class FlatGuiManager {
         return Minecraft.getInstance().screen != null;
     }
 
-    public void openScreen(@Nullable Screen screen) {
+    public void handleOpenScreen(@Nullable Screen screen) {
         if (screen == null) {
             position = null;
             orientation.set(0, 0, 0, 1);
@@ -83,7 +84,7 @@ public class FlatGuiManager {
     }
 
     public void resetTransform() {
-        XrCamera camera = (XrCamera) Minecraft.getInstance().gameRenderer.getMainCamera();
+        MCXRCamera camera = (MCXRCamera) Minecraft.getInstance().gameRenderer.getMainCamera();
         if (camera.isInitialized()) {
             orientation = JOMLUtil.convertd(camera.rotation());
             position = JOMLUtil.convert(MCXRPlayClient.viewSpacePoses.getUnscaledPhysicalPose().getPos().add(orientation.transform(new Vector3f(0, -0.5f, 1))));

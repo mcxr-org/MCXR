@@ -9,11 +9,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
 import net.sorenon.mcxr.core.config.MCXRCoreConfig;
@@ -28,9 +25,9 @@ public class MCXRCore implements ModInitializer {
 
     public static final ResourceLocation S2C_CONFIG = new ResourceLocation("mcxr", "config");
 
-    public static final ResourceLocation POSE_HEAD = new ResourceLocation("mcxr", "posehead");
-    public static final ResourceLocation POSE_LHAND = new ResourceLocation("mcxr", "poselhand");
-    public static final ResourceLocation POSE_RHAND = new ResourceLocation("mcxr", "poserhand");
+    public static final ResourceLocation IS_XR_PLAYER = new ResourceLocation("mcxr", "is_xr_player");
+    public static final ResourceLocation POSES = new ResourceLocation("mcxr", "poses");
+
     public static MCXRCore INSTANCE;
 
     private static final Logger LOGGER = LogManager.getLogger("MCXR Core");
@@ -44,10 +41,6 @@ public class MCXRCore implements ModInitializer {
             config.xrEnabled = true;
         }
 
-        initNetworkListeners();
-    }
-
-    public void initNetworkListeners() {
         ServerLoginNetworking.registerGlobalReceiver(S2C_CONFIG, (server, handler, understood, buf, synchronizer, responseSender) -> {
             if (understood) {
                 boolean xr = buf.readBoolean();
@@ -66,7 +59,20 @@ public class MCXRCore implements ModInitializer {
             sender.sendPacket(S2C_CONFIG, buf);
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(POSE_HEAD,
+        ServerPlayNetworking.registerGlobalReceiver(IS_XR_PLAYER,
+                (server, player, handler, buf, responseSender) -> {
+                    boolean isXr = buf.readBoolean();
+                    server.execute(() -> {
+                        PlayerEntityAcc acc = (PlayerEntityAcc) player;
+                        boolean wasXr = acc.isXR();
+                        acc.setIsXr(isXr);
+                        if (wasXr && !isXr) {
+                            player.refreshDimensions();
+                        }
+                    });
+                });
+
+        ServerPlayNetworking.registerGlobalReceiver(POSES,
                 (server, player, handler, buf, responseSender) -> {
                     Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
                     Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
@@ -75,104 +81,24 @@ public class MCXRCore implements ModInitializer {
                         pose.pos.set(vec);
                         pose.orientation.set(quat);
                         setPlayerHeadPose(player, pose);
-                        sendToAllOtherPlayers(player, POSE_HEAD, pose, server);
                     });
                 });
-
-        ServerPlayNetworking.registerGlobalReceiver(POSE_LHAND,
-                (server, player, handler, buf, responseSender) -> {
-                    Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    server.execute(() -> {
-                        Pose pose = new Pose();
-                        pose.pos.set(vec);
-                        pose.orientation.set(quat);
-                        setPlayerLeftArmPose(player, pose, pose);
-                        sendToAllOtherPlayers(player, POSE_LHAND, pose, server);
-                    });
-                });
-
-        ServerPlayNetworking.registerGlobalReceiver(POSE_RHAND,
-                (server, player, handler, buf, responseSender) -> {
-                    Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    server.execute(() -> {
-                        Pose pose = new Pose();
-                        pose.pos.set(vec);
-                        pose.orientation.set(quat);
-                        setPlayerRightArmPose(player, pose, pose);
-                        sendToAllOtherPlayers(player, POSE_RHAND, pose, server);
-                    });
-                });
-    }
-
-    private void sendToAllOtherPlayers(ServerPlayer player, ResourceLocation channel, Pose pose, MinecraftServer server) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
-        Vector3f pos = pose.pos;
-        Quaternionf quat = pose.orientation;
-        buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
-        buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
-        buf.writeUUID(player.getUUID());
-        for(ServerPlayer player1 : server.getPlayerList().getPlayers()) {
-            if(player1 != player) {
-                ServerPlayNetworking.send(player1, channel, buf);
-            }
-        }
     }
 
     public void setPlayerHeadPose(Player player, Pose pose) {
         PlayerEntityAcc acc = (PlayerEntityAcc) player;
-        if (acc.getHeadPose() == null) {
-            acc.markVR();
-        }
         acc.getHeadPose().set(pose);
 
-        if (player.level.isClientSide && player instanceof LocalPlayer) {
+        if (player instanceof LocalPlayer) {
+            acc.getHeadPose().getPos().sub(JOMLUtil.convert(player.position()).get(new Vector3f()));
+
             FriendlyByteBuf buf = PacketByteBufs.create();
-            Vector3f pos = pose.pos;
-            Quaternionf quat = pose.orientation;
+            Vector3f pos = acc.getHeadPose().getPos();
+            Quaternionf quat = acc.getHeadPose().getOrientation();
             buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
             buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
 
-            ClientPlayNetworking.send(POSE_HEAD, buf);
-        }
-    }
-
-    public void setPlayerLeftArmPose(Player player, Pose aim, Pose rotation) {
-        PlayerEntityAcc acc = (PlayerEntityAcc) player;
-        if (acc.getLArmPose() == null) {
-            acc.markLArm();
-        }
-        acc.getLArmPose().pos.set(aim.pos);
-        acc.getLArmPose().orientation.set(rotation.orientation);
-
-        if (player.level.isClientSide && player instanceof LocalPlayer) {
-            FriendlyByteBuf buf = PacketByteBufs.create();
-            Vector3f pos = aim.pos;
-            Quaternionf quat = rotation.orientation;
-            buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
-            buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
-
-            ClientPlayNetworking.send(POSE_LHAND, buf);
-        }
-    }
-
-    public void setPlayerRightArmPose(Player player, Pose aim, Pose rotation) {
-        PlayerEntityAcc acc = (PlayerEntityAcc) player;
-        if (acc.getRArmPose() == null) {
-            acc.markRArm();
-        }
-        acc.getRArmPose().pos.set(aim.pos);
-        acc.getRArmPose().orientation.set(rotation.orientation);
-
-        if (player.level.isClientSide && player instanceof LocalPlayer) {
-            FriendlyByteBuf buf = PacketByteBufs.create();
-            Vector3f pos = aim.pos;
-            Quaternionf quat = rotation.orientation;
-            buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
-            buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
-
-            ClientPlayNetworking.send(POSE_RHAND, buf);
+            ClientPlayNetworking.send(POSES, buf);
         }
     }
 

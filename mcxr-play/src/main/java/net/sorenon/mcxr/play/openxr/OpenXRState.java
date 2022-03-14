@@ -1,7 +1,5 @@
 package net.sorenon.mcxr.play.openxr;
 
-import net.minecraft.client.Minecraft;
-import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
@@ -19,8 +17,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 /**
  * This class is where most of the OpenXR stuff happens
  */
-public class OpenXR {
-
+public class OpenXRState {
     public OpenXRInstance instance;
     public OpenXRSession session;
 
@@ -28,7 +25,7 @@ public class OpenXR {
 
     public static Logger LOGGER = LogManager.getLogger("MCXR");
 
-    public static final XrPosef identityPose = XrPosef.malloc().set(
+    public static final XrPosef POSE_IDENTITY = XrPosef.malloc().set(
             XrQuaternionf.malloc().set(0, 0, 0, 1),
             XrVector3f.calloc()
     );
@@ -58,18 +55,21 @@ public class OpenXR {
         return b;
     }
 
+    //TODO do this in own thread
     public void tryInitialize() {
+        if (session != null) session.close();
+        session = null;
+        MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
         if (instance != null) instance.close();
         instance = null;
-        MCXRPlayClient.OPEN_XR.session = null;
 
         try {
             instance = createOpenXRInstance();
-            session = instance.createSession(XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, instance.getSystem(XR10.XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY));
+            session = instance.createSession(instance.getSystem(XR10.XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY));
             session.createXRReferenceSpaces();
-            session.createSwapchains();
-            XrInput.trySetSession(session);
-            MCXRPlayClient.RENDERER.setSession(session);
+            session.createSwapchain();
+            XrInput.reinitialize(session);
+            MCXRPlayClient.MCXR_GAME_RENDERER.setSession(session);
         } catch (Exception e) {
             LOGGER.error("Exception caught while initializing OpenXR", e);
             if (e instanceof XrException xrException) {
@@ -77,62 +77,51 @@ public class OpenXR {
             }
             if (instance != null) instance.close();
             instance = null;
-            MCXRPlayClient.OPEN_XR.session = null;
+            MCXRPlayClient.OPEN_XR_STATE.session = null;
         }
     }
 
     public OpenXRInstance createOpenXRInstance() throws XrException {
         try (MemoryStack stack = stackPush()) {
             IntBuffer numExtensions = stack.mallocInt(1);
-            check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
+            checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
 
             XrExtensionProperties.Buffer properties = new XrExtensionProperties.Buffer(
                     bufferStack(numExtensions.get(0), XrExtensionProperties.SIZEOF, XR10.XR_TYPE_EXTENSION_PROPERTIES)
             );
 
-            check(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
-
-            PointerBuffer extensions = memAllocPointer(2);
+            checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
 
             boolean missingOpenGL = true;
+            PointerBuffer extensions = stackCallocPointer(3);
             while (properties.hasRemaining()) {
                 XrExtensionProperties prop = properties.get();
                 String extensionName = prop.extensionNameString();
-                if (extensionName.equals(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)) {
+                if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
                     missingOpenGL = false;
-                    extensions.put(memAddress(stackUTF8(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME)));
+                    extensions.put(memAddress(stackUTF8(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)));
                 }
-                if (extensionName.equals(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME)));
+                if (extensionName.equals(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
+                    extensions.put(memAddress(stackUTF8(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
+                }
+                if (extensionName.equals(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)) {
+                    extensions.put(memAddress(stackUTF8(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)));
                 }
             }
 
             if (missingOpenGL) {
-                throw new XrException(0, "OpenXR runtime does not support OpenGLES, try using the quest instead");
+                throw new XrException(0, "OpenXR runtime does not support OpenGL, try using SteamVR instead");
             }
 
-            XrInstanceCreateInfoAndroidKHR createInfoAndroidKHR = XrInstanceCreateInfoAndroidKHR.malloc(stack);
-            memSet(createInfoAndroidKHR, 0);
-            createInfoAndroidKHR.set(
-                    KHRAndroidCreateInstance.XR_TYPE_INSTANCE_CREATE_INFO_ANDROID_KHR,
-                    NULL,
-                    memGetAddress(MCXRNativeLoad.getJVMPtr()),
-                    memGetAddress(MCXRNativeLoad.getApplicationActivityPtr())
-            );
-
             XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
-            memSet(applicationInfo,0);
+            applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
             applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
             applicationInfo.applicationVersion(1);
-            applicationInfo.engineName(stack.UTF8("Minecraft Java Edition"));
-            applicationInfo.engineVersion(118);
-            applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
 
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
-            memSet(createInfo, 0);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    createInfoAndroidKHR.address(),
+                    0,
                     0,
                     applicationInfo,
                     null,
@@ -141,10 +130,7 @@ public class OpenXR {
 
             PointerBuffer instancePtr = stack.mallocPointer(1);
 
-            int xrResult = XR10.xrCreateInstance(
-                    createInfo,
-                    instancePtr
-            );
+            int xrResult = XR10.xrCreateInstance(createInfo, instancePtr);
             if (xrResult == XR10.XR_ERROR_RUNTIME_FAILURE) {
                 throw new XrException(xrResult, "Failed to create xrInstance, are you sure your headset is plugged in?");
             } else if (xrResult == XR10.XR_ERROR_INSTANCE_LOST) {
@@ -166,27 +152,27 @@ public class OpenXR {
         }
 
         if (instance.pollEvents()) {
-            Minecraft.getInstance().stop();
-            return false;
+            throw new XrRuntimeException(XR10.XR_ERROR_INSTANCE_LOST, "Instance loss pending");
         }
 
         if (session.running) {
-            session.pollActions();
-            MCXRPlayClient.RENDERER.renderFrame();
-            return !MCXRPlayClient.RENDERER.isXrMode();
+            boolean disabled = MCXRPlayClient.xrDisabled;
+            session.pollActions(disabled);
+            MCXRPlayClient.MCXR_GAME_RENDERER.renderFrame(disabled);
+            return !MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode();
         }
         return true;
     }
 
-    private void check(int result) throws XrRuntimeException {
+    private void checkPanic(int result) {
         if (result >= 0) return;
 
         if (instance != null) {
             ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
             if (XR10.xrResultToString(instance.handle, result, str) >= 0) {
-                throw new XrRuntimeException(memUTF8Safe(str));
+                throw new XrRuntimeException(result, memUTF8Safe(str));
             }
         }
-        throw new XrRuntimeException("XR method returned " + result);
+        throw new XrRuntimeException(result, "XR method returned " + result);
     }
 }

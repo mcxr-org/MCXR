@@ -24,15 +24,35 @@ public class Pose {
     }
 
     public float getMCYaw() {
-        Vector3f normal = orientation.transform(new Vector3f(0, 0, -1));
+        return getMCYaw(orientation);
+    }
+
+    public float getMCPitch() {
+        return getMCPitch(orientation);
+    }
+
+    public float test() {
+        System.out.println(getMCPitch());
+        return getMCPitch();
+    }
+
+    public static float getMCYaw(Quaternionf orientation) {
+        return getMCYaw(orientation, new Vector3f(0, 0, -1));
+    }
+
+    public static float getMCYaw(Quaternionf orientation, Vector3f normal) {
+        orientation.transform(normal);
         float yaw = getYawFromNormal(normal);
         return (float) -Math.toDegrees(yaw) + 180;
     }
 
-    public float getMCPitch() {
-        Vector3f normal = orientation.transform(new Vector3f(0, 0, -1));
-        float pitch = (float) Math.asin(Mth.clamp(normal.y, -0.999999999, 0.999999999));
+    public static float getMCPitch(Quaternionf orientation) {
+        return getMCPitch(orientation, new Vector3f(0, 0, -1));
+    }
 
+    public static float getMCPitch(Quaternionf orientation, Vector3f normal) {
+        orientation.transform(normal);
+        float pitch = (float) Math.asin(Mth.clamp(normal.y, -0.999999999, 0.999999999));
         return (float) -Math.toDegrees(pitch);
     }
 

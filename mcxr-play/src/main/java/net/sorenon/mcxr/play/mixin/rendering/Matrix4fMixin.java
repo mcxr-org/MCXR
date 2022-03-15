@@ -4,7 +4,7 @@ import com.mojang.math.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.Matrix4fExt;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.joml.Math;
 import org.lwjgl.openxr.XrFovf;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class Matrix4fMixin implements Matrix4fExt {
 
     @Unique
-    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+    private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
     @Shadow
     protected float m00;
@@ -70,7 +70,7 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
     protected float m33;
 
     @Override
-    public void createProjectionFov(XrFovf fov, float nearZ, float farZ) {
+    public void setXrProjection(XrFovf fov, float nearZ, float farZ) {
         Minecraft client = Minecraft.getInstance();
         nearZ = MCXRPlayClient.modifyProjectionMatrixDepth(nearZ, client.getCameraEntity(), client.getFrameTime());
         float tanLeft = Math.tan(fov.angleLeft());
@@ -99,10 +99,9 @@ public abstract class Matrix4fMixin implements Matrix4fExt {
 
     @Inject(method = "perspective", cancellable = true, at = @At("HEAD"))
     private static void overwriteProjectionMatrix(double fov, float aspectRatio, float cameraDepth, float viewDistance, CallbackInfoReturnable<Matrix4f> cir) {
-        if (XR_RENDERER.renderPass instanceof RenderPass.World renderPass) {
+        if (XR_RENDERER.renderPass instanceof RenderPass.XrWorld renderPass) {
             Matrix4f mat = new Matrix4f();
-            mat.setIdentity();
-            ((Matrix4fExt) (Object) mat).createProjectionFov(renderPass.fov, cameraDepth, viewDistance);
+            ((Matrix4fExt) (Object) mat).setXrProjection(renderPass.fov, cameraDepth, viewDistance);
             cir.setReturnValue(mat);
         }
     }

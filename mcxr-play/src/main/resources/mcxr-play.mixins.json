@@ -9,24 +9,28 @@
     "FramebufferMixin",
     "GameMenuMixin",
     "GameRendererMixin",
+    "KeyboardInputMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
     "TutorialToastMixin",
     "VrKeyboardInputMixin",
+    "PauseScreenMixin",
     "accessor.CameraAcc",
-    "accessor.FramebufferAcc",
+    "accessor.MouseHandlerAcc",
+    "accessor.RenderTargetAcc",
     "accessor.WindowAcc",
-    "flatgui.InputUtilMixin",
-    "flatgui.MinecraftMixin",
-    "flatgui.MouseMixin",
-    "flatgui.ScreenMixin",
+    "gui.InputConstantsMixin",
+    "gui.MinecraftMixin",
+    "gui.ScreenMixin",
     "hands.GameRendererMixin",
+    "hands.FireworkRocketEntityMixin",
+    "hands.LivingEntityMixin",
+    "hands.PlayerMixin",
     "rendering.GameRendererMixin",
     "rendering.InGameHudMixin",
     "rendering.LevelRendererMixin",
     "rendering.Matrix4fMixin",
     "rendering.MinecraftMixin",
-    "rendering.RenderSystemMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
     "roomscale.ClientPlayerEntityMixin",
@@ -34,8 +38,5 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-
-  ]
+  }
 }

@@ -6,15 +6,7 @@ public interface PlayerEntityAcc {
 
     Pose getHeadPose();
 
-    void markVR();
-
-    Pose getLArmPose();
-
-    void markLArm();
-
-    Pose getRArmPose();
-
-    void markRArm();
+    void setIsXr(boolean isXr);
 
     boolean isXR();
 }

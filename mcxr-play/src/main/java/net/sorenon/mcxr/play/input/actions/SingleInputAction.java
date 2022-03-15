@@ -5,7 +5,6 @@ import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
-import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.system.MemoryStack.stackMallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -43,7 +42,7 @@ public abstract class SingleInputAction<T> extends Action implements InputAction
                     memUTF8(localizedName)
             );
             PointerBuffer pp = stackMallocPointer(1);
-            instance.checkSafe(XR10.xrCreateAction(actionSet, actionCreateInfo, pp), "xrCreateAction");
+            instance.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp), "xrCreateAction");
             handle = new XrAction(pp.get(), actionSet);
         }
     }

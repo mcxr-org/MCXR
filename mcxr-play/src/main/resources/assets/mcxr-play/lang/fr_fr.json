@@ -1,6 +1,5 @@
 {
   "mcxr.menu.reload": "Redémarrer le casque",
-  "mcxr.menu.session_created": "Casque trouvé:",
   "mcxr.menu.session_not_created": "Aucun casque trouvé:",
 
   "openxr.form_factor.1": "Affichage classique (HMD)",

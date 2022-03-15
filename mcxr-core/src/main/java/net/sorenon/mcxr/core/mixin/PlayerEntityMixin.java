@@ -25,13 +25,10 @@ import java.util.List;
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityAcc {
 
     @Unique
-    public Pose headPose = null;
+    public boolean isXr = false;
 
     @Unique
-    public Pose leftArmPose = null;
-
-    @Unique
-    public Pose rightArmPose = null;
+    public Pose headPose = new Pose();
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
@@ -76,7 +73,6 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
 //            Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0), entity -> true);
 //            RewindableStream<VoxelShape> reusableStream = new RewindableStream<>(Stream.concat(stream2, stream));
 //            double maxDeltaHeight = collideBoundingBox(new Vec3(0, deltaHeight, 0), currentSize, this.level, shapeContext, reusableStream).y;
-
             cir.setReturnValue(
                     EntityDimensions.scalable(0.6F * scale, Math.max(currentHeight + (float) maxDeltaHeight, minHeight))
             );
@@ -89,32 +85,12 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     }
 
     @Override
-    public void markVR() {
-        headPose = new Pose();
-    }
-
-    @Override
-    public Pose getLArmPose() {
-        return leftArmPose;
-    }
-
-    @Override
-    public void markLArm() {
-        leftArmPose = new Pose();
-    }
-
-    @Override
-    public Pose getRArmPose() {
-        return rightArmPose;
-    }
-
-    @Override
-    public void markRArm() {
-        rightArmPose = new Pose();
+    public void setIsXr(boolean isXr) {
+        this.isXr = isXr;
     }
 
     @Override
     public boolean isXR() {
-        return headPose != null;
+        return isXr;
     }
 }

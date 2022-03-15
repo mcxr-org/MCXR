@@ -18,8 +18,8 @@ public abstract class SystemDetailsMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     void appendMCXR(CallbackInfo ci) {
-        OpenXRInstance instance = MCXRPlayClient.OPEN_XR.instance;
-        OpenXRSession session = MCXRPlayClient.OPEN_XR.session;
+        OpenXRInstance instance = MCXRPlayClient.OPEN_XR_STATE.instance;
+        OpenXRSession session = MCXRPlayClient.OPEN_XR_STATE.session;
 
         if (instance == null) {
             this.setDetail("XR", "No instance");

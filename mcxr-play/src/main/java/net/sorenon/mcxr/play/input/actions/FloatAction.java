@@ -16,7 +16,7 @@ public class FloatAction extends SingleInputAction<Float> {
     @Override
     public void sync(OpenXRSession session) {
         getInfo.action(handle);
-        session.instance.check(XR10.xrGetActionStateFloat(session.handle, getInfo, state), "xrGetActionStateFloat");
+        session.instance.checkPanic(XR10.xrGetActionStateFloat(session.handle, getInfo, state), "xrGetActionStateFloat");
         this.currentState = state.currentState();
         this.changedSinceLastSync = state.changedSinceLastSync();
         this.lastChangeTime = state.lastChangeTime();

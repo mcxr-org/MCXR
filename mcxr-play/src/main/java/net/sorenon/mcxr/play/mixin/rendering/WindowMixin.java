@@ -2,7 +2,7 @@ package net.sorenon.mcxr.play.mixin.rendering;
 
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
-import net.sorenon.mcxr.play.FlatGuiManager;
+import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import org.lwjgl.glfw.GLFW;
@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class WindowMixin {
 
     @Unique
-    private final FlatGuiManager FGM = MCXRPlayClient.INSTANCE.flatGuiManager;
+    private final MCXRGuiManager FGM = MCXRPlayClient.INSTANCE.MCXRGuiManager;
 
     @ModifyVariable(method = "updateVsync", ordinal = 0, at = @At("HEAD"))
     boolean overwriteVsync(boolean v) {

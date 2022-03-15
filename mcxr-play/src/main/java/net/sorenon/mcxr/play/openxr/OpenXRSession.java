@@ -37,19 +37,18 @@ public class OpenXRSession implements AutoCloseable {
     public XrSpace xrAppSpace;
     public XrSpace xrViewSpace;
 
-    public long glColorFormat;
-    public XrView.Buffer views;
-    //TODO move to a texture array swapchain
-    public OpenXRSwapchain[] swapchains;
+    public XrView.Buffer viewBuffer;
+    public OpenXRSwapchain swapchain;
+    public boolean hdr = true;
 
     public int state;
     public boolean running;
 
-    public OpenXRSession(XrSession handle, OpenXRSystem system, int viewConfigurationType) {
+    public OpenXRSession(XrSession handle, OpenXRSystem system) {
         this.handle = handle;
         this.system = system;
         this.instance = system.instance;
-        this.viewConfigurationType = viewConfigurationType;
+        this.viewConfigurationType = XR10.XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
     }
 
     public void createXRReferenceSpaces() {
@@ -68,37 +67,37 @@ public class OpenXRSession implements AutoCloseable {
                     identityPose
             );
             PointerBuffer pp = stack.mallocPointer(1);
-            instance.check(XR10.xrCreateReferenceSpace(handle, referenceSpaceCreateInfo, pp), "xrCreateReferenceSpace");
+            instance.checkPanic(XR10.xrCreateReferenceSpace(handle, referenceSpaceCreateInfo, pp), "xrCreateReferenceSpace");
             xrAppSpace = new XrSpace(pp.get(0), handle);
 
             referenceSpaceCreateInfo.referenceSpaceType(XR10.XR_REFERENCE_SPACE_TYPE_VIEW);
-            instance.check(XR10.xrCreateReferenceSpace(handle, referenceSpaceCreateInfo, pp), "xrCreateReferenceSpace");
+            instance.checkPanic(XR10.xrCreateReferenceSpace(handle, referenceSpaceCreateInfo, pp), "xrCreateReferenceSpace");
             xrViewSpace = new XrSpace(pp.get(0), handle);
         }
     }
 
-    public void createSwapchains() throws XrException {
+    public void createSwapchain() throws XrException {
         try (MemoryStack stack = stackPush()) {
             IntBuffer intBuf = stack.mallocInt(1);
-            instance.check(XR10.xrEnumerateViewConfigurationViews(instance.handle, system.handle, viewConfigurationType, intBuf, null), "xrEnumerateViewConfigurationViews");
+            instance.checkPanic(XR10.xrEnumerateViewConfigurationViews(instance.handle, system.handle, viewConfigurationType, intBuf, null), "xrEnumerateViewConfigurationViews");
             XrViewConfigurationView.Buffer viewConfigs = new XrViewConfigurationView.Buffer(
-                    OpenXR.bufferStack(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
+                    OpenXRState.bufferStack(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
             );
-            instance.check(XR10.xrEnumerateViewConfigurationViews(instance.handle, system.handle, viewConfigurationType, intBuf, viewConfigs), "xrEnumerateViewConfigurationViews");
+            instance.checkPanic(XR10.xrEnumerateViewConfigurationViews(instance.handle, system.handle, viewConfigurationType, intBuf, viewConfigs), "xrEnumerateViewConfigurationViews");
             int viewCountNumber = intBuf.get(0);
 
-            views = new XrView.Buffer(
-                    OpenXR.bufferHeap(viewCountNumber, XrView.SIZEOF, XR10.XR_TYPE_VIEW)
+            viewBuffer = new XrView.Buffer(
+                    OpenXRState.bufferHeap(viewCountNumber, XrView.SIZEOF, XR10.XR_TYPE_VIEW)
             );
 
-            if (viewCountNumber == 0) {
-                return;
+            if (viewCountNumber != 2) {
+                throw new IllegalStateException("Tried to create swapchain from " + viewCountNumber + " views");
             }
-            instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
+            instance.checkPanic(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
-            instance.check(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
+            instance.checkPanic(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
 
-            //TODO support SRGB formats and use texture arrays
+            //TODO support SRGB formats
             long[] desiredSwapchainFormats = {
                     GL11.GL_RGB10_A2,
                     GL30.GL_RGBA16F,
@@ -109,20 +108,22 @@ public class OpenXRSession implements AutoCloseable {
                     GL31.GL_RGBA8_SNORM
             };
 
+            long chosenFormat = 0;
+
             for (long glFormatIter : desiredSwapchainFormats) {
                 swapchainFormats.rewind();
                 while (swapchainFormats.hasRemaining()) {
                     if (glFormatIter == swapchainFormats.get()) {
-                        glColorFormat = glFormatIter;
+                        chosenFormat = glFormatIter;
                         break;
                     }
                 }
-                if (glColorFormat != 0) {
+                if (chosenFormat != 0) {
                     break;
                 }
             }
 
-            if (glColorFormat == 0) {
+            if (chosenFormat == 0) {
                 var formats = new ArrayList<Long>();
                 swapchainFormats.rewind();
                 while (swapchainFormats.hasRemaining()) {
@@ -131,37 +132,30 @@ public class OpenXRSession implements AutoCloseable {
                 throw new XrException(XR10.XR_ERROR_SWAPCHAIN_FORMAT_UNSUPPORTED, "No compatible swapchain / framebuffer format available: " + formats);
             }
 
-            swapchains = new OpenXRSwapchain[viewCountNumber];
-            for (int i = 0; i < viewCountNumber; i++) {
-                XrViewConfigurationView viewConfig = viewConfigs.get(i);
-                XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
+            XrViewConfigurationView viewConfig = viewConfigs.get(0);
+            XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
 
-                swapchainCreateInfo.set(
-                        XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
-                        NULL,
-                        0,
-                        /*XR10.XR_SWAPCHAIN_USAGE_SAMPLED_BIT |*/ XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
-                        glColorFormat,
-                        1,
-                        viewConfig.recommendedImageRectWidth(),
-                        viewConfig.recommendedImageRectHeight(),
-                        1,
-                        1,
-                        1
-                );
+            swapchainCreateInfo.set(
+                    XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
+                    NULL,
+                    0,
+                    XR10.XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT,
+                    chosenFormat,
+                    1,
+                    viewConfig.recommendedImageRectWidth(),
+                    viewConfig.recommendedImageRectHeight(),
+                    1,
+                    2,
+                    1
+            );
 
-                PointerBuffer pp = stack.mallocPointer(1);
-                instance.check(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, pp), "xrCreateSwapchain");
-                OpenXRSwapchain swapchain = new OpenXRSwapchain(new XrSwapchain(pp.get(0), handle), this);
-                swapchain.width = swapchainCreateInfo.width();
-                swapchain.height = swapchainCreateInfo.height();
-                swapchain.createImages();
-                swapchains[i] = swapchain;
-            }
+            PointerBuffer handlePointer = stack.mallocPointer(1);
+            instance.checkPanic(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, handlePointer), "xrCreateSwapchain");
+            swapchain = new OpenXRSwapchain(new XrSwapchain(handlePointer.get(0), handle), this, (int) chosenFormat, swapchainCreateInfo.width(), swapchainCreateInfo.height());
         }
     }
 
-    public boolean handleSessionStateChangedEvent(XrEventDataSessionStateChanged stateChangedEvent) {
+    public boolean stateChanged(XrEventDataSessionStateChanged stateChangedEvent) {
         int oldState = state;
         state = stateChangedEvent.state();
 
@@ -177,21 +171,19 @@ public class OpenXRSession implements AutoCloseable {
                 try (MemoryStack stack = stackPush()) {
                     XrSessionBeginInfo sessionBeginInfo = XrSessionBeginInfo.malloc(stack);
                     sessionBeginInfo.set(XR10.XR_TYPE_SESSION_BEGIN_INFO, 0, viewConfigurationType);
-                    instance.check(XR10.xrBeginSession(handle, sessionBeginInfo), "xrBeginSession");
+                    instance.checkPanic(XR10.xrBeginSession(handle, sessionBeginInfo), "xrBeginSession");
                 }
                 running = true;
                 return false;
             }
             case XR10.XR_SESSION_STATE_STOPPING: {
                 running = false;
-                instance.check(XR10.xrEndSession(handle), "xrEndSession");
+                instance.checkPanic(XR10.xrEndSession(handle), "xrEndSession");
                 return false;
             }
             case XR10.XR_SESSION_STATE_EXITING: {
                 // Do not attempt to restart because user closed this session.
-                // QCXR: Exit the game on XR_SESSION_STATE_EXITING, because
-                // otherwise the game will run in the background
-                Minecraft.getInstance().stop();
+                Minecraft.getInstance().close();
                 return true;
             }
             case XR10.XR_SESSION_STATE_LOSS_PENDING: {
@@ -204,7 +196,7 @@ public class OpenXRSession implements AutoCloseable {
         }
     }
 
-    public void pollActions() {
+    public void pollActions(boolean xrDisabled) {
         if (state != XR10.XR_SESSION_STATE_FOCUSED) {
             return;
         }
@@ -214,10 +206,14 @@ public class OpenXRSession implements AutoCloseable {
             GuiActionSet guiActionSet = XrInput.guiActionSet;
             HandsActionSet handsActionSet = XrInput.handsActionSet;
             List<ActionSet> toSync = new ArrayList<>();
-            toSync.add(vcActionSet);
+
             toSync.add(handsActionSet);
-            if (guiActionSet.shouldSync()) {
-                toSync.add(guiActionSet);
+
+            if (!xrDisabled) {
+                toSync.add(vcActionSet);
+                if (guiActionSet.shouldSync()) {
+                    toSync.add(guiActionSet);
+                }
             }
 
             XrActiveActionSet.Buffer sets = XrActiveActionSet.calloc(toSync.size(), stack);
@@ -225,11 +221,10 @@ public class OpenXRSession implements AutoCloseable {
                 sets.get(i).set(toSync.get(i).getHandle(), NULL);
             }
 
-            XrActionsSyncInfo syncInfo = XrActionsSyncInfo.calloc()
-                    .type(XR10.XR_TYPE_ACTIONS_SYNC_INFO)
-                    .activeActionSets(sets);
+            XrActionsSyncInfo syncInfo = XrActionsSyncInfo.calloc(stack)
+                    .type(XR10.XR_TYPE_ACTIONS_SYNC_INFO).activeActionSets(sets);
 
-            instance.check(XR10.xrSyncActions(handle, syncInfo), "xrSyncActions");
+            instance.checkPanic(XR10.xrSyncActions(handle, syncInfo), "xrSyncActions");
 
             handsActionSet.sync(this);
             vcActionSet.sync(this);
@@ -244,11 +239,11 @@ public class OpenXRSession implements AutoCloseable {
             XrSpaceLocation space_location = XrSpaceLocation.calloc(stack).type(XR10.XR_TYPE_SPACE_LOCATION);
             var res = XR10.xrLocateSpace(handSpace, xrAppSpace, time, space_location);
             if (res != XR10.XR_ERROR_TIME_INVALID) {
-                instance.check(res, "xrLocateSpace");
+                instance.checkPanic(res, "xrLocateSpace");
                 if ((space_location.locationFlags() & XR10.XR_SPACE_LOCATION_POSITION_VALID_BIT) != 0 &&
                         (space_location.locationFlags() & XR10.XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) != 0) {
 
-                    result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.yawTurn, scale);
+                    result.updatePhysicalPose(space_location.pose(), MCXRPlayClient.stageTurn, scale);
                 }
             }
         }
@@ -256,15 +251,15 @@ public class OpenXRSession implements AutoCloseable {
 
     @Override
     public void close() {
-        if (swapchains != null) {
-            for (var swapchain : swapchains) {
-                if (swapchain != null) {
-                    swapchain.close();
-                }
-            }
+        XrInput.vanillaGameplayActionSet.close();
+        XrInput.guiActionSet.close();
+        XrInput.handsActionSet.close();
+
+        if (swapchain != null) {
+            swapchain.close();
         }
-        if (views != null) {
-            views.close();
+        if (viewBuffer != null) {
+            viewBuffer.close();
         }
         if (xrAppSpace != null) {
             XR10.xrDestroySpace(xrAppSpace);

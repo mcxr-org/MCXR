@@ -88,7 +88,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
                         new Pair<>(haptics, "/user/hand/left/output/haptic"),
                         new Pair<>(haptics, "/user/hand/right/output/haptic"),
-                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(chat, "/user/hand/left/input/x/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click")
                 )
         );

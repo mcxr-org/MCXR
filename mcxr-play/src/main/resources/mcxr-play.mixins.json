@@ -4,12 +4,14 @@
   "package": "net.sorenon.mcxr.play.mixin",
   "compatibilityLevel": "JAVA_16",
   "client": [
+    "ChatScreenMixin",
+    "EditBoxMixin",
     "FramebufferMixin",
     "GameMenuMixin",
-    "ChatScreenMixin",
     "GameRendererMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
+    "TutorialToastMixin",
     "VrKeyboardInputMixin",
     "accessor.CameraAcc",
     "accessor.FramebufferAcc",
@@ -28,7 +30,7 @@
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
     "roomscale.ClientPlayerEntityMixin",
-    "TutorialToastMixin"
+    "MultiPlayerScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

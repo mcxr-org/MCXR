@@ -4,11 +4,13 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.FlatGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MouseExt;
+import net.sorenon.mcxr.play.gui.QuickMenu;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
@@ -212,6 +214,15 @@ public final class XrInput {
                     if (client.player != null) {
                         client.setScreen(new ChatScreen(""));
                     }
+                }
+            }
+        }
+
+        if (actionSet.quickmenu.changedSinceLastSync) {
+            if (!actionSet.quickmenu.currentState) {
+                Minecraft client = Minecraft.getInstance();
+                if (client.screen == null) {
+                    client.setScreen(new QuickMenu(new TranslatableComponent("QuickMenu")));
                 }
             }
         }

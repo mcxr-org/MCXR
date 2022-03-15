@@ -19,8 +19,8 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction sprint = new BoolAction("sprint");
     public final BoolAction sneak = new BoolAction("sneak");
     public final BoolAction resetPos = new BoolAction("reset_pos");
-    public final BoolAction teleport = new BoolAction("teleport"); //TODO switch to Alyx-like bindings
-
+    //public final BoolAction teleport = new BoolAction("teleport"); //TODO switch to Alyx-like bindings
+    public final BoolAction quickmenu = new BoolAction("quickmenu");
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
     public final BoolAction hotbar = new BoolAction("hotbar");
@@ -48,7 +48,7 @@ public class VanillaGameplayActionSet extends ActionSet {
             turn,
             hotbar,
             move,
-            teleport,
+            quickmenu,
             hotbarLeft,
             hotbarRight,
             turnLeft,
@@ -85,7 +85,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-                        new Pair<>(teleport, "/user/hand/right/input/b/click"),
+                        new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
                         new Pair<>(haptics, "/user/hand/left/output/haptic"),
                         new Pair<>(haptics, "/user/hand/right/output/haptic"),

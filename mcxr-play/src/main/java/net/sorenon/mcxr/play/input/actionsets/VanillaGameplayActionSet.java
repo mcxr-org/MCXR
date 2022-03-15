@@ -33,7 +33,7 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction turnLeft = new BoolAction("turn_left");
     public final BoolAction turnRight = new BoolAction("turn_right");
 
-    public final MultiHapticAction haptics = new MultiHapticAction("haptics", new String[]{"/user/hand/left", "/user/hand/right"});
+    // public final MultiHapticAction haptics = new MultiHapticAction("haptics", new String[]{"/user/hand/left", "/user/hand/right"});
 
     public boolean turnActivated = false;
     public boolean hotbarActivated;
@@ -54,8 +54,8 @@ public class VanillaGameplayActionSet extends ActionSet {
             hotbarLeft,
             hotbarRight,
             turnLeft,
-            turnRight,
-            haptics
+            turnRight // ,
+            // haptics
             );
 
     public VanillaGameplayActionSet() {
@@ -87,8 +87,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(haptics, "/user/hand/left/output/haptic"),
-                        new Pair<>(haptics, "/user/hand/right/output/haptic"),
+                        // new Pair<>(haptics, "/user/hand/left/output/haptic"),
+                        // new Pair<>(haptics, "/user/hand/right/output/haptic"),
                         new Pair<>(chat, "/user/hand/left/input/x/click")
                 )
         );

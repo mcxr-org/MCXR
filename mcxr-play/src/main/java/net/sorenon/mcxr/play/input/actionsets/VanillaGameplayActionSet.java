@@ -45,6 +45,7 @@ public class VanillaGameplayActionSet extends ActionSet {
             use,
             sprint,
             sneak,
+            chat,
             resetPos,
             turn,
             hotbar,

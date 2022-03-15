@@ -13,7 +13,6 @@
     "SystemDetailsMixin",
     "TitleScreenMixin",
     "TutorialToastMixin",
-    "VrKeyboardInputMixin",
     "PauseScreenMixin",
     "accessor.CameraAcc",
     "accessor.MouseHandlerAcc",

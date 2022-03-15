@@ -22,6 +22,7 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction resetPos = new BoolAction("reset_pos");
     //public final BoolAction teleport = new BoolAction("teleport"); //TODO switch to Alyx-like bindings
     public final BoolAction quickmenu = new BoolAction("quickmenu");
+    public final BoolAction chat = new BoolAction("chat");
     public final BoolAction stand = new BoolAction("stand");
 
     public final FloatAction turn = new FloatAction("turn");
@@ -85,9 +86,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
-                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(haptics, "/user/hand/left/output/haptic"),
-                        new Pair<>(haptics, "/user/hand/right/output/haptic"),
+//                        TODO: Where did these go?
+//                        new Pair<>(haptics, "/user/hand/left/output/haptic"),
+//                        new Pair<>(haptics, "/user/hand/right/output/haptic"),
                         new Pair<>(chat, "/user/hand/left/input/x/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click")
                 )

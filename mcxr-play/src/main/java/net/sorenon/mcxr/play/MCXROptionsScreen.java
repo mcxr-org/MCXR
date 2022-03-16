@@ -12,6 +12,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
@@ -33,14 +34,14 @@ public class MCXROptionsScreen extends Screen {
 
     @Override
     protected void init() {
-        this.addRenderableWidget(new Button(
+/*        this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
                 this.height / 6 - 12,
                 150,
                 20,
                 new TranslatableComponent("mcxr.menu.reload"),
-                button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));
-        this.addRenderableWidget(new Button(
+                button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));*/
+/*        this.addRenderableWidget(new Button(
                 this.width / 2 + 5,
                 this.height / 6 - 12,
                 150,
@@ -49,7 +50,7 @@ public class MCXROptionsScreen extends Screen {
                 button -> {
                     MCXRPlayClient.xrDisabled = !MCXRPlayClient.xrDisabled;
                     button.setMessage(MCXRPlayClient.xrDisabled ? new TranslatableComponent("mcxr.options.enable") : new TranslatableComponent("mcxr.options.disable"));
-                }));
+                }));*/
         this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.previous)));
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,

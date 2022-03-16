@@ -17,6 +17,7 @@ public class GuiActionSet extends ActionSet {
     public BoolAction split = new BoolAction("split"); //Split Stack, Swap Stack, Single Drag, Drop one
     public BoolAction quickMove = new BoolAction("quick_move"); //Shift + Click
     public BoolAction exit = new BoolAction("close");
+    public BoolAction resetView = new BoolAction("reset_view");
 //    public XrAction middleClickAction;
     public Vec2fAction scroll = new Vec2fAction("scroll");
 
@@ -32,7 +33,8 @@ public class GuiActionSet extends ActionSet {
                 split,
                 quickMove,
                 exit,
-                scroll
+                scroll,
+                resetView
         );
     }
 
@@ -49,7 +51,8 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(split, "/user/hand/right/input/b/click"),
                         new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                         new Pair<>(exit, "/user/hand/left/input/y/click"),
-                        new Pair<>(scroll, "/user/hand/right/input/thumbstick")
+                        new Pair<>(scroll, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(resetView, "/user/hand/right/input/b/click")
                 )
         );
         /*

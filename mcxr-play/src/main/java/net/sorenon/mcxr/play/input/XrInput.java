@@ -121,6 +121,13 @@ public final class XrInput {
                     }
                 }
             }
+
+            if (guiActionSet.resetView.changedSinceLastSync) {
+                if (guiActionSet.resetView.currentState) {
+                    MCXRPlayClient.INSTANCE.MCXRGuiManager.resetTransform();
+                }
+            }
+
         }
 
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) {
@@ -162,11 +169,11 @@ public final class XrInput {
         }
         if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+                Minecraft.getInstance().player.getInventory().swapPaint(+1);
         }
         if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+                Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }
 
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {
@@ -296,6 +303,7 @@ public final class XrInput {
                             GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
                 }
             }
+
             if (actionSet.split.changedSinceLastSync) {
                 if (actionSet.split.currentState) {
                     mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),

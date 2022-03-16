@@ -162,12 +162,13 @@ public final class XrInput {
         }
         if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(1);
+                Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }
-        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }
+
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {
             MCXRPlayClient.stageTurn += Math.toRadians(22);
             Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.stageTurn).transform(MCXRPlayClient.viewSpacePoses.getStagePose().getPos(), new Vector3f());

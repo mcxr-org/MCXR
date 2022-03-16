@@ -21,6 +21,7 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction quickmenu = new BoolAction("quickmenu");
     public final BoolAction chat = new BoolAction("chat");
     public final BoolAction stand = new BoolAction("stand");
+    public final BoolAction menu = new BoolAction("menu");
 
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
@@ -46,6 +47,7 @@ public class VanillaGameplayActionSet extends ActionSet {
             sprint,
             sneak,
             chat,
+            menu,
             resetPos,
             turn,
             hotbar,
@@ -87,7 +89,8 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-                        new Pair<>(quickmenu, "/user/hand/left/input/menu/click"),
+                        new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
+                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
                         // new Pair<>(haptics, "/user/hand/left/output/haptic"),
                         // new Pair<>(haptics, "/user/hand/right/output/haptic"),
                         new Pair<>(chat, "/user/hand/left/input/x/click")

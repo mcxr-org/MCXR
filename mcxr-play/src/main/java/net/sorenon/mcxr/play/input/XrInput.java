@@ -183,6 +183,9 @@ public final class XrInput {
 
             MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
         }
+        if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
+            Minecraft.getInstance().pauseGame(false);
+        }
 
         if (actionSet.inventory.changedSinceLastSync) {
             if (!actionSet.inventory.currentState) {

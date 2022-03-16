@@ -3,6 +3,7 @@ package net.sorenon.mcxr.core.mixin;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -38,7 +39,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
     public Pose rightHandPose = new Pose();
 
     @Unique
-    public ThreadLocal<InteractionHand> overrideTransform = ThreadLocal.withInitial(() -> null);
+    public ThreadLocal<HumanoidArm> overrideTransform = ThreadLocal.withInitial(() -> null);
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
@@ -64,7 +65,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
 
             float width = cir.getReturnValue().width;
             if (thinnerBB) {
-                width = 0.4f;
+                width = 0.5f;
             }
 
             if (dynamicHeight) {
@@ -121,7 +122,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
     }
 
     @Override
-    public ThreadLocal<InteractionHand> getOverrideTransform() {
+    public ThreadLocal<HumanoidArm> getOverrideTransform() {
         return this.overrideTransform;
     };
 }

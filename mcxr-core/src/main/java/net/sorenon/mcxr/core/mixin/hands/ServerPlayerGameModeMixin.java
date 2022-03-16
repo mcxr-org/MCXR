@@ -6,6 +6,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,7 +23,7 @@ public class ServerPlayerGameModeMixin {
                 InteractionHand interactionHand,
                 CallbackInfoReturnable<InteractionResult> cir) {
         if (serverPlayer instanceof PlayerExt playerExt && playerExt.isXR()) {
-            playerExt.getOverrideTransform().set(interactionHand);
+            playerExt.getOverrideTransform().set(MCXRCore.handToArm(serverPlayer, interactionHand));
         }
     }
 

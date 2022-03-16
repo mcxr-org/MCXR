@@ -1,6 +1,6 @@
 package net.sorenon.mcxr.core.accessor;
 
-import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.sorenon.mcxr.core.Pose;
 
 public interface PlayerExt {
@@ -11,9 +11,17 @@ public interface PlayerExt {
 
     Pose getRightHandPose();
 
+    default Pose getPoseForArm(HumanoidArm arm) {
+        if (arm == HumanoidArm.LEFT) {
+            return getLeftHandPose();
+        } else {
+            return getRightHandPose();
+        }
+    }
+
     void setIsXr(boolean isXr);
 
     boolean isXR();
 
-    ThreadLocal<InteractionHand> getOverrideTransform();
+    ThreadLocal<HumanoidArm> getOverrideTransform();
 }

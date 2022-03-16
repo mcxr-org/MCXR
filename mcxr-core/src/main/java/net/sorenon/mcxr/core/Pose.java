@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.core;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.Mth;
 import org.joml.Math;
 import org.joml.Quaternionf;
@@ -31,9 +32,14 @@ public class Pose {
         return getMCPitch(orientation);
     }
 
-    public float test() {
-        System.out.println(getMCPitch());
-        return getMCPitch();
+    public void write(ByteBuf buf) {
+        buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
+        buf.writeFloat(orientation.x).writeFloat(orientation.y).writeFloat(orientation.z).writeFloat(orientation.w);
+    }
+
+    public void read(ByteBuf buf) {
+        this.pos.set(buf.readFloat(), buf.readFloat(), buf.readFloat());
+        this.orientation.set(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
     }
 
     public static float getMCYaw(Quaternionf orientation) {

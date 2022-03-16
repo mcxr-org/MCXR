@@ -184,6 +184,7 @@ public class MCXRGameRenderer {
                 MCXRCore.INSTANCE.setPlayerPoses(
                         Minecraft.getInstance().player,
                         MCXRPlayClient.viewSpacePoses.getMinecraftPose(),
+                        XrInput.handsActionSet.gripPoses[0].getMinecraftPose(),
                         XrInput.handsActionSet.gripPoses[1].getMinecraftPose()
                 );
             }

@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.core.mixin.hands;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
@@ -38,7 +39,7 @@ public abstract class EntityMixin {
     @Inject(method = "position", at = @At("HEAD"), cancellable = true)
     void overridePosition(CallbackInfoReturnable<Vec3> cir) {
         if (this instanceof PlayerExt playerExt && playerExt.getOverrideTransform().get() != null) {
-            cir.setReturnValue(JOMLUtil.convert(playerExt.getRightHandPose().getPos()));
+            cir.setReturnValue(JOMLUtil.convert(playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getPos()));
         }
     }
 
@@ -67,8 +68,7 @@ public abstract class EntityMixin {
     void overrideXRot(CallbackInfoReturnable<Float> cir) {
         if (this instanceof PlayerExt playerExt && playerExt.getOverrideTransform().get() != null) {
             Quaternionf orientation = new Quaternionf();
-            playerExt.getRightHandPose().getOrientation().get(orientation);
-            orientation = orientation.rotateX((float) Math.toRadians(30));
+            playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation().get(orientation);
             cir.setReturnValue(Pose.getMCPitch(orientation, new Vector3f(0, -1, 0)));
         }
     }
@@ -77,8 +77,7 @@ public abstract class EntityMixin {
     void overrideYRot(CallbackInfoReturnable<Float> cir) {
         if (this instanceof PlayerExt playerExt && playerExt.getOverrideTransform() != null && playerExt.getOverrideTransform().get() != null) {
             Quaternionf orientation = new Quaternionf();
-            playerExt.getRightHandPose().getOrientation().get(orientation);
-            orientation = orientation.rotateX((float) Math.toRadians(30));
+            playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation().get(orientation);
             cir.setReturnValue(Pose.getMCYaw(orientation, new Vector3f(0, -1, 0)));
         }
     }

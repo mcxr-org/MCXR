@@ -11,6 +11,9 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.config.MCXRCoreConfig;
@@ -74,40 +77,30 @@ public class MCXRCore implements ModInitializer {
 
         ServerPlayNetworking.registerGlobalReceiver(POSES,
                 (server, player, handler, buf, responseSender) -> {
-                    Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
-
-                    Vector3f vec2 = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    Quaternionf quat2 = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    server.execute(() -> {
-                        Pose pose = new Pose();
-                        pose.pos.set(vec);
-                        pose.orientation.set(quat);
-
-                        Pose pose2 = new Pose();
-                        pose2.pos.set(vec2);
-                        pose2.orientation.set(quat2);
-                        setPlayerPoses(player, pose, pose2);
-                    });
+                    var pose1 = new Pose();
+                    var pose2 = new Pose();
+                    var pose3 = new Pose();
+                    pose1.read(buf);
+                    pose2.read(buf);
+                    pose3.read(buf);
+                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3));
                 });
     }
 
-    public void setPlayerPoses(Player player, Pose headPose, Pose rightHandPose) {
+    public void setPlayerPoses(Player player, Pose headPose, Pose leftHandPose, Pose rightHandPose) {
         PlayerExt acc = (PlayerExt) player;
         acc.getHeadPose().set(headPose);
+        acc.getLeftHandPose().set(leftHandPose);
         acc.getRightHandPose().set(rightHandPose);
 
         if (player instanceof LocalPlayer) {
-            FriendlyByteBuf buf = PacketByteBufs.create();
-            Vector3f pos = acc.getHeadPose().getPos();
-            Quaternionf quat = acc.getHeadPose().getOrientation();
-            buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
-            buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
+            acc.getLeftHandPose().orientation.rotateX((float) Math.toRadians(30));
+            acc.getRightHandPose().orientation.rotateX((float) Math.toRadians(30));
 
-            Vector3f pos2 = acc.getRightHandPose().getPos();
-            Quaternionf quat2 = acc.getRightHandPose().getOrientation();
-            buf.writeFloat(pos2.x).writeFloat(pos2.y).writeFloat(pos2.z);
-            buf.writeFloat(quat2.x).writeFloat(quat2.y).writeFloat(quat2.z).writeFloat(quat2.w);
+            FriendlyByteBuf buf = PacketByteBufs.create();
+            acc.getHeadPose().write(buf);
+            acc.getLeftHandPose().write(buf);
+            acc.getRightHandPose().write(buf);
 
             ClientPlayNetworking.send(POSES, buf);
         }
@@ -117,4 +110,11 @@ public class MCXRCore implements ModInitializer {
         return INSTANCE.config;
     }
 
+    public static HumanoidArm handToArm(LivingEntity entity, InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return entity.getMainArm();
+        } else {
+            return entity.getMainArm().getOpposite();
+        }
+    }
 }

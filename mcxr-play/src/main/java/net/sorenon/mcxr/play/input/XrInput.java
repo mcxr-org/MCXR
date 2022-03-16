@@ -166,7 +166,7 @@ public final class XrInput {
         }
         if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+                Minecraft.getInstance().player.getInventory().swapPaint(+1);
         }
 
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {

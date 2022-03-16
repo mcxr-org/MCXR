@@ -61,7 +61,9 @@ public class OpenXRSwapchain implements AutoCloseable {
                 rightFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 1);
             }
 
-            renderTarget = new TextureTarget(width, height, true, Minecraft.ON_OSX);
+            float SSAAFactor = 1.6f;
+
+            renderTarget = new TextureTarget((int) (width * SSAAFactor), (int) (height * SSAAFactor), true, Minecraft.ON_OSX);
             renderTarget.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
         }
     }

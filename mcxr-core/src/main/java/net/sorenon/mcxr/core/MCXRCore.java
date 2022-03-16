@@ -12,7 +12,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.config.MCXRCoreConfig;
 import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
 import net.sorenon.mcxr.core.mixin.ServerLoginNetworkHandlerAcc;
@@ -63,7 +63,7 @@ public class MCXRCore implements ModInitializer {
                 (server, player, handler, buf, responseSender) -> {
                     boolean isXr = buf.readBoolean();
                     server.execute(() -> {
-                        PlayerEntityAcc acc = (PlayerEntityAcc) player;
+                        PlayerExt acc = (PlayerExt) player;
                         boolean wasXr = acc.isXR();
                         acc.setIsXr(isXr);
                         if (wasXr && !isXr) {
@@ -76,27 +76,38 @@ public class MCXRCore implements ModInitializer {
                 (server, player, handler, buf, responseSender) -> {
                     Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
                     Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
+
+                    Vector3f vec2 = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
+                    Quaternionf quat2 = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
                     server.execute(() -> {
                         Pose pose = new Pose();
                         pose.pos.set(vec);
                         pose.orientation.set(quat);
-                        setPlayerHeadPose(player, pose);
+
+                        Pose pose2 = new Pose();
+                        pose2.pos.set(vec2);
+                        pose2.orientation.set(quat2);
+                        setPlayerPoses(player, pose, pose2);
                     });
                 });
     }
 
-    public void setPlayerHeadPose(Player player, Pose pose) {
-        PlayerEntityAcc acc = (PlayerEntityAcc) player;
-        acc.getHeadPose().set(pose);
+    public void setPlayerPoses(Player player, Pose headPose, Pose rightHandPose) {
+        PlayerExt acc = (PlayerExt) player;
+        acc.getHeadPose().set(headPose);
+        acc.getRightHandPose().set(rightHandPose);
 
         if (player instanceof LocalPlayer) {
-            acc.getHeadPose().getPos().sub(JOMLUtil.convert(player.position()).get(new Vector3f()));
-
             FriendlyByteBuf buf = PacketByteBufs.create();
             Vector3f pos = acc.getHeadPose().getPos();
             Quaternionf quat = acc.getHeadPose().getOrientation();
             buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
             buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
+
+            Vector3f pos2 = acc.getRightHandPose().getPos();
+            Quaternionf quat2 = acc.getRightHandPose().getOrientation();
+            buf.writeFloat(pos2.x).writeFloat(pos2.y).writeFloat(pos2.z);
+            buf.writeFloat(quat2.x).writeFloat(quat2.y).writeFloat(quat2.z).writeFloat(quat2.w);
 
             ClientPlayNetworking.send(POSES, buf);
         }

@@ -17,7 +17,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.mixin.LivingEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -174,16 +174,17 @@ public class MCXRGameRenderer {
 
             //Update the server-side player poses
             if (Minecraft.getInstance().player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
-                PlayerEntityAcc acc = (PlayerEntityAcc) Minecraft.getInstance().player;
+                PlayerExt acc = (PlayerExt) Minecraft.getInstance().player;
                 if (!acc.isXR()) {
                     FriendlyByteBuf buf = PacketByteBufs.create();
                     buf.writeBoolean(true);
                     ClientPlayNetworking.send(MCXRCore.IS_XR_PLAYER, buf);
                     acc.setIsXr(true);
                 }
-                MCXRCore.INSTANCE.setPlayerHeadPose(
+                MCXRCore.INSTANCE.setPlayerPoses(
                         Minecraft.getInstance().player,
-                        MCXRPlayClient.viewSpacePoses.getMinecraftPose()
+                        MCXRPlayClient.viewSpacePoses.getMinecraftPose(),
+                        XrInput.handsActionSet.gripPoses[1].getMinecraftPose()
                 );
             }
         });

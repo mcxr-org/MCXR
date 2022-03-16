@@ -190,7 +190,7 @@ public class MCXRGameRenderer {
 
         Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
         boolean calculate = false;
-        if (XrInput.vanillaGameplayActionSet.stand.changedSinceLastSync && XrInput.vanillaGameplayActionSet.stand.currentState) {
+        if (XrInput.vanillaGameplayActionSet.attack.changedSinceLastSync && XrInput.vanillaGameplayActionSet.stand.currentState && XrInput.vanillaGameplayActionSet.attack.currentState) {
             MCXRPlayClient.heightAdjustStand = !MCXRPlayClient.heightAdjustStand;
             if (MCXRPlayClient.heightAdjustStand) {
                 calculate = true;

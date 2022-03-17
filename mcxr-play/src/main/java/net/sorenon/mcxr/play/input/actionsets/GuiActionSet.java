@@ -52,7 +52,7 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                         new Pair<>(exit, "/user/hand/left/input/y/click"),
                         new Pair<>(scroll, "/user/hand/right/input/thumbstick"),
-                        new Pair<>(resetView, "/user/hand/right/input/thumbstick/click")
+                        new Pair<>(resetView, "/user/hand/left/input/menu/click")
                 )
         );
         /*

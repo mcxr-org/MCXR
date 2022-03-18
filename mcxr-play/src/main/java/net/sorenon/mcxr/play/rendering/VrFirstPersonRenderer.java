@@ -387,6 +387,25 @@ public class VrFirstPersonRenderer {
                         matrices.mulPose(Quaternion.fromXYZ(0, f * Math.toRadians(15), 0));
                     }
 
+                    if (stack.getItem() == Items.TRIDENT && player.getUseItem() == stack) {
+                        float k = (float)stack.getUseDuration() - ((float)player.getUseItemRemainingTicks() - deltaTick + 1.0F);
+
+                        float l = k / 10.0F;
+                        if (l > 1.0F) {
+                            l = 1.0F;
+                        }
+
+                        if (l > 0.1F) {
+                            float m = Mth.sin((k - 0.1F) * 1.3F);
+                            float n = l - 0.1F;
+                            float o = m * n;
+                            matrices.translate(0, o * 0.004F, 0);
+                        }
+                        matrices.translate(0, 0, l * 0.2);
+
+                        matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(90), 0, 0));
+                    }
+
                     Minecraft.getInstance().getItemInHandRenderer().renderItem(
                             player,
                             stack,

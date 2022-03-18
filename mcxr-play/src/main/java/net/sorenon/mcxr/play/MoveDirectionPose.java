@@ -15,7 +15,6 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 public enum MoveDirectionPose {
@@ -64,7 +63,7 @@ public enum MoveDirectionPose {
             case RightHand -> XrInput.handsActionSet.gripPoses[1].getMinecraftPose().getOrientation().get(orientation);
             case LeftHand -> XrInput.handsActionSet.gripPoses[0].getMinecraftPose().getOrientation().get(orientation);
         }
-        orientation = orientation.rotateX(Math.toRadians(MCXRPlayClient.handPitchAdjust));
+        orientation = orientation.rotateX(Math.toRadians(PlayOptions.handPitchAdjust));
         return JOMLUtil.convert(orientation.transform(new Vector3d(0, -1, 0)));
     }
 
@@ -77,7 +76,7 @@ public enum MoveDirectionPose {
             case RightHand -> XrInput.handsActionSet.gripPoses[1].getMinecraftPose().getOrientation().get(orientation);
             case LeftHand -> XrInput.handsActionSet.gripPoses[0].getMinecraftPose().getOrientation().get(orientation);
         }
-        orientation = orientation.rotateX(Math.toRadians(MCXRPlayClient.handPitchAdjust));
+        orientation = orientation.rotateX(Math.toRadians(PlayOptions.handPitchAdjust));
         return Optional.of(Pose.getMCYaw(orientation, new Vector3f(0, -1, 0)));
     }
 
@@ -90,7 +89,7 @@ public enum MoveDirectionPose {
             case RightHand -> XrInput.handsActionSet.gripPoses[1].getMinecraftPose().getOrientation().get(orientation);
             case LeftHand -> XrInput.handsActionSet.gripPoses[0].getMinecraftPose().getOrientation().get(orientation);
         }
-        orientation = orientation.rotateX(Math.toRadians(MCXRPlayClient.handPitchAdjust));
+        orientation = orientation.rotateX(Math.toRadians(PlayOptions.handPitchAdjust));
         return Optional.of(Pose.getMCPitch(orientation, new Vector3f(0, -1, 0)));
     }
 }

@@ -30,6 +30,8 @@ dependencies {
     }
 
     implementation("org.joml:joml:${project.joml_version}")
+    implementation("com.electronwill.night-config:core:${project.night_config_version}")
+    implementation("com.electronwill.night-config:toml:${project.night_config_version}")
     include(modImplementation("com.github.Sorenon:fart:51f6a721e7"))
 }
 

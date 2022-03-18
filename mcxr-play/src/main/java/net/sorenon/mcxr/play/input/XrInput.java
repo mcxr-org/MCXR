@@ -7,6 +7,7 @@ import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
@@ -241,7 +242,7 @@ public final class XrInput {
         if (FGM.isScreenOpen()) {
             Pose pose = handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getUnscaledPhysicalPose();
             Vector3d pos = new Vector3d(pose.getPos());
-            Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+            Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
             Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
             if (result != null) {
                 Vector3d vec = result.sub(JOMLUtil.convert(FGM.position));

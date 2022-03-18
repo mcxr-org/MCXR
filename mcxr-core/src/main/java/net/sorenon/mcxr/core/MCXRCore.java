@@ -83,19 +83,19 @@ public class MCXRCore implements ModInitializer {
                     pose1.read(buf);
                     pose2.read(buf);
                     pose3.read(buf);
-                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3));
+                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, 0));
                 });
     }
 
-    public void setPlayerPoses(Player player, Pose headPose, Pose leftHandPose, Pose rightHandPose) {
+    public void setPlayerPoses(Player player, Pose headPose, Pose leftHandPose, Pose rightHandPose, float f) {
         PlayerExt acc = (PlayerExt) player;
         acc.getHeadPose().set(headPose);
         acc.getLeftHandPose().set(leftHandPose);
         acc.getRightHandPose().set(rightHandPose);
 
         if (player instanceof LocalPlayer) {
-            acc.getLeftHandPose().orientation.rotateX((float) Math.toRadians(30));
-            acc.getRightHandPose().orientation.rotateX((float) Math.toRadians(30));
+            acc.getLeftHandPose().orientation.rotateX(f);
+            acc.getRightHandPose().orientation.rotateX(f);
 
             FriendlyByteBuf buf = PacketByteBufs.create();
             acc.getHeadPose().write(buf);

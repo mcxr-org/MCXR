@@ -1,7 +1,9 @@
 {
   "mcxr.options.title": "MCXR Options",
-  "mcxr.options.disable": "Disable MCXR",
-  "mcxr.options.enable": "Enable MCXR",
+  "mcxr.options.uninitialize": "Shutdown MCXR",
+  "mcxr.options.initialize": "Initialize MCXR",
+  "mcxr.options.pause": "Pause VR",
+  "mcxr.options.unpause": "Unpause VR",
   "mcxr.options.walk_direction": "Walk Direction: %s",
   "mcxr.options.swim_direction": "Swim Direction: %s",
   "mcxr.options.fly_direction": "Fly Direction: %s",

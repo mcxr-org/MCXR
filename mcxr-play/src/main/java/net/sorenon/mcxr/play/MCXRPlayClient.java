@@ -33,11 +33,6 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static final OpenXRState OPEN_XR_STATE = new OpenXRState();
     public static final MCXRGameRenderer MCXR_GAME_RENDERER = new MCXRGameRenderer();
 
-    public static boolean xrDisabled = false;
-    public static MoveDirectionPose walkDirection = MoveDirectionPose.LeftHand;
-    public static MoveDirectionPose flyDirection = MoveDirectionPose.RightHand;
-    public static MoveDirectionPose swimDirection = MoveDirectionPose.RightHand;
-
     public static MCXRPlayClient INSTANCE;
     public MCXRGuiManager MCXRGuiManager = new MCXRGuiManager();
     public VrFirstPersonRenderer vrFirstPersonRenderer = new VrFirstPersonRenderer(MCXRGuiManager);
@@ -77,13 +72,6 @@ public class MCXRPlayClient implements ClientModInitializer {
      */
     public static Vector3d playerPhysicalPosition = new Vector3d();
 
-    /**
-     * The angle to rotate the player's in-game hand for a more comfortable experience
-     * May be different for different controllers -> needs testing
-     */
-    //TODO store adjusted hand poses at pre-tick
-    public static float handPitchAdjust = 30;
-
     public static int getMainHand() {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
@@ -95,8 +83,14 @@ public class MCXRPlayClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        PlayOptions.init();
+        PlayOptions.load();
+        PlayOptions.save();
+
         INSTANCE = this;
-        XR.create("openxr_loader");
+        if (!PlayOptions.xrUninitialized) {
+            XR.create("openxr_loader");
+        }
 
         ClientLifecycleEvents.CLIENT_STARTED.register(MCXR_GAME_RENDERER::initialize);
 

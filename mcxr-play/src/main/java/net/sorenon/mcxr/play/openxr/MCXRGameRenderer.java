@@ -21,6 +21,7 @@ import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.mixin.LivingEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.rendering.MCXRCamera;
@@ -185,7 +186,8 @@ public class MCXRGameRenderer {
                         Minecraft.getInstance().player,
                         MCXRPlayClient.viewSpacePoses.getMinecraftPose(),
                         XrInput.handsActionSet.gripPoses[0].getMinecraftPose(),
-                        XrInput.handsActionSet.gripPoses[1].getMinecraftPose()
+                        XrInput.handsActionSet.gripPoses[1].getMinecraftPose(),
+                        (float) Math.toRadians(PlayOptions.handPitchAdjust)
                 );
             }
         });

@@ -9,6 +9,7 @@ import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.core.Pose;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -36,7 +37,7 @@ public class GameRendererMixin {
             Entity entity = this.minecraft.getCameraEntity();
             Pose pose = XrInput.handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getMinecraftPose();
             Vec3 pos = JOMLUtil.convert(pose.getPos());
-            Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+            Vector3f dir1 = pose.getOrientation().rotateX((float) Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
             Vec3 dir = new Vec3(dir1.x, dir1.y, dir1.z);
             Vec3 endPos = pos.add(dir.scale(this.minecraft.gameMode.getPickRange()));
             this.minecraft.hitResult = entity.level.clip(new ClipContext(pos, endPos, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, entity));
@@ -63,7 +64,7 @@ public class GameRendererMixin {
             Pose pose = XrInput.handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getMinecraftPose();
             return JOMLUtil.convert(
                     pose.getOrientation()
-                            .rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
+                            .rotateX((float) Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf())
                             .transform(new Vector3f(0, -1, 0))
             );
         } else {

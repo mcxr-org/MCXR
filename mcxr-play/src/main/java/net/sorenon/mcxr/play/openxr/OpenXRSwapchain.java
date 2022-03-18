@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.openxr;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
@@ -61,9 +62,7 @@ public class OpenXRSwapchain implements AutoCloseable {
                 rightFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 1);
             }
 
-            float SSAAFactor = 1.6f;
-
-            renderTarget = new TextureTarget((int) (width * SSAAFactor), (int) (height * SSAAFactor), true, Minecraft.ON_OSX);
+            renderTarget = new TextureTarget((int) (width * PlayOptions.SSAA), (int) (height * PlayOptions.SSAA), true, Minecraft.ON_OSX);
             renderTarget.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
         }
     }

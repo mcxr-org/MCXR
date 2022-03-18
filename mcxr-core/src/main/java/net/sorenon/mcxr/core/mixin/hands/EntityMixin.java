@@ -20,7 +20,8 @@ public abstract class EntityMixin {
     @Shadow
     public abstract Vec3 position();
 
-    @Shadow public abstract float getEyeHeight();
+    @Shadow
+    public abstract float getEyeHeight();
 
     @Inject(method = "getEyeY", at = @At("HEAD"), cancellable = true)
     void overrideEyeY(CallbackInfoReturnable<Double> cir) {
@@ -67,18 +68,28 @@ public abstract class EntityMixin {
     @Inject(method = "getXRot", at = @At("HEAD"), cancellable = true)
     void overrideXRot(CallbackInfoReturnable<Float> cir) {
         if (this instanceof PlayerExt playerExt && playerExt.getOverrideTransform().get() != null) {
-            Quaternionf orientation = new Quaternionf();
-            playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation().get(orientation);
-            cir.setReturnValue(Pose.getMCPitch(orientation, new Vector3f(0, -1, 0)));
+            cir.setReturnValue(Pose.getMCPitch(playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation(), new Vector3f(0, -1, 0)));
         }
     }
 
     @Inject(method = "getYRot", at = @At("HEAD"), cancellable = true)
     void overrideYRot(CallbackInfoReturnable<Float> cir) {
         if (this instanceof PlayerExt playerExt && playerExt.getOverrideTransform() != null && playerExt.getOverrideTransform().get() != null) {
-            Quaternionf orientation = new Quaternionf();
-            playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation().get(orientation);
-            cir.setReturnValue(Pose.getMCYaw(orientation, new Vector3f(0, -1, 0)));
+            cir.setReturnValue(Pose.getMCYaw(playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation(), new Vector3f(0, -1, 0)));
+        }
+    }
+
+    @Inject(method = "getUpVector", at = @At("HEAD"), cancellable = true)
+    void overrideUpVector(float f, CallbackInfoReturnable<Vec3> cir) {
+        if (this instanceof PlayerExt playerExt && playerExt.getOverrideTransform().get() != null) {
+            cir.setReturnValue(JOMLUtil.convert(playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation().transform(new Vector3f(0, 0, 1))));
+        }
+    }
+
+    @Inject(method = "getViewVector", at = @At("HEAD"), cancellable = true)
+    void overrideViewVector(float f, CallbackInfoReturnable<Vec3> cir) {
+        if (this instanceof PlayerExt playerExt && playerExt.getOverrideTransform().get() != null) {
+            cir.setReturnValue(JOMLUtil.convert(playerExt.getPoseForArm(playerExt.getOverrideTransform().get()).getOrientation().transform(new Vector3f(0, -1, 0))));
         }
     }
 }

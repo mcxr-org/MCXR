@@ -29,6 +29,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
@@ -378,6 +379,12 @@ public class VrFirstPersonRenderer {
                     if (handIndex == MCXRPlayClient.getMainHand()) {
                         float swing = -0.4f * Mth.sin((float) (Math.sqrt(player.getAttackAnim(deltaTick)) * Math.PI * 2));
                         matrices.mulPose(com.mojang.math.Vector3f.XP.rotation(swing));
+                    }
+
+                    if (stack.getItem() == Items.CROSSBOW) {
+                        float f = handIndex == 0 ? -1 : 1;
+                        matrices.translate(f * -1.5 / 16f, 0, 0);
+                        matrices.mulPose(Quaternion.fromXYZ(0, f * Math.toRadians(15), 0));
                     }
 
                     Minecraft.getInstance().getItemInHandRenderer().renderItem(

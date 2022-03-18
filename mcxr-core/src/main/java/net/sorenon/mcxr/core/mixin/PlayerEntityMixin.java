@@ -1,7 +1,9 @@
 package net.sorenon.mcxr.core.mixin;
 
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -11,7 +13,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.core.Pose;
-import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,11 +23,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-@Mixin(Player.class)
-public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEntityAcc {
+@Mixin(value = Player.class, priority = 10_000 /*Pehuki*/)
+public abstract class PlayerEntityMixin extends LivingEntity implements PlayerExt {
 
     @Unique
-    public Pose headPose = null;
+    public boolean isXr = false;
+
+    @Unique
+    public Pose headPose = new Pose();
+
+    @Unique
+    public Pose leftHandPose = new Pose();
+
+    @Unique
+    public Pose rightHandPose = new Pose();
+
+    @Unique
+    public ThreadLocal<HumanoidArm> overrideTransform = ThreadLocal.withInitial(() -> null);
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
@@ -38,42 +52,47 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
         }
     }
 
-    @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
     void overrideDims(net.minecraft.world.entity.Pose _pose, CallbackInfoReturnable<EntityDimensions> cir) {
-        if (!MCXRCore.getCoreConfig().dynamicPlayerHeight()) {
+        boolean dynamicHeight = MCXRCore.getCoreConfig().dynamicPlayerHeight();
+        boolean thinnerBB = MCXRCore.getCoreConfig().thinnerPlayerBoundingBox();
+        if (!dynamicHeight && !thinnerBB) {
             return;
         }
 
         if (this.isXR()) {
             final float scale = MCXRScale.getScale(this);
 
-            final float minHeight = 0.5f * scale;
-            final float currentHeight = this.getBbHeight();
-            final float wantedHeight = (headPose.pos.y + 0.125f * scale);
-            final float deltaHeight = wantedHeight - currentHeight;
-
-            if (deltaHeight <= 0) {
-                cir.setReturnValue(
-                        EntityDimensions.scalable(0.6F * scale, Math.max(wantedHeight, minHeight))
-                );
-                return;
+            float width = cir.getReturnValue().width;
+            if (thinnerBB) {
+                width = 0.5f;
             }
 
-            AABB currentSize = this.getBoundingBox();
-            List<VoxelShape> list = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0));
-            final double maxDeltaHeight = collideBoundingBox(this, new Vec3(0, deltaHeight, 0), currentSize, this.level, list).y;
+            if (dynamicHeight) {
+                final float minHeight = 0.5f * scale;
+                final float currentHeight = this.getBbHeight();
+                final float wantedHeight = (headPose.pos.y - (float) this.position().y + 0.125f * scale);
+                final float deltaHeight = wantedHeight - currentHeight;
 
-//            AABB currentSize = this.getBoundingBox();
-//            CollisionContext shapeContext = CollisionContext.of(this);
-//            VoxelShape voxelShape = this.level.getWorldBorder().getCollisionShape();
-//            Stream<VoxelShape> stream = Shapes.joinIsNotEmpty(voxelShape, Shapes.create(currentSize.deflate(1.0E-7)), BooleanOp.AND) ? Stream.empty() : Stream.of(voxelShape);
-//            Stream<VoxelShape> stream2 = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0), entity -> true);
-//            RewindableStream<VoxelShape> reusableStream = new RewindableStream<>(Stream.concat(stream2, stream));
-//            double maxDeltaHeight = collideBoundingBox(new Vec3(0, deltaHeight, 0), currentSize, this.level, shapeContext, reusableStream).y;
+                if (deltaHeight <= 0) {
+                    cir.setReturnValue(
+                            EntityDimensions.scalable(width * scale, Math.max(wantedHeight, minHeight))
+                    );
+                    return;
+                }
 
-            cir.setReturnValue(
-                    EntityDimensions.scalable(0.6F * scale, Math.max(currentHeight + (float) maxDeltaHeight, minHeight))
-            );
+                AABB currentSize = this.getBoundingBox();
+                List<VoxelShape> list = this.level.getEntityCollisions(this, currentSize.expandTowards(0, deltaHeight, 0));
+                final double maxDeltaHeight = collideBoundingBox(this, new Vec3(0, deltaHeight, 0), currentSize, this.level, list).y;
+
+                cir.setReturnValue(
+                        EntityDimensions.scalable(width * scale, Math.max(currentHeight + (float) maxDeltaHeight, minHeight))
+                );
+            } else {
+                cir.setReturnValue(
+                        EntityDimensions.scalable(width * scale, cir.getReturnValue().height)
+                );
+            }
         }
     }
 
@@ -83,11 +102,27 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEn
     }
 
     @Override
-    public void markVR() {
-        headPose = new Pose();
+    public Pose getLeftHandPose() {
+        return leftHandPose;
     }
 
-    public boolean isXR() {
-        return headPose != null;
+    @Override
+    public Pose getRightHandPose() {
+        return rightHandPose;
     }
+
+    @Override
+    public void setIsXr(boolean isXr) {
+        this.isXr = isXr;
+    }
+
+    @Override
+    public boolean isXR() {
+        return isXr;
+    }
+
+    @Override
+    public ThreadLocal<HumanoidArm> getOverrideTransform() {
+        return this.overrideTransform;
+    };
 }

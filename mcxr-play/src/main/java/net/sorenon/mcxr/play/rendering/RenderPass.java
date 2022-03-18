@@ -11,17 +11,17 @@ public class RenderPass {
 
     }
 
-    public static class World extends RenderPass {
+    public static class XrWorld extends RenderPass {
         public XrFovf fov = null;
         public int viewIndex = 0;
         public final ControllerPoses eyePoses = new ControllerPoses();
 
-        private World() {
+        private XrWorld() {
 
         }
 
-        public static World create() {
-            return new World();
+        public static XrWorld create() {
+            return new XrWorld();
         }
     }
 }

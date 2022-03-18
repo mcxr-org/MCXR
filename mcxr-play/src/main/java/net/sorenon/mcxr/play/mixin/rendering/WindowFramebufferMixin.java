@@ -12,6 +12,7 @@ public class WindowFramebufferMixin {
 
     @Inject(method = "createFrameBuffer", at = @At("HEAD"), cancellable = true)
     void cancel(int width, int height, CallbackInfo ci){
+        //noinspection ConstantConditions
         if ((Object)this instanceof MCXRMainTarget) {
             ci.cancel();
         }

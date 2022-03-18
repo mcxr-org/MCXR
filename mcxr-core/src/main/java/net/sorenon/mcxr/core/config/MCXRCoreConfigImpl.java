@@ -5,7 +5,7 @@ public class MCXRCoreConfigImpl implements MCXRCoreConfig {
     public boolean xrEnabled;
 
     @Override
-    public boolean xrAllowed() {
+    public boolean supportsMCXR() {
         return xrEnabled;
     }
 

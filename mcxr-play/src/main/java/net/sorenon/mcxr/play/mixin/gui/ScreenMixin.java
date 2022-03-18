@@ -1,11 +1,9 @@
-package net.sorenon.mcxr.play.mixin.flatgui;
+package net.sorenon.mcxr.play.mixin.gui;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +21,7 @@ public class ScreenMixin extends GuiComponent {
 
     @Inject(method = "renderBackground(Lcom/mojang/blaze3d/vertex/PoseStack;I)V", at = @At("HEAD"), cancellable = true)
     void cancelBackground(PoseStack matrices, int vOffset, CallbackInfo ci) {
-        if (MCXRPlayClient.RENDERER.isXrMode()) {
+        if (MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) {
             ci.cancel();
         }
     }

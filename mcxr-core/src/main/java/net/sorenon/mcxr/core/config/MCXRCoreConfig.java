@@ -1,7 +1,7 @@
 package net.sorenon.mcxr.core.config;
 
 public interface MCXRCoreConfig {
-    boolean xrAllowed();
+    boolean supportsMCXR();
 
     boolean dynamicPlayerHeight();
 
@@ -12,4 +12,6 @@ public interface MCXRCoreConfig {
     boolean controllerRaytracing();
 
     boolean roomscaleMovement();
+
+    //TODO independent look direction
 }

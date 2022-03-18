@@ -24,27 +24,28 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
-import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
-import net.sorenon.mcxr.play.FlatGuiManager;
+import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
+import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
@@ -58,15 +59,15 @@ import static net.sorenon.mcxr.core.JOMLUtil.convert;
 //TODO third person renderer
 public class VrFirstPersonRenderer {
 
-    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+    private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
-    private final FlatGuiManager FGM;
+    private final MCXRGuiManager FGM;
 
     private final ModelPart[] slimArmModel = new ModelPart[2];
     private final ModelPart[] armModel = new ModelPart[2];
 
-    public VrFirstPersonRenderer(FlatGuiManager flatGuiManager) {
-        this.FGM = flatGuiManager;
+    public VrFirstPersonRenderer(MCXRGuiManager MCXRGuiManager) {
+        this.FGM = MCXRGuiManager;
         for (int slim = 0; slim < 2; slim++) {
             ModelPart[] arr = slim == 0 ? armModel : slimArmModel;
             for (int hand = 0; hand < 2; hand++) {
@@ -99,9 +100,9 @@ public class VrFirstPersonRenderer {
     }
 
     /**
-     * This function contains a log of depth hackery so each draw call has to be done in a specific order
+     * This function contains a lot of depth hackery so each draw call has to be done in a specific order
      */
-    public void renderFirstPerson(WorldRenderContext context) {
+    public void renderLast(WorldRenderContext context) {
         Camera camera = context.camera();
         Entity camEntity = camera.getEntity();
         MultiBufferSource.BufferSource consumers = (MultiBufferSource.BufferSource) context.consumers();
@@ -112,7 +113,7 @@ public class VrFirstPersonRenderer {
         //Render gui
         if (FGM.position != null) {
             matrices.pushPose();
-            Vec3 pos = FGM.position.subtract(convert(((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getUnscaledPhysicalPose().getPos()));
+            Vec3 pos = FGM.position.subtract(convert(((RenderPass.XrWorld) XR_RENDERER.renderPass).eyePoses.getUnscaledPhysicalPose().getPos()));
             matrices.translate(pos.x, pos.y, pos.z);
             matrices.mulPose(new Quaternion((float) FGM.orientation.x, (float) FGM.orientation.y, (float) FGM.orientation.z, (float) FGM.orientation.w));
             renderGuiQuad(matrices.last(), consumers);
@@ -149,23 +150,54 @@ public class VrFirstPersonRenderer {
 
                 matrices.popPose();
             }
+
+            var hitResult = Minecraft.getInstance().hitResult;
+            if (hitResult != null && !FGM.isScreenOpen()) {
+                Vec3 camPos = context.camera().getPosition();
+                matrices.pushPose();
+
+                double x = hitResult.getLocation().x();
+                double y = hitResult.getLocation().y();
+                double z = hitResult.getLocation().z();
+                matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
+
+                if (hitResult.getType() == HitResult.Type.BLOCK) {
+                    matrices.mulPose(((BlockHitResult) hitResult).getDirection().getRotation());
+                } else {
+                    matrices.mulPose(camera.rotation());
+                    matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(90.0F));
+                }
+
+                matrices.scale(0.5f, 1, 0.5f);
+                RenderType SHADOW_LAYER = RenderType.entityCutoutNoCull(GUI_ICONS_LOCATION);
+                VertexConsumer vertexConsumer = context.consumers().getBuffer(SHADOW_LAYER);
+
+                PoseStack.Pose entry = matrices.last();
+
+                vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+
+                matrices.popPose();
+            }
         }
 
         if (camEntity instanceof LocalPlayer player && FGM.isScreenOpen()) {
-            renderHandsAndItems(player, getLight(camera, world), matrices, consumers, context.tickDelta());
+            render(player, getLight(camera, world), matrices, consumers, context.tickDelta());
         }
 
-        for (int hand = 0; hand < 2; hand++) {
-            if (!XrInput.handsActionSet.grip.isActive[hand]) {
+        for (int handIndex = 0; handIndex < 2; handIndex++) {
+            if (!XrInput.handsActionSet.grip.isActive[handIndex]) {
                 continue;
             }
 
             //Draw the hand ray and debug lines
             matrices.pushPose(); //1
 
-            Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
+            Pose pose = XrInput.handsActionSet.gripPoses[handIndex].getMinecraftPose();
             Vec3 gripPos = convert(pose.getPos());
-            Vector3f eyePos = ((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getGamePose().getPos();
+            Vector3f eyePos = ((RenderPass.XrWorld) XR_RENDERER.renderPass).eyePoses.getMinecraftPose().getPos();
             matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
             float scale = MCXRPlayClient.getCameraScale();
@@ -175,22 +207,33 @@ public class VrFirstPersonRenderer {
             matrices.mulPose(
                     convert(
                             pose.getOrientation()
-                                    .rotateX((float) Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
+                                    .rotateX(Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf())
                     )
             );
             boolean debug = Minecraft.getInstance().options.renderDebug;
 
-            if (hand == MCXRPlayClient.mainHand && (FGM.isScreenOpen() || debug)) {
+            if (handIndex == MCXRPlayClient.getMainHand()) {
                 Matrix4f model = matrices.last().pose();
                 Matrix3f normal = matrices.last().normal();
 
-                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
-                consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                if (debug) {
+                    VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.0));
+                    consumer.vertex(model, 0, 0, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -5, 0).color(0f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
 
-                consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
-                consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                    consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
+                }
+                if (FGM.isScreenOpen()) {
+                    VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(2.0));
+                    consumer.vertex(model, 0, 0, 0).color(0.1f, 0.1f, 0.1f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -0.5f, 0).color(0.1f, 0.1f, 0.1f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
+                    consumer.vertex(model, 0, 0, 0).color(1f, 1f, 1f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -1, 0).color(1f, 1f, 1f, 1f).normal(normal, 0, -1, 0).endVertex();
+                }
             }
 
 
@@ -241,9 +284,9 @@ public class VrFirstPersonRenderer {
     }
 
     public void transformToHand(PoseStack matrices, int hand, float tickDelta) {
-        Pose pose = XrInput.handsActionSet.gripPoses[hand].getGamePose();
+        Pose pose = XrInput.handsActionSet.gripPoses[hand].getMinecraftPose();
         Vec3 gripPos = convert(pose.getPos());
-        Vector3f eyePos = ((RenderPass.World) XR_RENDERER.renderPass).eyePoses.getGamePose().getPos();
+        Vector3f eyePos = ((RenderPass.XrWorld) XR_RENDERER.renderPass).eyePoses.getMinecraftPose().getPos();
 
         //Transform to controller
         matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
@@ -257,7 +300,7 @@ public class VrFirstPersonRenderer {
         matrices.scale(scale, scale, scale);
 
         matrices.translate(0, 1 / 16f, -1.5f / 16f);
-        matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(MCXRPlayClient.handPitchAdjust));
+        matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(PlayOptions.handPitchAdjust));
     }
 
     public void renderShadow(WorldRenderContext context, Entity camEntity) {
@@ -286,7 +329,7 @@ public class VrFirstPersonRenderer {
     }
 
     private void renderGuiQuad(PoseStack.Pose transform, MultiBufferSource consumers) {
-        RenderTarget guiFramebuffer = FGM.frontFramebuffer;
+        RenderTarget guiFramebuffer = FGM.guiPostProcessRenderTarget;
 
         float x = FGM.size / 2;
         float y = FGM.size * guiFramebuffer.height / guiFramebuffer.width;
@@ -300,47 +343,68 @@ public class VrFirstPersonRenderer {
 //        consumer.vertex(modelMatrix, x - 0.005f, y - 0.005f, 0).color(255, 255, 255, 255).uv(0, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0).normal(normalMatrix, 0, 0, -1).endVertex();
 //        consumer.vertex(modelMatrix, x - 0.005f, 0 - 0.005f, 0).color(255, 255, 255, 255).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0).normal(normalMatrix, 0, 0, -1).endVertex();
 //        consumer.vertex(modelMatrix, -x - 0.005f, 0 - 0.005f, 0).color(255, 255, 255, 255).uv(1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0).normal(normalMatrix, 0, 0, -1).endVertex();
-        consumer = consumers.getBuffer(GUI_NO_DEPTH_TEST.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
+        consumer = consumers.getBuffer(GUI_NO_DEPTH_TEST.apply(MCXRPlayClient.INSTANCE.MCXRGuiManager.guiRenderTexture));
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).uv(1, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
         consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).uv(0, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
         consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).uv(1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
-        consumer = consumers.getBuffer(DEPTH_ONLY.apply(MCXRPlayClient.INSTANCE.flatGuiManager.texture));
+        consumer = consumers.getBuffer(DEPTH_ONLY.apply(MCXRPlayClient.INSTANCE.MCXRGuiManager.guiRenderTexture));
         consumer.vertex(modelMatrix, -x, y, 0).color(255, 255, 255, 255).uv(1, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
         consumer.vertex(modelMatrix, x, y, 0).color(255, 255, 255, 255).uv(0, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
         consumer.vertex(modelMatrix, x, 0, 0).color(255, 255, 255, 255).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
         consumer.vertex(modelMatrix, -x, 0, 0).color(255, 255, 255, 255).uv(1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normalMatrix, 0, 0, -1).endVertex();
     }
 
-    public void renderHandsAndItems(LocalPlayer player,
-                                    int light,
-                                    PoseStack matrices,
-                                    MultiBufferSource consumers,
-                                    float deltaTick) {
+    public void render(LocalPlayer player,
+                       int light,
+                       PoseStack matrices,
+                       MultiBufferSource consumers,
+                       float deltaTick) {
         //Render held items
-        for (int hand = 0; hand < 2; hand++) {
-            if (!XrInput.handsActionSet.grip.isActive[hand]) {
+        for (int handIndex = 0; handIndex < 2; handIndex++) {
+            if (!XrInput.handsActionSet.grip.isActive[handIndex]) {
                 continue;
             }
 
             if (!FGM.isScreenOpen()) {
-                ItemStack stack = hand == 0 ? player.getOffhandItem() : player.getMainHandItem();
+                ItemStack stack = handIndex == 0 ? player.getOffhandItem() : player.getMainHandItem();
+                if (player.getMainArm() == HumanoidArm.LEFT) {
+                    stack = handIndex == 1 ? player.getOffhandItem() : player.getMainHandItem();
+                }
 
                 if (!stack.isEmpty()) {
-                    boolean mainHand = hand == MCXRPlayClient.mainHand;
                     matrices.pushPose();
-                    transformToHand(matrices, hand, deltaTick);
+                    transformToHand(matrices, handIndex, deltaTick);
 
-                    if (mainHand) {
+                    if (handIndex == MCXRPlayClient.getMainHand()) {
                         float swing = -0.4f * Mth.sin((float) (Math.sqrt(player.getAttackAnim(deltaTick)) * Math.PI * 2));
                         matrices.mulPose(com.mojang.math.Vector3f.XP.rotation(swing));
+                    }
+
+                    if (stack.getItem() == Items.CROSSBOW) {
+                        float f = handIndex == 0 ? -1 : 1;
+                        matrices.translate(f * -1.5 / 16f, 0, 0);
+                        matrices.mulPose(Quaternion.fromXYZ(0, f * Math.toRadians(15), 0));
+                    }
+
+                    if (stack.getItem() == Items.TRIDENT && player.getUseItem() == stack) {
+                        float k = (float) stack.getUseDuration() - ((float) player.getUseItemRemainingTicks() - deltaTick + 1);
+                        float l = Math.min(k / 10, 1);
+                        if (l > 0.1F) {
+                            float m = Mth.sin((k - 0.1f) * 1.3f);
+                            float n = l - 0.1f;
+                            float o = m * n;
+                            matrices.translate(0, o * 0.004, 0);
+                        }
+                        matrices.translate(0, 0, l * 0.2);
+                        matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(90), 0, 0));
                     }
 
                     Minecraft.getInstance().getItemInHandRenderer().renderItem(
                             player,
                             stack,
-                            hand == 0 ? ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND : ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
-                            hand == 0,
+                            handIndex == 0 ? ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND : ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
+                            handIndex == 0,
                             matrices,
                             consumers,
                             light
@@ -353,7 +417,7 @@ public class VrFirstPersonRenderer {
             //Draw hand
             matrices.pushPose();
 
-            transformToHand(matrices, hand, deltaTick);
+            transformToHand(matrices, handIndex, deltaTick);
 
             matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(-90.0F));
             matrices.mulPose(com.mojang.math.Vector3f.YP.rotationDegrees(180.0F));
@@ -363,9 +427,9 @@ public class VrFirstPersonRenderer {
             matrices.pushPose();
             ModelPart armModel;
             if (player.getModelName().equals("slim")) {
-                armModel = this.slimArmModel[hand];
+                armModel = this.slimArmModel[handIndex];
             } else {
-                armModel = this.armModel[hand];
+                armModel = this.armModel[handIndex];
             }
 
             VertexConsumer consumer = consumers.getBuffer(RenderType.entityTranslucent(player.getSkinTextureLocation()));

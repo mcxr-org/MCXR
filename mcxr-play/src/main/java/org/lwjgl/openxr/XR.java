@@ -62,6 +62,10 @@ public class XR {
         globalCommands = new GlobalCommands(functionProvider);
     }
 
+    public static boolean loaded() {
+        return functionProvider != null;
+    }
+
     private static <T> T check(@Nullable T t) {
         if (t == null) {
             throw new IllegalStateException("OpenXR library has not been loaded.");
@@ -90,7 +94,10 @@ public class XR {
             xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR", false);
         }
 
-        private long getFunctionAddress(String name) { return getFunctionAddress(name, true); }
+        private long getFunctionAddress(String name) {
+            return getFunctionAddress(name, true);
+        }
+
         private long getFunctionAddress(String name, boolean required) {
             try (MemoryStack stack = stackPush()) {
                 PointerBuffer pp = stack.mallocPointer(1);
@@ -104,7 +111,9 @@ public class XR {
         }
     }
 
-    static GlobalCommands getGlobalCommands() { return check(globalCommands); }
+    static GlobalCommands getGlobalCommands() {
+        return check(globalCommands);
+    }
 
     static Set<String> getEnabledExtensionSet(long apiVersion, @Nullable PointerBuffer extensionNames) {
         Set<String> enabledExtensions = new HashSet<>(16);
@@ -113,7 +122,7 @@ public class XR {
         long minorVersion = XR10.XR_VERSION_MINOR(apiVersion);
 
         int[] XR_VERSIONS = {
-            1
+                1
         };
 
         long maxMajor = min(majorVersion, XR_VERSIONS.length);

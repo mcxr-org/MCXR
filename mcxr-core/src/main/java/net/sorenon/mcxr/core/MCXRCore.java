@@ -11,8 +11,11 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.config.MCXRCoreConfig;
 import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
 import net.sorenon.mcxr.core.mixin.ServerLoginNetworkHandlerAcc;
@@ -25,7 +28,9 @@ public class MCXRCore implements ModInitializer {
 
     public static final ResourceLocation S2C_CONFIG = new ResourceLocation("mcxr", "config");
 
+    public static final ResourceLocation IS_XR_PLAYER = new ResourceLocation("mcxr", "is_xr_player");
     public static final ResourceLocation POSES = new ResourceLocation("mcxr", "poses");
+
     public static MCXRCore INSTANCE;
 
     private static final Logger LOGGER = LogManager.getLogger("MCXR Core");
@@ -57,32 +62,45 @@ public class MCXRCore implements ModInitializer {
             sender.sendPacket(S2C_CONFIG, buf);
         });
 
+        ServerPlayNetworking.registerGlobalReceiver(IS_XR_PLAYER,
+                (server, player, handler, buf, responseSender) -> {
+                    boolean isXr = buf.readBoolean();
+                    server.execute(() -> {
+                        PlayerExt acc = (PlayerExt) player;
+                        boolean wasXr = acc.isXR();
+                        acc.setIsXr(isXr);
+                        if (wasXr && !isXr) {
+                            player.refreshDimensions();
+                        }
+                    });
+                });
+
         ServerPlayNetworking.registerGlobalReceiver(POSES,
                 (server, player, handler, buf, responseSender) -> {
-                    Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
-                    server.execute(() -> {
-                        Pose pose = new Pose();
-                        pose.pos.set(vec);
-                        pose.orientation.set(quat);
-                        setPlayerHeadPose(player, pose);
-                    });
+                    var pose1 = new Pose();
+                    var pose2 = new Pose();
+                    var pose3 = new Pose();
+                    pose1.read(buf);
+                    pose2.read(buf);
+                    pose3.read(buf);
+                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, 0));
                 });
     }
 
-    public void setPlayerHeadPose(Player player, Pose pose) {
-        PlayerEntityAcc acc = (PlayerEntityAcc) player;
-        if (acc.getHeadPose() == null) {
-            acc.markVR();
-        }
-        acc.getHeadPose().set(pose);
+    public void setPlayerPoses(Player player, Pose headPose, Pose leftHandPose, Pose rightHandPose, float f) {
+        PlayerExt acc = (PlayerExt) player;
+        acc.getHeadPose().set(headPose);
+        acc.getLeftHandPose().set(leftHandPose);
+        acc.getRightHandPose().set(rightHandPose);
 
-        if (player.level.isClientSide && player instanceof LocalPlayer) {
+        if (player instanceof LocalPlayer) {
+            acc.getLeftHandPose().orientation.rotateX(f);
+            acc.getRightHandPose().orientation.rotateX(f);
+
             FriendlyByteBuf buf = PacketByteBufs.create();
-            Vector3f pos = pose.pos;
-            Quaternionf quat = pose.orientation;
-            buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
-            buf.writeFloat(quat.x).writeFloat(quat.y).writeFloat(quat.z).writeFloat(quat.w);
+            acc.getHeadPose().write(buf);
+            acc.getLeftHandPose().write(buf);
+            acc.getRightHandPose().write(buf);
 
             ClientPlayNetworking.send(POSES, buf);
         }
@@ -92,4 +110,11 @@ public class MCXRCore implements ModInitializer {
         return INSTANCE.config;
     }
 
+    public static HumanoidArm handToArm(LivingEntity entity, InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND) {
+            return entity.getMainArm();
+        } else {
+            return entity.getMainArm().getOpposite();
+        }
+    }
 }

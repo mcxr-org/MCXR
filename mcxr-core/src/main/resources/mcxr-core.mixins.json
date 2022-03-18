@@ -4,9 +4,14 @@
   "package": "net.sorenon.mcxr.core.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "LivingEntityAcc",
     "LivingEntityMixin",
     "PlayerEntityMixin",
-    "ServerLoginNetworkHandlerAcc"
+    "ServerLoginNetworkHandlerAcc",
+    "hands.EntityMixin",
+    "hands.LivingEntityMixin",
+    "hands.MinecraftMixin",
+    "hands.ServerPlayerGameModeMixin",
   ],
   "client": [
   ],

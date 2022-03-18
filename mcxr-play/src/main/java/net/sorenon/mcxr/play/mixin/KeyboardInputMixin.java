@@ -1,7 +1,9 @@
 package net.sorenon.mcxr.play.mixin;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.KeyboardInput;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,10 +24,17 @@ public class KeyboardInputMixin extends Input {
         this.forwardImpulse = move.y();
         this.leftImpulse = -move.x();
 
-        this.up |= move.y() > 0;
-        this.down |= move.y() < 0;
-        this.right |= move.x() > 0;
-        this.left |= move.y() < 0;
+        if (Minecraft.getInstance().player != null && Minecraft.getInstance().player.getVehicle() instanceof Boat) {
+            this.up |= move.y() > 0.5;
+            this.down |= move.y() < -0.5;
+            this.right |= move.x() > 0.5;
+            this.left |= move.x() < -0.5;
+        } else {
+            this.up |= move.y() > 0;
+            this.down |= move.y() < 0;
+            this.right |= move.x() > 0;
+            this.left |= move.x() < 0;
+        }
 
         this.jumping |= XrInput.vanillaGameplayActionSet.jump.currentState;
     }

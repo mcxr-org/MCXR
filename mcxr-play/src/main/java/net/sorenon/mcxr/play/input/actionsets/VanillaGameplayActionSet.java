@@ -94,7 +94,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(inventory, "/user/hand/left/input/b/click"),
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
                         new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
-                        new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(sneak, "/user/hand/left/input/squeeze/force"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click")
                 )
@@ -106,12 +106,12 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(move, "/user/hand/left/input/thumbstick"),
                         new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-                        new Pair<>(inventory, "/user/hand/left/input/trackpad/click"),
+                        new Pair<>(inventory, "/user/hand/left/input/menu/click"),
                         new Pair<>(jump, "/user/hand/right/input/trackpad/click"),
                         new Pair<>(sprint, "/user/hand/right/input/squeeze/click"),
                         new Pair<>(sneak, "/user/hand/left/input/squeeze/click"),
-                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-                        new Pair<>(inventory, "/user/hand/right/input/trackpad/click")
+                        new Pair<>(resetPos, "/user/hand/left/input/trackpad/click"),
+                        new Pair<>(inventory, "/user/hand/right/input/menu/click")
                 )
         );
         if (MCXRPlayClient.OPEN_XR_STATE.instance.handle.getCapabilities().XR_EXT_hp_mixed_reality_controller) {

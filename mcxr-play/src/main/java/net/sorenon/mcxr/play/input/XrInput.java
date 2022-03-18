@@ -277,6 +277,9 @@ public final class XrInput {
                             GLFW.GLFW_MOUSE_BUTTON_RIGHT, GLFW.GLFW_RELEASE, 0);
                 }
             }
+            if (actionSet.resetGUI.changedSinceLastSync && actionSet.resetGUI.currentState) {
+                FGM.needsReset = true;
+            }
             var scrollState = actionSet.scroll.currentState;
             //TODO replace with a better acc alg
             double sensitivity = 0.25;

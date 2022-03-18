@@ -17,6 +17,7 @@ public class GuiActionSet extends ActionSet {
     public BoolAction split = new BoolAction("split"); //Split Stack, Swap Stack, Single Drag, Drop one
     public BoolAction quickMove = new BoolAction("quick_move"); //Shift + Click
     public BoolAction exit = new BoolAction("close");
+    public BoolAction resetGUI = new BoolAction("reset_gui");
 //    public XrAction middleClickAction;
     public Vec2fAction scroll = new Vec2fAction("scroll");
 
@@ -32,7 +33,8 @@ public class GuiActionSet extends ActionSet {
                 split,
                 quickMove,
                 exit,
-                scroll
+                scroll,
+                resetGUI
         );
     }
 
@@ -49,6 +51,8 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(split, "/user/hand/right/input/b/click"),
                         new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                         new Pair<>(exit, "/user/hand/left/input/y/click"),
+                        new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                 )
         );
@@ -58,6 +62,8 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(split, "/user/hand/right/input/b/click"),
                         new Pair<>(quickMove, "/user/hand/left/input/a/click"),
                         new Pair<>(exit, "/user/hand/left/input/b/click"),
+                        new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                 )
         );
@@ -67,6 +73,8 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(split, "/user/hand/right/input/trackpad/click"),
                         new Pair<>(quickMove, "/user/hand/left/input/trigger/value"),
                         new Pair<>(exit, "/user/hand/left/input/trackpad/click"),
+                        new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                 )
         );
@@ -77,6 +85,8 @@ public class GuiActionSet extends ActionSet {
                             new Pair<>(split, "/user/hand/right/input/b/click"),
                             new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                             new Pair<>(exit, "/user/hand/left/input/y/click"),
+                            new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
+                            new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
                             new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                     )
             );
@@ -88,6 +98,8 @@ public class GuiActionSet extends ActionSet {
                             new Pair<>(split, "/user/hand/right/input/b/click"),
                             new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                             new Pair<>(exit, "/user/hand/left/input/y/click"),
+                            new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
+                            new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
                             new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                     )
             );

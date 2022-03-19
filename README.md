@@ -30,7 +30,7 @@ Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
 | Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric                   |
 | Performance                 | 🥇                              | 🥉                            | 🥈 (With Sodium)          |
 | Supported Devices           | 👎 Only Oculus headsets and WMR | ✅OpenVR supported devices     | ✅OpenXR supported devices|
-| Pretty Shader Support       | ⛔                               | ✅Optifine                     | ✅Iris or 🚧Canvas      |
+| Pretty Shader Support       | ⛔                               | ✅Optifine                     | ⛔Not in questcraft     |
 | Vanilla Server Compatibility| ✅                               | ✅                             | ✅                      |
 | Vr Addon Support            | ⛔                               | 🚧In development             | 🚧In development          |
 | Thirdparty Mod Intergration | N/A                             | ⛔                             | 🚧In development         |

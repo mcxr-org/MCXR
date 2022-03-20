@@ -12,9 +12,8 @@ MCXR is compatible with Vanilla servers and players but for the full experience 
 
 # *Known Issues*
 Vive Pro controllers are not yet supported <br/>
-Default WMR bindings are not great </br>
 No way to rebind controls without SteamVR</br>
-SteamVR on Linux crashes due to poor OpenXR implementation
+SteamVR on Linux crashes due to poor OpenXR implementation, this can be mitigated with an [OpenXR Layer](https://github.com/Sorenon/sorenon_openxr_layer)
 
 ## *Related Links*
 Join the Discord server [here.](https://discord.gg/fyBye2ptkS) <br/>

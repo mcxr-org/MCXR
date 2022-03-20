@@ -93,7 +93,7 @@ public class MCXRCore implements ModInitializer {
         acc.getLeftHandPose().set(leftHandPose);
         acc.getRightHandPose().set(rightHandPose);
 
-        if (player instanceof LocalPlayer) {
+        if (f != 0) {
             acc.getLeftHandPose().orientation.rotateX(f);
             acc.getRightHandPose().orientation.rotateX(f);
 

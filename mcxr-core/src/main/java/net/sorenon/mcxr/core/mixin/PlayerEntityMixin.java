@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.core.mixin;
 
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
@@ -14,7 +13,9 @@ import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,10 +23,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import java.util.Map;
+
+import static net.minecraft.world.entity.player.Player.STANDING_DIMENSIONS;
 
 @Mixin(value = Player.class, priority = 10_000 /*Pehuki*/)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerExt {
 
+    @Shadow @Final private static Map<net.minecraft.world.entity.Pose, EntityDimensions> POSES;
     @Unique
     public boolean isXr = false;
 
@@ -52,18 +57,20 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
         }
     }
 
-    @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
-    void overrideDims(net.minecraft.world.entity.Pose _pose, CallbackInfoReturnable<EntityDimensions> cir) {
+    @Inject(method = "getDimensions", at = @At("HEAD"), cancellable = true)
+    void overrideDims(net.minecraft.world.entity.Pose pose, CallbackInfoReturnable<EntityDimensions> cir) {
         boolean dynamicHeight = MCXRCore.getCoreConfig().dynamicPlayerHeight();
         boolean thinnerBB = MCXRCore.getCoreConfig().thinnerPlayerBoundingBox();
         if (!dynamicHeight && !thinnerBB) {
             return;
         }
 
+        EntityDimensions vanilla = POSES.getOrDefault(pose, STANDING_DIMENSIONS);
+
         if (this.isXR()) {
             final float scale = MCXRScale.getScale(this);
 
-            float width = cir.getReturnValue().width;
+            float width = vanilla.width;
             if (thinnerBB) {
                 width = 0.5f;
             }
@@ -90,7 +97,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
                 );
             } else {
                 cir.setReturnValue(
-                        EntityDimensions.scalable(width * scale, cir.getReturnValue().height)
+                        EntityDimensions.scalable(width * scale, vanilla.height)
                 );
             }
         }

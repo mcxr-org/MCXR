@@ -4,11 +4,11 @@ A VR mod for Minecraft using OpenXR and fabric.
 
 # *Installation*
 ## For VR Players
-Fetch the latest version of MCXR Core and Play from https://github.com/Sorenon/MCXR/releases and put them in the fabric mods folder. 
+Fetch the latest version of MCXR Core and Play from https://modrinth.com/mod/mcxr-play and https://modrinth.com/mod/mcxr-core and put them in the fabric mods folder. 
 <br/>
 For an in game title screen also install and set up a compatible version of https://github.com/Sorenon/TitleWorlds
 ## For Servers and Non-VR Players
-MCXR is compatible with Vanilla servers and players but for the full experience install MCXR Core from https://github.com/Sorenon/MCXR/releases
+MCXR is compatible with Vanilla servers and players but for the full experience install MCXR Core from https://modrinth.com/mod/mcxr-core
 
 # *Known Issues*
 Vive Pro controllers are not yet supported <br/>

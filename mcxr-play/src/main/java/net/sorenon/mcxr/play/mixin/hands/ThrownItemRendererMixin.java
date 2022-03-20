@@ -30,24 +30,25 @@ public abstract class ThrownItemRendererMixin<T extends Entity & ItemSupplier> e
         super(context);
     }
 
-    @Inject(method = "render", at = @At("HEAD"))
-    void preRender(T entity,
-                   float f,
-                   float delta,
-                   PoseStack poseStack,
-                   MultiBufferSource multiBufferSource,
-                   int i,
-                   CallbackInfo ci) {
-        if (MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode() && entity.tickCount <= 1) {
-            float scale = ((entity.tickCount + delta) / 2) * this.scale;
-
-            poseStack.pushPose();
-            poseStack.scale(scale, scale, scale);
-            poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
-            poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F));
-            this.itemRenderer.renderStatic(entity.getItem(), ItemTransforms.TransformType.GROUND, i, OverlayTexture.NO_OVERLAY, poseStack, multiBufferSource, entity.getId());
-            poseStack.popPose();
-            super.render(entity, f, delta, poseStack, multiBufferSource, i);
-        }
-    }
+//    This fails outside of dev-env for some reason
+//    @Inject(method = "render", at = @At("HEAD"))
+//    void preRender(T entity,
+//                   float f,
+//                   float delta,
+//                   PoseStack poseStack,
+//                   MultiBufferSource multiBufferSource,
+//                   int i,
+//                   CallbackInfo ci) {
+//        if (MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode() && entity.tickCount <= 1) {
+//            float scale = ((entity.tickCount + delta) / 2) * this.scale;
+//
+//            poseStack.pushPose();
+//            poseStack.scale(scale, scale, scale);
+//            poseStack.mulPose(this.entityRenderDispatcher.cameraOrientation());
+//            poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F));
+//            this.itemRenderer.renderStatic(entity.getItem(), ItemTransforms.TransformType.GROUND, i, OverlayTexture.NO_OVERLAY, poseStack, multiBufferSource, entity.getId());
+//            poseStack.popPose();
+//            super.render(entity, f, delta, poseStack, multiBufferSource, i);
+//        }
+//    }
 }

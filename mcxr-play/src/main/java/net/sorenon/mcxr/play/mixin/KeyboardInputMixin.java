@@ -37,5 +37,10 @@ public class KeyboardInputMixin extends Input {
         }
 
         this.jumping |= XrInput.vanillaGameplayActionSet.jump.currentState;
+        
+        if(slowDown) {
+            this.forwardImpulse = move.y() * 0.3f;
+            this.leftImpulse = -move.x() * 0.3f;
+        }
     }
 }

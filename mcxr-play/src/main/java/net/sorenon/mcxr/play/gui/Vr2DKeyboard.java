@@ -58,7 +58,7 @@ public class Vr2DKeyboard extends Screen {
         char[][] querty = new char[][] {
                 new char[] {'`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b'},
                 new char[] {'~', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'},
-                new char[] {'\n', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '\r'},
+                new char[] {'\n', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', '\'', '\r'},
                 new char[] {'\n', '_', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '?'},
                 new char[] {' '}
         };

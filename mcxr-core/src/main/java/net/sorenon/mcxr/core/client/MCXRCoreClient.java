@@ -10,7 +10,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
-import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +51,7 @@ public class MCXRCoreClient implements ClientModInitializer {
                 Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
                 Player player  = client.level.getPlayerByUUID(buf.readUUID());
                 if(player != null) {
-                    PlayerEntityAcc acc = (PlayerEntityAcc) player;
+                    PlayerExt acc = (PlayerExt) player;
                     if(acc.getHeadPose() == null) {
                         acc.setIsXr(true);
                     }

@@ -42,7 +42,9 @@ dependencies {
     }
 
     implementation("org.joml:joml:${project.joml_version}")
-    include(modImplementation("com.github.Sorenon:fart:cf9165a7ab"))
+    implementation("com.electronwill.night-config:core:${project.night_config_version}")
+    implementation("com.electronwill.night-config:toml:${project.night_config_version}")
+    include(modImplementation("com.github.Sorenon:fart:51f6a721e7"))
 
     implementation group: 'org.lwjgl', name: 'lwjgl', version: '3.2.3'
     implementation group: 'org.lwjgl', name: 'lwjgl-glfw', version: '3.2.3'

@@ -27,8 +27,9 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
@@ -37,17 +38,15 @@ import net.minecraft.world.phys.Vec3;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
-import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.MoveDirectionPose;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import org.joml.Math;
 import org.joml.Quaternionf;
-import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
@@ -208,7 +207,7 @@ public class VrFirstPersonRenderer {
             matrices.mulPose(
                     convert(
                             pose.getOrientation()
-                                    .rotateX(Math.toRadians(MCXRPlayClient.handPitchAdjust), new Quaternionf())
+                                    .rotateX(Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf())
                     )
             );
             boolean debug = Minecraft.getInstance().options.renderDebug;
@@ -301,7 +300,7 @@ public class VrFirstPersonRenderer {
         matrices.scale(scale, scale, scale);
 
         matrices.translate(0, 1 / 16f, -1.5f / 16f);
-        matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(MCXRPlayClient.handPitchAdjust));
+        matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(PlayOptions.handPitchAdjust));
     }
 
     public void renderShadow(WorldRenderContext context, Entity camEntity) {
@@ -369,6 +368,9 @@ public class VrFirstPersonRenderer {
 
             if (!FGM.isScreenOpen()) {
                 ItemStack stack = handIndex == 0 ? player.getOffhandItem() : player.getMainHandItem();
+                if (player.getMainArm() == HumanoidArm.LEFT) {
+                    stack = handIndex == 1 ? player.getOffhandItem() : player.getMainHandItem();
+                }
 
                 if (!stack.isEmpty()) {
                     matrices.pushPose();
@@ -377,6 +379,25 @@ public class VrFirstPersonRenderer {
                     if (handIndex == MCXRPlayClient.getMainHand()) {
                         float swing = -0.4f * Mth.sin((float) (Math.sqrt(player.getAttackAnim(deltaTick)) * Math.PI * 2));
                         matrices.mulPose(com.mojang.math.Vector3f.XP.rotation(swing));
+                    }
+
+                    if (stack.getItem() == Items.CROSSBOW) {
+                        float f = handIndex == 0 ? -1 : 1;
+                        matrices.translate(f * -1.5 / 16f, 0, 0);
+                        matrices.mulPose(Quaternion.fromXYZ(0, f * Math.toRadians(15), 0));
+                    }
+
+                    if (stack.getItem() == Items.TRIDENT && player.getUseItem() == stack) {
+                        float k = (float) stack.getUseDuration() - ((float) player.getUseItemRemainingTicks() - deltaTick + 1);
+                        float l = Math.min(k / 10, 1);
+                        if (l > 0.1F) {
+                            float m = Mth.sin((k - 0.1f) * 1.3f);
+                            float n = l - 0.1f;
+                            float o = m * n;
+                            matrices.translate(0, o * 0.004, 0);
+                        }
+                        matrices.translate(0, 0, l * 0.2);
+                        matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(90), 0, 0));
                     }
 
                     Minecraft.getInstance().getItemInHandRenderer().renderItem(

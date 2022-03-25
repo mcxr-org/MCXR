@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.PlayOptions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,7 +30,7 @@ public abstract class PlayerMixin extends Entity {
     @Redirect(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getLookAngle()Lnet/minecraft/world/phys/Vec3;"))
     Vec3 changeSwimDirection(Player instance) {
         if (isActive()) {
-            Vec3 result = MCXRPlayClient.swimDirection.getLookDirection();
+            Vec3 result = PlayOptions.swimDirection.getLookDirection();
             if (result != null) {
                 return result;
             }

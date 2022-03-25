@@ -25,7 +25,7 @@ import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.accessor.PlayerEntityAcc;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
 import net.sorenon.mcxr.play.mixin.accessor.WindowAcc;
@@ -195,7 +195,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         try {
             if (openXRState.loop()) {
                 if (this.player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
-                    PlayerEntityAcc acc = (PlayerEntityAcc) this.player;
+                    PlayerExt acc = (PlayerExt) this.player;
                     if (acc.isXR()) {
                         FriendlyByteBuf buf = PacketByteBufs.create();
                         buf.writeBoolean(false);

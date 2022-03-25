@@ -2,6 +2,7 @@ package net.sorenon.mcxr.play.openxr;
 
 import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,8 +57,15 @@ public class OpenXRState {
         return b;
     }
 
-    //TODO do this in own thread
+    //TODO do this asynchronously
     public void tryInitialize() {
+        if (PlayOptions.xrUninitialized) {
+            return;
+        }
+        if (!XR.loaded()) {
+            XR.create("openxr_loader");
+        }
+
         if (session != null) session.close();
         session = null;
         MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
@@ -153,6 +161,14 @@ public class OpenXRState {
      * @return true if the game should just render normally
      */
     public boolean loop() {
+        if (instance != null && PlayOptions.xrUninitialized) {
+            if (session != null) session.close();
+            session = null;
+            MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
+            if (instance != null) instance.close();
+            instance = null;
+        }
+
         if (session == null) {
             return true;
         }
@@ -162,7 +178,7 @@ public class OpenXRState {
         }
 
         if (session.running) {
-            boolean disabled = MCXRPlayClient.xrDisabled;
+            boolean disabled = PlayOptions.xrPaused;
             session.pollActions(disabled);
             MCXRPlayClient.MCXR_GAME_RENDERER.renderFrame(disabled);
             return !MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode();

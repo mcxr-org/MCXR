@@ -2,15 +2,18 @@
   "required": true,
   "minVersion": "0.8",
   "package": "net.sorenon.mcxr.core.mixin",
-  "compatibilityLevel": "JAVA_16",
+  "compatibilityLevel": "JAVA_17",
   "mixins": [
     "LivingEntityAcc",
     "LivingEntityMixin",
     "PlayerEntityMixin",
-    "ServerLoginNetworkHandlerAcc"
+    "ServerLoginNetworkHandlerAcc",
+    "hands.EntityMixin",
+    "hands.LivingEntityMixin",
+    "hands.ServerPlayerGameModeMixin"
   ],
   "client": [
-    "HumanoidModelMixin"
+    "hands.client.MultiPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

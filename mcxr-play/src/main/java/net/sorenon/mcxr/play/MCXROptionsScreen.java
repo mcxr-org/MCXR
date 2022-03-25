@@ -12,7 +12,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
@@ -27,6 +26,8 @@ public class MCXROptionsScreen extends Screen {
     @Nullable
     private final Screen previous;
 
+    private Button reloadButton;
+
     public MCXROptionsScreen(@Nullable Screen previous) {
         super(new TranslatableComponent("mcxr.options.title"));
         this.previous = previous;
@@ -34,57 +35,84 @@ public class MCXROptionsScreen extends Screen {
 
     @Override
     protected void init() {
-/*        this.addRenderableWidget(new Button(
+        PlayOptions.load();
+        this.reloadButton = this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
-                this.height / 6 - 12,
+                this.height / 6 - 12 - 4 + 24,
                 150,
                 20,
                 new TranslatableComponent("mcxr.menu.reload"),
-                button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));*/
-/*        this.addRenderableWidget(new Button(
+                button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));
+        if (PlayOptions.xrUninitialized) {
+            reloadButton.active = false;
+        }
+
+        this.addRenderableWidget(new Button(
                 this.width / 2 + 5,
-                this.height / 6 - 12,
+                this.height / 6 - 12 - 4 + 24,
                 150,
                 20,
-                MCXRPlayClient.xrDisabled ? new TranslatableComponent("mcxr.options.enable") : new TranslatableComponent("mcxr.options.disable"),
+                PlayOptions.xrUninitialized ? new TranslatableComponent("mcxr.options.initialize") : new TranslatableComponent("mcxr.options.uninitialize"),
                 button -> {
-                    MCXRPlayClient.xrDisabled = !MCXRPlayClient.xrDisabled;
-                    button.setMessage(MCXRPlayClient.xrDisabled ? new TranslatableComponent("mcxr.options.enable") : new TranslatableComponent("mcxr.options.disable"));
-                }));*/
-        this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.previous)));
+                    PlayOptions.xrUninitialized = !PlayOptions.xrUninitialized;
+                    PlayOptions.save();
+                    reloadButton.active = !PlayOptions.xrUninitialized;
+                    if (!PlayOptions.xrUninitialized) {
+                        MCXRPlayClient.OPEN_XR_STATE.tryInitialize();
+                    }
+                    button.setMessage(PlayOptions.xrUninitialized ? new TranslatableComponent("mcxr.options.initialize") : new TranslatableComponent("mcxr.options.uninitialize"));
+                }));
+
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 100,
+                this.height / 6 - 12 - 4,
+                200,
+                20,
+                PlayOptions.xrPaused ? new TranslatableComponent("mcxr.options.unpause") : new TranslatableComponent("mcxr.options.pause"),
+                button -> {
+                    PlayOptions.xrPaused = !PlayOptions.xrPaused;
+                    PlayOptions.save();
+                    button.setMessage(PlayOptions.xrPaused ? new TranslatableComponent("mcxr.options.unpause") : new TranslatableComponent("mcxr.options.pause"));
+                }));
+
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
-                this.height / 6 + 54,
+                this.height / 6 + 54 + 12,
                 150,
                 20,
-                new TranslatableComponent("mcxr.options.walk_direction", MCXRPlayClient.walkDirection.toComponent()),
+                new TranslatableComponent("mcxr.options.walk_direction", PlayOptions.walkDirection.toComponent()),
                 button -> {
-                    MCXRPlayClient.walkDirection = MCXRPlayClient.walkDirection.iterate();
-                    button.setMessage(new TranslatableComponent("mcxr.options.walk_direction", MCXRPlayClient.walkDirection.toComponent()));
+                    PlayOptions.walkDirection = PlayOptions.walkDirection.iterate();
+                    PlayOptions.save();
+                    button.setMessage(new TranslatableComponent("mcxr.options.walk_direction", PlayOptions.walkDirection.toComponent()));
                 }));
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
-                this.height / 6 + 54 + 24,
+                this.height / 6 + 54 + 24 + 12,
                 150,
                 20,
-                new TranslatableComponent("mcxr.options.swim_direction", MCXRPlayClient.swimDirection.toComponent()),
+                new TranslatableComponent("mcxr.options.swim_direction", PlayOptions.swimDirection.toComponent()),
                 button -> {
-                    MCXRPlayClient.swimDirection = MCXRPlayClient.swimDirection.iterate();
-                    button.setMessage(new TranslatableComponent("mcxr.options.swim_direction", MCXRPlayClient.swimDirection.toComponent()));
+                    PlayOptions.swimDirection = PlayOptions.swimDirection.iterate();
+                    PlayOptions.save();
+                    button.setMessage(new TranslatableComponent("mcxr.options.swim_direction", PlayOptions.swimDirection.toComponent()));
                 }));
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
-                this.height / 6 + 54 + 24 * 2,
+                this.height / 6 + 54 + 24 * 2 + 12,
                 150,
                 20,
-                new TranslatableComponent("mcxr.options.fly_direction", MCXRPlayClient.flyDirection.toComponent()),
+                new TranslatableComponent("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()),
                 button -> {
-                    MCXRPlayClient.flyDirection = MCXRPlayClient.flyDirection.iterate();
-                    button.setMessage(new TranslatableComponent("mcxr.options.fly_direction", MCXRPlayClient.flyDirection.toComponent()));
+                    PlayOptions.flyDirection = PlayOptions.flyDirection.iterate();
+                    PlayOptions.save();
+                    button.setMessage(new TranslatableComponent("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()));
                 }));
 
         assert this.minecraft != null;
-        this.addRenderableWidget(Option.MAIN_HAND.createButton(this.minecraft.options, this.width / 2 - 155 + 160, this.height / 6 + 54, 150));
+        this.addRenderableWidget(Option.MAIN_HAND.createButton(this.minecraft.options, this.width / 2 - 155 + 160, this.height / 6 + 54 + 12, 150));
+
+        this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.previous)));
     }
 
     @Override
@@ -92,9 +120,9 @@ public class MCXROptionsScreen extends Screen {
         this.renderBackground(poseStack);
         super.render(poseStack, mouseX, mouseY, delta);
 
-        drawCenteredString(poseStack, this.font, this.title, this.width / 2, 15, 16777215);
+        drawCenteredString(poseStack, this.font, this.title, this.width / 2, 13, 16777215);
 
-        int y = this.height / 6 - 12 + 12;
+        int y = this.height / 6 - 4 + 24;
         int x = this.width / 2 - 155;
 
         MCXROptionsScreen.renderStatus(this, this.font, poseStack, mouseX, mouseY, x, y, 0, 60);
@@ -109,6 +137,11 @@ public class MCXROptionsScreen extends Screen {
                                     int y,
                                     int fade,
                                     int wrapLength) {
+        if (PlayOptions.xrUninitialized) {
+            GuiComponent.drawString(poseStack, font, "MCXR Disabled", x + 1, y + 12, 16777215 | fade);
+            return;
+        }
+
         OpenXRState OPEN_XR = MCXRPlayClient.OPEN_XR_STATE;
 
         if (OPEN_XR.instance != null) {

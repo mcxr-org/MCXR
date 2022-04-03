@@ -1,13 +1,13 @@
-#version 100
-
-#moj_import <precision.glsl>
+#version 150
 
 uniform sampler2D DiffuseSampler;
 
 uniform vec4 ColorModulator;
 
-varying vec2 texCoord;
-varying vec4 vertexColor;
+in vec2 texCoord;
+in vec4 vertexColor;
+
+out vec4 fragColor;
 
 float sRGBToLinear(float f) {
     if (f < 0.04045f) {
@@ -18,7 +18,9 @@ float sRGBToLinear(float f) {
 }
 
 void main() {
-    vec4 color = texture2D(DiffuseSampler, texCoord) * vertexColor;
+    //TODO use a more modern aa alg (smaa?)
+    //TODO make aa configuarable
+    vec4 color = texture(DiffuseSampler, texCoord) * vertexColor;
     vec4 mcColor = color * ColorModulator;
 
     // blit final output of compositor into displayed back buffer

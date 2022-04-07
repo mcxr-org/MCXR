@@ -224,30 +224,43 @@ public class VrFirstPersonRenderer {
                 Matrix3f normal = matrices.last().normal();
 
                 VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.5));
-                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
-                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
-                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
+//                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+//                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+//
+//                consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
+//                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
+//                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
 
                 if (hitResult.getDirection() != Direction.UP) {
-                    var hitResult2 = world.clip(new ClipContext(hitPos, hitPos.subtract(0, 1000, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-                    var hitPos2 = hitResult2.getLocation();
-                    consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.5));
-                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    if (hitResult.getDirection() != Direction.DOWN) {
+                        hitPos = hitPos.subtract(dir.scale(0.3));
+                    }
 
-                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
-                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.8f, 0.4f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
-                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.8f, 0.4f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
-                    hitPos = hitPos2;
+
+                    var hitResult2 = world.clip(new ClipContext(hitPos.add(0, 1, 0), hitPos.subtract(0, 1000, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+                    var hitPos2 = hitResult2.getLocation();
+//                    consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(3));
+//                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+//                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.5f, 1).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.1f, 0.1f, 0.5f, 1).normal(normal, 0, -1, 0).endVertex();
+//                    hitPos = hitPos2;
                 }
 
-                matrices.translate((float) hitPos.x, (float) hitPos.y - 0.15, (float) hitPos.z);
+                if (gripPos.y > hitPos.y) {
+                    matrices.translate((float) gripPos.x, (float) gripPos.y, (float) gripPos.z);
 
-                for(int y = 0; y <= 16; ++y) {
-                    stringVertex((float) gripPos.x - (float)  hitPos.x, (float) gripPos.y - (float) hitPos.y, (float) gripPos.z - (float)  hitPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), fraction(y, 16), fraction(y + 1, 16));
+                    for (int i = 0; i <= 16; ++i) {
+                        stringVertex((float) hitPos.x - (float) gripPos.x, (float) hitPos.y - (float) gripPos.y, (float) hitPos.z - (float) gripPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f);
+                    }
+                } else {
+                    matrices.translate((float) hitPos.x, (float) hitPos.y, (float) hitPos.z);
+
+                    for (int i = 0; i <= 16; ++i) {
+                        stringVertex((float) gripPos.x - (float) hitPos.x, (float) gripPos.y - (float) hitPos.y, (float) gripPos.z - (float) hitPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f);
+                    }
                 }
 
                 matrices.popPose();
@@ -336,31 +349,44 @@ public class VrFirstPersonRenderer {
     }
 
     private static float fraction(int value, int max) {
-        return (float)value / (float)max;
+        return (float) value / (float) max;
     }
 
-    private static void vertex(VertexConsumer buffer, Matrix4f matrix, Matrix3f normalMatrix, int light, float x, int y, int u, int v) {
-        buffer.vertex(matrix, x - 0.5F, (float)y - 0.5F, 0.0F)
+    private static void vertex(VertexConsumer buffer,
+                               Matrix4f matrix,
+                               Matrix3f normalMatrix,
+                               int light,
+                               float x,
+                               int y,
+                               int u,
+                               int v) {
+        buffer.vertex(matrix, x - 0.5F, (float) y - 0.5F, 0.0F)
                 .color(255, 255, 255, 255)
-                .uv((float)u, (float)v)
+                .uv((float) u, (float) v)
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
                 .uv2(light)
                 .normal(normalMatrix, 0.0F, 1.0F, 0.0F)
                 .endVertex();
     }
 
-    private static void stringVertex(float x, float y, float z, VertexConsumer buffer, PoseStack.Pose normal, float f, float g) {
+    private static void stringVertex(float x,
+                                     float y,
+                                     float z,
+                                     VertexConsumer buffer,
+                                     PoseStack.Pose normal,
+                                     float f,
+                                     float g) {
         float h = x * f;
-        float i = y * (f * f + f) * 0.5F + 0.25F;
+        float i = y * (f * f + f) * 0.5F;
         float j = z * f;
         float k = x * g - h;
-        float l = y * (g * g + g) * 0.5F + 0.25F - i;
+        float l = y * (g * g + g) * 0.5F + i;
         float m = z * g - j;
         float n = Mth.sqrt(k * k + l * l + m * m);
         k /= n;
         l /= n;
         m /= n;
-        buffer.vertex(normal.pose(), h, i, j).color(0, 0, 0, 255).normal(normal.normal(), k, l, m).endVertex();
+        buffer.vertex(normal.pose(), h, i, j).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), k, l, m).endVertex();
     }
 
     public static int getLight(Camera camera, Level world) {

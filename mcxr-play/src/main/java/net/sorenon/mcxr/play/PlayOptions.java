@@ -14,6 +14,10 @@ public class PlayOptions {
     public static MoveDirectionPose swimDirection = MoveDirectionPose.RightHand;
     public static MoveDirectionPose flyDirection = MoveDirectionPose.RightHand;
 
+    public static boolean smoothTurning = false;
+    public static float snapTurnAmount = 22f;
+    public static float smoothTurnRate = 120f;
+
     /**
      * The angle to rotate the player's in-game hand for a more comfortable experience
      * May be different for different controllers -> needs testing
@@ -36,6 +40,10 @@ public class PlayOptions {
 
         fileConfig.set("handPitchAdjust", handPitchAdjust);
 
+        fileConfig.set("smoothTurning", smoothTurning);
+        fileConfig.set("snapTurnAmount", snapTurnAmount);
+        fileConfig.set("smoothTurnRate", smoothTurnRate);
+
         fileConfig.set("SSAA", SSAA);
         fileConfig.save();
     }
@@ -50,6 +58,10 @@ public class PlayOptions {
         flyDirection = fileConfig.getEnumOrElse("flyDirection", MoveDirectionPose.RightHand);
 
         handPitchAdjust = fileConfig.<Number>getOrElse("handPitchAdjust", 30f).floatValue();
+
+        smoothTurning = fileConfig.getOrElse("smoothTurning", false);
+        snapTurnAmount = fileConfig.<Number>getOrElse("snapTurnAmount", 22f).floatValue();
+        smoothTurnRate = fileConfig.<Number>getOrElse("smoothTurnRate", 120f).floatValue();
 
         SSAA = fileConfig.<Number>getOrElse("SSAA", 1).floatValue();
     }

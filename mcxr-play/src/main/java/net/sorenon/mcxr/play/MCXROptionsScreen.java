@@ -112,6 +112,19 @@ public class MCXROptionsScreen extends Screen {
         assert this.minecraft != null;
         this.addRenderableWidget(Option.MAIN_HAND.createButton(this.minecraft.options, this.width / 2 - 155 + 160, this.height / 6 + 54 + 12, 150));
 
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 155 + 160,
+                this.height / 6 + 54 + 24 + 12,
+                150,
+                20,
+                PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"),
+                button -> {
+                    PlayOptions.smoothTurning = !PlayOptions.smoothTurning;
+                    PlayOptions.save();
+                    button.setMessage(PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"));
+                }));
+
+
         this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.previous)));
     }
 

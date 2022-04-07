@@ -43,6 +43,8 @@ public final class XrInput {
     public static final VanillaGameplayActionSet vanillaGameplayActionSet = new VanillaGameplayActionSet();
     public static final GuiActionSet guiActionSet = new GuiActionSet();
 
+    private static long lastPollTime = 0;
+
     private XrInput() {
     }
 
@@ -111,6 +113,11 @@ public final class XrInput {
      * Pre-tick + Pre-render, called once every frame
      */
     public static void pollActions() {
+        long time = System.nanoTime();
+        if (lastPollTime == 0) {
+            lastPollTime = time;
+        }
+
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) {
             if (guiActionSet.exit.changedSinceLastSync) {
                 if (guiActionSet.exit.currentState) {
@@ -133,18 +140,30 @@ public final class XrInput {
             }
         }
 
-        if (actionSet.turn.changedSinceLastSync) {
-            float value = actionSet.turn.currentState;
-            if (actionSet.turnActivated) {
-                actionSet.turnActivated = Math.abs(value) > 0.15f;
-            } else if (Math.abs(value) > 0.7f) {
-                MCXRPlayClient.stageTurn += Math.toRadians(22) * -Math.signum(value);
+        if (PlayOptions.smoothTurning) {
+            if (Math.abs(actionSet.turn.currentState) > 0.4) {
+                float delta = (time - lastPollTime) / 1_000_000_000f;
+
+                MCXRPlayClient.stageTurn += Math.toRadians(PlayOptions.smoothTurnRate) * -Math.signum(actionSet.turn.currentState) * delta;
                 Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.stageTurn).transform(MCXRPlayClient.viewSpacePoses.getStagePose().getPos(), new Vector3f());
                 Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos());
 
                 MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
+            }
+        } else {
+            if (actionSet.turn.changedSinceLastSync) {
+                float value = actionSet.turn.currentState;
+                if (actionSet.turnActivated) {
+                    actionSet.turnActivated = Math.abs(value) > 0.15f;
+                } else if (Math.abs(value) > 0.7f) {
+                    MCXRPlayClient.stageTurn += Math.toRadians(PlayOptions.snapTurnAmount) * -Math.signum(value);
+                    Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.stageTurn).transform(MCXRPlayClient.viewSpacePoses.getStagePose().getPos(), new Vector3f());
+                    Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos());
 
-                actionSet.turnActivated = true;
+                    MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
+
+                    actionSet.turnActivated = true;
+                }
             }
         }
 
@@ -234,6 +253,8 @@ public final class XrInput {
                 KeyMapping.set(key, false);
             }
         }
+
+        lastPollTime = time;
     }
 
     /**

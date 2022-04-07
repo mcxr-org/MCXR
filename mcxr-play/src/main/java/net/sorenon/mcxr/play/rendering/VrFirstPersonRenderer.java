@@ -24,12 +24,15 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
@@ -38,6 +41,7 @@ import net.minecraft.world.phys.Vec3;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
+import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.MCXRGuiManager;
@@ -198,6 +202,57 @@ public class VrFirstPersonRenderer {
             Pose pose = XrInput.handsActionSet.gripPoses[handIndex].getMinecraftPose();
             Vec3 gripPos = convert(pose.getPos());
             Vector3f eyePos = ((RenderPass.XrWorld) XR_RENDERER.renderPass).eyePoses.getMinecraftPose().getPos();
+
+            if (handIndex != MCXRPlayClient.getMainHand()) {
+                matrices.pushPose();
+                matrices.translate(-eyePos.x(), -eyePos.y(), -eyePos.z());
+
+                //Draw teleport ray
+                float maxDistHor = 7;
+                float maxDistVer = 1.5f;
+
+                Player player = Minecraft.getInstance().player;
+
+                Vec3 pos = JOMLUtil.convert(pose.getPos());
+                Vector3f dir1 = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+                Vec3 dir = new Vec3(dir1.x, dir1.y, dir1.z);
+                Vec3 endPos = pos.add(dir.scale(7));
+                var hitResult = world.clip(new ClipContext(pos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+                var hitPos = hitResult.getLocation();
+
+                Matrix4f model = matrices.last().pose();
+                Matrix3f normal = matrices.last().normal();
+
+                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.5));
+                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
+                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
+                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                if (hitResult.getDirection() != Direction.UP) {
+                    var hitResult2 = world.clip(new ClipContext(hitPos, hitPos.subtract(0, 1000, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
+                    var hitPos2 = hitResult2.getLocation();
+                    consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.5));
+                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
+                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.8f, 0.4f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.8f, 0.4f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    hitPos = hitPos2;
+                }
+
+                matrices.translate((float) hitPos.x, (float) hitPos.y - 0.15, (float) hitPos.z);
+
+                for(int y = 0; y <= 16; ++y) {
+                    stringVertex((float) gripPos.x - (float)  hitPos.x, (float) gripPos.y - (float) hitPos.y, (float) gripPos.z - (float)  hitPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), fraction(y, 16), fraction(y + 1, 16));
+                }
+
+                matrices.popPose();
+            }
+
             matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
 
             float scale = MCXRPlayClient.getCameraScale();
@@ -213,6 +268,7 @@ public class VrFirstPersonRenderer {
             boolean debug = Minecraft.getInstance().options.renderDebug;
 
             if (handIndex == MCXRPlayClient.getMainHand()) {
+                //Draw crosshair ray
                 Matrix4f model = matrices.last().pose();
                 Matrix3f normal = matrices.last().normal();
 
@@ -277,6 +333,34 @@ public class VrFirstPersonRenderer {
 
             matrices.popPose();
         }
+    }
+
+    private static float fraction(int value, int max) {
+        return (float)value / (float)max;
+    }
+
+    private static void vertex(VertexConsumer buffer, Matrix4f matrix, Matrix3f normalMatrix, int light, float x, int y, int u, int v) {
+        buffer.vertex(matrix, x - 0.5F, (float)y - 0.5F, 0.0F)
+                .color(255, 255, 255, 255)
+                .uv((float)u, (float)v)
+                .overlayCoords(OverlayTexture.NO_OVERLAY)
+                .uv2(light)
+                .normal(normalMatrix, 0.0F, 1.0F, 0.0F)
+                .endVertex();
+    }
+
+    private static void stringVertex(float x, float y, float z, VertexConsumer buffer, PoseStack.Pose normal, float f, float g) {
+        float h = x * f;
+        float i = y * (f * f + f) * 0.5F + 0.25F;
+        float j = z * f;
+        float k = x * g - h;
+        float l = y * (g * g + g) * 0.5F + 0.25F - i;
+        float m = z * g - j;
+        float n = Mth.sqrt(k * k + l * l + m * m);
+        k /= n;
+        l /= n;
+        m /= n;
+        buffer.vertex(normal.pose(), h, i, j).color(0, 0, 0, 255).normal(normal.normal(), k, l, m).endVertex();
     }
 
     public static int getLight(Camera camera, Level world) {

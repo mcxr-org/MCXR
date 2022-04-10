@@ -32,14 +32,6 @@ public class HandsActionSet extends ActionSet {
 
     @Override
     public void getDefaultBindings(HashMap<String, List<Pair<Action, String>>> map) {
-        map.computeIfAbsent("/interaction_profiles/khr/simple_controller", aLong -> new ArrayList<>()).addAll(
-                List.of(
-                        new Pair<>(grip, "/user/hand/left/input/grip/pose"),
-                        new Pair<>(grip, "/user/hand/right/input/grip/pose"),
-                        new Pair<>(aim, "/user/hand/left/input/aim/pose"),
-                        new Pair<>(aim, "/user/hand/right/input/aim/pose")
-                )
-        );
         map.computeIfAbsent("/interaction_profiles/oculus/touch_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(grip, "/user/hand/left/input/grip/pose"),
@@ -48,6 +40,7 @@ public class HandsActionSet extends ActionSet {
                         new Pair<>(aim, "/user/hand/right/input/aim/pose")
                 )
         );
+        /*
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(grip, "/user/hand/left/input/grip/pose"),
@@ -84,5 +77,6 @@ public class HandsActionSet extends ActionSet {
                     )
             );
         }
+        */
     }
 }

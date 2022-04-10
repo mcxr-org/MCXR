@@ -53,9 +53,11 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(exit, "/user/hand/left/input/y/click"),
                         new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(scroll, "/user/hand/right/input/thumbstick"),
                         new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                 )
         );
+        /*
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(pickup, "/user/hand/right/input/a/click"),
@@ -106,5 +108,6 @@ public class GuiActionSet extends ActionSet {
                     )
             );
         }
+         */
     }
 }

@@ -14,6 +14,13 @@ group = properties["maven_group"].toString()
 
 repositories {
     maven { url = uri("https://jitpack.io") }
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+        content {
+            includeGroup("maven.modrinth")
+        }
+    }
 }
 
 dependencies {
@@ -27,6 +34,8 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${properties["loader_version"].toString()}")
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${properties["fabric_version"].toString()}")
+
+    modImplementation("maven.modrinth:simple-voice-chat:fabric-1.18.2-2.2.26")
 
     modCompileOnly("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
         exclude(group = "net.fabricmc.fabric-api")

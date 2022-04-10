@@ -22,7 +22,7 @@ public class QuickMenu extends Screen {
         ArrayList<Button> QuickMenuButtons = new ArrayList<>();
 
         QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, new TranslatableComponent("QuickChat"), (button ) -> {
-            Minecraft.getInstance().setScreen(new net.sorenon.mcxr.play.gui.QuickChat("QuickChat"));
+            Minecraft.getInstance().setScreen(new net.sorenon.mcxr.play.mixin.gui.QuickChat("QuickChat"));
         }));
         if (FabricLoader.getInstance().isModLoaded("voicechat")) {
             SimpleVoiceChatCompat.createButton(QuickMenuButtons, this.width, this.height);

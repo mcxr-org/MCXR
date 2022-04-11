@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.input;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ChatScreen;
@@ -9,8 +10,8 @@ import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.mixin.gui.QuickMenu;
 import net.sorenon.mcxr.play.PlayOptions;
+import net.sorenon.mcxr.play.gui.QuickMenu;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
@@ -38,8 +39,6 @@ import java.util.List;
 import static org.lwjgl.system.MemoryStack.stackPointers;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
-
-import com.mojang.blaze3d.platform.InputConstants;
 
 public final class XrInput {
     public static final HandsActionSet handsActionSet = new HandsActionSet();

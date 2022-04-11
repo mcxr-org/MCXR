@@ -17,7 +17,7 @@ public class MCXRGuiManager {
     public final int guiFramebufferWidth = 1980;
     public final int guiFramebufferHeight = 1080;
 
-    public final ResourceLocation guiRenderTexture = new ResourceLocation("mcxr", "gui");
+    public final ResourceLocation guiRenderTexture = new ResourceLocation("mcxr", "net/sorenon/mcxr/play/gui");
 
     public RenderTarget guiRenderTarget;
     public RenderTarget guiPostProcessRenderTarget;

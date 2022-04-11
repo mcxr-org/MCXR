@@ -1,8 +1,7 @@
-package net.sorenon.mcxr.play.mixin.gui;
+package net.sorenon.mcxr.play.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.network.chat.TranslatableComponent;
 import org.apache.logging.log4j.LogManager;

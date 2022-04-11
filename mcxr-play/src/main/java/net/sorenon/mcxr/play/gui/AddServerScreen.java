@@ -1,4 +1,4 @@
-package net.sorenon.mcxr.play.mixin.gui;
+package net.sorenon.mcxr.play.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;

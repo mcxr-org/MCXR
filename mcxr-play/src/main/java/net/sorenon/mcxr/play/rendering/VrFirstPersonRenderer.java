@@ -49,6 +49,7 @@ import net.sorenon.fart.RenderTypeBuilder;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
+import net.sorenon.mcxr.core.Teleport;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
@@ -208,10 +209,13 @@ public class VrFirstPersonRenderer {
             Vec3 gripPos = convert(pose.getPos());
             Vec3 camPos = context.camera().getPosition();
 
-            if (handIndex != MCXRPlayClient.getMainHand()) {
+            if (handIndex != MCXRPlayClient.getMainHand() && XrInput.vanillaGameplayActionSet.teleport.currentState) {
                 matrices.pushPose();
 
                 matrices.translate(-camPos.x, -camPos.y, -camPos.z);
+
+                Matrix4f model = matrices.last().pose();
+                Matrix3f normal = matrices.last().normal();
 
                 //Draw teleport ray
                 float maxDistHor = 7;
@@ -219,92 +223,45 @@ public class VrFirstPersonRenderer {
 
                 Player player = Minecraft.getInstance().player;
 
-                Vec3 pos = JOMLUtil.convert(pose.getPos());
-                Vector3f dir1 = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
-                Vec3 dir = new Vec3(dir1.x, dir1.y, dir1.z);
-                Vec3 endPos = pos.add(dir.scale(7));
-                var hitResult = world.clip(new ClipContext(pos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-                var hitPos = hitResult.getLocation();
+                Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
 
-                Matrix4f model = matrices.last().pose();
-                Matrix3f normal = matrices.last().normal();
+                var stage1 = Teleport.tpStage1(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+                Vec3 hitPos1 = stage1.getA();
+                Vec3 finalPos = stage1.getB();
 
-                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.5));
-//                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-//                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-//
-//                consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
-//                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
-//                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                Vec3 finalPos = null;
-                boolean blocked = true;
-                if (hitResult.getType() != HitResult.Type.MISS) {
-                    var blockPos = hitResult.getBlockPos();
-
-                    if (hitResult.getDirection() == Direction.UP) {
-                        var dims = player.getDimensions(player.getPose());
-                        VoxelShape shape = Shapes.create(AABB.ofSize(hitPos, dims.width + 1.0E-6, dims.height + 1.0E-6, dims.width + 1.0E-6));
-                        var optional = world.findFreePosition(player, shape, hitPos, dims.width, dims.height, dims.width);
-                        if (optional.isPresent()) {
-                            finalPos = optional.get().subtract(0, dims.height / 2, 0);
-                            blocked = false;
-                        } else {
-                            finalPos = hitPos;
-                        }
-                    } else if (world.getBlockState(blockPos.above()).getCollisionShape(world, blockPos.above(), CollisionContext.of(player)).isEmpty()) {
-                        var blockState = world.getBlockState(blockPos).getCollisionShape(world, blockPos, CollisionContext.of(player));
-                        finalPos = new Vec3(blockPos.getX() + 0.5f, blockPos.getY() + blockState.max(Direction.Axis.Y), blockPos.getZ() + 0.5f);
-                        blocked = false;
+                boolean blocked;
+                if (finalPos != null) {
+                    blocked = false;
+                    if (hitPos1 == null) {
+                        hitPos1 = finalPos;
                     }
-                }
+                } else {
+                    hitPos1 = hitPos1.subtract(JOMLUtil.convert(dir).scale(0.05));
+                    var stage2 = Teleport.tpStage2(player, hitPos1);
+                    finalPos = stage2.getA();
+                    blocked = !stage2.getB();
 
-                if (finalPos == null || blocked) {
-                    hitPos = hitPos.subtract(dir.scale(0.05));
-
-                    var hitResult2 = world.clip(new ClipContext(hitPos, hitPos.subtract(0, 5, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-                    // For some reason doing a large raycast skips the first few centimeters
-                    if (hitResult2.getType() == HitResult.Type.MISS) {
-                        hitResult2 = world.clip(new ClipContext(hitPos, hitPos.subtract(0, 1000, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-                    }
-
-                    var hitPos2 = hitResult2.getLocation();
-
-//                    var blockPos = hitResult2.getBlockPos();
-//                    var blockState = world.getBlockState(blockPos).getCollisionShape(world, blockPos, CollisionContext.of(player));
-
-                    var dims = player.getDimensions(player.getPose());
-                    VoxelShape shape = Shapes.create(AABB.ofSize(hitPos2, dims.width + 1.0E-6, dims.height + 1.0E-6, dims.width + 1.0E-6));
-                    var optional = world.findFreePosition(player, shape, hitPos2, dims.width, dims.height, dims.width);
-                    if (optional.isPresent()) {
-                        finalPos = optional.get().subtract(0, dims.height / 2, 0);
-                        blocked = false;
-                    } else {
-                        finalPos = hitPos2;
-                    }
-
-                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                    VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
                     if (blocked) {
-                        consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
-                        consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) finalPos.x, (float) finalPos.y, (float) finalPos.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
                     } else {
-                        consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
-                        consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) finalPos.x, (float) finalPos.y, (float) finalPos.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
                     }
-
                 }
 
                 matrices.pushPose();
 
-                if (gripPos.y > hitPos.y) {
+                if (gripPos.y > hitPos1.y) {
                     matrices.translate((float) gripPos.x, (float) gripPos.y, (float) gripPos.z);
                     for (int i = 0; i <= 16; ++i) {
-                        stringVertex((float) hitPos.x - (float) gripPos.x, (float) hitPos.y - (float) gripPos.y, (float) hitPos.z - (float) gripPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
+                        stringVertex((float) hitPos1.x - (float) gripPos.x, (float) hitPos1.y - (float) gripPos.y, (float) hitPos1.z - (float) gripPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
                     }
                 } else {
-                    matrices.translate((float) hitPos.x, (float) hitPos.y, (float) hitPos.z);
+                    matrices.translate((float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z);
                     for (int i = 0; i <= 16; ++i) {
-                        stringVertex((float) gripPos.x - (float) hitPos.x, (float) gripPos.y - (float) hitPos.y, (float) gripPos.z - (float) hitPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
+                        stringVertex((float) gripPos.x - (float) hitPos1.x, (float) gripPos.y - (float) hitPos1.y, (float) gripPos.z - (float) hitPos1.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
                     }
                 }
 

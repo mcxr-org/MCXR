@@ -23,6 +23,8 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction stand = new BoolAction("stand");
     public final BoolAction menu = new BoolAction("menu");
 
+    public final BoolAction teleport = new BoolAction("teleport");
+
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
     public final FloatAction hotbar = new FloatAction("hotbar");
@@ -57,9 +59,9 @@ public class VanillaGameplayActionSet extends ActionSet {
             hotbarLeft,
             hotbarRight,
             turnLeft,
-            turnRight // ,
-            // haptics
-            );
+            turnRight,
+            teleport
+    );
 
     public VanillaGameplayActionSet() {
         super("vanilla_gameplay", 0);
@@ -92,9 +94,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        // new Pair<>(haptics, "/user/hand/left/output/haptic"),
-                        // new Pair<>(haptics, "/user/hand/right/output/haptic"),
                         new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/left/input/x/click"
                 )
         );
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
@@ -102,14 +104,20 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(use, "/user/hand/left/input/trigger/value"),
                         new Pair<>(attack, "/user/hand/right/input/trigger/value"),
                         new Pair<>(move, "/user/hand/left/input/thumbstick"),
-                        new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
+                        new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-                        new Pair<>(inventory, "/user/hand/left/input/b/click"),
+                        new Pair<>(inventory, "/user/hand/left/input/y/click"),
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
-                        new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
-                        new Pair<>(sneak, "/user/hand/left/input/squeeze/force"),
+                        new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(stand, "/user/hand/right/input/thumbstick"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-                        new Pair<>(stand, "/user/hand/left/input/thumbstick/click")
+                        new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
+                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
+                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/left/input/x/click")
                 )
         );
         map.computeIfAbsent("/interaction_profiles/microsoft/motion_controller", aLong -> new ArrayList<>()).addAll(
@@ -117,47 +125,65 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(use, "/user/hand/left/input/trigger/value"),
                         new Pair<>(attack, "/user/hand/right/input/trigger/value"),
                         new Pair<>(move, "/user/hand/left/input/thumbstick"),
-                        new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
+                        new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-                        new Pair<>(inventory, "/user/hand/left/input/menu/click"),
-                        new Pair<>(jump, "/user/hand/right/input/trackpad/click"),
-                        new Pair<>(sprint, "/user/hand/right/input/squeeze/click"),
-                        new Pair<>(sneak, "/user/hand/left/input/squeeze/click"),
-                        new Pair<>(resetPos, "/user/hand/left/input/trackpad/click"),
-                        new Pair<>(inventory, "/user/hand/right/input/menu/click")
+                        new Pair<>(inventory, "/user/hand/left/input/y/click"),
+                        new Pair<>(jump, "/user/hand/right/input/a/click"),
+                        new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(stand, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
+                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
+                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/left/input/x/click")
                 )
         );
         if (MCXRPlayClient.OPEN_XR_STATE.instance.handle.getCapabilities().XR_EXT_hp_mixed_reality_controller) {
             map.computeIfAbsent("/interaction_profiles/hp/mixed_reality_controller", aLong -> new ArrayList<>()).addAll(
                     List.of(
-                            new Pair<>(use, "/user/hand/left/input/trigger/value"),
-                            new Pair<>(attack, "/user/hand/right/input/trigger/value"),
-                            new Pair<>(move, "/user/hand/left/input/thumbstick"),
-                            new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
-                            new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-                            new Pair<>(inventory, "/user/hand/left/input/y/click"),
-                            new Pair<>(jump, "/user/hand/right/input/a/click"),
-                            new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
-                            new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
-                            new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-                            new Pair<>(stand, "/user/hand/left/input/thumbstick/click")
+                        new Pair<>(use, "/user/hand/left/input/trigger/value"),
+                        new Pair<>(attack, "/user/hand/right/input/trigger/value"),
+                        new Pair<>(move, "/user/hand/left/input/thumbstick"),
+                        new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
+                        new Pair<>(inventory, "/user/hand/left/input/y/click"),
+                        new Pair<>(jump, "/user/hand/right/input/a/click"),
+                        new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(stand, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
+                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
+                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/left/input/x/click")
                     )
             );
         }
         if (MCXRPlayClient.OPEN_XR_STATE.instance.handle.getCapabilities().XR_HTC_vive_cosmos_controller_interaction) {
             map.computeIfAbsent("/interaction_profiles/htc/vive_cosmos_controller", aLong -> new ArrayList<>()).addAll(
                     List.of(
-                            new Pair<>(use, "/user/hand/left/input/trigger/value"),
-                            new Pair<>(attack, "/user/hand/right/input/trigger/value"),
-                            new Pair<>(move, "/user/hand/left/input/thumbstick"),
-                            new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
-                            new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
-                            new Pair<>(inventory, "/user/hand/left/input/y/click"),
-                            new Pair<>(jump, "/user/hand/right/input/a/click"),
-                            new Pair<>(sprint, "/user/hand/right/input/squeeze/click"),
-                            new Pair<>(sneak, "/user/hand/left/input/squeeze/click"),
-                            new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
-                            new Pair<>(stand, "/user/hand/left/input/thumbstick/click")
+                        new Pair<>(use, "/user/hand/left/input/trigger/value"),
+                        new Pair<>(attack, "/user/hand/right/input/trigger/value"),
+                        new Pair<>(move, "/user/hand/left/input/thumbstick"),
+                        new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
+                        new Pair<>(inventory, "/user/hand/left/input/y/click"),
+                        new Pair<>(jump, "/user/hand/right/input/a/click"),
+                        new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(stand, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
+                        new Pair<>(menu, "/user/hand/left/input/menu/click"),
+                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/left/input/x/click")
                     )
             );
         }

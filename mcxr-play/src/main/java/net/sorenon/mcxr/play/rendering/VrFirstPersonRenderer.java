@@ -24,6 +24,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -35,15 +36,20 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
+import net.sorenon.mcxr.core.Teleport;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
@@ -201,11 +207,15 @@ public class VrFirstPersonRenderer {
 
             Pose pose = XrInput.handsActionSet.gripPoses[handIndex].getMinecraftPose();
             Vec3 gripPos = convert(pose.getPos());
-            Vector3f eyePos = ((RenderPass.XrWorld) XR_RENDERER.renderPass).eyePoses.getMinecraftPose().getPos();
+            Vec3 camPos = context.camera().getPosition();
 
-            if (handIndex != MCXRPlayClient.getMainHand()) {
+            if (handIndex != MCXRPlayClient.getMainHand() && XrInput.vanillaGameplayActionSet.teleport.currentState) {
                 matrices.pushPose();
-                matrices.translate(-eyePos.x(), -eyePos.y(), -eyePos.z());
+
+                matrices.translate(-camPos.x, -camPos.y, -camPos.z);
+
+                Matrix4f model = matrices.last().pose();
+                Matrix3f normal = matrices.last().normal();
 
                 //Draw teleport ray
                 float maxDistHor = 7;
@@ -213,60 +223,69 @@ public class VrFirstPersonRenderer {
 
                 Player player = Minecraft.getInstance().player;
 
-                Vec3 pos = JOMLUtil.convert(pose.getPos());
-                Vector3f dir1 = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
-                Vec3 dir = new Vec3(dir1.x, dir1.y, dir1.z);
-                Vec3 endPos = pos.add(dir.scale(7));
-                var hitResult = world.clip(new ClipContext(pos, endPos, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-                var hitPos = hitResult.getLocation();
+                Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
 
-                Matrix4f model = matrices.last().pose();
-                Matrix3f normal = matrices.last().normal();
+                var stage1 = Teleport.tpStage1(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+                Vec3 hitPos1 = stage1.getA();
+                Vec3 finalPos = stage1.getB();
 
-                VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(4.5));
-//                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-//                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-//
-//                consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0));
-//                consumer.vertex(model, (float) gripPos.x, (float) gripPos.y, (float) gripPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
-//                consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.5f, 0.5f, 0.8f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                if (hitResult.getDirection() != Direction.UP) {
-                    if (hitResult.getDirection() != Direction.DOWN) {
-                        hitPos = hitPos.subtract(dir.scale(0.3));
-                    }
-
-
-                    var hitResult2 = world.clip(new ClipContext(hitPos.add(0, 1, 0), hitPos.subtract(0, 1000, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
-                    var hitPos2 = hitResult2.getLocation();
-//                    consumer = consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(3));
-//                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-//                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.4f, 0.1f, 0.4f, 1f).normal(normal, 0, -1, 0).endVertex();
-
-                    consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
-                    consumer.vertex(model, (float) hitPos.x, (float) hitPos.y, (float) hitPos.z).color(0.1f, 0.1f, 0.5f, 1).normal(normal, 0, -1, 0).endVertex();
-                    consumer.vertex(model, (float) hitPos2.x, (float) hitPos2.y, (float) hitPos2.z).color(0.1f, 0.1f, 0.5f, 1).normal(normal, 0, -1, 0).endVertex();
-//                    hitPos = hitPos2;
-                }
-
-                if (gripPos.y > hitPos.y) {
-                    matrices.translate((float) gripPos.x, (float) gripPos.y, (float) gripPos.z);
-
-                    for (int i = 0; i <= 16; ++i) {
-                        stringVertex((float) hitPos.x - (float) gripPos.x, (float) hitPos.y - (float) gripPos.y, (float) hitPos.z - (float) gripPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f);
+                boolean blocked;
+                if (finalPos != null) {
+                    blocked = false;
+                    if (hitPos1 == null) {
+                        hitPos1 = finalPos;
                     }
                 } else {
-                    matrices.translate((float) hitPos.x, (float) hitPos.y, (float) hitPos.z);
+                    hitPos1 = hitPos1.subtract(JOMLUtil.convert(dir).scale(0.05));
+                    var stage2 = Teleport.tpStage2(player, hitPos1);
+                    finalPos = stage2.getA();
+                    blocked = !stage2.getB();
 
+                    VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                    if (blocked) {
+                        consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) finalPos.x, (float) finalPos.y, (float) finalPos.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
+                    } else {
+                        consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) finalPos.x, (float) finalPos.y, (float) finalPos.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
+                    }
+                }
+
+                matrices.pushPose();
+
+                if (gripPos.y > hitPos1.y) {
+                    matrices.translate((float) gripPos.x, (float) gripPos.y, (float) gripPos.z);
                     for (int i = 0; i <= 16; ++i) {
-                        stringVertex((float) gripPos.x - (float) hitPos.x, (float) gripPos.y - (float) hitPos.y, (float) gripPos.z - (float) hitPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f);
+                        stringVertex((float) hitPos1.x - (float) gripPos.x, (float) hitPos1.y - (float) gripPos.y, (float) hitPos1.z - (float) gripPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
+                    }
+                } else {
+                    matrices.translate((float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z);
+                    for (int i = 0; i <= 16; ++i) {
+                        stringVertex((float) gripPos.x - (float) hitPos1.x, (float) gripPos.y - (float) hitPos1.y, (float) gripPos.z - (float) hitPos1.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
                     }
                 }
 
                 matrices.popPose();
+                matrices.pushPose();
+                matrices.translate(finalPos.x, finalPos.y, finalPos.z);
+                PoseStack.Pose entry = matrices.last();
+
+                VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderType.entityTranslucent(new ResourceLocation("textures/misc/shadow.png")));
+
+                float alpha = 0.6f;
+                float radius = camEntity.getBbWidth() / 2;
+                float y0 = 0.005f;
+
+                vertexConsumer.vertex(entry.pose(), -radius, y0, -radius).color(0.1F, 0.1F, 1.0F, alpha).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), -radius, y0, radius).color(0.1F, 0.1F, 1.0F, alpha).uv(0, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), radius, y0, radius).color(0.1F, 0.1F, 1.0F, alpha).uv(1, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), radius, y0, -radius).color(0.1F, 0.1F, 1.0F, alpha).uv(1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+
+                matrices.popPose();
+                matrices.popPose();
             }
 
-            matrices.translate(gripPos.x - eyePos.x(), gripPos.y - eyePos.y(), gripPos.z - eyePos.z());
+            matrices.translate(gripPos.x - camPos.x, gripPos.y - camPos.y, gripPos.z - camPos.z);
 
             float scale = MCXRPlayClient.getCameraScale();
             matrices.scale(scale, scale, scale);
@@ -348,34 +367,14 @@ public class VrFirstPersonRenderer {
         }
     }
 
-    private static float fraction(int value, int max) {
-        return (float) value / (float) max;
-    }
-
-    private static void vertex(VertexConsumer buffer,
-                               Matrix4f matrix,
-                               Matrix3f normalMatrix,
-                               int light,
-                               float x,
-                               int y,
-                               int u,
-                               int v) {
-        buffer.vertex(matrix, x - 0.5F, (float) y - 0.5F, 0.0F)
-                .color(255, 255, 255, 255)
-                .uv((float) u, (float) v)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(normalMatrix, 0.0F, 1.0F, 0.0F)
-                .endVertex();
-    }
-
     private static void stringVertex(float x,
                                      float y,
                                      float z,
                                      VertexConsumer buffer,
                                      PoseStack.Pose normal,
                                      float f,
-                                     float g) {
+                                     float g,
+                                     boolean blocked) {
         float h = x * f;
         float i = y * (f * f + f) * 0.5F;
         float j = z * f;
@@ -386,7 +385,12 @@ public class VrFirstPersonRenderer {
         k /= n;
         l /= n;
         m /= n;
-        buffer.vertex(normal.pose(), h, i, j).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), k, l, m).endVertex();
+        if (blocked) {
+            buffer.vertex(normal.pose(), h, i, j).color(1, 0.3f, 0.3f, 1).normal(normal.normal(), k, l, m).endVertex();
+        } else {
+            buffer.vertex(normal.pose(), h, i, j).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), k, l, m).endVertex();
+
+        }
     }
 
     public static int getLight(Camera camera, Level world) {

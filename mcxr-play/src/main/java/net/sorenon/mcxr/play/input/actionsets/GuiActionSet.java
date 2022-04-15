@@ -23,7 +23,7 @@ public class GuiActionSet extends ActionSet {
 
 
     public GuiActionSet() {
-        super("net/sorenon/mcxr/play/gui", 1);
+        super("gui", 1);
     }
 
     @Override
@@ -108,6 +108,6 @@ public class GuiActionSet extends ActionSet {
                     )
             );
         }
-         
+
     }
 }

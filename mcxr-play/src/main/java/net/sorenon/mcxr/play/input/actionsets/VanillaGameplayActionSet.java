@@ -94,11 +94,11 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(chat, "/user/hand/left/input/x/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/left/input/x/click"
                 )
-        );
+        ));
         map.computeIfAbsent("/interaction_profiles/valve/index_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
                         new Pair<>(use, "/user/hand/left/input/trigger/value"),
@@ -115,7 +115,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(chat, "/user/hand/left/input/x/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/left/input/x/click")
                 )
@@ -136,7 +136,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(chat, "/user/hand/left/input/x/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/left/input/x/click")
                 )
@@ -158,7 +158,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(chat, "/user/hand/left/input/x/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/left/input/x/click")
                     )
@@ -181,7 +181,7 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(chat, "/user/hand/left/input/x/click")
+                        new Pair<>(chat, "/user/hand/left/input/x/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
                         new Pair<>(teleport, "/user/hand/left/input/x/click")
                     )

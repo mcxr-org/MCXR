@@ -1,8 +1,8 @@
 plugins {
-    id("fabric-loom") version "0.10-SNAPSHOT"
-    id("io.github.juuxel.loom-quiltflower-mini") version "1.2.1"
+    id("fabric-loom") version "0.11-SNAPSHOT"
+    id("io.github.juuxel.loom-quiltflower") version "+"
     id("maven-publish")
-    id("org.quiltmc.quilt-mappings-on-loom") version "3.1.1"
+    id("org.quiltmc.quilt-mappings-on-loom") version "4.0.0"
     id("org.ajoberstar.grgit") version "4.1.0"
 }
 
@@ -15,6 +15,7 @@ group = properties["maven_group"].toString()
 
 repositories {
     maven { url = uri("https://jitpack.io") }
+
 }
 
 dependencies {

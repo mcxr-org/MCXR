@@ -255,16 +255,6 @@ public final class XrInput {
                 }
             }
         }
-        if (actionSet.chat.changedSinceLastSync) {
-            if (!actionSet.chat.currentState) {
-                Minecraft client = Minecraft.getInstance();
-                if (client.screen == null) {
-                    if (client.player != null) {
-                        client.setScreen(new ChatScreen(""));
-                    }
-                }
-            }
-        }
 
         if (actionSet.quickmenu.changedSinceLastSync) {
             if (!actionSet.quickmenu.currentState) {

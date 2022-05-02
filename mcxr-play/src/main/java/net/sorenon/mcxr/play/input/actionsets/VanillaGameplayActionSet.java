@@ -23,8 +23,6 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction stand = new BoolAction("stand");
     public final BoolAction menu = new BoolAction("menu");
 
-    public final BoolAction teleport = new BoolAction("teleport");
-
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
     public final FloatAction hotbar = new FloatAction("hotbar");
@@ -57,8 +55,7 @@ public class VanillaGameplayActionSet extends ActionSet {
             hotbarLeft,
             hotbarRight,
             turnLeft,
-            turnRight,
-            teleport
+            turnRight
     );
 
     public VanillaGameplayActionSet() {
@@ -86,11 +83,10 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
                         new Pair<>(inventory, "/user/hand/left/input/y/click"),
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
-                        new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
-                        new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(sneak, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
-                        new Pair<>(teleport, "/user/hand/left/input/x/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
                         new Pair<>(chat, "/user/hand/left/input/x/click")

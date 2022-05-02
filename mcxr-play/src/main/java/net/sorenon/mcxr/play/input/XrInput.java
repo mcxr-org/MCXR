@@ -4,8 +4,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.JOMLUtil;
@@ -15,6 +17,7 @@ import net.sorenon.mcxr.core.Teleport;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
+import net.sorenon.mcxr.play.gui.QuickMenu;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
@@ -141,34 +144,43 @@ public final class XrInput {
 
         VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
 
-        if (actionSet.resetPos.changedSinceLastSync) {
-            if (actionSet.resetPos.currentState) {
-                MCXRPlayClient.resetView();
+        if (actionSet.quickmenu.changedSinceLastSync) {
+            if (!actionSet.quickmenu.currentState) {
+                Minecraft client = Minecraft.getInstance();
+                if (client.screen == null) {
+                    client.setScreen(new QuickMenu(new TranslatableComponent("QuickMenu")));
+                }
             }
         }
 
-        if (actionSet.teleport.changedSinceLastSync && !actionSet.teleport.currentState) {
-            Player player = Minecraft.getInstance().player;
-            if (player != null) {
-                int handIndex = 0;
-                if (player.getMainArm() == HumanoidArm.LEFT) {
-                    handIndex = 1;
+        if (actionSet.chat.changedSinceLastSync) {
+            if (!actionSet.chat.currentState) {
+                Minecraft client = Minecraft.getInstance();
+                if (client.screen == null) {
+                    if (client.player != null) {
+                        client.setScreen(new ChatScreen(""));
+                    }
                 }
+            }
+        }
 
-                Pose pose = XrInput.handsActionSet.gripPoses[handIndex].getMinecraftPose();
+        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+            if (Minecraft.getInstance().player != null)
+                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+        }
 
-                Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
+            if (Minecraft.getInstance().player != null)
+                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+        }
 
-                var pos = Teleport.tp(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+        if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
+            Minecraft.getInstance().pauseGame(false);
+        }
 
-                if (pos != null) {
-                    var buf = PacketByteBufs.create();
-                    buf.writeDouble(pos.x);
-                    buf.writeDouble(pos.y);
-                    buf.writeDouble(pos.z);
-                    ClientPlayNetworking.send(MCXRCore.TELEPORT, buf);
-                    player.setPos(pos);
-                }
+        if (actionSet.resetPos.changedSinceLastSync) {
+            if (actionSet.resetPos.currentState) {
+                MCXRPlayClient.resetView();
             }
         }
 

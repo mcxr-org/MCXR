@@ -94,7 +94,6 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
                         new Pair<>(chat, "/user/hand/left/input/x/click")
-        );
-    }
+        ));
     }
 }

@@ -1,19 +1,24 @@
 plugins {
-    id("fabric-loom") version "0.10-SNAPSHOT"
-    id("io.github.juuxel.loom-quiltflower-mini") version "1.2.1"
+    id("fabric-loom") version "0.11-SNAPSHOT"
+    id("io.github.juuxel.loom-quiltflower") version "1.7.1"
     id("maven-publish")
-    id("org.quiltmc.quilt-mappings-on-loom") version "3.1.1"
+    id("org.quiltmc.quilt-mappings-on-loom") version "4.2.0"
     id("org.ajoberstar.grgit") version "4.1.0"
 }
 
 base {
     archivesBaseName = "mcxr-play"
 }
-version = "${properties["play_version"].toString()}+${getVersionMetadata()}"
+
+version = "${properties["play_version"].toString()}+null"
 group = properties["maven_group"].toString()
 
 repositories {
     maven { url = uri("https://jitpack.io") }
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+    }
 }
 
 dependencies {
@@ -28,9 +33,13 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${properties["fabric_version"].toString()}")
 
+    modImplementation("maven.modrinth:simple-voice-chat:fabric-1.18.2-2.2.26")
+
     modCompileOnly("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
         exclude(group = "net.fabricmc.fabric-api")
     }
+
+    implementation("org.lwjgl:lwjgl:3.2.3")
 
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")

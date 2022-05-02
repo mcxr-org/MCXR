@@ -1,15 +1,19 @@
 package net.sorenon.mcxr.play.input;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.JOMLUtil;
+import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
+import net.sorenon.mcxr.core.Teleport;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.gui.QuickMenu;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.actions.Action;
 import net.sorenon.mcxr.play.input.actions.SessionAwareAction;
@@ -46,6 +50,8 @@ public final class XrInput {
     public static final VanillaGameplayActionSet vanillaGameplayActionSet = new VanillaGameplayActionSet();
     public static final GuiActionSet guiActionSet = new GuiActionSet();
 
+    private static long lastPollTime = 0;
+
     private XrInput() {
     }
 
@@ -61,6 +67,12 @@ public final class XrInput {
         handsActionSet.getDefaultBindings(defaultBindings);
         vanillaGameplayActionSet.getDefaultBindings(defaultBindings);
         guiActionSet.getDefaultBindings(defaultBindings);
+
+        for (var action : handsActionSet.actions()) {
+            if (action instanceof SessionAwareAction sessionAwareAction) {
+                sessionAwareAction.createHandleSession(session);
+            }
+        }
 
         try (var stack = stackPush()) {
             for (var entry : defaultBindings.entrySet()) {
@@ -102,18 +114,17 @@ public final class XrInput {
             // Attach the action set we just made to the session
             instance.checkPanic(XR10.xrAttachSessionActionSets(session.handle, attach_info), "xrAttachSessionActionSets");
         }
-
-        for (var action : handsActionSet.actions()) {
-            if (action instanceof SessionAwareAction sessionAwareAction) {
-                sessionAwareAction.createHandleSession(session);
-            }
-        }
     }
 
     /**
      * Pre-tick + Pre-render, called once every frame
      */
     public static void pollActions() {
+        long time = System.nanoTime();
+        if (lastPollTime == 0) {
+            lastPollTime = time;
+        }
+
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) {
             if (guiActionSet.exit.changedSinceLastSync) {
                 if (guiActionSet.exit.currentState) {
@@ -136,18 +147,55 @@ public final class XrInput {
             }
         }
 
-        if (actionSet.turn.changedSinceLastSync) {
-            float value = actionSet.turn.currentState;
-            if (actionSet.turnActivated) {
-                actionSet.turnActivated = Math.abs(value) > 0.15f;
-            } else if (Math.abs(value) > 0.7f) {
-                MCXRPlayClient.stageTurn += Math.toRadians(22) * -Math.signum(value);
+        if (actionSet.teleport.changedSinceLastSync && !actionSet.teleport.currentState) {
+            Player player = Minecraft.getInstance().player;
+            if (player != null) {
+                int handIndex = 0;
+                if (player.getMainArm() == HumanoidArm.LEFT) {
+                    handIndex = 1;
+                }
+
+                Pose pose = XrInput.handsActionSet.gripPoses[handIndex].getMinecraftPose();
+
+                Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+
+                var pos = Teleport.tp(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+
+                if (pos != null) {
+                    var buf = PacketByteBufs.create();
+                    buf.writeDouble(pos.x);
+                    buf.writeDouble(pos.y);
+                    buf.writeDouble(pos.z);
+                    ClientPlayNetworking.send(MCXRCore.TELEPORT, buf);
+                    player.setPos(pos);
+                }
+            }
+        }
+
+        if (PlayOptions.smoothTurning) {
+            if (Math.abs(actionSet.turn.currentState) > 0.4) {
+                float delta = (time - lastPollTime) / 1_000_000_000f;
+
+                MCXRPlayClient.stageTurn += Math.toRadians(PlayOptions.smoothTurnRate) * -Math.signum(actionSet.turn.currentState) * delta;
                 Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.stageTurn).transform(MCXRPlayClient.viewSpacePoses.getStagePose().getPos(), new Vector3f());
                 Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos());
 
                 MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
+            }
+        } else {
+            if (actionSet.turn.changedSinceLastSync) {
+                float value = actionSet.turn.currentState;
+                if (actionSet.turnActivated) {
+                    actionSet.turnActivated = Math.abs(value) > 0.15f;
+                } else if (Math.abs(value) > 0.7f) {
+                    MCXRPlayClient.stageTurn += Math.toRadians(PlayOptions.snapTurnAmount) * -Math.signum(value);
+                    Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.stageTurn).transform(MCXRPlayClient.viewSpacePoses.getStagePose().getPos(), new Vector3f());
+                    Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos());
 
-                actionSet.turnActivated = true;
+                    MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
+
+                    actionSet.turnActivated = true;
+                }
             }
         }
 
@@ -163,13 +211,12 @@ public final class XrInput {
         }
         if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+                Minecraft.getInstance().player.getInventory().swapPaint(1);
         }
-        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
+        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }
-
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {
             MCXRPlayClient.stageTurn += Math.toRadians(22);
             Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.stageTurn).transform(MCXRPlayClient.viewSpacePoses.getStagePose().getPos(), new Vector3f());
@@ -184,9 +231,6 @@ public final class XrInput {
 
             MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
         }
-        if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
-            Minecraft.getInstance().pauseGame(false);
-        }
 
         if (actionSet.inventory.changedSinceLastSync) {
             if (!actionSet.inventory.currentState) {
@@ -200,25 +244,6 @@ public final class XrInput {
                             client.setScreen(new InventoryScreen(client.player));
                         }
                     }
-                }
-            }
-        }
-        if (actionSet.chat.changedSinceLastSync) {
-            if (!actionSet.chat.currentState) {
-                Minecraft client = Minecraft.getInstance();
-                if (client.screen == null) {
-                    if (client.player != null) {
-                        client.setScreen(new ChatScreen(""));
-                    }
-                }
-            }
-        }
-
-        if (actionSet.quickmenu.changedSinceLastSync) {
-            if (!actionSet.quickmenu.currentState) {
-                Minecraft client = Minecraft.getInstance();
-                if (client.screen == null) {
-                    client.setScreen(new QuickMenu(new TranslatableComponent("QuickMenu")));
                 }
             }
         }
@@ -260,6 +285,8 @@ public final class XrInput {
                 KeyMapping.set(key, false);
             }
         }
+
+        lastPollTime = time;
     }
 
     /**
@@ -297,7 +324,6 @@ public final class XrInput {
                             GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
                 }
             }
-
             if (actionSet.split.changedSinceLastSync) {
                 if (actionSet.split.currentState) {
                     mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
@@ -326,11 +352,10 @@ public final class XrInput {
             if (actionSet.attack.currentState) {
                 mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
                         GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+            } else {
+                mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
+                        GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
             }
-        }
-        if(!actionSet.attack.currentState) {
-            mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
-                    GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
         }
         if (actionSet.inventory.currentState) {
             long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;

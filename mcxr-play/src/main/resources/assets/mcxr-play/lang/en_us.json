@@ -10,6 +10,8 @@
   "mcxr.move_direction.head" : "Head",
   "mcxr.move_direction.right_hand" : "Right Hand",
   "mcxr.move_direction.left_hand" : "Left Hand",
+  "mcxr.options.enable_snap_turning": "Enable Snap Turn",
+  "mcxr.options.enable_smooth_turning": "Enable Smooth Turn",
 
   "mcxr.menu.reload": "Reload Headset",
   "mcxr.menu.session_not_created": "No headset found:",

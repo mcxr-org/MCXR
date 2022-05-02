@@ -30,6 +30,7 @@ public class MCXRCore implements ModInitializer {
 
     public static final ResourceLocation IS_XR_PLAYER = new ResourceLocation("mcxr", "is_xr_player");
     public static final ResourceLocation POSES = new ResourceLocation("mcxr", "poses");
+    public static final ResourceLocation TELEPORT = new ResourceLocation("mcxr", "teleport");
 
     public static MCXRCore INSTANCE;
 
@@ -84,6 +85,14 @@ public class MCXRCore implements ModInitializer {
                     pose2.read(buf);
                     pose3.read(buf);
                     server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, 0));
+                });
+
+        ServerPlayNetworking.registerGlobalReceiver(TELEPORT,
+                (server, player, handler, buf, responseSender) -> {
+                    double x = buf.readDouble();
+                    double y = buf.readDouble();
+                    double z = buf.readDouble();
+                    server.execute(() -> player.setPos(x, y, z));
                 });
     }
 

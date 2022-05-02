@@ -23,6 +23,8 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final BoolAction stand = new BoolAction("stand");
     public final BoolAction menu = new BoolAction("menu");
 
+    public final BoolAction teleport = new BoolAction("teleport");
+
     public final FloatAction turn = new FloatAction("turn");
     //TODO remove this with new input system
     public final FloatAction hotbar = new FloatAction("hotbar");
@@ -33,8 +35,6 @@ public class VanillaGameplayActionSet extends ActionSet {
     //TODO remove these with new input system
     public final BoolAction turnLeft = new BoolAction("turn_left");
     public final BoolAction turnRight = new BoolAction("turn_right");
-
-    // public final MultiHapticAction haptics = new MultiHapticAction("haptics", new String[]{"/user/hand/left", "/user/hand/right"});
 
     public boolean turnActivated = false;
     public boolean hotbarActivated;
@@ -57,9 +57,9 @@ public class VanillaGameplayActionSet extends ActionSet {
             hotbarLeft,
             hotbarRight,
             turnLeft,
-            turnRight // ,
-            // haptics
-            );
+            turnRight,
+            teleport
+    );
 
     public VanillaGameplayActionSet() {
         super("vanilla_gameplay", 0);
@@ -86,16 +86,15 @@ public class VanillaGameplayActionSet extends ActionSet {
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
                         new Pair<>(inventory, "/user/hand/left/input/y/click"),
                         new Pair<>(jump, "/user/hand/right/input/a/click"),
-                        new Pair<>(sprint, "/user/hand/left/input/thumbstick/click"),
-                        new Pair<>(sneak, "/user/hand/right/input/thumbstick"),
-                        new Pair<>(stand, "/user/hand/right/input/thumbstick"),
+                        new Pair<>(sprint, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(sneak, "/user/hand/left/input/squeeze/value"),
                         new Pair<>(resetPos, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(stand, "/user/hand/left/input/thumbstick/click"),
+                        new Pair<>(teleport, "/user/hand/left/input/x/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        // new Pair<>(haptics, "/user/hand/left/output/haptic"),
-                        // new Pair<>(haptics, "/user/hand/right/output/haptic"),
                         new Pair<>(chat, "/user/hand/left/input/x/click")
-                )
         );
+    }
     }
 }

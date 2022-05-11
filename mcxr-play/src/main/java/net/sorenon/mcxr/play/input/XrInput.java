@@ -236,7 +236,7 @@ public final class XrInput {
 
             MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
         }
-        if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
+        if (actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
             Minecraft.getInstance().pauseGame(false);
         }
 
@@ -364,22 +364,23 @@ public final class XrInput {
                 mouseHandler.callOnScroll(Minecraft.getInstance().getWindow().getWindow(),
                         -scrollState.x() * sensitivity, 0.1 * Math.signum(scrollState.y()));
             }
-        }
-        VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
-        if (actionSet.attack.changedSinceLastSync) {
-            if (actionSet.attack.currentState) {
-                mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
-                        GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+        } else {
+            VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
+            if (actionSet.attack.changedSinceLastSync) {
+                if (actionSet.attack.currentState) {
+                    mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
+                            GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                }
             }
-        }
-        if(!actionSet.attack.currentState) {
-            mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
-                    GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
-        }
-        if (actionSet.inventory.currentState) {
-            long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
-            if (heldTime * 1E-09 > 1) {
-                Minecraft.getInstance().pauseGame(false);
+            if (!actionSet.attack.currentState) {
+                mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
+                        GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+            }
+            if (actionSet.inventory.currentState) {
+                long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
+                if (heldTime * 1E-09 > 1) {
+                    Minecraft.getInstance().pauseGame(false);
+                }
             }
         }
     }

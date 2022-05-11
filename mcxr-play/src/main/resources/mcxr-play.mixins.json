@@ -29,7 +29,9 @@
     "rendering.MinecraftMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "roomscale.ClientPlayerEntityMixin"
+    "roomscale.ClientPlayerEntityMixin",
+    "ChatScreenMixin",
+    "EditBoxMixin"
   ],
   "injectors": {
     "defaultRequire": 1

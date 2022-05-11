@@ -2,11 +2,9 @@ package net.sorenon.mcxr.play.openxr;
 
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.ControllerPoses;
-import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.input.actionsets.ActionSet;
 import net.sorenon.mcxr.play.input.actionsets.GuiActionSet;
 import net.sorenon.mcxr.play.input.actionsets.HandsActionSet;
-import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
@@ -14,8 +12,9 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.openxr.*;
+import net.sorenon.mcxr.play.input.XrInput;
 import org.lwjgl.system.MemoryStack;
-
+import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.util.ArrayList;

@@ -2,7 +2,6 @@ package net.sorenon.mcxr.play.gui;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.network.chat.TranslatableComponent;
 import org.apache.logging.log4j.LogManager;
@@ -82,7 +81,7 @@ public class QuickChat extends ChatScreen {
             this.addRenderableWidget(
                     new Button(buttonX, buttonY, buttonWidth, buttonHeight, new TranslatableComponent(word), (button -> {
                         this.sendMessage(word);
-                        Minecraft.getInstance().gui.getChat().clearMessages(true);
+//                        Minecraft.getInstance().gui.getChat().clearMessages(true);
                     }))
             );
 

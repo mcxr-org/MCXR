@@ -1,16 +1,15 @@
 plugins {
     id("fabric-loom") version "0.11-SNAPSHOT"
-    id("io.github.juuxel.loom-quiltflower") version "1.7.1"
+    id("io.github.juuxel.loom-quiltflower") version "+"
     id("maven-publish")
-    id("org.quiltmc.quilt-mappings-on-loom") version "4.2.0"
-    id("org.ajoberstar.grgit") version "4.1.0"
+    id("org.quiltmc.quilt-mappings-on-loom") version "4.0.0"
+    id("org.ajoberstar.grgit") version "5.0.0-rc.3"
 }
 
 base {
     archivesBaseName = "mcxr-play"
 }
-
-version = "${properties["play_version"].toString()}+null"
+version = "${properties["play_version"].toString()}+${getVersionMetadata()}"
 group = properties["maven_group"].toString()
 
 repositories {
@@ -18,6 +17,9 @@ repositories {
     maven {
         name = "Modrinth"
         url = uri("https://api.modrinth.com/maven")
+        content {
+            includeGroup("maven.modrinth")
+        }
     }
 }
 
@@ -38,8 +40,6 @@ dependencies {
     modCompileOnly("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
         exclude(group = "net.fabricmc.fabric-api")
     }
-
-    implementation("org.lwjgl:lwjgl:3.2.3")
 
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")

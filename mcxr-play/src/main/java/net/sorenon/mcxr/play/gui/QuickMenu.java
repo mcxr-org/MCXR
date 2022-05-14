@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -22,11 +23,15 @@ public class QuickMenu extends Screen {
         ArrayList<Button> QuickMenuButtons = new ArrayList<>();
 
         QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, new TranslatableComponent("QuickChat"), (button ) -> {
-            Minecraft.getInstance().setScreen(new QuickChat("QuickChat"));
+            Minecraft.getInstance().setScreen(new net.sorenon.mcxr.play.gui.QuickChat("QuickChat"));
         }));
         if (FabricLoader.getInstance().isModLoaded("voicechat")) {
             SimpleVoiceChatCompat.createButton(QuickMenuButtons, this.width, this.height);
         }
+
+        QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, new TranslatableComponent("Chat"), (button ) -> {
+            Minecraft.getInstance().setScreen(new ChatScreen(""));
+        }));
 
         for (int i = 0; i < QuickMenuButtons.size(); i++) {
             Button QuickMenuButton = QuickMenuButtons.get(i);
@@ -36,6 +41,7 @@ public class QuickMenu extends Screen {
 
             addRenderableWidget(QuickMenuButton);
         }
+
     }
 
     @Override

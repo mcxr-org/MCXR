@@ -1,20 +1,21 @@
 plugins {
     id("fabric-loom") version "0.11-SNAPSHOT"
-    id("io.github.juuxel.loom-quiltflower") version "1.7.1"
+    id("io.github.juuxel.loom-quiltflower") version "+"
     id("maven-publish")
-    id("org.quiltmc.quilt-mappings-on-loom") version "4.2.0"
-    id("org.ajoberstar.grgit") version "4.1.0"
+    id("org.quiltmc.quilt-mappings-on-loom") version "4.0.0"
+    id("org.ajoberstar.grgit") version "5.0.0-rc.3"
 }
 
 base {
     archivesBaseName = "mcxr-core"
 }
 
-version = "${properties["core_version"].toString()}+null"
+version = "${properties["core_version"].toString()}+${getVersionMetadata()}"
 group = properties["maven_group"].toString()
 
 repositories {
     maven { url = uri("https://jitpack.io") }
+
 }
 
 dependencies {

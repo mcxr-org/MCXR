@@ -60,10 +60,13 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
 
+import net.tr7zw.MapRenderer;
+
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
+import static net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
 import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
 //TODO third person renderer
@@ -75,6 +78,8 @@ public class VrFirstPersonRenderer {
 
     private final ModelPart[] slimArmModel = new ModelPart[2];
     private final ModelPart[] armModel = new ModelPart[2];
+
+    //private Item filledMap = Registry.ITEM.get(new ResourceLocation("minecraft", "filled_map"));
 
     public VrFirstPersonRenderer(MCXRGuiManager MCXRGuiManager) {
         this.FGM = MCXRGuiManager;
@@ -514,15 +519,20 @@ public class VrFirstPersonRenderer {
                         matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(90), 0, 0));
                     }
 
-                    Minecraft.getInstance().getItemInHandRenderer().renderItem(
-                            player,
-                            stack,
-                            handIndex == 0 ? ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND : ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
-                            handIndex == 0,
-                            matrices,
-                            consumers,
-                            light
-                    );
+                    if (stack.getItem() == Items.FILLED_MAP) {
+                        MapRenderer.renderFirstPersonMap(matrices, consumers, light, stack, false, handIndex== 0);
+                    }
+                    else {
+                        Minecraft.getInstance().getItemInHandRenderer().renderItem(
+                                player,
+                                stack,
+                                handIndex == 0 ? THIRD_PERSON_LEFT_HAND : ItemTransforms.TransformType.THIRD_PERSON_RIGHT_HAND,
+                                handIndex == 0,
+                                matrices,
+                                consumers,
+                                light
+                        );
+                    }
 
                     matrices.popPose();
                 }

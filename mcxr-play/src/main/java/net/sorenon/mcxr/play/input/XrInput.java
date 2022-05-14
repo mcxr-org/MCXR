@@ -119,12 +119,6 @@ public final class XrInput {
                 }
             }
         }
-
-        for (var action : handsActionSet.actions()) {
-            if (action instanceof SessionAwareAction sessionAwareAction) {
-                sessionAwareAction.createHandleSession(session);
-            }
-        }
     }
 
     /**

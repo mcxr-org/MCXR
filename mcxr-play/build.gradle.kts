@@ -9,7 +9,7 @@ plugins {
 base {
     archivesBaseName = "mcxr-play"
 }
-version = "${properties["play_version"].toString()}+${getVersionMetadata()}"
+version = "${properties["play_version"].toString()}+null"
 group = properties["maven_group"].toString()
 
 repositories {
@@ -41,6 +41,7 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
+    implementation("org.lwjgl:lwjgl:3.2.3")
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")
     implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")

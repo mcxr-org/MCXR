@@ -26,14 +26,15 @@ public class ChatScreenMixin extends Screen {
         super(component);
     }
 
+    private boolean _shift, _caps;
+
     private static String removeLastChar(String s) {
         return (s == null || s.length() == 0)
                 ? null
                 : (s.substring(0, s.length() - 1));
     }
 
-    @Inject(at=@At("TAIL"), method = "init")
-    public void initChat(CallbackInfo ci) {
+    private void renderKeyboard() {
 
         if (initial == "QuickChat") {
             return;
@@ -41,16 +42,41 @@ public class ChatScreenMixin extends Screen {
 
         char[][] querty = new char[][] {
                 new char[] {'`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b'},
-                new char[] {'~', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'},
-                new char[] {'\n', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '\r'},
-                new char[] {'\n', '_', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '?'},
+                new char[] {'\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'},
+                new char[] {'\f', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '\r'},
+                new char[] {'■','\n','\n', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'},
                 new char[] {' '}
         };
+
+        char[][] capsquerty = new char[][] {
+                new char[] {'`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b'},
+                new char[] {'\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'},
+                new char[] {'\f', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '\r'},
+                new char[] {'■','\n','\n', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/'},
+                new char[] {' '}
+        };
+
+        char[][] shiftquerty = new char[][] {
+                new char[] {'~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b'},
+                new char[] {'\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'},
+                new char[] {'\f', 'A', 'S', 'D', 'F', 'G', 'G', 'J', 'K', 'L', ':', '\"', '\r'},
+                new char[] {'■','\n','\n', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'},
+                new char[] {' '}
+        };
+
 
         int index = 1;
         int buttonSize = 30;
 
-        for (char[] chars : querty) {
+        for (int i = 0; i < querty.length; i++) {
+
+            char[] chars;
+
+            if (_caps) {
+                chars = _shift? shiftquerty[i] : capsquerty[i];
+            } else {
+                chars = _shift? shiftquerty[i] : querty[i];
+            }
 
             for (int j = 0; j < chars.length; j++) {
 
@@ -60,7 +86,7 @@ public class ChatScreenMixin extends Screen {
 
                 Button key = new Button(buttonx, buttony, buttonSize, 20, new TranslatableComponent(Character.toString(character)), (button) -> {
                     String stringText = this.input.getValue() + character;
-                    this.input.setValue(stringText.substring(0, 1).toUpperCase(Locale.ROOT) + stringText.substring(1));
+                    this.input.setValue(stringText);
                 });
 
                 if (character == '\r') {
@@ -86,14 +112,45 @@ public class ChatScreenMixin extends Screen {
                     });
                 }
 
-                key.visible = !(character == '\n');
+
+                if (character == '\t') {
+                    key = new Button(buttonx, buttony, buttonSize, 20, new TranslatableComponent("Tab"), button -> {
+                        this.input.setValue(this.input.getValue() + "    ");
+                    });
+                }
+
+                if (character == '\n') {
+                    key = new Button(buttonx, buttony, buttonSize*2, 20, new TranslatableComponent("Shift"), button -> {
+                        _shift = !_shift;
+                        this.clearWidgets();
+                        renderKeyboard();
+                    });
+                    j++;
+                }
+
+                if (character == '\f') {
+                    key = new Button(buttonx, buttony, buttonSize, 20, new TranslatableComponent("Caps"), button -> {
+                        _caps = !_caps;
+                        this.clearWidgets();
+                        renderKeyboard();
+                    });
+                }
+
+                key.visible = !(character == '■');
 
                 this.addRenderableWidget(key);
 
             }
 
             index ++;
+            this.addRenderableWidget(this.input);
         }
+    }
+
+    @Inject(at=@At("TAIL"), method = "init")
+    public void initChat(CallbackInfo ci) {
+
+        renderKeyboard();
 
     }
 

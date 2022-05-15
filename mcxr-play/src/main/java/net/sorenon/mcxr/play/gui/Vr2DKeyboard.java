@@ -12,9 +12,6 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.TranslatableComponent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 public class Vr2DKeyboard extends Screen {
 
     private final EditBox _textField;
@@ -22,8 +19,6 @@ public class Vr2DKeyboard extends Screen {
     private final Screen _parentScreen;
 
     private boolean _shift, _caps;
-
-    private static final Logger LOGGER = LogManager.getLogger("questcraft");
 
     private ServerList servers;
 

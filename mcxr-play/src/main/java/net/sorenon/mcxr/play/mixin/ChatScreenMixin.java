@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.sorenon.mcxr.play.PlayOptions;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -150,7 +151,8 @@ public class ChatScreenMixin extends Screen {
     @Inject(at=@At("TAIL"), method = "init")
     public void initChat(CallbackInfo ci) {
 
-        renderKeyboard();
+        if (!PlayOptions.xrUninitialized)
+            renderKeyboard();
 
     }
 

@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.mixin;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.DirectJoinServerScreen;
@@ -33,14 +34,17 @@ public abstract class MultiPlayerScreenMixin extends Screen {
     @Redirect(method = "init", at=@At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/multiplayer/JoinMultiplayerScreen;addRenderableWidget(Lnet/minecraft/client/gui/components/events/GuiEventListener;)Lnet/minecraft/client/gui/components/events/GuiEventListener;", ordinal = 2))
     public GuiEventListener addrenderableMixin(JoinMultiplayerScreen instance, GuiEventListener guiEventListener) {
         if (!PlayOptions.xrUninitialized) {
-            return addRenderableWidget(new Button(this.width / 2 + 54, this.height - 52, 100, 20, new TranslatableComponent("selectServer.add"), (button) -> {
-                this.minecraft.setScreen(new AddServerScreen(new TranslatableComponent("Add server"), instance));
-            }));
-        } else {
-            return addRenderableWidget(new Button(this.width / 2 + 54, this.height - 52, 100, 20, new TranslatableComponent("selectServer.add"), (button) -> {
-                this.editingServer = new ServerData(I18n.get("selectServer.defaultName", new Object[0]), "", false);
-                this.minecraft.setScreen(new EditServerScreen(this, this::addServerCallback, this.editingServer));
-            }));
+            if (FabricLoader.getInstance().isModLoaded("titleworlds")) {
+                return addRenderableWidget(new Button(this.width / 2 + 54, this.height - 52, 100, 20, new TranslatableComponent("selectServer.add"), (button) -> {
+                    this.minecraft.setScreen(new AddServerScreen(new TranslatableComponent("Add server"), instance));
+                }));
+            }
         }
+
+        return addRenderableWidget(new Button(this.width / 2 + 54, this.height - 52, 100, 20, new TranslatableComponent("selectServer.add"), (button) -> {
+            this.editingServer = new ServerData(I18n.get("selectServer.defaultName", new Object[0]), "", false);
+            this.minecraft.setScreen(new EditServerScreen(this, this::addServerCallback, this.editingServer));
+        }));
+
     }
 }

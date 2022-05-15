@@ -12,6 +12,8 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.sorenon.mcxr.play.PlayOptions;
+
 public class Vr2DKeyboard extends Screen {
 
     private final EditBox _textField;
@@ -166,7 +168,9 @@ public class Vr2DKeyboard extends Screen {
 
     @Override
     protected void init() {
-        renderKeyboard();
+
+        if (!PlayOptions.xrUninitialized)
+            renderKeyboard();
 
         super.init();
     }

@@ -12,8 +12,7 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.TranslatableComponent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.sorenon.mcxr.play.PlayOptions;
 
 public class Vr2DKeyboard extends Screen {
 
@@ -21,7 +20,7 @@ public class Vr2DKeyboard extends Screen {
     private final EditBox _placeholderField;
     private final Screen _parentScreen;
 
-    private static final Logger LOGGER = LogManager.getLogger("questcraft");
+    private boolean _shift, _caps;
 
     private ServerList servers;
 
@@ -30,8 +29,8 @@ public class Vr2DKeyboard extends Screen {
         _textField = textField;
         _parentScreen = parentScreen;
         _placeholderField = new EditBox(Minecraft.getInstance().font,
-                                        133, 22, _textField.getWidth(), _textField.getHeight(),
-                                        _textField, new TranslatableComponent(""));
+                133, 22, _textField.getWidth(), _textField.getHeight(),
+                _textField, new TranslatableComponent(""));
     }
 
     public Vr2DKeyboard(TranslatableComponent title, Screen parentscreen, EditBox textField, ServerList servers) {
@@ -56,16 +55,41 @@ public class Vr2DKeyboard extends Screen {
 
         char[][] querty = new char[][] {
                 new char[] {'`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b'},
-                new char[] {'~', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'},
-                new char[] {'\n', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', '\'', '\r'},
-                new char[] {'\n', '_', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', '?'},
+                new char[] {'\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\'},
+                new char[] {'\f', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '\r'},
+                new char[] {'■','\n','\n', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/'},
                 new char[] {' '}
         };
+
+        char[][] capsquerty = new char[][] {
+                new char[] {'`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b'},
+                new char[] {'\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\\'},
+                new char[] {'\f', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '\r'},
+                new char[] {'■','\n','\n', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/'},
+                new char[] {' '}
+        };
+
+        char[][] shiftquerty = new char[][] {
+                new char[] {'~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b'},
+                new char[] {'\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'},
+                new char[] {'\f', 'A', 'S', 'D', 'F', 'G', 'G', 'J', 'K', 'L', ':', '\"', '\r'},
+                new char[] {'■','\n','\n', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'},
+                new char[] {' '}
+        };
+
 
         int index = 1;
         final int buttonSize = 30;
 
-        for (char[] chars : querty) {
+        for (int i = 0; i < querty.length; i++) {
+
+            char[] chars;
+
+            if (_caps) {
+                chars = _shift? shiftquerty[i] : capsquerty[i];
+            } else {
+                chars = _shift? shiftquerty[i] : querty[i];
+            }
 
             for (int j = 0; j < chars.length; j++) {
 
@@ -79,7 +103,7 @@ public class Vr2DKeyboard extends Screen {
                 });
 
                 if (character == '\r') {
-                    key = new Button(buttonx, buttony, buttonSize, 20, new TranslatableComponent("Enter"), button -> {
+                    key = new Button(buttonx, buttony, buttonSize*2, 20, new TranslatableComponent("Enter"), button -> {
                         this._textField.setValue(_placeholderField.getValue());
 
                         if (_parentScreen.getClass() == DirectJoinServerScreen.class) {
@@ -108,7 +132,30 @@ public class Vr2DKeyboard extends Screen {
                     });
                 }
 
-                key.visible = !(character == '\n');
+                if (character == '\t') {
+                    key = new Button(buttonx, buttony, buttonSize, 20, new TranslatableComponent("Tab"), button -> {
+                        this._placeholderField.setValue(this._placeholderField.getValue() + "    ");
+                    });
+                }
+
+                if (character == '\n') {
+                    key = new Button(buttonx, buttony, buttonSize*2, 20, new TranslatableComponent("Shift"), button -> {
+                        _shift = !_shift;
+                        this.clearWidgets();
+                        renderKeyboard();
+                    });
+                    j++;
+                }
+
+                if (character == '\f') {
+                    key = new Button(buttonx, buttony, buttonSize, 20, new TranslatableComponent("Caps"), button -> {
+                        _caps = !_caps;
+                        this.clearWidgets();
+                        renderKeyboard();
+                    });
+                }
+
+                key.visible = !(character == '■');
 
                 this.addRenderableWidget(key);
 
@@ -116,13 +163,15 @@ public class Vr2DKeyboard extends Screen {
 
             index++;
         }
-
+        addRenderableWidget(_placeholderField);
     }
 
     @Override
     protected void init() {
-        renderKeyboard();
-        addRenderableWidget(_placeholderField);
+
+        if (!PlayOptions.xrUninitialized)
+            renderKeyboard();
+
         super.init();
     }
 

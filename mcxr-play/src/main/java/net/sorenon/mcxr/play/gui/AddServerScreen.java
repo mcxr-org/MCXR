@@ -12,7 +12,6 @@ public class AddServerScreen extends Screen {
 
     private final Minecraft minecraft;
     private final JoinMultiplayerScreen multiplayerScreen;
-    private ServerData server;
 
     public AddServerScreen(Component component, JoinMultiplayerScreen multiplayerScreen) {
         super(component);
@@ -26,7 +25,7 @@ public class AddServerScreen extends Screen {
         super.init();
 
         EditBox editbox = new EditBox(minecraft.font, (this.width) / 2 - 100, (this.height / 2) - 10, 200, 20, new TranslatableComponent("EditBox"));
-        Vr2DKeyboard kb = new Vr2DKeyboard(new TranslatableComponent("KB"), multiplayerScreen, editbox, multiplayerScreen.getServers());
+        XrEditBoxScreen kb = new XrEditBoxScreen(new TranslatableComponent("KB"), multiplayerScreen, editbox, multiplayerScreen.getServers());
         minecraft.setScreen(kb);
 
     }
@@ -35,4 +34,5 @@ public class AddServerScreen extends Screen {
     public void onClose() {
         super.onClose();
     }
+
 }

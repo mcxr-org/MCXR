@@ -30,8 +30,8 @@
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
     "roomscale.ClientPlayerEntityMixin",
-    "ChatScreenMixin",
-    "EditBoxMixin"
+    "EditBoxMixin",
+    "MultiPlayerScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -12,6 +12,10 @@
   "mcxr.move_direction.left_hand" : "Left Hand",
   "mcxr.options.enable_snap_turning": "Enable Snap Turn",
   "mcxr.options.enable_smooth_turning": "Enable Smooth Turn",
+  "mcxr.options.index_touchpad": "Index Touchpad: %s",
+  "mcxr.index_touchpad.off": "Off",
+  "mcxr.index_touchpad.right_hand": "Right",
+  "mcxr.index_touchpad.left_hand": "Left",
 
   "mcxr.menu.reload": "Reload Headset",
   "mcxr.menu.session_not_created": "No headset found:",

@@ -12,6 +12,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.OpenXRSystem;
@@ -125,7 +126,6 @@ public class MCXROptionsScreen extends Screen {
                 }));
 
 
-
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155 + 160,
                 this.height / 6 + 54 + 24 + 12,
@@ -138,6 +138,21 @@ public class MCXROptionsScreen extends Screen {
                     button.setMessage(PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"));
                 }));
 
+        if (true ||
+                MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode() &&
+                (XrInput.vanillaGameplayActionSet.indexTrackpadRight.isActive || XrInput.vanillaGameplayActionSet.indexTrackpadLeft.isActive)) {
+            this.addRenderableWidget(new Button(
+                    this.width / 2 - 155 + 160,
+                    this.height / 6 + 54 + 24 * 2 + 12,
+                    150,
+                    20,
+                    new TranslatableComponent("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()),
+                    button -> {
+                        PlayOptions.indexTouchpadState = PlayOptions.indexTouchpadState.iterate();
+                        PlayOptions.save();
+                        button.setMessage(new TranslatableComponent("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()));
+                    }));
+        }
 
         this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.previous)));
     }

@@ -167,6 +167,7 @@ public class OpenXRState {
             MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
             if (instance != null) instance.close();
             instance = null;
+            Minecraft.getInstance().close();
         }
 
         if (session == null) {

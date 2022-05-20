@@ -52,8 +52,8 @@ public class GuiActionSet extends ActionSet {
                         new Pair<>(split, "/user/hand/right/input/b/click"),
                         new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                         new Pair<>(exit, "/user/hand/left/input/y/click"),
-                        new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
-                        new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
+                        new Pair<>(resetGUI, "/user/hand/left/input/menu/click"),
+                        new Pair<>(scroll, "/user/hand/right/input/thumbstick"),
                         new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                 )
         );
@@ -66,8 +66,7 @@ public class GuiActionSet extends ActionSet {
                             new Pair<>(split, "/user/hand/right/input/b/click"),
                             new Pair<>(quickMove, "/user/hand/left/input/a/click"),
                             new Pair<>(exit, "/user/hand/left/input/b/click"),
-                            new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
-                            new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
+                            new Pair<>(resetGUI, "/user/hand/left/input/menu/click"),
                             new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                     )
             );
@@ -95,8 +94,7 @@ public class GuiActionSet extends ActionSet {
                             new Pair<>(split, "/user/hand/right/input/b/click"),
                             new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                             new Pair<>(exit, "/user/hand/left/input/y/click"),
-                            new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
-                            new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
+                            new Pair<>(resetGUI, "/user/hand/left/input/menu/click"),
                             new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                     )
             );
@@ -108,8 +106,7 @@ public class GuiActionSet extends ActionSet {
                             new Pair<>(split, "/user/hand/right/input/b/click"),
                             new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                             new Pair<>(exit, "/user/hand/left/input/y/click"),
-                            new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),
-                            new Pair<>(resetGUI, "/user/hand/right/input/thumbstick/click"),
+                            new Pair<>(resetGUI, "/user/hand/left/input/menu/click"),
                             new Pair<>(scroll, "/user/hand/right/input/thumbstick")
                     )
             );

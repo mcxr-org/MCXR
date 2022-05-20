@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play.openxr;
 
 import net.sorenon.mcxr.play.MCXRNativeLoad;
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;

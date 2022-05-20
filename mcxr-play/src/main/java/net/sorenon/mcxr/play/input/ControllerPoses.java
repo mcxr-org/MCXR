@@ -9,7 +9,7 @@ import org.lwjgl.openxr.XrPosef;
 //TODO find a better system for this
 public class ControllerPoses {
 
-    private final Pose rawPhysicalPose = new Pose();
+    private final Pose stagePose = new Pose();
     private final Pose physicalPose = new Pose();
     private final Pose unscaledPhysicalPose = new Pose();
     private final Pose gamePose = new Pose();
@@ -19,17 +19,9 @@ public class ControllerPoses {
 
     /**
      * It's unlikely you will want to use this
-     * @return The un-rotated pose in physical space
      */
-    public Pose getRawPhysicalPose() {
-        return rawPhysicalPose;
-    }
-
-    /**
-     * The rotated + scaled pose in physical space
-     */
-    public Pose getScaledPhysicalPose() {
-        return physicalPose;
+    public Pose getStagePose() {
+        return stagePose;
     }
 
     /**
@@ -40,27 +32,32 @@ public class ControllerPoses {
     }
 
     /**
-     * Used for the majority of gameplay related interactions
-     * @return The rotated and scaled pose in in-game space
+     * The rotated + scaled pose in physical space
      */
-    public Pose getGamePose() {
+    public Pose getPhysicalPose() {
+        return physicalPose;
+    }
+
+    /**
+     * Used for the majority of gameplay related interactions
+     */
+    public Pose getMinecraftPose() {
         return gamePose;
     }
 
     public void updatePhysicalPose(XrPosef pose, float yawTurn, float scale) {
-        rawPhysicalPose.pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
-        rawPhysicalPose.orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
+        stagePose.pos.set(pose.position$().x(), pose.position$().y(), pose.position$().z());
+        stagePose.orientation.set(pose.orientation().x(), pose.orientation().y(), pose.orientation().z(), pose.orientation().w());
 
-        physicalPose.set(rawPhysicalPose);
+        physicalPose.set(stagePose);
         physicalPose.orientation.rotateLocalY(yawTurn);
 
         quaternionf.identity().rotateLocalY(yawTurn).transform(physicalPose.pos);
+        physicalPose.pos.add(MCXRPlayClient.stagePosition);
 
         unscaledPhysicalPose.set(physicalPose);
 
         physicalPose.pos.mul(scale);
-
-        physicalPose.pos.add(MCXRPlayClient.xrOffset);
     }
 
     public void updateGamePose(Vector3d origin) {

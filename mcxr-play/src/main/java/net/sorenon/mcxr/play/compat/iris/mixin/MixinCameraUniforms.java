@@ -1,12 +1,8 @@
 package net.sorenon.mcxr.play.compat.iris.mixin;
 
 import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
-import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.ControllerPoses;
-import net.sorenon.mcxr.play.openxr.OpenXR;
-import net.sorenon.mcxr.play.openxr.OpenXRSession;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.injection.At;
@@ -33,19 +29,19 @@ public class MixinCameraUniforms {
                                                  double cameraZ,
                                                  CallbackInfo ci) {
 //        System.out.println("HOWDY");
-        if (MCXRPlayClient.RENDERER.isXrMode()) {
+        if (MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) {
             ci.cancel();
-            var views = MCXRPlayClient.OPEN_XR.session.views;
+            var views = MCXRPlayClient.OPEN_XR_STATE.session.viewBuffer;
 
             ControllerPoses left = new ControllerPoses();
             ControllerPoses right = new ControllerPoses();
 
-            left.updatePhysicalPose(views.get(0).pose(), MCXRPlayClient.yawTurn, MCXRPlayClient.getCameraScale());
+            left.updatePhysicalPose(views.get(0).pose(), MCXRPlayClient.stageTurn, MCXRPlayClient.getCameraScale());
             left.updateGamePose(MCXRPlayClient.xrOrigin);
-            right.updatePhysicalPose(views.get(1).pose(), MCXRPlayClient.yawTurn, MCXRPlayClient.getCameraScale());
+            right.updatePhysicalPose(views.get(1).pose(), MCXRPlayClient.stageTurn, MCXRPlayClient.getCameraScale());
             right.updateGamePose(MCXRPlayClient.xrOrigin);
-            var leftPos = left.getGamePose().getPos();
-            var rightPos = right.getGamePose().getPos();
+            var leftPos = left.getMinecraftPose().getPos();
+            var rightPos = right.getMinecraftPose().getPos();
 
             float x;
             if (Math.abs(leftPos.x() - (leftPos.x() % shadowIntervalSize)) > Math.abs(rightPos.x() - (rightPos.x() % shadowIntervalSize))) {

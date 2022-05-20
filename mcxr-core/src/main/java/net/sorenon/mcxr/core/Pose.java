@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.core;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.Mth;
 import org.joml.Math;
 import org.joml.Quaternionf;
@@ -24,15 +25,40 @@ public class Pose {
     }
 
     public float getMCYaw() {
-        Vector3f normal = orientation.transform(new Vector3f(0, 0, -1));
+        return getMCYaw(orientation);
+    }
+
+    public float getMCPitch() {
+        return getMCPitch(orientation);
+    }
+
+    public void write(ByteBuf buf) {
+        buf.writeFloat(pos.x).writeFloat(pos.y).writeFloat(pos.z);
+        buf.writeFloat(orientation.x).writeFloat(orientation.y).writeFloat(orientation.z).writeFloat(orientation.w);
+    }
+
+    public void read(ByteBuf buf) {
+        this.pos.set(buf.readFloat(), buf.readFloat(), buf.readFloat());
+        this.orientation.set(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
+    }
+
+    public static float getMCYaw(Quaternionf orientation) {
+        return getMCYaw(orientation, new Vector3f(0, 0, -1));
+    }
+
+    public static float getMCYaw(Quaternionf orientation, Vector3f normal) {
+        orientation.transform(normal);
         float yaw = getYawFromNormal(normal);
         return (float) -Math.toDegrees(yaw) + 180;
     }
 
-    public float getMCPitch() {
-        Vector3f normal = orientation.transform(new Vector3f(0, 0, -1));
-        float pitch = (float) Math.asin(Mth.clamp(normal.y, -0.999999999, 0.999999999));
+    public static float getMCPitch(Quaternionf orientation) {
+        return getMCPitch(orientation, new Vector3f(0, 0, -1));
+    }
 
+    public static float getMCPitch(Quaternionf orientation, Vector3f normal) {
+        orientation.transform(normal);
+        float pitch = (float) Math.asin(Mth.clamp(normal.y, -0.999999999, 0.999999999));
         return (float) -Math.toDegrees(pitch);
     }
 

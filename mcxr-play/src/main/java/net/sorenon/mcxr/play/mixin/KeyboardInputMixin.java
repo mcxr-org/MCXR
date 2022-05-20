@@ -5,13 +5,13 @@ import net.minecraft.client.player.Input;
 import net.minecraft.client.player.KeyboardInput;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-//TODO have a look at https://github.com/LambdAurora/LambdaControls compat
 @Mixin(KeyboardInput.class)
 public class KeyboardInputMixin extends Input {
 
@@ -21,6 +21,16 @@ public class KeyboardInputMixin extends Input {
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) return;
 
         var move = XrInput.vanillaGameplayActionSet.move.currentState;
+        if (PlayOptions.indexTouchpadState != PlayOptions.IndexTouchpad.Off && (XrInput.vanillaGameplayActionSet.indexTrackpadRight.isActive || XrInput.vanillaGameplayActionSet.indexTrackpadLeft.isActive)) {
+            if (PlayOptions.indexTouchpadState == PlayOptions.IndexTouchpad.RightForward) {
+                move.y = XrInput.vanillaGameplayActionSet.indexTrackpadRight.currentState;
+                move.x = XrInput.vanillaGameplayActionSet.indexTrackpadLeft.currentState;
+            } else {
+                move.y = XrInput.vanillaGameplayActionSet.indexTrackpadLeft.currentState;
+                move.x = XrInput.vanillaGameplayActionSet.indexTrackpadRight.currentState;
+            }
+        }
+
         this.forwardImpulse = move.y();
         this.leftImpulse = -move.x();
 
@@ -37,7 +47,7 @@ public class KeyboardInputMixin extends Input {
         }
 
         this.jumping |= XrInput.vanillaGameplayActionSet.jump.currentState;
-        
+
         if(slowDown) {
             this.forwardImpulse = move.y() * 0.3f;
             this.leftImpulse = -move.x() * 0.3f;

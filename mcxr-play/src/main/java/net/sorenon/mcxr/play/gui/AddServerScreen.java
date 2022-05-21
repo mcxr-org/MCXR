@@ -4,9 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
-import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 
 public class AddServerScreen extends Screen {
 
@@ -24,8 +22,8 @@ public class AddServerScreen extends Screen {
 
         super.init();
 
-        EditBox editbox = new EditBox(minecraft.font, (this.width) / 2 - 100, (this.height / 2) - 10, 200, 20, new TranslatableComponent("EditBox"));
-        XrEditBoxScreen kb = new XrEditBoxScreen(new TranslatableComponent("KB"), multiplayerScreen, editbox, multiplayerScreen.getServers());
+        EditBox editbox = new EditBox(minecraft.font, (this.width) / 2 - 100, (this.height / 2) - 10, 200, 20, Component.translatable("EditBox"));
+        XrEditBoxScreen kb = new XrEditBoxScreen(Component.translatable("KB"), multiplayerScreen, editbox, multiplayerScreen.getServers());
         minecraft.setScreen(kb);
 
     }

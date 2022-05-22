@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.play.openxr;
 
 import net.sorenon.mcxr.play.MCXRNativeLoad;
+import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
@@ -167,6 +168,7 @@ public class OpenXRState {
             MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
             if (instance != null) instance.close();
             instance = null;
+            Minecraft.getInstance().close();
         }
 
         if (session == null) {

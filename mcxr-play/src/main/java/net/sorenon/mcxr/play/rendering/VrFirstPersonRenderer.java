@@ -175,6 +175,7 @@ public class VrFirstPersonRenderer {
                     matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(90.0F));
                 }
 
+                //cursor render part 1 (over water) - also in MCXRPlayClient.java
                 matrices.scale(0.5f, 1, 0.5f);
                 RenderType SHADOW_LAYER = RenderType.entityCutoutNoCull(GUI_ICONS_LOCATION);
                 VertexConsumer vertexConsumer = context.consumers().getBuffer(SHADOW_LAYER);
@@ -521,6 +522,7 @@ public class VrFirstPersonRenderer {
                         MapRenderer.renderFirstPersonMap(matrices, consumers, light, stack, false, handIndex== 0);
                     }
                     else {
+                        matrices.scale(1.5f,1.5f,1.5f);
                         Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(
                                 player,
                                 stack,
@@ -531,7 +533,6 @@ public class VrFirstPersonRenderer {
                                 light
                         );
                     }
-
                     matrices.popPose();
                 }
             }

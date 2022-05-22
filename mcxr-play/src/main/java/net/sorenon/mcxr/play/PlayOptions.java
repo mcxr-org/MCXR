@@ -21,6 +21,8 @@ public class PlayOptions {
     public static boolean smoothTurning = false;
     public static float snapTurnAmount = 22f;
     public static float smoothTurnRate = 120f;
+    public static boolean immersiveControls = true;
+    public static boolean teleportEnabled=true;
 
     /**
      * The angle to rotate the player's in-game hand for a more comfortable experience
@@ -50,6 +52,7 @@ public class PlayOptions {
         fileConfig.set("snapTurnAmount", snapTurnAmount);
         fileConfig.set("smoothTurnRate", smoothTurnRate);
         fileConfig.set("indexTouchpadState", indexTouchpadState);
+        fileConfig.set("teleportEnabled", teleportEnabled);
 
         fileConfig.set("SSAA", SSAA);
         fileConfig.save();
@@ -70,6 +73,8 @@ public class PlayOptions {
         snapTurnAmount = fileConfig.<Number>getOrElse("snapTurnAmount", 22f).floatValue();
         smoothTurnRate = fileConfig.<Number>getOrElse("smoothTurnRate", 120f).floatValue();
         indexTouchpadState = fileConfig.getEnumOrElse("indexTouchpadState", IndexTouchpad.Off);
+
+        teleportEnabled = fileConfig.getOrElse("teleportEnabled", true);
 
         SSAA = fileConfig.<Number>getOrElse("SSAA", 1).floatValue();
     }

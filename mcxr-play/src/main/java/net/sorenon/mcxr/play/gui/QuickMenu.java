@@ -30,7 +30,7 @@ public class QuickMenu extends Screen {
         }
 
         QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, new TranslatableComponent("Chat"), (button ) -> {
-            Minecraft.getInstance().setScreen(new ChatScreen(""));
+            Minecraft.getInstance().setScreen(new XrChatScreen(""));
         }));
 
         for (int i = 0; i < QuickMenuButtons.size(); i++) {

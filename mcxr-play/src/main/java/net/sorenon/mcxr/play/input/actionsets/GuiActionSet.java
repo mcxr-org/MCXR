@@ -48,8 +48,8 @@ public class GuiActionSet extends ActionSet {
 
         map.computeIfAbsent("/interaction_profiles/oculus/touch_controller", aLong -> new ArrayList<>()).addAll(
                 List.of(
-                        new Pair<>(pickup, "/user/hand/right/input/a/click"),
-                        new Pair<>(split, "/user/hand/right/input/b/click"),
+                        new Pair<>(pickup, "/user/hand/right/input/trigger/value"),
+                        new Pair<>(split, "/user/hand/left/input/trigger/value"),
                         new Pair<>(quickMove, "/user/hand/left/input/x/click"),
                         new Pair<>(exit, "/user/hand/left/input/y/click"),
                         new Pair<>(resetGUI, "/user/hand/left/input/thumbstick/click"),

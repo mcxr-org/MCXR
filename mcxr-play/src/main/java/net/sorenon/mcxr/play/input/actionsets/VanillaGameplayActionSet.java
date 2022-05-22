@@ -92,8 +92,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                         //We don't have enough buttons :|
                         //We really need an item radial menu, thumbstick as dpad and chorded inputs
                         //The latter 2 (and maybe the first) will be solved by SuInput
-                        new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
-                        new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
+                        // new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
+                        // new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
+                        new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
 
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
                         new Pair<>(inventory, "/user/hand/left/input/y/click"),

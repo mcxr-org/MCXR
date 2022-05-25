@@ -259,6 +259,10 @@ public class MCXRGameRenderer {
 
             swapchainFramebuffer.bindWrite(true);
             this.blitShader.setSampler("DiffuseSampler", swapchain.renderTarget.getColorTextureId());
+            Uniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
+            if (inverseScreenSize != null) {
+                inverseScreenSize.set(1f / swapchainFramebuffer.width, 1f / swapchainFramebuffer.height);
+            }
             swapchain.renderTarget.setFilterMode(GlConst.GL_LINEAR);
             this.blit(swapchainFramebuffer, blitShader);
             swapchainFramebuffer.unbindWrite();

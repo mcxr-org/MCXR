@@ -22,7 +22,6 @@ repositories {
             includeGroup("maven.modrinth")
         }
     }
-    mavenLocal()
 }
 
 dependencies {
@@ -47,7 +46,7 @@ dependencies {
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")
     implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")
-    include(modImplementation("net.sorenon:fart:1.0.0")!!)
+    include(modImplementation("com.github.Sorenon:fart:51f6a721e7")!!)
 }
 
 sourceSets {

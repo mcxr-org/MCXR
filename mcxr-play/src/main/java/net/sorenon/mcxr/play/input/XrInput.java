@@ -166,12 +166,12 @@ public final class XrInput {
             }
         }
 
-        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+        if (actionSet.hotbarLeft.currentState > 0.1 && actionSet.hotbarLeft.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }
 
-        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
+        if (actionSet.hotbarRight.currentState > 0.1 && actionSet.hotbarRight.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null)
                 Minecraft.getInstance().player.getInventory().swapPaint(+1);
         }
@@ -222,14 +222,6 @@ public final class XrInput {
                     Minecraft.getInstance().player.getInventory().swapPaint(-value);
                 actionSet.hotbarActivated = true;
             }
-        }
-        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(+1);
-        }
-        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(-1);
         }
 
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {

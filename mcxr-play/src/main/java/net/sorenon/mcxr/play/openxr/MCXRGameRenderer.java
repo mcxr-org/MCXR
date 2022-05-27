@@ -252,7 +252,6 @@ public class MCXRGameRenderer {
 
             swapchainFramebuffer.bindWrite(true);
             this.blitShader.setSampler("DiffuseSampler", swapchain.renderTarget.getColorTextureId());
-            swapchain.renderTarget.setFilterMode(GlConst.GL_LINEAR);
             this.blit(swapchainFramebuffer, blitShader);
             swapchainFramebuffer.unbindWrite();
         }

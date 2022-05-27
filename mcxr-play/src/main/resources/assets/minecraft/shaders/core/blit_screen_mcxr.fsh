@@ -18,12 +18,9 @@ float sRGBToLinear(float f) {
 }
 
 void main() {
-    //TODO use a more modern aa alg (smaa?)
-    //TODO make aa configuarable
-    vec4 color = texture(DiffuseSampler, texCoord) * vertexColor;
-    vec4 mcColor = color * ColorModulator;
+     vec4 color = texture(DiffuseSampler, texCoord) * vertexColor;
+     vec4 mcColor = color * ColorModulator;
 
-    // blit final output of compositor into displayed back buffer
-    // apply inverse gamma correction since minecraft renders in sRGB space but we want our output to be linear
-    gl_FragColor = vec4(sRGBToLinear(mcColor.r), sRGBToLinear(mcColor.g), sRGBToLinear(mcColor.b), mcColor.a);
+     // apply inverse gamma correction since minecraft renders in sRGB space but we want our output to be linear
+     fragColor = vec4(sRGBToLinear(mcColor.r), sRGBToLinear(mcColor.g), sRGBToLinear(mcColor.b), mcColor.a);
 }

@@ -12,6 +12,8 @@
   "mcxr.move_direction.left_hand" : "Left Hand",
   "mcxr.options.enable_snap_turning": "Enable Snap Turn",
   "mcxr.options.enable_smooth_turning": "Enable Smooth Turn",
+  "mcxr.options.lock_playerheight" : "Lock Player Height",
+  "mcxr.options.unlock_playerheight" : "Unlock Player Height",
 
   "mcxr.menu.reload": "Reload Headset",
   "mcxr.menu.session_not_created": "No headset found:",

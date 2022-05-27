@@ -38,6 +38,52 @@ public class MCXROptionsScreen extends Screen {
     protected void init() {
         PlayOptions.load();
 
+/*
+        this.reloadButton = this.addRenderableWidget(new Button(
+                this.width / 2 - 155,
+                this.height / 6 - 12 - 4 + 24,
+                150,
+                20,
+                new TranslatableComponent("mcxr.menu.reload"),
+                button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));
+        if (PlayOptions.xrUninitialized) {
+            reloadButton.active = false;
+        }
+*/
+
+/*
+        this.addRenderableWidget(new Button(
+                this.width / 2 + 5,
+                this.height / 6 - 12 - 4 + 24,
+                150,
+                20,
+                PlayOptions.xrUninitialized ? new TranslatableComponent("mcxr.options.initialize") : new TranslatableComponent("mcxr.options.uninitialize"),
+                button -> {
+                    PlayOptions.xrUninitialized = !PlayOptions.xrUninitialized;
+                    PlayOptions.save();
+                    reloadButton.active = !PlayOptions.xrUninitialized;
+                    if (!PlayOptions.xrUninitialized) {
+                        MCXRPlayClient.OPEN_XR_STATE.tryInitialize();
+                    }
+                    button.setMessage(PlayOptions.xrUninitialized ? new TranslatableComponent("mcxr.options.initialize") : new TranslatableComponent("mcxr.options.uninitialize"));
+                }));
+*/
+
+/*
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 100,
+                this.height / 6 - 12 - 4,
+                200,
+                20,
+                PlayOptions.xrPaused ? new TranslatableComponent("mcxr.options.unpause") : new TranslatableComponent("mcxr.options.pause"),
+                button -> {
+                    PlayOptions.xrPaused = !PlayOptions.xrPaused;
+                    PlayOptions.save();
+                    button.setMessage(PlayOptions.xrPaused ? new TranslatableComponent("mcxr.options.unpause") : new TranslatableComponent("mcxr.options.pause"));
+                }));
+*/
+
+
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
                 this.height / 6 + 54 + 12,
@@ -72,6 +118,17 @@ public class MCXROptionsScreen extends Screen {
                     button.setMessage(new TranslatableComponent("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()));
                 }));
 
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 155,
+                this.height / 6 + 54 + 24 * 3 + 12,
+                150,
+                20,
+                MCXRPlayClient.heightAdjustStand ? new TranslatableComponent("mcxr.options.unlock_playerheight") : new TranslatableComponent("mcxr.options.lock_playerheight"),
+                button -> {
+                    MCXRPlayClient.heightAdjustStand = !MCXRPlayClient.heightAdjustStand;
+                    button.setMessage(MCXRPlayClient.heightAdjustStand ? new TranslatableComponent("mcxr.options.unlock_playerheight") : new TranslatableComponent("mcxr.options.lock_playerheight"));
+                }));
+
         assert this.minecraft != null;
         this.addRenderableWidget(Option.MAIN_HAND.createButton(this.minecraft.options, this.width / 2 - 155 + 160, this.height / 6 + 54 + 12, 150));
 
@@ -86,7 +143,6 @@ public class MCXROptionsScreen extends Screen {
                     PlayOptions.save();
                     button.setMessage(PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"));
                 }));
-
 
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155 + 160,

@@ -193,16 +193,9 @@ public class MCXRGameRenderer {
         });
 
         Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
-        boolean calculate = false;
-        if (XrInput.vanillaGameplayActionSet.attack.changedSinceLastSync && XrInput.vanillaGameplayActionSet.stand.currentState && XrInput.vanillaGameplayActionSet.attack.currentState) {
-            MCXRPlayClient.heightAdjustStand = !MCXRPlayClient.heightAdjustStand;
-            if (MCXRPlayClient.heightAdjustStand) {
-                calculate = true;
-            }
-        }
 
         float frameUserScale = MCXRPlayClient.getCameraScale(client.getFrameTime());
-        updatePoses(cameraEntity, calculate, predictedDisplayTime, client.getFrameTime(), frameUserScale);
+        updatePoses(cameraEntity, MCXRPlayClient.heightAdjustStand, predictedDisplayTime, client.getFrameTime(), frameUserScale);
         camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getMinecraftPose());
 
         client.getWindow().setErrorSection("Render");

@@ -55,6 +55,7 @@ public class XrEditBoxKeyboard extends XrAbstract2DKeyboard {
             _editScreen.getServers().save();
             Minecraft.getInstance().setScreen(_editScreen.getParentScreen());
 
+
         } else if (_editScreen.getParentScreen().getClass() == CreativeModeInventoryScreen.class) {
 
             char[] searchChars = _placeholderField.getValue().toCharArray();

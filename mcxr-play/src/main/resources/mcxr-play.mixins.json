@@ -30,6 +30,7 @@
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
     "roomscale.ClientPlayerEntityMixin",
+    "ChatScreenMixin",
     "EditBoxMixin",
     "MultiPlayerScreenMixin"
   ],

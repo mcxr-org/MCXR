@@ -46,6 +46,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
+import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
+import net.minecraft.client.gui.GuiComponent;
+
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnable> implements MinecraftExt {
 
@@ -295,7 +298,10 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         if (!this.noRender) {
             this.profiler.popPush("gameRenderer");
             this.gameRenderer.render(this.pause ? this.pausePartialTick : this.timer.partialTick, frameStartTime, tick);
-
+            //cursor rendering
+            if(this.screen != null) {
+                renderCursor(new PoseStack(), (Minecraft) (Object) this);
+            }
             if (XR_RENDERER.renderPass == RenderPass.GUI || XR_RENDERER.renderPass == RenderPass.VANILLA) {
                 this.profiler.popPush("toasts");
                 this.toast.render(new PoseStack());
@@ -355,5 +361,17 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         }
 
         this.profiler.pop();
+    }
+    private static void renderCursor(PoseStack matrices, Minecraft client) {
+        int mouseX = (int) ((client.mouseHandler.xpos()) * (double) client.getWindow().getGuiScaledWidth() / (double) client.getWindow().getWidth());
+        int mouseY = (int) ((client.mouseHandler.ypos()) * (double) client.getWindow().getGuiScaledHeight() / (double) client.getWindow().getHeight());
+        RenderSystem.disableDepthTest();
+
+        RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
+        RenderSystem.setShaderTexture(0, GUI_ICONS_LOCATION);
+        GuiComponent.blit(matrices, mouseX-7, mouseY-7,
+                0.f, 0.f,
+                15, 15, 256, 256);
+        RenderSystem.enableDepthTest();
     }
 }

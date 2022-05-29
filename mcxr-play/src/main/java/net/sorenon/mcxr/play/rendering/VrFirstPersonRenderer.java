@@ -26,11 +26,14 @@ import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
@@ -59,6 +62,7 @@ import java.util.function.Supplier;
 
 import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
 import static net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
+import static net.minecraft.world.item.UseAnim.BLOCK;
 import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
 //TODO third person renderer
@@ -370,16 +374,16 @@ public class VrFirstPersonRenderer {
                                      float z,
                                      VertexConsumer buffer,
                                      PoseStack.Pose normal,
-                                     float startPercent,
-                                     float endPercent,
+                                     float f,
+                                     float g,
                                      boolean blocked) {
-        float x1 = x * startPercent;
-        float y1 = y * (startPercent * startPercent + startPercent) * 0.5F;
-        float z1 = z * startPercent;
+        float x1 = x * f;
+        float y1 = y * (f * f + f) * 0.5F;
+        float z1 = z * f;
 
-        float x2 = x * endPercent;
-        float y2 = y * (endPercent * endPercent + endPercent) * 0.5F;
-        float z2 = z * endPercent;
+        float x2 = x * g;
+        float y2 = y * (g * g + g) * 0.5F;
+        float z2 = z * g;
 
         float dx = x2 - x1;
         float dy = y2 - y1;

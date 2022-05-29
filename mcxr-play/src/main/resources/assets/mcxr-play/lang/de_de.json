@@ -35,7 +35,7 @@
   "mcxr.action.hotbar": "Hotbar",
   "mcxr.action.sneak": "Schleichen",
   "mcxr.action.sprint": "Sprinten",
-  "mcxr.action.reset_pos": "position Zurücksetzen",
+  "mcxr.action.reset_pos": "Position Zurücksetzen",
 
   "mcxr.actionset.gui": "GUI",
   "mcxr.action.close": "Schließen",

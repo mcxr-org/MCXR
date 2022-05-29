@@ -1,0 +1,50 @@
+{
+  "mcxr.options.title": "MCXR Optionen",
+  "mcxr.options.uninitialize": "MCXR Deaktivieren",
+  "mcxr.options.initialize": "MCXR Aktivieren",
+  "mcxr.options.pause": "VR Pausieren",
+  "mcxr.options.unpause": "VR Entpausieren",
+  "mcxr.options.walk_direction": "Gehrichtung: %s",
+  "mcxr.options.swim_direction": "Schwimmrichtung: %s",
+  "mcxr.options.fly_direction": "Flugrichtung: %s",
+  "mcxr.move_direction.head" : "Kopf",
+  "mcxr.move_direction.right_hand" : "Rechte Hand",
+  "mcxr.move_direction.left_hand" : "Linke Hand",
+  "mcxr.options.enable_snap_turning": "Snap Turn aktivieren",
+  "mcxr.options.enable_smooth_turning": "Smooth Turn aktivieren",
+  "mcxr.options.index_touchpad": "Index Touchpad: %s",
+  "mcxr.index_touchpad.off": "Aus",
+  "mcxr.index_touchpad.right_hand": "Rechts",
+  "mcxr.index_touchpad.left_hand": "Links",
+
+  "mcxr.menu.reload": "Headset neu laden",
+  "mcxr.menu.session_not_created": "Kein Headset gefunden:",
+
+  "openxr.form_factor.1": "Head mounted display",
+  "openxr.form_factor.2": "Head held display",
+
+  "mcxr.error.form_factor_unavailable": "Das Gerät ist derzeit nicht verfügbar, z.B. nicht eingesteckt oder ausgeschaltet",
+
+  "mcxr.actionset.vanilla_gameplay": "Vanilla Gameplay",
+  "mcxr.action.attack": "Attackieren",
+  "mcxr.action.use": "Benutzen",
+  "mcxr.action.inventory": "Inventar (Halten zum Pausieren)",
+  "mcxr.action.jump": "Springen",
+  "mcxr.action.move": "Bewegen",
+  "mcxr.action.turn": "Drehen",
+  "mcxr.action.hotbar": "Hotbar",
+  "mcxr.action.sneak": "Schleichen",
+  "mcxr.action.sprint": "Sprinten",
+  "mcxr.action.reset_pos": "Position Zurücksetzen",
+
+  "mcxr.actionset.gui": "GUI",
+  "mcxr.action.close": "Schließen",
+  "mcxr.action.pickup": "Aufheben / Fallen lassen",
+  "mcxr.action.split": "Teilen",
+  "mcxr.action.quick_move": "Schnelle Bewegung",
+  "mcxr.action.scroll": "Scrollen",
+
+  "mcxr.actionset.hands": "Hände",
+  "mcxr.action.aim": "Ziel-Pose",
+  "mcxr.action.grip": "Griff-Pose"
+}

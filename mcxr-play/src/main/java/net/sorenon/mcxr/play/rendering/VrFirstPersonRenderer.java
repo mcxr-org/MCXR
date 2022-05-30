@@ -26,14 +26,11 @@ import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.BlockHitResult;
@@ -62,7 +59,6 @@ import java.util.function.Supplier;
 
 import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
 import static net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
-import static net.minecraft.world.item.UseAnim.BLOCK;
 import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
 //TODO third person renderer
@@ -158,6 +154,39 @@ public class VrFirstPersonRenderer {
                 consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
                 consumer.vertex(model, 0, 0, 0).color(1f, 0f, 0f, 1f).normal(normal, 0, -1, 0).endVertex();
                 consumer.vertex(model, 0, -5, 0).color(0.7f, 0.7f, 0.7f, 1f).normal(normal, 0, -1, 0).endVertex();
+
+                matrices.popPose();
+            }
+
+            //==render damage overlay color==
+            int hurtTime = Minecraft.getInstance().player.hurtTime;
+            boolean fire =Minecraft.getInstance().player.isOnFire();
+            if (hurtTime>0) {
+                Vec3 camPos = context.camera().getPosition();
+                matrices.pushPose();
+
+                double x = Mth.lerp(context.tickDelta(), camEntity.xOld, camEntity.getX());
+                double y = Mth.lerp(context.tickDelta(), camEntity.yOld, camEntity.getY()) + camEntity.getEyeHeight();
+                double z = Mth.lerp(context.tickDelta(), camEntity.zOld, camEntity.getZ());
+                matrices.translate(x - camPos.x, y - camPos.y, z - camPos.z);
+
+                matrices.mulPose(com.mojang.math.Vector3f.YP.rotationDegrees(-camEntity.getYRot() + 180.0F));
+                matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(90 - camEntity.getXRot()));
+
+                Matrix4f model = matrices.last().pose();
+                Matrix3f normal = matrices.last().normal();
+
+                float hurtAlpha = hurtTime*0.07f;
+                float xRad = 5.5f;
+                float yRad = 5f;
+                float y0 = -5f;
+                //RenderType SHADOW_LAYER = RenderType.entityShadow(new ResourceLocation("textures/misc/vignette.png"));
+                //VertexConsumer vertexConsumer = context.consumers().getBuffer(SHADOW_LAYER);
+                VertexConsumer vertexConsumer = consumers.getBuffer(OVERLAY_SCREEN.apply(new ResourceLocation("textures/misc/white.png")));
+                vertexConsumer.vertex(model, -xRad, y0, -yRad).color(0.4F, 0.0F, 0.0F, hurtAlpha).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(model, -xRad, y0, yRad).color(0.4F, 0.0F, 0.0F, hurtAlpha).uv(0, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(model, xRad, y0, yRad).color(0.4F, 0.0F, 0.0F, hurtAlpha).uv(1, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(model, xRad, y0, -yRad).color(0.4F, 0.0F, 0.0F, hurtAlpha).uv(1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(normal, 0.0F, 1.0F, 0.0F).endVertex();
 
                 matrices.popPose();
             }
@@ -595,6 +624,24 @@ public class VrFirstPersonRenderer {
                 .setCullState(RenderStateShards.NO_CULL)
                 .setLightmapState(RenderStateShards.LIGHTMAP)
                 .setOverlayState(RenderStateShards.OVERLAY)
+                .setDepthTestState(RenderStateShards.NO_DEPTH_TEST);
+        return renderTypeBuilder.build(true);
+    });
+
+    public static final Function<ResourceLocation, RenderType> OVERLAY_SCREEN = Util.memoize((texture) -> {
+        Supplier<ShaderInstance> shader = GameRenderer::getNewEntityShader;
+        if (FabricLoader.getInstance().isModLoaded("iris")) {
+            shader = GameRenderer::getRendertypeEntityTranslucentShader;
+        }
+
+        RenderTypeBuilder renderTypeBuilder = new RenderTypeBuilder(MCXRPlayClient.id("overlay_screen"), DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, false, false);
+        renderTypeBuilder.innerBuilder.
+                setShaderState(RenderStateShards.shader(shader))
+                .setTextureState(RenderStateShards.texture(texture, true, false))
+                .setTransparencyState(RenderStateShards.TRANSLUCENT_TRANSPARENCY)
+                .setCullState(RenderStateShards.NO_CULL)
+                .setLightmapState(RenderStateShards.NO_LIGHTMAP)
+                .setOverlayState(RenderStateShards.NO_OVERLAY)
                 .setDepthTestState(RenderStateShards.NO_DEPTH_TEST);
         return renderTypeBuilder.build(true);
     });

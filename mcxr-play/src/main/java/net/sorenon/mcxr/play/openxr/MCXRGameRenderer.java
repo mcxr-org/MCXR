@@ -11,14 +11,26 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ScreenEffectRenderer;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.JOMLUtil;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.border.WorldBorder;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.core.Teleport;
@@ -252,6 +264,7 @@ public class MCXRGameRenderer {
         int swapchainImageIndex = swapchain.acquireImage();
 
         // Render view to the appropriate part of the swapchain image.
+        //XrRenderTarget swapchainFramebuffer = swapchain.rightFramebuffers[swapchainImageIndex];
         for (int viewIndex = 0; viewIndex < 2; viewIndex++) {
             // Each view has a separate swapchain which is acquired, rendered to, and released.
 
@@ -283,6 +296,34 @@ public class MCXRGameRenderer {
             swapchainFramebuffer.bindWrite(true);
             this.blitShader.setSampler("DiffuseSampler", swapchain.renderTarget.getColorTextureId());
             this.blit(swapchainFramebuffer, blitShader);
+            //swapchainFramebuffer.unbindWrite();
+//          ==render to eyes here after eye swapchain.rendertarget is sampled and blit-ed to swapchainFramebuffer (displayed image per eye?)==
+            //Minecraft.getInstance().player
+            LocalPlayer player = this.client.player;
+            if(player!=null) {
+                //hurt
+                int hurtTime = player.hurtTime;
+                if(hurtTime>0){
+                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/hurt_vr.png"),0.4f,0f,0f,hurtTime*0.07f);
+                }
+                //on fire
+                if(player.isOnFire()){
+                    renderOverlay(swapchainFramebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),1f,0.9f,0.5f,0.7f);
+                }
+                //frozen
+                if (player.getTicksFrozen() > 0) {
+                    float freeze = player.getPercentFrozen();
+                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/powder_snow_outline_vr.png"),1f,1f,1f,freeze);
+                }
+                //portal
+                float g = Mth.lerp(client.getDeltaFrameTime(), player.oPortalTime, player.portalTime);
+                if (g > 0.0F && !player.hasEffect(MobEffects.CONFUSION)) {
+                    this.renderPortalOverlay(swapchainFramebuffer, g);
+                }
+                this.renderVignette(swapchainFramebuffer,cameraEntity);
+                //ScreenEffectRenderer.renderScreenEffect(this.client, new PoseStack());
+            }
+            //blitToBackbuffer(swapchain.renderTarget);
             swapchainFramebuffer.unbindWrite();
         }
 
@@ -497,6 +538,150 @@ public class MCXRGameRenderer {
         shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);
+
+        matrixStack.popPose();
+    }
+
+
+    private void renderOverlay(RenderTarget framebuffer, ResourceLocation texture, float red, float green, float blue,float alpha) {
+        //ShaderInstance shader = Minecraft.getInstance().gameRenderer.blitShader;//to screen
+        ShaderInstance shader = this.blitShader;//to eye
+
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+        AbstractTexture abstractTexture = textureManager.getTexture(texture);
+
+        shader.setSampler("DiffuseSampler", abstractTexture.getId());
+
+        PoseStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.pushPose();
+        matrixStack.setIdentity();
+        RenderSystem.applyModelViewMatrix();
+
+        int width = framebuffer.width;
+        int height = framebuffer.height;
+
+        GlStateManager._colorMask(true, true, true, true);
+        GlStateManager._disableDepthTest();
+        GlStateManager._depthMask(false);
+        GlStateManager._viewport(0, 0, width, height);
+        GlStateManager._enableBlend();
+
+        Matrix4f matrix4f = Matrix4f.orthographic((float) width, (float) -height, 1000.0F, 3000.0F);
+        RenderSystem.setProjectionMatrix(matrix4f);
+        if (shader.MODEL_VIEW_MATRIX != null) {
+            shader.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0.0F, 0.0F, -2000.0F));
+        }
+
+        if (shader.PROJECTION_MATRIX != null) {
+            shader.PROJECTION_MATRIX.set(matrix4f);
+        }
+
+        shader.apply();
+        Tesselator tessellator = RenderSystem.renderThreadTesselator();//Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferBuilder.vertex(0.0, height, -90.0).uv(0f, 0f).color(red, green, blue, alpha).endVertex();
+        bufferBuilder.vertex(width, height, -90.0).uv(1f, 0f).color(red, green, blue, alpha).endVertex();
+        bufferBuilder.vertex(width, 0.0, -90.0).uv(1f, 1f).color(red, green, blue, alpha).endVertex();
+        bufferBuilder.vertex(0.0, 0.0, -90.0).uv(0f, 1f).color(red, green, blue, alpha).endVertex();
+
+        bufferBuilder.end();
+        BufferUploader._endInternal(bufferBuilder);
+        shader.clear();
+        GlStateManager._depthMask(true);
+        GlStateManager._colorMask(true, true, true, true);
+        //GlStateManager._disableBlend();
+
+        matrixStack.popPose();
+    }
+
+    private void renderVignette(RenderTarget framebuffer,Entity entity) {
+        WorldBorder worldBorder = this.client.level.getWorldBorder();
+        float f = (float)worldBorder.getDistanceToBorder(entity);
+        double d = Math.min(
+                worldBorder.getLerpSpeed() * (double)worldBorder.getWarningTime() * 1000.0, Math.abs(worldBorder.getLerpTarget() - worldBorder.getSize())
+        );
+        double e = Math.max((double)worldBorder.getWarningBlocks(), d);
+        if ((double)f < e) {
+            f = 1.0F - (float)((double)f / e);
+        } else {
+            f = 0.0F;
+        }
+        //RenderSystem.blendFuncSeparate(
+        //        GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
+        //);
+        //breaks sky rendering in second viewindex, just use a pre-formatter png
+        //GlStateManager._blendFuncSeparate(GlStateManager.SourceFactor.ZERO.value, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR.value, GlStateManager.SourceFactor.ONE.value, GlStateManager.DestFactor.ZERO.value);
+        if (f > 0.0F) {
+            f = Mth.clamp(f, 0.0F, 1.0F);
+            //RenderSystem.setShaderColor(0.0F, f, f, 1.0F);
+            //renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette.png"),0f,f,f,1f);
+            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,f);
+        } else {
+            float g = Mth.clamp(1.0F - entity.getBrightness(), 0.0F, 1.0F);
+            //RenderSystem.setShaderColor(g, g, g, 1.0F);
+            //renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette.png"),g,g,g,1f);
+            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,g);
+        }
+    }
+
+    private void renderPortalOverlay(RenderTarget framebuffer, float nauseaStrength) {
+        if (nauseaStrength < 1.0F) {
+            nauseaStrength *= nauseaStrength;
+            nauseaStrength *= nauseaStrength;
+            nauseaStrength = nauseaStrength * 0.8F;
+        }
+        ShaderInstance shader = this.blitShader;//to eye
+
+        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
+        AbstractTexture abstractTexture = textureManager.getTexture(InventoryMenu.BLOCK_ATLAS);
+
+        shader.setSampler("DiffuseSampler", abstractTexture.getId());
+
+        PoseStack matrixStack = RenderSystem.getModelViewStack();
+        matrixStack.pushPose();
+        matrixStack.setIdentity();
+        RenderSystem.applyModelViewMatrix();
+
+        int width = framebuffer.width;
+        int height = framebuffer.height;
+
+        GlStateManager._colorMask(true, true, true, true);
+        GlStateManager._disableDepthTest();
+        GlStateManager._depthMask(false);
+        GlStateManager._viewport(0, 0, width, height);
+        GlStateManager._enableBlend();
+
+        Matrix4f matrix4f = Matrix4f.orthographic((float) width, (float) -height, 1000.0F, 3000.0F);
+        RenderSystem.setProjectionMatrix(matrix4f);
+        if (shader.MODEL_VIEW_MATRIX != null) {
+            shader.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0.0F, 0.0F, -2000.0F));
+        }
+
+        if (shader.PROJECTION_MATRIX != null) {
+            shader.PROJECTION_MATRIX.set(matrix4f);
+        }
+
+        shader.apply();
+        TextureAtlasSprite textureAtlasSprite = this.client.getBlockRenderer().getBlockModelShaper().getParticleIcon(Blocks.NETHER_PORTAL.defaultBlockState());
+        float f = textureAtlasSprite.getU0();
+        float g = textureAtlasSprite.getV0();
+        float h = textureAtlasSprite.getU1();
+        float i = textureAtlasSprite.getV1();
+        Tesselator tessellator = RenderSystem.renderThreadTesselator();//Tesselator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuilder();
+        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+        bufferBuilder.vertex(0.0, height, -90.0).uv(f, i).color(1f, 1f, 1f, nauseaStrength).endVertex();
+        bufferBuilder.vertex(width, height, -90.0).uv(h, i).color(1f, 1f, 1f, nauseaStrength).endVertex();
+        bufferBuilder.vertex(width, 0.0, -90.0).uv(h, g).color(1f, 1f, 1f, nauseaStrength).endVertex();
+        bufferBuilder.vertex(0.0, 0.0, -90.0).uv(f, g).color(1f, 1f, 1f, nauseaStrength).endVertex();
+
+        bufferBuilder.end();
+        BufferUploader._endInternal(bufferBuilder);
+        shader.clear();
+        GlStateManager._depthMask(true);
+        GlStateManager._colorMask(true, true, true, true);
+        //GlStateManager._disableBlend();
 
         matrixStack.popPose();
     }

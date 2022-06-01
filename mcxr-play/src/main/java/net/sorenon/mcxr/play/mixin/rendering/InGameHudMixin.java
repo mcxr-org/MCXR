@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.mixin.rendering;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Gui;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
@@ -33,6 +34,20 @@ public class InGameHudMixin {
 
     @Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
     void cancelRenderCrosshair(PoseStack matrices, CallbackInfo ci){
+        if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderPortalOverlay", at = @At("HEAD"), cancellable = true)
+    void cancelRenderPortal(float nauseaStrength, CallbackInfo ci){
+        if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderTextureOverlay", at = @At("HEAD"), cancellable = true)
+    void cancelRenderTex(ResourceLocation texture, float opacity, CallbackInfo ci){
         if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
             ci.cancel();
         }

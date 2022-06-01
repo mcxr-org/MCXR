@@ -60,11 +60,18 @@ public abstract class GameRendererMixin {
     }
 
     /**
-     * Cancels both vanilla and Iris hand rendering
+     * Cancels both vanilla and Iris hand rendering. Also cancels ScreenEffectRenderer call.
      */
     @Inject(method = "renderLevel", at = @At("HEAD"))
     void cancelRenderHand(CallbackInfo ci) {
         this.renderHand = XR_RENDERER.renderPass == RenderPass.VANILLA;
+    }
+
+    @Inject(method = "renderConfusionOverlay", at = @At("HEAD"), cancellable = true)
+    void cancelRenderConfusion(float f, CallbackInfo ci) {
+        if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
+            ci.cancel();
+        }
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)

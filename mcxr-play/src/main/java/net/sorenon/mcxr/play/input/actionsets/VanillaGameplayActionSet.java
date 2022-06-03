@@ -29,8 +29,8 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final FloatAction hotbar = new FloatAction("hotbar");
     public final Vec2fAction move = new Vec2fAction("move");
 
-    public final FloatAction hotbarLeft = new FloatAction("hotbar_left");
-    public final FloatAction hotbarRight = new FloatAction("hotbar_right");
+    public final BoolAction hotbarLeft = new BoolAction("hotbar_left");
+    public final BoolAction hotbarRight = new BoolAction("hotbar_right");
     //TODO remove these with new input system
     public final BoolAction turnLeft = new BoolAction("turn_left");
     public final BoolAction turnRight = new BoolAction("turn_right");
@@ -92,9 +92,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                         //We don't have enough buttons :|
                         //We really need an item radial menu, thumbstick as dpad and chorded inputs
                         //The latter 2 (and maybe the first) will be solved by SuInput
-                        // new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
-                        // new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
-                        new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
+                        new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
+                        new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
+                        // new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
 
                         new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
                         new Pair<>(inventory, "/user/hand/left/input/y/click"),
@@ -115,9 +115,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                             new Pair<>(use, "/user/hand/left/input/trigger/value"),
                             new Pair<>(attack, "/user/hand/right/input/trigger/value"),
                             new Pair<>(move, "/user/hand/left/input/thumbstick"),
-                            new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
-                            //new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
-                            //new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
+                            //new Pair<>(hotbar, "/user/hand/right/input/thumbstick/y"),
+                            new Pair<>(hotbarRight, "/user/hand/right/input/squeeze/value"),
+                            new Pair<>(hotbarLeft, "/user/hand/left/input/squeeze/value"),
                             new Pair<>(turn, "/user/hand/right/input/thumbstick/x"),
                             new Pair<>(inventory, "/user/hand/left/input/b/click"),
                             new Pair<>(jump, "/user/hand/right/input/a/click"),

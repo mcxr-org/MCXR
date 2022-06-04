@@ -21,7 +21,7 @@ public class MCXRGuiManager {
 
     public RenderTarget guiRenderTarget;
     public RenderTarget guiPostProcessRenderTarget;
-
+    public RenderTarget overlayRenderTarget;
     public double guiScale;
 
     public int scaledWidth;
@@ -50,6 +50,8 @@ public class MCXRGuiManager {
         guiRenderTarget.setClearColor(0, 0, 0, 0);
         guiPostProcessRenderTarget = new TextureTarget(guiFramebufferWidth, guiFramebufferHeight, false, Minecraft.ON_OSX);
         Minecraft.getInstance().getTextureManager().register(guiRenderTexture, new UnownedTexture(guiPostProcessRenderTarget.getColorTextureId()));
+        overlayRenderTarget = new TextureTarget(guiFramebufferWidth, guiFramebufferHeight, false, Minecraft.ON_OSX);
+        Minecraft.getInstance().getTextureManager().register(guiRenderTexture, new UnownedTexture(overlayRenderTarget.getColorTextureId()));
     }
 
     @SuppressWarnings("ConditionCoveredByFurtherCondition")

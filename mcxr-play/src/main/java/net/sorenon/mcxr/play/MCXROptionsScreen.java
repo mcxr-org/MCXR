@@ -37,44 +37,6 @@ public class MCXROptionsScreen extends Screen {
     @Override
     protected void init() {
         PlayOptions.load();
-        this.reloadButton = this.addRenderableWidget(new Button(
-                this.width / 2 - 155,
-                this.height / 6 - 12 - 4 + 24,
-                150,
-                20,
-                Component.translatable("mcxr.menu.reload"),
-                button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));
-        if (PlayOptions.xrUninitialized) {
-            reloadButton.active = false;
-        }
-
-        this.addRenderableWidget(new Button(
-                this.width / 2 + 5,
-                this.height / 6 - 12 - 4 + 24,
-                150,
-                20,
-                PlayOptions.xrUninitialized ? Component.translatable("mcxr.options.initialize") : Component.translatable("mcxr.options.uninitialize"),
-                button -> {
-                    PlayOptions.xrUninitialized = !PlayOptions.xrUninitialized;
-                    PlayOptions.save();
-                    reloadButton.active = !PlayOptions.xrUninitialized;
-                    if (!PlayOptions.xrUninitialized) {
-                        MCXRPlayClient.OPEN_XR_STATE.tryInitialize();
-                    }
-                    button.setMessage(PlayOptions.xrUninitialized ? Component.translatable("mcxr.options.initialize") : Component.translatable("mcxr.options.uninitialize"));
-                }));
-
-        this.addRenderableWidget(new Button(
-                this.width / 2 - 100,
-                this.height / 6 - 12 - 4,
-                200,
-                20,
-                PlayOptions.xrPaused ? Component.translatable("mcxr.options.unpause") : Component.translatable("mcxr.options.pause"),
-                button -> {
-                    PlayOptions.xrPaused = !PlayOptions.xrPaused;
-                    PlayOptions.save();
-                    button.setMessage(PlayOptions.xrPaused ? Component.translatable("mcxr.options.unpause") : Component.translatable("mcxr.options.pause"));
-                }));
 
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,

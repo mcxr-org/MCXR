@@ -106,11 +106,6 @@ public abstract class TitleScreenMixin extends Screen {
             y += 12;
         }
 
-        if (!FabricLoader.getInstance().isModLoaded("sodium")) {
-            GuiComponent.drawString(matrices, font, "Sodium Missing!", x + 1, y + 12, 16733525 | l);
-            y += 12;
-        }
-
         MCXROptionsScreen.renderStatus(this, this.font, matrices, mouseX, mouseY, x, y, l, 20);
     }
 }

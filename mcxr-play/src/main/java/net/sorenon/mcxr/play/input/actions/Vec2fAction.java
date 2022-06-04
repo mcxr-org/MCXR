@@ -17,7 +17,7 @@ public class Vec2fAction extends SingleInputAction<Vector2f> {
     @Override
     public void sync(OpenXRSession session) {
         getInfo.action(handle);
-        session.instance.check(XR10.xrGetActionStateVector2f(session.handle, getInfo, state), "xrGetActionStateBoolean");
+        session.instance.checkPanic(XR10.xrGetActionStateVector2f(session.handle, getInfo, state), "xrGetActionStateBoolean");
         this.currentState.x = state.currentState().x();
         this.currentState.y = state.currentState().y();
         this.changedSinceLastSync = state.changedSinceLastSync();

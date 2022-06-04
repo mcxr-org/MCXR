@@ -1,0 +1,50 @@
+{
+  "mcxr.options.title": "Paramètres MCXR",
+  "mcxr.options.uninitialize": "Éteindre la RV",
+  "mcxr.options.initialize": "Démarer la RV",
+  "mcxr.options.pause": "Pauser la RV",
+  "mcxr.options.unpause": "Reprendre la RV",
+  "mcxr.options.walk_direction": "Direction de Marche: %s",
+  "mcxr.options.swim_direction": "Direction de Nage: %s",
+  "mcxr.options.fly_direction": "Direction de Vol: %s",
+  "mcxr.move_direction.head" : "Tête",
+  "mcxr.move_direction.right_hand" : "Main Droite",
+  "mcxr.move_direction.left_hand" : "Main Gauche",
+  "mcxr.options.enable_snap_turning": "Rotation Instantané",
+  "mcxr.options.enable_smooth_turning": "Rotation Douce",
+  "mcxr.options.index_touchpad": "Index Touchpad: %s",
+  "mcxr.index_touchpad.off": "Désactivé",
+  "mcxr.index_touchpad.right_hand": "Droite",
+  "mcxr.index_touchpad.left_hand": "Gauche",
+
+  "mcxr.menu.reload": "Redémarer la RV",
+  "mcxr.menu.session_not_created": "Aucun Casque Trouvé:",
+
+  "openxr.form_factor.1": "Affichage Classique (HMD)",
+  "openxr.form_factor.2": "Affichage Tête Haute (HUD)",
+
+  "mcxr.error.form_factor_unavailable": "L'appareil  est Indisponible (causes communes: débranché ou éteint)",
+
+  "mcxr.actionset.vanilla_gameplay": "Vanilla Gameplay",
+  "mcxr.action.attack": "Attaquer",
+  "mcxr.action.use": "Utiliser",
+  "mcxr.action.inventory": "Inventaire (Garde Appuyé pour pauser)",
+  "mcxr.action.jump": "Sauter",
+  "mcxr.action.move": "Marcher",
+  "mcxr.action.turn": "Tourner",
+  "mcxr.action.hotbar": "Barre d'outils",
+  "mcxr.action.sneak": "S'accroupir",
+  "mcxr.action.sprint": "Courir",
+  "mcxr.action.reset_pos": "Réinitialiser la Position",
+
+  "mcxr.actionset.gui": "Menu",
+  "mcxr.action.close": "Quitter",
+  "mcxr.action.pickup": "Ramasser / Lacher",
+  "mcxr.action.split": "Couper",
+  "mcxr.action.quick_move": "Déplacement Rapide",
+  "mcxr.action.scroll": "Défiler",
+
+  "mcxr.actionset.hands": "Mains",
+  "mcxr.action.aim": "Position Viser",
+  "mcxr.action.grip": "Position Grip"
+}

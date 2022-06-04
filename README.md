@@ -1,42 +1,40 @@
-![MCXR Logo Banner](https://user-images.githubusercontent.com/51373236/114272119-ad237800-9a0c-11eb-8786-6275555a594b.png)
-A rudimentary XR mod for Minecraft using OpenXR and the fabric mod loader.
+![Minecraft XR Banner](https://user-images.githubusercontent.com/90802279/172019610-302bd0a3-8cb6-4133-9b20-bdf54b85a04e.png)
+![](https://img.shields.io/github/v/release/Sorenon/MCXR) ![](https://img.shields.io/discord/829825443480993802?label=discord) ![](https://img.shields.io/modrinth/dt/hcEWWGik?label=mcxr-core%20downloads) ![](https://img.shields.io/modrinth/dt/9jVyqpHR?label=mcxr-play%20downloads) ![](https://img.shields.io/reddit/subreddit-subscribers/MinecraftXR)
+<br/>A virtual reality / augmented reality mod for Minecraft using OpenXR and Fabric.
+
+> [VR Installation](#installation-for-vr-players)
+> <br/>[Non-VR and Server Installation](#installation-for-non-vr-players-and-servers)
+> <br/>[Comparing Competition](#comparisons-to-competitors)
 
 
-# ⚠ Caution
-MCXR is in early pre-pre-alpha. We are not accepting PRs and issues will be ignored until the codebase has become semi-stable.
+### Installation for VR Players
+Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core) & [MCXR Play](https://modrinth.com/mod/mcxr-play). Then, install the mods by placing them into the /mods folder.
+<br/>
+In order to access the title screen within Minecraft XR, use [Titleworlds](https://modrinth.com/mod/titleworlds).
 
-# *Installation*
-Installing the mod requires an understanding of programming in Java and managing natives. If you don't know what that means I recommend waiting until we start releasing alpha builds.
-</br>
-Once built an OpenXR loader needs to be put in the mods/ folder, windows binaries of which can be retrieved from [here](https://www.nuget.org/packages/OpenXR.Loader/)
+### Installation for Non-VR Players and Servers
+Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). Then, install the mod by placing it into the /mods folder.
 
-## *Related Links*
-Join the Discord server [here.](https://discord.gg/fyBye2ptkS) <br/>
-Alternatively, join the Subreddit [here.](https://www.reddit.com/r/MinecraftXR/)
-
-## *Comparison Table*
-
-
-|                             | [Official Minecraft VR](https://www.minecraft.net/en-us/vr)| [Vivecraft](http://www.vivecraft.org/)| [MCXR VR](https://github.com/Sorenon/MCXR) |
+## *Comparisons to Competitors*
+| Comparisons                 | [Bedrock VR](https://www.minecraft.net/en-us/vr)| [Vivecraft](http://www.vivecraft.org/)| [Minecraft XR](https://github.com/Sorenon/MCXR) |
 | --------------------------- | ------------------------------- | ----------------------------- | ---------------------------- |
-| State                       | Released                        | Released                      | 🚧Pre-Alpha                  |
+| State                       | Released                        | Released                      | Beta                         |
+| Release Year                | 2016                            | 2013 / 2016                   | 2021 (Beta)                  |
 | Platform                    | Bedrock                         | Java                          | Java                         |
-| Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric                       |
-| Performance                 | 🥇                              | 🥉                            | 🥈 (With Sodium)                          |
-| Supported Devices           | 👎 Only Oculus headsets and WMR | ✅OpenVR supported devices     | ✅OpenXR supported devices    |
-| Pretty Shader Support       | ⛔                               | ✅Optifine                     | 🚧Canvas or Iris             |
-| Vanilla Compatibility       | ✅                               | ✅                             | ✅                            |
-| Vr Addon Support            | ⛔                               | 🚧In development             | 🚧In development             |
-| Thirdparty Mod Intergration | N/A                             | ⛔                             | 🚧In development             |
-| Immersive UI                | ⛔                               | ⛔                             | 🚧In development             |
-| Immersive Controls          | ⛔                               | ✅                             | 🚧In development             |
-| Open Source                 | ⛔                               | ✅                             | ✅                            |
-| Versions                    | N/A                             | 1.7.10, and 1.10 through 1.16 | 1.17                         |
-| Linkless Quest Support      | ✅                               | 🚧[Heavily delayed](https://discord.com/invite/cRdBUaUzcx)      | 🚧In development             |
-| Vr Multiplayer              | ⛔                               | ✅                             | 🚧In development             |
-| Spigot Plugin               | N/A                             | ✅                             | ⛔                            |
-| Patch Method                | N/A                             | Jar mod                       | Mixins                       |
-| Sponsored by Facebook       | Yes                             | No                            | No                           |
-| Initial Release Year        | 2016                            | 2013 / 2016                   | 2021                         |
-| Linux Support                 | ⛔                               | ✅                            | ✅                            |
-| Mac Support                 | ⛔                               | ✅?                            | ⛔                            |
+| Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric, Quilt                |
+| Performance                 | 🥇                              | 🥉                           | 🥈 (with Sodium)             |
+| Supported Devices           | 👎 Only Oculus headsets and WMR | ✅ OpenVR-supported Devices   | ✅ OpenXR-supported Devices  |
+| Shaders Support             | ⛔                              | ✅ Optifine                   | ✅ Iris                      |
+| Vanilla Server Compatibility| ✅                              | ✅                           | ✅                           |
+| VR Addon Support            | ⛔                              | 🚧 In Development            | 🚧 In Development            |
+| 3rd party Mod Intergration  | ⛔                              | ⛔                           | 🚧                           |
+| Immersive UI                | ⛔                              | ⛔                           | 🚧                           |
+| Immersive Controls          | ⛔                              | ✅                           | 🚧                           |
+| Open Source                 | ⛔                              | ✅                           | ✅                           |
+| Versions                    | Latest                          | 1.7.10, 1.10 to 1.18          | 1.18                         |
+| Wireless Quest Support      | ⛔                              | ⛔                           | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft)|
+| VR Playermodels             | ⛔                              | ✅                           | 🚧                           |
+| Server Plugin Support       | ⛔                              | ✅                           | 🚧                           |
+| Mod Method                  | Builtin                         | Jar mod                       | Mixins                       |
+| Linux Support               | ⛔                              | ✅                           | ✅                           |
+| Mac Support                 | ⛔                              | ⛔                           | ⛔                           |

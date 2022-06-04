@@ -3,13 +3,12 @@ package net.sorenon.mcxr.play.input.actions;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.client.resources.language.I18n;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.openxr.OpenXR;
+import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRSession;
 import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
-import org.lwjgl.system.MemoryStack;
 
 import java.nio.LongBuffer;
 
@@ -61,7 +60,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
                     memUTF8(localizedName)
             );
             PointerBuffer pp = stackMallocPointer(1);
-            instance.checkSafe(XR10.xrCreateAction(actionSet, actionCreateInfo, pp), "xrCreateAction");
+            instance.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp), "xrCreateAction");
             handle = new XrAction(pp.get(), actionSet);
         }
     }
@@ -76,10 +75,10 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
                         NULL,
                         handle,
                         subactionPaths.get(i),
-                        OpenXR.identityPose
+                        OpenXRState.POSE_IDENTITY
                 );
                 PointerBuffer pp = stackMallocPointer(1);
-                session.instance.checkSafe(XR10.xrCreateActionSpace(MCXRPlayClient.OPEN_XR.session.handle, action_space_info, pp), "xrCreateActionSpace");
+                session.instance.check(XR10.xrCreateActionSpace(MCXRPlayClient.OPEN_XR_STATE.session.handle, action_space_info, pp), "xrCreateActionSpace");
                 spaces[i] = new XrSpace(pp.get(0), session.handle);
             }
         }
@@ -90,7 +89,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
         for (int i = 0; i < amount; i++) {
             getInfo.subactionPath(subactionPaths.get(i));
             getInfo.action(handle);
-            session.instance.check(XR10.xrGetActionStatePose(session.handle, getInfo, state), "xrGetActionStatePose");
+            session.instance.checkPanic(XR10.xrGetActionStatePose(session.handle, getInfo, state), "xrGetActionStatePose");
             isActive[i] = state.isActive();
         }
     }

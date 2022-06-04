@@ -6,34 +6,37 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.Util;
-import net.minecraft.client.CloudStatus;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.Option;
-import net.minecraft.client.Options;
-import net.minecraft.client.Timer;
+import net.minecraft.client.*;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.Overlay;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.FrameTimer;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
-import net.minecraft.world.Snooper;
+import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.accessor.MinecraftClientExt;
+import net.sorenon.mcxr.play.accessor.MinecraftExt;
 import net.sorenon.mcxr.play.mixin.accessor.WindowAcc;
-import net.sorenon.mcxr.play.openxr.OpenXR;
-import net.sorenon.mcxr.play.openxr.XrRenderer;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
+import net.sorenon.mcxr.play.openxr.OpenXRState;
+import net.sorenon.mcxr.play.openxr.XrRuntimeException;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.openxr.XR10;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -43,8 +46,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
+import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
+import net.minecraft.client.gui.GuiComponent;
+
 @Mixin(Minecraft.class)
-public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnable> implements MinecraftClientExt {
+public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnable> implements MinecraftExt {
 
     public MinecraftMixin(String string) {
         super(string);
@@ -138,10 +144,6 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     public String fpsString;
 
     @Shadow
-    @Final
-    private Snooper snooper;
-
-    @Shadow
     @Nullable
     private IntegratedServer singleplayerServer;
 
@@ -160,8 +162,21 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     @Final
     public Options options;
 
+    @Shadow
+    protected abstract void openChatScreen(String string);
+
+    @Shadow
+    public abstract void resizeDisplay();
+
+    @Shadow
+    @Nullable
+    public LocalPlayer player;
+
+    @Shadow
+    public abstract void prepareForMultiplayer();
+
     @Unique
-    private static final XrRenderer XR_RENDERER = MCXRPlayClient.RENDERER;
+    private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "com/mojang/blaze3d/pipeline/MainTarget"))
     MainTarget createFramebuffer(int width, int height) {
@@ -170,15 +185,56 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
-        MCXRPlayClient.INSTANCE.flatGuiManager.init();
+        MCXRPlayClient.INSTANCE.MCXRGuiManager.init();
     }
+
+    private boolean renderedNormallyLastFrame = true;
 
     @Redirect(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;runTick(Z)V"), method = "run")
     void loop(Minecraft minecraftClient, boolean tick) {
-        OpenXR openXR = MCXRPlayClient.OPEN_XR;
-        if (openXR.loop()) {
-            //Just render normally
-            runTick(tick);
+        OpenXRState openXRState = MCXRPlayClient.OPEN_XR_STATE;
+        //TODO build a more rusty error system to handle this
+        try {
+            if (openXRState.loop()) {
+                if (!renderedNormallyLastFrame) {
+                    MCXRPlayClient.LOGGER.info("Resizing framebuffers due to XR -> Pancake transition");
+                    this.resizeDisplay();
+                }
+                if (this.player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
+                    PlayerExt acc = (PlayerExt) this.player;
+                    if (acc.isXR()) {
+                        FriendlyByteBuf buf = PacketByteBufs.create();
+                        buf.writeBoolean(false);
+                        ClientPlayNetworking.send(MCXRCore.IS_XR_PLAYER, buf);
+                        acc.setIsXr(false);
+                        this.player.refreshDimensions();
+                    }
+                }
+                //Just render normally
+                runTick(tick);
+                renderedNormallyLastFrame = true;
+            } else {
+                if (renderedNormallyLastFrame) {
+                    if (this.screen != null) {
+                        MCXRPlayClient.LOGGER.info("Resizing gui due to Pancake -> XR transition");
+                        var fgm = MCXRPlayClient.INSTANCE.MCXRGuiManager;
+                        this.screen.resize((Minecraft) (Object) this, fgm.scaledWidth, fgm.scaledHeight);
+                        fgm.needsReset = true;
+                    }
+                }
+                renderedNormallyLastFrame = false;
+            }
+        } catch (XrRuntimeException runtimeException) {
+            openXRState.session.close();
+            openXRState.session = null;
+            MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
+
+            if (runtimeException.result != XR10.XR_ERROR_SESSION_LOST) {
+                openXRState.instance.close();
+                openXRState.instance = null;
+            }
+
+            runtimeException.printStackTrace();
         }
     }
 
@@ -189,7 +245,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
      * ASMR's more advanced transformers could help with this in the future
      */
     @Override
-    public void preRender(boolean tick) {
+    public void preRender(boolean tick, Runnable preTick) {
         this.window.setErrorSection("Pre render");
         if (this.window.shouldClose()) {
             this.stop();
@@ -217,6 +273,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
             for (int j = 0; j < Math.min(10, i); ++j) {
                 this.profiler.incrementCounter("clientTick");
+                preTick.run();
                 this.tick();
             }
 
@@ -241,7 +298,10 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         if (!this.noRender) {
             this.profiler.popPush("gameRenderer");
             this.gameRenderer.render(this.pause ? this.pausePartialTick : this.timer.partialTick, frameStartTime, tick);
-
+            //cursor rendering
+            if(this.screen != null) {
+                renderCursor(new PoseStack(), (Minecraft) (Object) this);
+            }
             if (XR_RENDERER.renderPass == RenderPass.GUI || XR_RENDERER.renderPass == RenderPass.VANILLA) {
                 this.profiler.popPush("toasts");
                 this.toast.render(new PoseStack());
@@ -255,7 +315,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
             this.profiler.pop();
         }
 
-        this.profiler.push("blit");
+//        this.profiler.push("blit");
         this.mainRenderTarget.unbindWrite();
         matrixStack.popPose();
 
@@ -298,12 +358,20 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
             this.fpsString = String.format("%d fps T: %s%s%s%s B: %d", fps, (double) this.options.framerateLimit == Option.FRAMERATE_LIMIT.getMaxValue() ? "inf" : this.options.framerateLimit, this.options.enableVsync ? " vsync" : "", this.options.graphicsMode.toString(), this.options.renderClouds == CloudStatus.OFF ? "" : (this.options.renderClouds == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius);
             this.lastTime += 1000L;
             this.frames = 0;
-            this.snooper.prepare();
-            if (!this.snooper.isStarted()) {
-                this.snooper.start();
-            }
         }
 
         this.profiler.pop();
+    }
+    private static void renderCursor(PoseStack matrices, Minecraft client) {
+        int mouseX = (int) ((client.mouseHandler.xpos()) * (double) client.getWindow().getGuiScaledWidth() / (double) client.getWindow().getWidth());
+        int mouseY = (int) ((client.mouseHandler.ypos()) * (double) client.getWindow().getGuiScaledHeight() / (double) client.getWindow().getHeight());
+        RenderSystem.disableDepthTest();
+
+        RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
+        RenderSystem.setShaderTexture(0, GUI_ICONS_LOCATION);
+        GuiComponent.blit(matrices, mouseX-7, mouseY-7,
+                0.f, 0.f,
+                15, 15, 256, 256);
+        RenderSystem.enableDepthTest();
     }
 }

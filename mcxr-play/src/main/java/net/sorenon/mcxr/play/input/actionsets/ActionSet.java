@@ -10,7 +10,6 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.XR10;
 import org.lwjgl.openxr.XrActionSet;
 import org.lwjgl.openxr.XrActionSetCreateInfo;
-import org.lwjgl.system.MemoryStack;
 import oshi.util.tuples.Pair;
 
 import java.util.HashMap;
@@ -61,7 +60,7 @@ public abstract class ActionSet implements AutoCloseable {
                     priority
             );
             PointerBuffer pp = stackMallocPointer(1);
-            instance.checkSafe(XR10.xrCreateActionSet(instance.handle, actionSetCreateInfo, pp), "xrCreateActionSet");
+            instance.check(XR10.xrCreateActionSet(instance.handle, actionSetCreateInfo, pp), "xrCreateActionSet");
             handle = new XrActionSet(pp.get(0), instance.handle);
 
             for (var action : actions()) {

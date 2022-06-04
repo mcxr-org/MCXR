@@ -1,4 +1,4 @@
-![](https://user-images.githubusercontent.com/90802279/172019610-302bd0a3-8cb6-4133-9b20-bdf54b85a04e.png)
+![](https://user-images.githubusercontent.com/90802279/172026916-a617134b-a829-4d67-b8ec-ef10ea4be266.png)
 ![](https://img.shields.io/github/v/release/Sorenon/MCXR) ![](https://img.shields.io/discord/829825443480993802?label=discord) ![](https://img.shields.io/modrinth/dt/hcEWWGik?label=mcxr-core%20downloads) ![](https://img.shields.io/modrinth/dt/9jVyqpHR?label=mcxr-play%20downloads) ![](https://img.shields.io/reddit/subreddit-subscribers/MinecraftXR)
 <br/>A virtual reality / augmented reality mod for Minecraft using OpenXR and Fabric.
 
@@ -12,6 +12,7 @@
 > <br/>[Non-VR and Server Installation](#installation-for-non-vr-players-and-servers)
 > <br/>[Comparing Competition](#comparisons-to-competitors)
 
+---------
 ### Installation for VR Players
 Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core) & [MCXR Play](https://modrinth.com/mod/mcxr-play). Then, install the mods by placing them into the /mods folder.
 <br/>
@@ -20,7 +21,7 @@ In order to access the title screen within Minecraft XR, use [Titleworlds](https
 ### Installation for Non-VR Players and Servers
 Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). Then, install the mod by placing it into the /mods folder.
 
-## *Comparisons to Competitors*
+### *Comparisons to Competitors*
 > ✅ *YES*
 > <br/>⛔ *NO*
 > <br/>🚧 *IN DEVELOPMENT*

@@ -302,16 +302,19 @@ public class MCXRGameRenderer {
 //          ==render to eyes here after eye swapchain.rendertarget is sampled and blit-ed to swapchainFramebuffer (displayed image per eye?)==
             LocalPlayer player = this.client.player;
             if(player!=null) {
+                //vanilla vignette
+                renderVignette(swapchainFramebuffer,cameraEntity);
+                //portal
+                float g = Mth.lerp(client.getDeltaFrameTime(), player.oPortalTime, player.portalTime);
+                if (g > 0.0F && !player.hasEffect(MobEffects.CONFUSION)) {
+                    renderPortalOverlay(swapchainFramebuffer, g);
+                }
                 //hurt
                 int hurtTime = player.hurtTime;
                 if(hurtTime>0){
                     renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/hurt_vr.png"),0.4f,0f,0f,hurtTime*0.06f);
                 }
-                //death point
-                float deathPoint =Mth.clamp(2.5f*(0.7f-player.getHealth()/player.getMaxHealth()),0f,1f);
-                if(deathPoint>0f){
-                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/vignette_vr.png"),0.4f,0f,0f,deathPoint*0.9f);
-                }
+                //drowning
                 float drownPoint =Mth.clamp(2.5f*(0.7f-player.getAirSupply()/player.getMaxAirSupply()),0f,1f);
                 if(drownPoint>0f){
                     renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/vignette_vr.png"),0.0f,0f,0.2f,drownPoint*0.9f);
@@ -319,19 +322,17 @@ public class MCXRGameRenderer {
                 //on fire
                 if(player.isOnFire()){
                     renderOverlay(swapchainFramebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),1f,0.7f,0.2f,0.9f);
-                    renderFire(swapchainFramebuffer);
                 }
                 //frozen
                 if (player.getTicksFrozen() > 0) {
                     float freeze = player.getPercentFrozen()*0.9f;
                     renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/vignette_vr.png"),0.85f,0.85f,1f,freeze);
                 }
-                //portal
-                float g = Mth.lerp(client.getDeltaFrameTime(), player.oPortalTime, player.portalTime);
-                if (g > 0.0F && !player.hasEffect(MobEffects.CONFUSION)) {
-                    renderPortalOverlay(swapchainFramebuffer, g);
+                //death point
+                float deathPoint =Mth.clamp(2.5f*(0.7f-player.getHealth()/player.getMaxHealth()),0f,1f);
+                if(deathPoint>0f){
+                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/vignette_vr.png"),0.4f,0f,0f,deathPoint*0.9f);
                 }
-                renderVignette(swapchainFramebuffer,cameraEntity);
             }
             swapchainFramebuffer.unbindWrite();
         }
@@ -539,8 +540,15 @@ public class MCXRGameRenderer {
         //maintain screen's square aspect ratio
         int xOff=0;
         int yOff=0;
-        if(width>height){xOff=(width-height)/2;}
-        else{yOff=(height-width)/2;}
+        boolean fullImage=PlayOptions.fullMirror;
+        if(width>height){
+            if(fullImage) xOff=(width-height)/2;
+            else yOff=-(width-height)/2;
+        }
+        else{
+            if(fullImage) yOff=(height-width)/2;
+            else xOff=-(height-width)/2;
+        }
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
@@ -558,57 +566,6 @@ public class MCXRGameRenderer {
         matrixStack.popPose();
     }
 
-    private void renderOverlay2(RenderTarget framebuffer, ResourceLocation texture, float red, float green, float blue,float alpha) {
-        ShaderInstance shader = Minecraft.getInstance().gameRenderer.blitShader;
-        //ShaderInstance shader = this.blitShader;//to eye
-
-        TextureManager textureManager = Minecraft.getInstance().getTextureManager();
-        AbstractTexture abstractTexture = textureManager.getTexture(texture);
-
-        shader.setSampler("DiffuseSampler", abstractTexture.getId());
-
-        PoseStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.pushPose();
-        matrixStack.setIdentity();
-        RenderSystem.applyModelViewMatrix();
-
-        int width = framebuffer.width;
-        int height = framebuffer.height;
-
-        GlStateManager._colorMask(true, true, true, true);
-        GlStateManager._disableDepthTest();
-        GlStateManager._depthMask(false);
-        GlStateManager._viewport(0, 0, width, height);
-        GlStateManager._enableBlend();
-
-        Matrix4f matrix4f = Matrix4f.orthographic((float) width, (float) -height, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f);
-        if (shader.MODEL_VIEW_MATRIX != null) {
-            shader.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0.0F, 0.0F, -2000.0F));
-        }
-
-        if (shader.PROJECTION_MATRIX != null) {
-            shader.PROJECTION_MATRIX.set(matrix4f);
-        }
-
-        shader.apply();
-        Tesselator tessellator = RenderSystem.renderThreadTesselator();//Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuilder();
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferBuilder.vertex(0.0, height, -90.0).uv(0f, 0f).color(red, green, blue, alpha).endVertex();
-        bufferBuilder.vertex(width, height, -90.0).uv(1f, 0f).color(red, green, blue, alpha).endVertex();
-        bufferBuilder.vertex(width, 0.0, -90.0).uv(1f, 1f).color(red, green, blue, alpha).endVertex();
-        bufferBuilder.vertex(0.0, 0.0, -90.0).uv(0f, 1f).color(red, green, blue, alpha).endVertex();
-
-        bufferBuilder.end();
-        BufferUploader._endInternal(bufferBuilder);
-        shader.clear();
-        GlStateManager._depthMask(true);
-        GlStateManager._colorMask(true, true, true, true);
-        //GlStateManager._disableBlend();
-
-        matrixStack.popPose();
-    }
     private void renderOverlay(RenderTarget framebuffer, ResourceLocation texture, float red, float green, float blue,float alpha) {
         //ShaderInstance shader = Minecraft.getInstance().gameRenderer.blitShader;//to screen
         ShaderInstance shader = this.blitShader;//to eye
@@ -631,6 +588,7 @@ public class MCXRGameRenderer {
         GlStateManager._depthMask(false);
         GlStateManager._viewport(0, 0, width, height);
         GlStateManager._enableBlend();
+        GlStateManager._blendFunc(GlStateManager.SourceFactor.SRC_ALPHA.value, GlStateManager.SourceFactor.ONE_MINUS_SRC_ALPHA.value);
 
         Matrix4f matrix4f = Matrix4f.orthographic((float) width, (float) -height, 1000.0F, 3000.0F);
         RenderSystem.setProjectionMatrix(matrix4f);
@@ -682,12 +640,12 @@ public class MCXRGameRenderer {
             f = Mth.clamp(f, 0.0F, 1.0F);
             //RenderSystem.setShaderColor(0.0F, f, f, 1.0F);
             //renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette.png"),0f,f,f,1f);
-            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,f*0.7f);
+            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,f);
         } else {
             float g = Mth.clamp(1.0F - entity.getBrightness(), 0.0F, 1.0F);
             //RenderSystem.setShaderColor(g, g, g, 1.0F);
             //renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette.png"),g,g,g,1f);
-            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,g*0.7f);
+            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,g);
         }
     }
 
@@ -744,81 +702,6 @@ public class MCXRGameRenderer {
 
         bufferBuilder.end();
         BufferUploader._endInternal(bufferBuilder);
-        shader.clear();
-        GlStateManager._depthMask(true);
-        GlStateManager._colorMask(true, true, true, true);
-        //GlStateManager._disableBlend();
-
-        matrixStack.popPose();
-    }
-
-    private void renderFire(RenderTarget framebuffer) {
-        ShaderInstance shader = this.blitShader;//to eye
-
-        TextureAtlasSprite textureAtlasSprite = ModelBakery.FIRE_1.sprite();
-        shader.setSampler("DiffuseSampler", textureAtlasSprite.atlas().getId());
-
-        PoseStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.pushPose();
-        matrixStack.setIdentity();
-        RenderSystem.applyModelViewMatrix();
-
-        int width = framebuffer.width;
-        int height = framebuffer.height;
-
-        GlStateManager._colorMask(true, true, true, true);
-        GlStateManager._disableDepthTest();
-        GlStateManager._depthMask(false);
-        GlStateManager._viewport(0, 0, width, height);
-        GlStateManager._enableBlend();
-
-        Matrix4f matrix4f = Matrix4f.orthographic((float) width, (float) -height, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(matrix4f);
-        if (shader.MODEL_VIEW_MATRIX != null) {
-            shader.MODEL_VIEW_MATRIX.set(Matrix4f.createTranslateMatrix(0.0F, 0.0F, -2000.0F));
-        }
-
-        if (shader.PROJECTION_MATRIX != null) {
-            shader.PROJECTION_MATRIX.set(matrix4f);
-        }
-
-
-        shader.apply();
-        Tesselator tessellator = RenderSystem.renderThreadTesselator();//Tesselator.getInstance();
-        BufferBuilder bufferBuilder = tessellator.getBuilder();
-        float f = textureAtlasSprite.getU0();
-        float g = textureAtlasSprite.getU1();
-        float h = (f + g) / 2.0F;
-        float i = textureAtlasSprite.getV0();
-        float j = textureAtlasSprite.getV1();
-        float k = (i + j) / 2.0F;
-        float l = textureAtlasSprite.uvShrinkRatio();
-        float m = Mth.lerp(l, f, h);
-        float n = Mth.lerp(l, g, h);
-        float o = Mth.lerp(l, i, k);
-        float p = Mth.lerp(l, j, k);
-        float q = 1.0F;
-
-        for(int r = 0; r < 2; ++r) {
-            matrixStack.pushPose();
-            float s = -0.5F;
-            float t = 0.5F;
-            float u = -0.5F;
-            float v = 0.5F;
-            float w = -0.5F;
-            matrixStack.translate((double)((float)(-(r * 2 - 1)) * 0.24F), -0.3F, 0.0);
-            matrixStack.mulPose(Vector3f.YP.rotationDegrees((float)(r * 2 - 1) * 10.0F));
-            matrix4f = matrixStack.last().pose();
-            bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
-            bufferBuilder.vertex(matrix4f, -0.5F, -0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(n, p).endVertex();
-            bufferBuilder.vertex(matrix4f, 0.5F, -0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(m, p).endVertex();
-            bufferBuilder.vertex(matrix4f, 0.5F, 0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(m, o).endVertex();
-            bufferBuilder.vertex(matrix4f, -0.5F, 0.5F, -0.5F).color(1.0F, 1.0F, 1.0F, 0.9F).uv(n, o).endVertex();
-            bufferBuilder.end();
-            //BufferUploader.end(bufferBuilder);
-            BufferUploader._endInternal(bufferBuilder);
-            matrixStack.popPose();
-        }
         shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);

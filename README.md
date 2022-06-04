@@ -22,7 +22,6 @@ Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). 
 
 ## *Comparisons to Competitors*
 > ✅ *YES*
-> <br/>🟡 *MAYBE or PARTIAL YES*
 > <br/>⛔ *NO*
 > <br/>🚧 *IN DEVELOPMENT*
 
@@ -44,8 +43,8 @@ Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). 
 | Versions                    | Latest                          | 1.7.10, 1.10 to 1.18          | 1.18                         |
 | Standalone Quest Support    | ⛔                              | ⛔                           | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft)|
 | VR Playermodels             | ⛔                              | ✅                           | 🚧                           |
-| Server Plugin Support       | ⛔                              | ✅                           | 🚧                           |
+| Spigot Plugin Support       | ⛔                              | ✅                           | ⛔                           |
 | Mod Method                  | Built-in                        | Jar mod                       | Mixins                       |
+| Sponsored by Facebook       | Yes                              | No                           | No                           |
 | Linux Support               | ⛔                              | ✅                           | ✅                           |
 | Mac Support                 | ⛔                              | ⛔                           | ⛔                           |
-| Sponsored by Meta           | ✅                              | ⛔                           | ⛔                           |

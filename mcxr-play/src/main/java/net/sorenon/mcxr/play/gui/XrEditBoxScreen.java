@@ -5,7 +5,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.gui.keyboard.XrEditBoxKeyboard;
 
@@ -15,13 +15,13 @@ public class XrEditBoxScreen extends Screen {
     private final XrEditBoxKeyboard keyboard;
     private ServerList servers;
 
-    public XrEditBoxScreen(TranslatableComponent title, Screen parentScreen, EditBox textField) {
+    public XrEditBoxScreen(Component title, Screen parentScreen, EditBox textField) {
         super(title);
         _parentScreen = parentScreen;
         this.keyboard = new XrEditBoxKeyboard(textField, this, 30);
     }
 
-    public XrEditBoxScreen(TranslatableComponent title, Screen parentscreen, EditBox textField, ServerList servers) {
+    public XrEditBoxScreen(Component title, Screen parentscreen, EditBox textField, ServerList servers) {
         super(title);
         this.keyboard = new XrEditBoxKeyboard(textField, this, 30);
         this.servers = servers;

@@ -41,7 +41,7 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
-    implementation("org.lwjgl:lwjgl:3.2.3")
+    include(implementation("org.lwjgl:lwjgl-openxr:3.3.1")!!)
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")
     implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")

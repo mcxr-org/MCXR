@@ -3,7 +3,7 @@ package net.sorenon.mcxr.play.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,11 +19,6 @@ public class QuickChat extends ChatScreen {
 
     public QuickChat(String string) {
         super(string);
-    }
-
-    @Override
-    public void sendMessage(String string) {
-        super.sendMessage(string);
     }
 
     @Override
@@ -79,8 +74,8 @@ public class QuickChat extends ChatScreen {
             int buttonHeight = 20;
 
             this.addRenderableWidget(
-                    new Button(buttonX, buttonY, buttonWidth, buttonHeight, new TranslatableComponent(word), (button -> {
-                        this.sendMessage(word);
+                    new Button(buttonX, buttonY, buttonWidth, buttonHeight, Component.translatable(word), (button -> {
+                        Minecraft.getInstance().player.chat(word);
 //                        Minecraft.getInstance().gui.getChat().clearMessages(true);
                     }))
             );

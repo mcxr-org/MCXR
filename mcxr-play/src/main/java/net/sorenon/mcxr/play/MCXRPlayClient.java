@@ -31,6 +31,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.XR;
+import org.lwjgl.system.Configuration;
 import virtuoel.pehkui.util.ScaleUtils;
 
 import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
@@ -92,6 +93,7 @@ public class MCXRPlayClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        Configuration.OPENXR_EXPLICIT_INIT.set(true);
         PlayOptions.init();
         PlayOptions.load();
         PlayOptions.save();

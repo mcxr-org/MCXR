@@ -280,6 +280,14 @@ public final class XrInput {
                 client.player.setShiftKeyDown(true);
             }
         }
+        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
+            if (Minecraft.getInstance().player != null)
+                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+        }
+        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
+            if (Minecraft.getInstance().player != null)
+                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+        }
 //        if (actionSet.attackState.changedSinceLastSync()) {
 //            MinecraftClient client = MinecraftClient.getInstance();
 //            InputUtil.Key key = client.options.keyAttack.getDefaultKey();

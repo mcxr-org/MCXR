@@ -21,7 +21,8 @@ import static org.lwjgl.system.MemoryUtil.memGetAddress;
 @Mixin(targets = "org/lwjgl/openxr/XR$GlobalCommands")
 public abstract class XRMixin {
     @Mutable
-    @Shadow @Final private long xrInitializeLoaderKHR;
+    @Shadow @Final
+    long xrInitializeLoaderKHR;
 
     @Shadow protected abstract long getFunctionAddress(String name);
     @Shadow protected abstract long getFunctionAddress(String name, boolean required);

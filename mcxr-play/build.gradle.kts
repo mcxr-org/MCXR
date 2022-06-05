@@ -14,7 +14,10 @@ version = "${properties["play_version"].toString()}+${getVersionMetadata()}"
 group = properties["maven_group"].toString()
 
 repositories {
-    maven { url = uri("https://jitpack.io") }
+    maven {
+        name = "Jitpack"
+        url = uri("https://jitpack.io")
+    }
     maven {
         name = "Modrinth"
         url = uri("https://api.modrinth.com/maven")

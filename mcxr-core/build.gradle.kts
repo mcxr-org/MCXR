@@ -15,7 +15,6 @@ group = properties["maven_group"].toString()
 
 repositories {
     maven { url = uri("https://jitpack.io") }
-
 }
 
 dependencies {
@@ -32,7 +31,6 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
-    implementation("org.lwjgl:lwjgl:3.2.3")
     include(implementation("org.joml:joml:${properties["joml_version"].toString()}")!!)
     include(implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")!!)
     include(implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")!!)

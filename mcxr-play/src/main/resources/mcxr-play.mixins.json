@@ -32,8 +32,7 @@
     "rendering.MinecraftMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "roomscale.ClientPlayerEntityMixin",
-    "XRMixin"
+    "roomscale.ClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

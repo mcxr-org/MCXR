@@ -21,6 +21,9 @@ repositories {
             includeGroup("maven.modrinth")
         }
     }
+    flatDir {
+        dirs("libs")
+    }
 }
 
 dependencies {
@@ -41,7 +44,8 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
-    include(implementation("org.lwjgl:lwjgl-openxr:3.3.1")!!)
+    implementation("blank:lwjgl:3.2.3")
+
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")
     implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")

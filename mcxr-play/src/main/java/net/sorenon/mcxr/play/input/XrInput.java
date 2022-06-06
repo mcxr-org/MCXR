@@ -212,12 +212,28 @@ public final class XrInput {
             }
         }
         if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+            if (Minecraft.getInstance().player != null) {
+                int selected = Minecraft.getInstance().player.getInventory().selected;
+                selected += 1;
+                while (selected < 0) {
+                    selected += 9;
+                }
+                while (selected >= 9) {
+                    selected -= 9;
+                }
+            }
         }
         if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+            if (Minecraft.getInstance().player != null) {
+                int selected = Minecraft.getInstance().player.getInventory().selected;
+                selected -= 1;
+                while (selected < 0) {
+                    selected += 9;
+                }
+                while (selected >= 9) {
+                    selected -= 9;
+                }
+            }
         }
 
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {

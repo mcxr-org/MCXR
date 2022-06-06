@@ -93,7 +93,6 @@ public class MCXRPlayClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Configuration.OPENXR_EXPLICIT_INIT.set(true);
         PlayOptions.init();
         PlayOptions.load();
         PlayOptions.save();

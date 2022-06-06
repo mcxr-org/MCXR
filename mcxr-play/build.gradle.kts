@@ -45,6 +45,7 @@ dependencies {
     }
 
     implementation("blank:lwjgl:3.2.3")
+    implementation("blank:lwjgl-glfw:3.2.3")
 
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")

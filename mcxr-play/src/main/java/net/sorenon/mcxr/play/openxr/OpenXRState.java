@@ -63,9 +63,8 @@ public class OpenXRState {
         if (PlayOptions.xrUninitialized) {
             return;
         }
-        try {
-            XR.getFunctionProvider();
-        } catch(IllegalStateException exception) {
+
+        if (!XR.loaded()) {
             XR.create("openxr_loader");
         }
 

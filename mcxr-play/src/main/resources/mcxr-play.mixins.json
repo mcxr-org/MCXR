@@ -32,11 +32,13 @@
     "rendering.MinecraftMixin",
     "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "roomscale.ClientPlayerEntityMixin"
+    "roomscale.ClientPlayerEntityMixin",
+    "ChatScreenMixin",
+    "EditBoxMixin",
+    "MultiPlayerScreenMixin",
+    "TutorialToastMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-  ]
+  }
 }

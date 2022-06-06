@@ -32,7 +32,8 @@
     "roomscale.ClientPlayerEntityMixin",
     "ChatScreenMixin",
     "EditBoxMixin",
-    "MultiPlayerScreenMixin"
+    "MultiPlayerScreenMixin",
+    "TutorialToastMixin"
   ],
   "injectors": {
     "defaultRequire": 1

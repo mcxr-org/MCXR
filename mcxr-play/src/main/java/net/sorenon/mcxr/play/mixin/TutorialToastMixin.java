@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 // TutorialTost Mixin:
-// Simply removes the tutorial toasts. They are very annoying in QuestCraft and are persistat.
+// Simply removes the tutorial toasts. They are very annoying in QuestCraft and are persistent.
 @Mixin(TutorialToast.class)
 public class TutorialToastMixin {
 
@@ -21,5 +21,4 @@ public class TutorialToastMixin {
         cir.cancel();
         this.visibility = Toast.Visibility.HIDE;
     }
-
 }

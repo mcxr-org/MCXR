@@ -70,10 +70,7 @@ public abstract class TitleScreenMixin extends Screen {
                     }
 
                     // Common options for both platforms.
-                    this.minecraft.options.graphicsMode().set(GraphicsStatus.FAST);
-                    this.minecraft.options.framerateLimit().set(72);
-                    this.minecraft.options.cloudStatus().set(CloudStatus.FAST);
-
+                    this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
                 }))
         );
 

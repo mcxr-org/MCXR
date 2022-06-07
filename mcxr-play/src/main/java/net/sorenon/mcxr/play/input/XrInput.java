@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.HumanoidArm;
@@ -143,10 +144,8 @@ public final class XrInput {
 
         VanillaGameplayActionSet actionSet = vanillaGameplayActionSet;
 
-        if (actionSet.resetPos.changedSinceLastSync) {
-            if (actionSet.resetPos.currentState) {
-                MCXRPlayClient.resetView();
-            }
+        if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
+            Minecraft.getInstance().pauseGame(false);
         }
 
         if (actionSet.teleport.changedSinceLastSync && !actionSet.teleport.currentState) {
@@ -211,6 +210,7 @@ public final class XrInput {
                 actionSet.hotbarActivated = true;
             }
         }
+
         if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
             if (Minecraft.getInstance().player != null) {
                 int selected = Minecraft.getInstance().player.getInventory().selected;
@@ -289,6 +289,30 @@ public final class XrInput {
                 }
             }
         }
+
+        if (actionSet.sprintAnalog.changedSinceLastSync) {
+            float value = actionSet.sprintAnalog.currentState;
+            Minecraft client = Minecraft.getInstance();
+            if (value > 0.8f && !actionSet.sprintAnalogOn) {//sprint
+                actionSet.sprintAnalogOn=true;
+                client.options.keySprint.setDown(true);
+                //disable sneak
+                if (actionSet.sneakAnalogOn){
+                    actionSet.sneakAnalogOn=false;
+                    client.options.keyShift.setDown(false);
+                    if (client.player != null) {
+                        client.player.setShiftKeyDown(true);
+                    }
+                }
+            } else if (actionSet.sprintAnalogOn && value < 0.6f){
+                actionSet.sprintAnalogOn=false;
+                client.options.keySprint.setDown(false);
+                if (client.player != null) {
+                    client.player.setSprinting(false);
+                }
+            }
+        }
+
         if (actionSet.sneak.changedSinceLastSync) {
             Minecraft client = Minecraft.getInstance();
             client.options.keyShift.setDown(actionSet.sneak.currentState);
@@ -296,14 +320,45 @@ public final class XrInput {
                 client.player.setShiftKeyDown(true);
             }
         }
-        if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+
+        if (actionSet.swapHands.changedSinceLastSync) {
+            Minecraft client = Minecraft.getInstance();
+            InputConstants.Key key = client.options.keySwapOffhand.getDefaultKey();
+            if (actionSet.swapHands.currentState) {
+                KeyMapping.click(key);
+                KeyMapping.set(key, true);
+            } else {
+                KeyMapping.set(key, false);
+            }
         }
-        if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+
+        if (actionSet.sneakAnalog.changedSinceLastSync) {
+            float value = actionSet.sneakAnalog.currentState;
+            Minecraft client = Minecraft.getInstance();
+            if (value < -0.8f && !actionSet.sneakAnalogOn) {//sneak activate
+                actionSet.sneakAnalogOn=true;
+                client.options.keyShift.setDown(true);
+                if (client.player != null) {
+                    client.player.setShiftKeyDown(true);
+                }
+                //disable sprint
+                if (actionSet.sprintAnalogOn){
+                    actionSet.sprintAnalogOn=false;
+                    client.options.keySprint.setDown(false);
+                    if (client.player != null) {
+                        client.player.setSprinting(false);
+                    }
+                }
+
+            } else if (actionSet.sneakAnalogOn && value > -0.6f){
+                actionSet.sneakAnalogOn=false;
+                client.options.keyShift.setDown(false);
+                if (client.player != null) {
+                    client.player.setShiftKeyDown(true);
+                }
+            }
         }
+
 //        if (actionSet.attackState.changedSinceLastSync()) {
 //            MinecraftClient client = MinecraftClient.getInstance();
 //            InputUtil.Key key = client.options.keyAttack.getDefaultKey();

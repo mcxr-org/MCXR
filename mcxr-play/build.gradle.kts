@@ -9,7 +9,7 @@ plugins {
 base {
     archivesBaseName = "mcxr-play"
 }
-version = "${properties["play_version"].toString()}+null"
+version = "${properties["play_version"].toString()}+${properties["minecraft_version"].toString()}"
 group = properties["maven_group"].toString()
 
 repositories {

@@ -10,7 +10,7 @@ base {
     archivesBaseName = "mcxr-core"
 }
 
-version = "${properties["core_version"].toString()}+null"
+version = "${properties["core_version"].toString()}+${properties["minecraft_version"].toString()}"
 group = properties["maven_group"].toString()
 
 repositories {

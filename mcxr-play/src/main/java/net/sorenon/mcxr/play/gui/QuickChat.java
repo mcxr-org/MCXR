@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class QuickChat extends ChatScreen {
 
-    private final static Logger LOGGER = LogManager.getLogger("questcraft");
+    private final static Logger LOGGER = LogManager.getLogger("mcxr-play");
 
     public QuickChat(String string) {
         super(string);
@@ -46,8 +46,9 @@ public class QuickChat extends ChatScreen {
                     "Hello","How are you?", "I'm alright.",
                     "Go to sleep please!", "I Have Phantoms!",
                     "Ready to play?", "Ready when you are!",
-                    "Questcraft", "Are you on Quest 1 or 2?",
-                    "Quest 1", "Quest 2", "I'm Lagging!",
+                    "MCXR", "What VR headset are you using?",
+                    "Oculus Quest", "Index", "Vive", "Oculus Rift",
+                    "I'm Lagging!",
                     "Wait for me!", "Have fun!", "Where are you?",
                     "AFK", "BRB", "I'm Back", "/home", "/sethome",
                     "/spawn", "/gamemode creative", "/gamemode survival"
@@ -58,8 +59,9 @@ public class QuickChat extends ChatScreen {
                     "Hello","How are you?", "I'm alright.",
                     "Go to sleep please!", "I Have Phantoms!",
                     "Ready to play?", "Ready when you are!",
-                    "Questcraft", "Are you on Quest 1 or 2?",
-                    "Quest 1", "Quest 2", "I'm Lagging!",
+                    "MCXR", "What VR headset are you using?",
+                    "Oculus Quest", "Index", "Vive", "Oculus Rift",
+                    "I'm Lagging!",
                     "Wait for me!", "Have fun!", "Where are you?",
                     "AFK", "BRB", "I'm Back", "/home", "/sethome",
                     "/spawn", "/gamemode creative", "/gamemode survival"

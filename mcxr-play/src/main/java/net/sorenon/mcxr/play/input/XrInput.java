@@ -6,10 +6,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.JOMLUtil;
@@ -214,12 +212,28 @@ public final class XrInput {
             }
         }
         if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+            if (Minecraft.getInstance().player != null) {
+                int selected = Minecraft.getInstance().player.getInventory().selected;
+                selected += 1;
+                while (selected < 0) {
+                    selected += 9;
+                }
+                while (selected >= 9) {
+                    selected -= 9;
+                }
+            }
         }
         if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+            if (Minecraft.getInstance().player != null) {
+                int selected = Minecraft.getInstance().player.getInventory().selected;
+                selected -= 1;
+                while (selected < 0) {
+                    selected += 9;
+                }
+                while (selected >= 9) {
+                    selected -= 9;
+                }
+            }
         }
 
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {
@@ -260,7 +274,7 @@ public final class XrInput {
             if (!actionSet.quickmenu.currentState) {
                 Minecraft client = Minecraft.getInstance();
                 if (client.screen == null) {
-                    client.setScreen(new QuickMenu(new TranslatableComponent("QuickMenu")));
+                    client.setScreen(new QuickMenu(Component.translatable("QuickMenu")));
                 }
             }
         }

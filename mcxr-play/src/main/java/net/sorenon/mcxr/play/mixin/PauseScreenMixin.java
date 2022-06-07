@@ -5,7 +5,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.sorenon.mcxr.play.MCXROptionsScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +26,7 @@ public class PauseScreenMixin extends Screen {
                 y,
                 90,
                 20,
-                new TranslatableComponent("mcxr.options.title"),
+                Component.translatable("mcxr.options.title"),
                 button -> this.minecraft.setScreen(new MCXROptionsScreen(this))));
     }
 

@@ -3,7 +3,7 @@ package net.sorenon.mcxr.play.mixin;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.gui.XrEditBoxScreen;
 import net.sorenon.mcxr.play.gui.XrSignEditScreen;
@@ -24,7 +24,7 @@ public abstract class EditBoxMixin {
         }
 
         instance.setCursorPosition(cursor);
-        Minecraft.getInstance().setScreen(new XrEditBoxScreen(new TranslatableComponent("Keyboard"),Minecraft.getInstance().screen, instance));
+        Minecraft.getInstance().setScreen(new XrEditBoxScreen(Component.translatable("Keyboard"),Minecraft.getInstance().screen, instance));
 
     }
 }

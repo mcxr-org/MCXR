@@ -1,17 +1,17 @@
 package net.sorenon.mcxr.play;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.fabricmc.fabric.mixin.resource.loader.client.GameOptionsMixin;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Option;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.main.GameConfig;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
@@ -30,7 +30,7 @@ public class MCXROptionsScreen extends Screen {
     private Button reloadButton;
 
     public MCXROptionsScreen(@Nullable Screen previous) {
-        super(new TranslatableComponent("mcxr.options.title"));
+        super(Component.translatable("mcxr.options.title"));
         this.previous = previous;
     }
 
@@ -42,7 +42,7 @@ public class MCXROptionsScreen extends Screen {
                 this.height / 6 - 12 - 4 + 24,
                 150,
                 20,
-                new TranslatableComponent("mcxr.menu.reload"),
+                Component.translatable("mcxr.menu.reload"),
                 button -> MCXRPlayClient.OPEN_XR_STATE.tryInitialize()));
         if (PlayOptions.xrUninitialized) {
             reloadButton.active = false;
@@ -53,7 +53,7 @@ public class MCXROptionsScreen extends Screen {
                 this.height / 6 - 12 - 4 + 24,
                 150,
                 20,
-                PlayOptions.xrUninitialized ? new TranslatableComponent("mcxr.options.initialize") : new TranslatableComponent("mcxr.options.uninitialize"),
+                PlayOptions.xrUninitialized ? Component.translatable("mcxr.options.initialize") : Component.translatable("mcxr.options.uninitialize"),
                 button -> {
                     PlayOptions.xrUninitialized = !PlayOptions.xrUninitialized;
                     PlayOptions.save();
@@ -61,7 +61,7 @@ public class MCXROptionsScreen extends Screen {
                     if (!PlayOptions.xrUninitialized) {
                         MCXRPlayClient.OPEN_XR_STATE.tryInitialize();
                     }
-                    button.setMessage(PlayOptions.xrUninitialized ? new TranslatableComponent("mcxr.options.initialize") : new TranslatableComponent("mcxr.options.uninitialize"));
+                    button.setMessage(PlayOptions.xrUninitialized ? Component.translatable("mcxr.options.initialize") : Component.translatable("mcxr.options.uninitialize"));
                 }));
 
         this.addRenderableWidget(new Button(
@@ -69,11 +69,11 @@ public class MCXROptionsScreen extends Screen {
                 this.height / 6 - 12 - 4,
                 200,
                 20,
-                PlayOptions.xrPaused ? new TranslatableComponent("mcxr.options.unpause") : new TranslatableComponent("mcxr.options.pause"),
+                PlayOptions.xrPaused ? Component.translatable("mcxr.options.unpause") : Component.translatable("mcxr.options.pause"),
                 button -> {
                     PlayOptions.xrPaused = !PlayOptions.xrPaused;
                     PlayOptions.save();
-                    button.setMessage(PlayOptions.xrPaused ? new TranslatableComponent("mcxr.options.unpause") : new TranslatableComponent("mcxr.options.pause"));
+                    button.setMessage(PlayOptions.xrPaused ? Component.translatable("mcxr.options.unpause") : Component.translatable("mcxr.options.pause"));
                 }));
 
         this.addRenderableWidget(new Button(
@@ -81,48 +81,48 @@ public class MCXROptionsScreen extends Screen {
                 this.height / 6 + 54 + 12,
                 150,
                 20,
-                new TranslatableComponent("mcxr.options.walk_direction", PlayOptions.walkDirection.toComponent()),
+                Component.translatable("mcxr.options.walk_direction", PlayOptions.walkDirection.toComponent()),
                 button -> {
                     PlayOptions.walkDirection = PlayOptions.walkDirection.iterate();
                     PlayOptions.save();
-                    button.setMessage(new TranslatableComponent("mcxr.options.walk_direction", PlayOptions.walkDirection.toComponent()));
+                    button.setMessage(Component.translatable("mcxr.options.walk_direction", PlayOptions.walkDirection.toComponent()));
                 }));
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
                 this.height / 6 + 54 + 24 + 12,
                 150,
                 20,
-                new TranslatableComponent("mcxr.options.swim_direction", PlayOptions.swimDirection.toComponent()),
+                Component.translatable("mcxr.options.swim_direction", PlayOptions.swimDirection.toComponent()),
                 button -> {
                     PlayOptions.swimDirection = PlayOptions.swimDirection.iterate();
                     PlayOptions.save();
-                    button.setMessage(new TranslatableComponent("mcxr.options.swim_direction", PlayOptions.swimDirection.toComponent()));
+                    button.setMessage(Component.translatable("mcxr.options.swim_direction", PlayOptions.swimDirection.toComponent()));
                 }));
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
                 this.height / 6 + 54 + 24 * 2 + 12,
                 150,
                 20,
-                new TranslatableComponent("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()),
+                Component.translatable("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()),
                 button -> {
                     PlayOptions.flyDirection = PlayOptions.flyDirection.iterate();
                     PlayOptions.save();
-                    button.setMessage(new TranslatableComponent("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()));
+                    button.setMessage(Component.translatable("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()));
                 }));
 
         assert this.minecraft != null;
-        this.addRenderableWidget(Option.MAIN_HAND.createButton(this.minecraft.options, this.width / 2 - 155 + 160, this.height / 6 + 54 + 12, 150));
+        this.addRenderableWidget(Minecraft.getInstance().options.mainHand().createButton(this.minecraft.options, this.width / 2 - 155 + 160, this.height / 6 + 54 + 12, 150));
 
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155 + 160,
                 this.height / 6 + 54 + 24 + 12,
                 150,
                 20,
-                PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"),
+                PlayOptions.smoothTurning ? Component.translatable("mcxr.options.enable_snap_turning") : Component.translatable("mcxr.options.enable_smooth_turning"),
                 button -> {
                     PlayOptions.smoothTurning = !PlayOptions.smoothTurning;
                     PlayOptions.save();
-                    button.setMessage(PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"));
+                    button.setMessage(PlayOptions.smoothTurning ? Component.translatable("mcxr.options.enable_snap_turning") : Component.translatable("mcxr.options.enable_smooth_turning"));
                 }));
 
 
@@ -131,11 +131,11 @@ public class MCXROptionsScreen extends Screen {
                 this.height / 6 + 54 + 24 + 12,
                 150,
                 20,
-                PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"),
+                PlayOptions.smoothTurning ? Component.translatable("mcxr.options.enable_snap_turning") : Component.translatable("mcxr.options.enable_smooth_turning"),
                 button -> {
                     PlayOptions.smoothTurning = !PlayOptions.smoothTurning;
                     PlayOptions.save();
-                    button.setMessage(PlayOptions.smoothTurning ? new TranslatableComponent("mcxr.options.enable_snap_turning") : new TranslatableComponent("mcxr.options.enable_smooth_turning"));
+                    button.setMessage(PlayOptions.smoothTurning ? Component.translatable("mcxr.options.enable_snap_turning") : Component.translatable("mcxr.options.enable_smooth_turning"));
                 }));
 
         if (true ||
@@ -146,11 +146,11 @@ public class MCXROptionsScreen extends Screen {
                     this.height / 6 + 54 + 24 * 2 + 12,
                     150,
                     20,
-                    new TranslatableComponent("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()),
+                    Component.translatable("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()),
                     button -> {
                         PlayOptions.indexTouchpadState = PlayOptions.indexTouchpadState.iterate();
                         PlayOptions.save();
-                        button.setMessage(new TranslatableComponent("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()));
+                        button.setMessage(Component.translatable("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()));
                     }));
         }
 
@@ -223,6 +223,6 @@ public class MCXROptionsScreen extends Screen {
     }
 
     private static List<Component> wordWrapText(String string, int wrapLength) {
-        return WordUtils.wrap(string, wrapLength, null, true).lines().map(s -> (Component) (new TextComponent(s))).toList();
+        return WordUtils.wrap(string, wrapLength, null, true).lines().map(s -> (Component) (Component.literal(s))).toList();
     }
 }

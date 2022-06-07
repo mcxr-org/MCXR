@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class KeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
-    void overwriteMovement(boolean slowDown, CallbackInfo ci) {
+    void overwriteMovement(boolean slowDown, float f, CallbackInfo ci) {
         if (!MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) return;
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) return;
 
@@ -49,8 +49,8 @@ public class KeyboardInputMixin extends Input {
         this.jumping |= XrInput.vanillaGameplayActionSet.jump.currentState;
 
         if(slowDown) {
-            this.forwardImpulse = move.y() * 0.3f;
-            this.leftImpulse = -move.x() * 0.3f;
+            this.forwardImpulse *= f;
+            this.leftImpulse *= f;
         }
     }
 }

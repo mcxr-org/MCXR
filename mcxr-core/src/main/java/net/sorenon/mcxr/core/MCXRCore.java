@@ -11,6 +11,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -84,7 +85,19 @@ public class MCXRCore implements ModInitializer {
                     pose1.read(buf);
                     pose2.read(buf);
                     pose3.read(buf);
-                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, 0));
+                    server.execute(() -> {
+                        setPlayerPoses(player, pose1, pose2, pose3, 0);
+                        for(ServerPlayer player2 : server.getPlayerList().getPlayers()) {
+                            if(player2 != player) {
+                                FriendlyByteBuf buf2 = PacketByteBufs.create();
+                                buf2.writeUUID(player.getUUID());
+                                pose1.write(buf2);
+                                pose2.write(buf2);
+                                pose3.write(buf2);
+                                ServerPlayNetworking.send(player2, POSES, buf2);
+                            }
+                        }
+                    });
                 });
 
         ServerPlayNetworking.registerGlobalReceiver(TELEPORT,
@@ -98,6 +111,7 @@ public class MCXRCore implements ModInitializer {
 
     public void setPlayerPoses(Player player, Pose headPose, Pose leftHandPose, Pose rightHandPose, float f) {
         PlayerExt acc = (PlayerExt) player;
+
         acc.getHeadPose().set(headPose);
         acc.getLeftHandPose().set(leftHandPose);
         acc.getRightHandPose().set(rightHandPose);

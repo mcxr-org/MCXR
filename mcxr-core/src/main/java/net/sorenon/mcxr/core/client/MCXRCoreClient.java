@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
@@ -47,18 +46,21 @@ public class MCXRCoreClient implements ClientModInitializer {
 
         ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSES, (client, handler, buf, listenerAdder)  -> {
             if(client.level != null) {
-                Vector3f vec = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-                Quaternionf quat = new Quaternionf(buf.readFloat(), buf.readFloat(), buf.readFloat(), buf.readFloat());
                 Player player  = client.level.getPlayerByUUID(buf.readUUID());
                 if(player != null) {
                     PlayerExt acc = (PlayerExt) player;
-                    if(acc.getHeadPose() == null) {
+                    if(acc.getHeadPose() != null) {
                         acc.setIsXr(true);
                     }
-                    Pose pose = new Pose();
-                    pose.pos.set(vec);
-                    pose.orientation.set(quat);
-                    acc.getHeadPose().set(pose);
+                    var pose1 = new Pose();
+                    var pose2 = new Pose();
+                    var pose3 = new Pose();
+                    pose1.read(buf);
+                    acc.getHeadPose().set(pose1);
+                    pose2.read(buf);
+                    acc.getLeftHandPose().set(pose2);
+                    pose3.read(buf);
+                    acc.getRightHandPose().set(pose3);
                 }
             }
         });

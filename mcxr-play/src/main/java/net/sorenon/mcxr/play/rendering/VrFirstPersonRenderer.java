@@ -242,10 +242,10 @@ public class VrFirstPersonRenderer {
                     VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
                     if (blocked) {
                         consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
-                        consumer.vertex(model, (float) finalPos.x, (float) finalPos.y, (float) finalPos.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) hitPos1.x, (float) finalPos.y, (float) hitPos1.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
                     } else {
                         consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
-                        consumer.vertex(model, (float) finalPos.x, (float) finalPos.y, (float) finalPos.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) hitPos1.x, (float) finalPos.y, (float) hitPos1.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
                     }
                 }
 
@@ -254,12 +254,12 @@ public class VrFirstPersonRenderer {
                 if (gripPos.y > hitPos1.y) {
                     matrices.translate((float) gripPos.x, (float) gripPos.y, (float) gripPos.z);
                     for (int i = 0; i <= 16; ++i) {
-                        stringVertex((float) hitPos1.x - (float) gripPos.x, (float) hitPos1.y - (float) gripPos.y, (float) hitPos1.z - (float) gripPos.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
+                        stringVertex((float) hitPos1.x - (float) gripPos.x, (float) hitPos1.y - (float) gripPos.y, (float) hitPos1.z - (float) gripPos.z, consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(5.)), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
                     }
                 } else {
                     matrices.translate((float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z);
                     for (int i = 0; i <= 16; ++i) {
-                        stringVertex((float) gripPos.x - (float) hitPos1.x, (float) gripPos.y - (float) hitPos1.y, (float) gripPos.z - (float) hitPos1.z, consumers.getBuffer(RenderType.lineStrip()), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
+                        stringVertex((float) gripPos.x - (float) hitPos1.x, (float) gripPos.y - (float) hitPos1.y, (float) gripPos.z - (float) hitPos1.z, consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(5.)), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
                     }
                 }
 
@@ -370,24 +370,30 @@ public class VrFirstPersonRenderer {
                                      float z,
                                      VertexConsumer buffer,
                                      PoseStack.Pose normal,
-                                     float f,
-                                     float g,
+                                     float startPercent,
+                                     float endPercent,
                                      boolean blocked) {
-        float h = x * f;
-        float i = y * (f * f + f) * 0.5F;
-        float j = z * f;
-        float k = x * g - h;
-        float l = y * (g * g + g) * 0.5F + i;
-        float m = z * g - j;
-        float n = Mth.sqrt(k * k + l * l + m * m);
-        k /= n;
-        l /= n;
-        m /= n;
-        if (blocked) {
-            buffer.vertex(normal.pose(), h, i, j).color(1, 0.3f, 0.3f, 1).normal(normal.normal(), k, l, m).endVertex();
-        } else {
-            buffer.vertex(normal.pose(), h, i, j).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), k, l, m).endVertex();
+        float x1 = x * startPercent;
+        float y1 = y * (startPercent * startPercent + startPercent) * 0.5F;
+        float z1 = z * startPercent;
 
+        float x2 = x * endPercent;
+        float y2 = y * (endPercent * endPercent + endPercent) * 0.5F;
+        float z2 = z * endPercent;
+
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float dz = z2 - z1;
+        float n1 = Mth.sqrt(dx * dx * dy * dy + dz * dz);
+        dx /= n1;
+        dy /= n1;
+        dz /= n1;
+        if (blocked) {
+            buffer.vertex(normal.pose(), x1, y1, z1).color(1, 0.3f, 0.3f, 1).normal(normal.normal(), dx, dy, dz).endVertex();
+            buffer.vertex(normal.pose(), x2, y2, z2).color(1, 0.3f, 0.3f, 1).normal(normal.normal(), dx, dy, dz).endVertex();
+        } else {
+            buffer.vertex(normal.pose(), x1, y1, z1).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), dx, dy, dz).endVertex();
+            buffer.vertex(normal.pose(), x2, y2, z2).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), dx, dy, dz).endVertex();
         }
     }
 

@@ -15,20 +15,28 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.Pose;
+import net.sorenon.mcxr.core.Teleport;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.mixin.LivingEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
+import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
 import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
 import net.sorenon.mcxr.play.input.XrInput;
@@ -175,7 +183,8 @@ public class MCXRGameRenderer {
 
             //Update the server-side player poses
             if (Minecraft.getInstance().player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
-                PlayerExt acc = (PlayerExt) Minecraft.getInstance().player;
+                Player player = Minecraft.getInstance().player;
+                PlayerExt acc = (PlayerExt) player;
                 if (!acc.isXR()) {
                     FriendlyByteBuf buf = PacketByteBufs.create();
                     buf.writeBoolean(true);
@@ -189,6 +198,27 @@ public class MCXRGameRenderer {
                         XrInput.handsActionSet.gripPoses[1].getMinecraftPose(),
                         (float) Math.toRadians(PlayOptions.handPitchAdjust)
                 );
+
+                if (XrInput.teleport) {
+                    XrInput.teleport = false;
+                    int handIndex = 0;
+                    if (player.getMainArm() == HumanoidArm.LEFT) {
+                        handIndex = 1;
+                    }
+
+                    Pose pose = XrInput.handsActionSet.gripPoses[handIndex].getMinecraftPose();
+
+                    Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+
+                    var pos = Teleport.tp(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+                    System.out.println(pos);
+                    if (pos != null) {
+                        ClientPlayNetworking.send(MCXRCore.TELEPORT, PacketByteBufs.empty());
+                        player.setPos(pos);
+                    }
+                }
+            } else {
+                XrInput.teleport = false;
             }
         });
 

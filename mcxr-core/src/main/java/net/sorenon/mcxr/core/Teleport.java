@@ -14,7 +14,7 @@ import oshi.util.tuples.Pair;
 
 public class Teleport {
 
-    public static Pair<Vec3, Vec3> tpStage1(Player player, Vec3 start, Vec3 direction) {
+    public static Pair<Vec3, Vec3> fireRayFromHand(Player player, Vec3 start, Vec3 direction) {
         var level = player.level;
 
         var hitResult = level.clip(new ClipContext(start, start.add(direction.scale(7)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
@@ -42,7 +42,7 @@ public class Teleport {
         return new Pair<>(hitPos, null);
     }
 
-    public static Pair<Vec3, Boolean> tpStage2(Player player, Vec3 hitPos1) {
+    public static Pair<Vec3, Boolean> fireFallRay(Player player, Vec3 hitPos1) {
         var level = player.level;
 
         var hitResult = level.clip(new ClipContext(hitPos1, hitPos1.subtract(0, 5, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
@@ -63,7 +63,7 @@ public class Teleport {
 
     @Nullable
     public static Vec3 tp(Player player, Vec3 start, Vec3 direction) {
-        var stage1 = tpStage1(player, start, direction);
+        var stage1 = fireRayFromHand(player, start, direction);
         var hitPos1 = stage1.getA();
         var finalPos1 = stage1.getB();
 
@@ -73,7 +73,7 @@ public class Teleport {
 
         hitPos1 = hitPos1.subtract(direction.scale(0.05));
 
-        var stage2 = tpStage2(player, hitPos1);
+        var stage2 = fireFallRay(player, hitPos1);
         var hitPos2 = stage2.getA();
 
         if (stage2.getB()) {

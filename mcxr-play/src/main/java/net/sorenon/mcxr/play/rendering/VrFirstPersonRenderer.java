@@ -24,8 +24,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -33,16 +31,11 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
@@ -230,7 +223,7 @@ public class VrFirstPersonRenderer {
 
                 Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
 
-                var stage1 = Teleport.tpStage1(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+                var stage1 = Teleport.fireRayFromHand(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
                 Vec3 hitPos1 = stage1.getA();
                 Vec3 finalPos = stage1.getB();
 
@@ -242,7 +235,7 @@ public class VrFirstPersonRenderer {
                     }
                 } else {
                     hitPos1 = hitPos1.subtract(JOMLUtil.convert(dir).scale(0.05));
-                    var stage2 = Teleport.tpStage2(player, hitPos1);
+                    var stage2 = Teleport.fireFallRay(player, hitPos1);
                     finalPos = stage2.getA();
                     blocked = !stage2.getB();
 

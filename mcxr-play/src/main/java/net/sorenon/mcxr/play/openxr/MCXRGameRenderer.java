@@ -196,6 +196,7 @@ public class MCXRGameRenderer {
                         MCXRPlayClient.viewSpacePoses.getMinecraftPose(),
                         XrInput.handsActionSet.gripPoses[0].getMinecraftPose(),
                         XrInput.handsActionSet.gripPoses[1].getMinecraftPose(),
+                        MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().y,
                         (float) Math.toRadians(PlayOptions.handPitchAdjust)
                 );
 
@@ -211,7 +212,6 @@ public class MCXRGameRenderer {
                     Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
 
                     var pos = Teleport.tp(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
-                    System.out.println(pos);
                     if (pos != null) {
                         ClientPlayNetworking.send(MCXRCore.TELEPORT, PacketByteBufs.empty());
                         player.setPos(pos);

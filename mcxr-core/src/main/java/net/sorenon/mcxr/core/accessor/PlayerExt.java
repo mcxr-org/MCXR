@@ -24,4 +24,6 @@ public interface PlayerExt {
     boolean isXR();
 
     ThreadLocal<HumanoidArm> getOverrideTransform();
+
+    void setHeight(float height);
 }

@@ -82,7 +82,8 @@ public class MCXRCore implements ModInitializer {
                     pose1.read(buf);
                     pose2.read(buf);
                     pose3.read(buf);
-                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, 0));
+                    var height = buf.readFloat();
+                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, height, 0));
                 });
 
         ServerPlayNetworking.registerGlobalReceiver(TELEPORT,
@@ -101,7 +102,6 @@ public class MCXRCore implements ModInitializer {
 
                         var pos = Teleport.tp(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
                         if (pos != null) {
-                            System.out.println(pos);
                             player.setPos(pos);
                         } else {
                             LOGGER.warn("Player {} attempted an invalid teleport", player.toString());
@@ -110,20 +110,27 @@ public class MCXRCore implements ModInitializer {
                 });
     }
 
-    public void setPlayerPoses(Player player, Pose headPose, Pose leftHandPose, Pose rightHandPose, float f) {
+    public void setPlayerPoses(Player player,
+                               Pose headPose,
+                               Pose leftHandPose,
+                               Pose rightHandPose,
+                               float height,
+                               float stoopid) {
         PlayerExt acc = (PlayerExt) player;
         acc.getHeadPose().set(headPose);
         acc.getLeftHandPose().set(leftHandPose);
         acc.getRightHandPose().set(rightHandPose);
+        acc.setHeight(height);
 
-        if (f != 0) {
-            acc.getLeftHandPose().orientation.rotateX(f);
-            acc.getRightHandPose().orientation.rotateX(f);
+        if (stoopid != 0) {
+            acc.getLeftHandPose().orientation.rotateX(stoopid);
+            acc.getRightHandPose().orientation.rotateX(stoopid);
 
             FriendlyByteBuf buf = PacketByteBufs.create();
             acc.getHeadPose().write(buf);
             acc.getLeftHandPose().write(buf);
             acc.getRightHandPose().write(buf);
+            buf.writeFloat(height);
 
             ClientPlayNetworking.send(POSES, buf);
         }

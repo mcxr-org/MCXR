@@ -24,8 +24,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -33,16 +31,11 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.sorenon.fart.FartUtil;
 import net.sorenon.fart.RenderStateShards;
 import net.sorenon.fart.RenderTypeBuilder;
@@ -55,12 +48,11 @@ import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
+import net.tr7zw.MapRenderer;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11;
-
-import net.tr7zw.MapRenderer;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -214,6 +206,82 @@ public class VrFirstPersonRenderer {
             Vec3 gripPos = convert(pose.getPos());
             Vec3 camPos = context.camera().getPosition();
 
+            if (handIndex != MCXRPlayClient.getMainHand() && XrInput.vanillaGameplayActionSet.teleport.currentState) {
+                matrices.pushPose();
+
+                matrices.translate(-camPos.x, -camPos.y, -camPos.z);
+
+                Matrix4f model = matrices.last().pose();
+                Matrix3f normal = matrices.last().normal();
+
+                //Draw teleport ray
+                float maxDistHor = 7;
+                float maxDistVer = 1.5f;
+
+                Player player = Minecraft.getInstance().player;
+
+                Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
+
+                var stage1 = Teleport.fireRayFromHand(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+                Vec3 hitPos1 = stage1.getA();
+                Vec3 finalPos = stage1.getB();
+
+                boolean blocked;
+                if (finalPos != null) {
+                    blocked = false;
+                    if (hitPos1 == null) {
+                        hitPos1 = finalPos;
+                    }
+                } else {
+                    hitPos1 = hitPos1.subtract(JOMLUtil.convert(dir).scale(0.05));
+                    var stage2 = Teleport.fireFallRay(player, hitPos1);
+                    finalPos = stage2.getA();
+                    blocked = !stage2.getB();
+
+                    VertexConsumer consumer = consumers.getBuffer(LINE_CUSTOM.apply(2.0));
+                    if (blocked) {
+                        consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) hitPos1.x, (float) finalPos.y, (float) hitPos1.z).color(0.7f, 0.1f, 0.1f, 1).normal(normal, 0, -1, 0).endVertex();
+                    } else {
+                        consumer.vertex(model, (float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
+                        consumer.vertex(model, (float) hitPos1.x, (float) finalPos.y, (float) hitPos1.z).color(0.1f, 0.1f, 0.7f, 1).normal(normal, 0, -1, 0).endVertex();
+                    }
+                }
+
+                matrices.pushPose();
+
+                if (gripPos.y > hitPos1.y) {
+                    matrices.translate((float) gripPos.x, (float) gripPos.y, (float) gripPos.z);
+                    for (int i = 0; i <= 16; ++i) {
+                        stringVertex((float) hitPos1.x - (float) gripPos.x, (float) hitPos1.y - (float) gripPos.y, (float) hitPos1.z - (float) gripPos.z, consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(5.)), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
+                    }
+                } else {
+                    matrices.translate((float) hitPos1.x, (float) hitPos1.y, (float) hitPos1.z);
+                    for (int i = 0; i <= 16; ++i) {
+                        stringVertex((float) gripPos.x - (float) hitPos1.x, (float) gripPos.y - (float) hitPos1.y, (float) gripPos.z - (float) hitPos1.z, consumers.getBuffer(LINE_CUSTOM_ALWAYS.apply(5.)), matrices.last(), i / 16f, (i + 1) / 16f, blocked);
+                    }
+                }
+
+                matrices.popPose();
+                matrices.pushPose();
+                matrices.translate(finalPos.x, finalPos.y, finalPos.z);
+                PoseStack.Pose entry = matrices.last();
+
+                VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderType.entityTranslucent(new ResourceLocation("textures/misc/shadow.png")));
+
+                float alpha = 0.6f;
+                float radius = camEntity.getBbWidth() / 2;
+                float y0 = 0.005f;
+
+                vertexConsumer.vertex(entry.pose(), -radius, y0, -radius).color(0.1F, 0.1F, 1.0F, alpha).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), -radius, y0, radius).color(0.1F, 0.1F, 1.0F, alpha).uv(0, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), radius, y0, radius).color(0.1F, 0.1F, 1.0F, alpha).uv(1, 1).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), radius, y0, -radius).color(0.1F, 0.1F, 1.0F, alpha).uv(1, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(entry.normal(), 0.0F, 1.0F, 0.0F).endVertex();
+
+                matrices.popPose();
+                matrices.popPose();
+            }
+
             matrices.translate(gripPos.x - camPos.x, gripPos.y - camPos.y, gripPos.z - camPos.z);
 
             float scale = MCXRPlayClient.getCameraScale();
@@ -301,24 +369,30 @@ public class VrFirstPersonRenderer {
                                      float z,
                                      VertexConsumer buffer,
                                      PoseStack.Pose normal,
-                                     float f,
-                                     float g,
+                                     float startPercent,
+                                     float endPercent,
                                      boolean blocked) {
-        float h = x * f;
-        float i = y * (f * f + f) * 0.5F;
-        float j = z * f;
-        float k = x * g - h;
-        float l = y * (g * g + g) * 0.5F + i;
-        float m = z * g - j;
-        float n = Mth.sqrt(k * k + l * l + m * m);
-        k /= n;
-        l /= n;
-        m /= n;
-        if (blocked) {
-            buffer.vertex(normal.pose(), h, i, j).color(1, 0.3f, 0.3f, 1).normal(normal.normal(), k, l, m).endVertex();
-        } else {
-            buffer.vertex(normal.pose(), h, i, j).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), k, l, m).endVertex();
+        float x1 = x * startPercent;
+        float y1 = y * (startPercent * startPercent + startPercent) * 0.5F;
+        float z1 = z * startPercent;
 
+        float x2 = x * endPercent;
+        float y2 = y * (endPercent * endPercent + endPercent) * 0.5F;
+        float z2 = z * endPercent;
+
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float dz = z2 - z1;
+        float n1 = Mth.sqrt(dx * dx * dy * dy + dz * dz);
+        dx /= n1;
+        dy /= n1;
+        dz /= n1;
+        if (blocked) {
+            buffer.vertex(normal.pose(), x1, y1, z1).color(1, 0.3f, 0.3f, 1).normal(normal.normal(), dx, dy, dz).endVertex();
+            buffer.vertex(normal.pose(), x2, y2, z2).color(1, 0.3f, 0.3f, 1).normal(normal.normal(), dx, dy, dz).endVertex();
+        } else {
+            buffer.vertex(normal.pose(), x1, y1, z1).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), dx, dy, dz).endVertex();
+            buffer.vertex(normal.pose(), x2, y2, z2).color(0.3f, 0.3f, 1, 1).normal(normal.normal(), dx, dy, dz).endVertex();
         }
     }
 

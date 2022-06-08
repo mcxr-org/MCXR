@@ -44,6 +44,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
     public Pose rightHandPose = new Pose();
 
     @Unique
+    public float height = 0;
+
+    @Unique
     public ThreadLocal<HumanoidArm> overrideTransform = ThreadLocal.withInitial(() -> null);
 
     protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
@@ -79,6 +82,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
                 final float minHeight = 0.5f * scale;
                 final float currentHeight = this.getBbHeight();
                 final float wantedHeight = (headPose.pos.y - (float) this.position().y + 0.125f * scale);
+//                final float wantedHeight = height + 0.125f * scale;
                 final float deltaHeight = wantedHeight - currentHeight;
 
                 if (deltaHeight <= 0) {
@@ -132,4 +136,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
     public ThreadLocal<HumanoidArm> getOverrideTransform() {
         return this.overrideTransform;
     };
+
+    @Override
+    public void setHeight(float height) {
+        this.height = height;
+    }
 }

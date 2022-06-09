@@ -84,42 +84,4 @@ public class PlayOptions {
 
         SSAA = fileConfig.<Number>getOrElse("SSAA", 1).floatValue();
     }
-
-    public enum IndexTouchpad {
-        Off,
-        RightForward,
-        LeftForward;
-
-
-        public Component toComponent() {
-            switch (this) {
-                case Off -> {
-                    return Component.translatable("mcxr.index_touchpad.off");
-                }
-                case RightForward -> {
-                    return Component.translatable("mcxr.index_touchpad.right_hand");
-                }
-                case LeftForward -> {
-                    return Component.translatable("mcxr.index_touchpad.left_hand");
-                }
-                default -> throw new IllegalStateException("Unexpected value: " + this);
-            }
-        }
-
-        public IndexTouchpad iterate() {
-            boolean next = !InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT);
-            switch (this) {
-                case Off -> {
-                    return next ? RightForward : LeftForward;
-                }
-                case RightForward -> {
-                    return next ? LeftForward : Off;
-                }
-                case LeftForward -> {
-                    return next ? Off : RightForward;
-                }
-                default -> throw new IllegalStateException("Unexpected value: " + this);
-            }
-        }
-    }
 }

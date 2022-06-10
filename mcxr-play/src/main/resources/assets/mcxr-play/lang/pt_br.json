@@ -1,0 +1,50 @@
+{
+  "mcxr.options.title": "Opções MCXR",
+  "mcxr.options.uninitialize": "Desligar MCXR",
+  "mcxr.options.initialize": "Inicializar MCXR",
+  "mcxr.options.pause": "Pausar VR",
+  "mcxr.options.unpause": "Retomar VR",
+  "mcxr.options.walk_direction": "Direção de andar: %s",
+  "mcxr.options.swim_direction": "Direção de nadar: %s",
+  "mcxr.options.fly_direction": "Direção de voar: %s",
+  "mcxr.move_direction.head" : "Cabeça",
+  "mcxr.move_direction.right_hand" : "Mão direita",
+  "mcxr.move_direction.left_hand" : "Mão esquerda",
+  "mcxr.options.enable_snap_turning": "Habilitar giro rapido",
+  "mcxr.options.enable_smooth_turning": "Habilitar giro suave",
+  "mcxr.options.index_touchpad": "Touchpad Index: %s",
+  "mcxr.index_touchpad.off": "Desligar",
+  "mcxr.index_touchpad.right_hand": "Direito",
+  "mcxr.index_touchpad.left_hand": "Esquerdo",
+
+  "mcxr.menu.reload": "Recarregar Headset",
+  "mcxr.menu.session_not_created": "Headset não encontrado:",
+
+  "openxr.form_factor.1": "Display montado à cabeça",
+  "openxr.form_factor.2": "Display de cabeça",
+
+  "mcxr.error.form_factor_unavailable": "O dispositivo está indisponivel no momento, Ex: Não conectado ou desligado",
+
+  "mcxr.actionset.vanilla_gameplay": "Gameplay vanilla",
+  "mcxr.action.attack": "Atacar",
+  "mcxr.action.use": "Usar",
+  "mcxr.action.inventory": "Inventario (Segure para pausar)",
+  "mcxr.action.jump": "Pular",
+  "mcxr.action.move": "Mover",
+  "mcxr.action.turn": "Girar",
+  "mcxr.action.hotbar": "Barra de itens",
+  "mcxr.action.sneak": "Esgueirar-se",
+  "mcxr.action.sprint": "Correr",
+  "mcxr.action.reset_pos": "Resetar posição",
+
+  "mcxr.actionset.gui": "GUI",
+  "mcxr.action.close": "Fechar",
+  "mcxr.action.pickup": "Pegar / Largar",
+  "mcxr.action.split": "Dividir",
+  "mcxr.action.quick_move": "Mover rapidamente",
+  "mcxr.action.scroll": "Rolar",
+
+  "mcxr.actionset.hands": "mãos",
+  "mcxr.action.aim": "Pose de mira",
+  "mcxr.action.grip": "Pose de pegada"
+}

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import org.lwjgl.glfw.GLFW;
 
 public class PlayOptions {
@@ -84,13 +83,13 @@ public class PlayOptions {
         public Component toComponent() {
             switch (this) {
                 case Off -> {
-                    return new TranslatableComponent("mcxr.index_touchpad.off");
+                    return Component.translatable("mcxr.index_touchpad.off");
                 }
                 case RightForward -> {
-                    return new TranslatableComponent("mcxr.index_touchpad.right_hand");
+                    return Component.translatable("mcxr.index_touchpad.right_hand");
                 }
                 case LeftForward -> {
-                    return new TranslatableComponent("mcxr.index_touchpad.left_hand");
+                    return Component.translatable("mcxr.index_touchpad.left_hand");
                 }
                 default -> throw new IllegalStateException("Unexpected value: " + this);
             }

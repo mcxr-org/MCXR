@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
@@ -21,7 +20,6 @@ import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
 import net.sorenon.mcxr.core.mixin.ServerLoginNetworkHandlerAcc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class MCXRCore implements ModInitializer {
@@ -84,32 +82,55 @@ public class MCXRCore implements ModInitializer {
                     pose1.read(buf);
                     pose2.read(buf);
                     pose3.read(buf);
-                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, 0));
+                    var height = buf.readFloat();
+                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, height, 0));
                 });
 
         ServerPlayNetworking.registerGlobalReceiver(TELEPORT,
                 (server, player, handler, buf, responseSender) -> {
-                    double x = buf.readDouble();
-                    double y = buf.readDouble();
-                    double z = buf.readDouble();
-                    server.execute(() -> player.setPos(x, y, z));
+                    server.execute(() -> {
+                        PlayerExt acc = (PlayerExt) player;
+                        Pose pose;
+
+                        if (player.getMainArm() == HumanoidArm.LEFT) {
+                            pose = acc.getRightHandPose();
+                        } else {
+                            pose = acc.getLeftHandPose();
+                        }
+
+                        Vector3f dir = pose.getOrientation().transform(new Vector3f(0, -1, 0));
+
+                        var pos = Teleport.tp(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
+                        if (pos != null) {
+                            player.setPos(pos);
+                        } else {
+                            LOGGER.warn("Player {} attempted an invalid teleport", player.toString());
+                        }
+                    });
                 });
     }
 
-    public void setPlayerPoses(Player player, Pose headPose, Pose leftHandPose, Pose rightHandPose, float f) {
+    public void setPlayerPoses(Player player,
+                               Pose headPose,
+                               Pose leftHandPose,
+                               Pose rightHandPose,
+                               float height,
+                               float stoopid) {
         PlayerExt acc = (PlayerExt) player;
         acc.getHeadPose().set(headPose);
         acc.getLeftHandPose().set(leftHandPose);
         acc.getRightHandPose().set(rightHandPose);
+        acc.setHeight(height);
 
-        if (f != 0) {
-            acc.getLeftHandPose().orientation.rotateX(f);
-            acc.getRightHandPose().orientation.rotateX(f);
+        if (stoopid != 0) {
+            acc.getLeftHandPose().orientation.rotateX(stoopid);
+            acc.getRightHandPose().orientation.rotateX(stoopid);
 
             FriendlyByteBuf buf = PacketByteBufs.create();
             acc.getHeadPose().write(buf);
             acc.getLeftHandPose().write(buf);
             acc.getRightHandPose().write(buf);
+            buf.writeFloat(height);
 
             ClientPlayNetworking.send(POSES, buf);
         }

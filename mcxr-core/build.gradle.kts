@@ -14,8 +14,10 @@ version = "${properties["core_version"].toString()}+${getVersionMetadata()}"
 group = properties["maven_group"].toString()
 
 repositories {
-    maven { url = uri("https://jitpack.io") }
-
+    maven {
+        name = "Jitpack"
+        url = uri("https://jitpack.io")
+    }
 }
 
 dependencies {

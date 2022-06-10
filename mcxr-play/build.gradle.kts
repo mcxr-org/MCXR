@@ -9,11 +9,15 @@ plugins {
 base {
     archivesBaseName = "mcxr-play"
 }
+
 version = "${properties["play_version"].toString()}+${getVersionMetadata()}"
 group = properties["maven_group"].toString()
 
 repositories {
-    maven { url = uri("https://jitpack.io") }
+    maven {
+        name = "Jitpack"
+        url = uri("https://jitpack.io")
+    }
     maven {
         name = "Modrinth"
         url = uri("https://api.modrinth.com/maven")
@@ -35,16 +39,18 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${properties["fabric_version"].toString()}")
 
-    modImplementation("maven.modrinth:simple-voice-chat:fabric-1.18.2-2.2.26")
+    // modImplementation("maven.modrinth:simple-voice-chat:fabric-1.18.2-2.2.26")
 
     modCompileOnly("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
+    include(implementation("org.lwjgl:lwjgl-openxr:3.3.1")!!)
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")
     implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")
-    include(modImplementation("com.github.Sorenon:fart:51f6a721e7")!!)
+    //Rendering API when pls
+    include(modImplementation("com.github.Sorenon:fart:8ded02d6af")!!)
 }
 
 sourceSets {

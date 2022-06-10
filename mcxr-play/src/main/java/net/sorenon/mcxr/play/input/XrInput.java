@@ -2,20 +2,12 @@ package net.sorenon.mcxr.play.input;
 
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.Component;
 import net.sorenon.mcxr.core.JOMLUtil;
-import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
-import net.sorenon.mcxr.core.Teleport;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
@@ -54,6 +46,8 @@ public final class XrInput {
     public static final GuiActionSet guiActionSet = new GuiActionSet();
 
     private static long lastPollTime = 0;
+
+    public static boolean teleport = false;
 
 
     private XrInput() {
@@ -152,28 +146,7 @@ public final class XrInput {
         }
 
         if (actionSet.teleport.changedSinceLastSync && !actionSet.teleport.currentState) {
-            Player player = Minecraft.getInstance().player;
-            if (player != null) {
-                int handIndex = 0;
-                if (player.getMainArm() == HumanoidArm.LEFT) {
-                    handIndex = 1;
-                }
-
-                Pose pose = XrInput.handsActionSet.gripPoses[handIndex].getMinecraftPose();
-
-                Vector3f dir = pose.getOrientation().rotateX((float) java.lang.Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
-
-                var pos = Teleport.tp(player, JOMLUtil.convert(pose.getPos()), JOMLUtil.convert(dir));
-
-                if (pos != null) {
-                    var buf = PacketByteBufs.create();
-                    buf.writeDouble(pos.x);
-                    buf.writeDouble(pos.y);
-                    buf.writeDouble(pos.z);
-                    ClientPlayNetworking.send(MCXRCore.TELEPORT, buf);
-                    player.setPos(pos);
-                }
-            }
+            XrInput.teleport = true;
         }
 
         if (PlayOptions.smoothTurning) {
@@ -214,12 +187,28 @@ public final class XrInput {
             }
         }
         if (actionSet.hotbarLeft.currentState && actionSet.hotbarLeft.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(+1);
+            if (Minecraft.getInstance().player != null) {
+                int selected = Minecraft.getInstance().player.getInventory().selected;
+                selected += 1;
+                while (selected < 0) {
+                    selected += 9;
+                }
+                while (selected >= 9) {
+                    selected -= 9;
+                }
+            }
         }
         if (actionSet.hotbarRight.currentState && actionSet.hotbarRight.changedSinceLastSync) {
-            if (Minecraft.getInstance().player != null)
-                Minecraft.getInstance().player.getInventory().swapPaint(-1);
+            if (Minecraft.getInstance().player != null) {
+                int selected = Minecraft.getInstance().player.getInventory().selected;
+                selected -= 1;
+                while (selected < 0) {
+                    selected += 9;
+                }
+                while (selected >= 9) {
+                    selected -= 9;
+                }
+            }
         }
 
         if (actionSet.turnLeft.currentState && actionSet.turnLeft.changedSinceLastSync) {
@@ -260,7 +249,7 @@ public final class XrInput {
             if (!actionSet.quickmenu.currentState) {
                 Minecraft client = Minecraft.getInstance();
                 if (client.screen == null) {
-                    client.setScreen(new QuickMenu(new TranslatableComponent("QuickMenu")));
+                    client.setScreen(new QuickMenu(Component.translatable("QuickMenu")));
                 }
             }
         }

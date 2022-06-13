@@ -53,6 +53,7 @@ public class PlayOptions {
         fileConfig.set("smoothTurnRate", smoothTurnRate);
         fileConfig.set("indexTouchpadState", indexTouchpadState);
         fileConfig.set("teleportEnabled", teleportEnabled);
+        fileConfig.set("immersiveControls", immersiveControls);
 
         fileConfig.set("SSAA", SSAA);
         fileConfig.save();
@@ -75,6 +76,8 @@ public class PlayOptions {
         indexTouchpadState = fileConfig.getEnumOrElse("indexTouchpadState", IndexTouchpad.Off);
 
         teleportEnabled = fileConfig.getOrElse("teleportEnabled", true);
+
+        immersiveControls = fileConfig.getOrElse("immersiveControls", false);
 
         SSAA = fileConfig.<Number>getOrElse("SSAA", 1).floatValue();
     }

@@ -15,6 +15,8 @@
   "mcxr.options.lock_playerheight" : "Lock Player Height",
   "mcxr.options.unlock_playerheight" : "Unlock Player Height",
   "mcxr.options.index_touchpad": "Index Touchpad: %s",
+  "mcxr.options_disable_immersive_controls": "Disable Immersive Controls",
+  "mcxr.options_enable_immersive_controls": "Enable Immersive Controls",
   "mcxr.index_touchpad.off": "Off",
   "mcxr.index_touchpad.right_hand": "Right",
   "mcxr.index_touchpad.left_hand": "Left",

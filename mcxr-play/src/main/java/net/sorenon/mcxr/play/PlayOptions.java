@@ -22,7 +22,7 @@ public class PlayOptions {
     public static float snapTurnAmount = 22f;
     public static float smoothTurnRate = 120f;
     public static boolean immersiveControls = true;
-    public static boolean teleportEnabled=true;
+    public static boolean teleportEnabled = false;
 
     /**
      * The angle to rotate the player's in-game hand for a more comfortable experience

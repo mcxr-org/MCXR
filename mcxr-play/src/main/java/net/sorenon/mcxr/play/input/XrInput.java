@@ -444,7 +444,7 @@ public final class XrInput {
                 var hitResult = Minecraft.getInstance().hitResult;
                 Pose handPoint = handsActionSet.aimPoses[MCXRPlayClient.getMainHand()].getMinecraftPose();
                 Vec3 handPos = convert(handPoint.getPos());
-                if(motionPoints>12){
+                if(motionPoints>11){
                     if (hitResult != null) {
                         double dist = handPos.distanceTo(hitResult.getLocation());
                         if(lastHit == null  || lastHit.equals(hitResult)) {
@@ -464,7 +464,7 @@ public final class XrInput {
                             //motionPoints=0;
                         //}
                     }
-                }else if(motionPoints > 1) {//let go when no more motionPoints
+                }else if(motionPoints == 0) {//let go when no more motionPoints
                     if(!actionSet.attack.currentState) {//only if not pressing attack
                         mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
                                 GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);

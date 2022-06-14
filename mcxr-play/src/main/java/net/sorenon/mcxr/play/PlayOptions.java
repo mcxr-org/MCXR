@@ -33,8 +33,6 @@ public class PlayOptions {
 
     public static float SSAA = 1;
 
-    public static IndexTouchpad indexTouchpadState = IndexTouchpad.Off;
-
     public static void init() {
         fileConfig = FileConfig.of(FabricLoader.getInstance().getConfigDir().resolve("mcxr-play.toml"));
     }
@@ -52,7 +50,6 @@ public class PlayOptions {
         fileConfig.set("smoothTurning", smoothTurning);
         fileConfig.set("snapTurnAmount", snapTurnAmount);
         fileConfig.set("smoothTurnRate", smoothTurnRate);
-        fileConfig.set("indexTouchpadState", indexTouchpadState);
         fileConfig.set("teleportEnabled", teleportEnabled);
         fileConfig.set("immersiveControls", immersiveControls);
         fileConfig.set("fullMirror",fullMirror);
@@ -75,7 +72,6 @@ public class PlayOptions {
         smoothTurning = fileConfig.getOrElse("smoothTurning", false);
         snapTurnAmount = fileConfig.<Number>getOrElse("snapTurnAmount", 22f).floatValue();
         smoothTurnRate = fileConfig.<Number>getOrElse("smoothTurnRate", 120f).floatValue();
-        indexTouchpadState = fileConfig.getEnumOrElse("indexTouchpadState", IndexTouchpad.Off);
         fullMirror=fileConfig.getOrElse("fullMirror",false);
 
         teleportEnabled = fileConfig.getOrElse("teleportEnabled", true);

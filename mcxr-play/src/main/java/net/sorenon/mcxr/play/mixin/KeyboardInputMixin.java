@@ -21,15 +21,6 @@ public class KeyboardInputMixin extends Input {
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) return;
 
         var move = XrInput.vanillaGameplayActionSet.move.currentState;
-        if (PlayOptions.indexTouchpadState != PlayOptions.IndexTouchpad.Off && (XrInput.vanillaGameplayActionSet.indexTrackpadRight.isActive || XrInput.vanillaGameplayActionSet.indexTrackpadLeft.isActive)) {
-            if (PlayOptions.indexTouchpadState == PlayOptions.IndexTouchpad.RightForward) {
-                move.y = XrInput.vanillaGameplayActionSet.indexTrackpadRight.currentState;
-                move.x = XrInput.vanillaGameplayActionSet.indexTrackpadLeft.currentState;
-            } else {
-                move.y = XrInput.vanillaGameplayActionSet.indexTrackpadLeft.currentState;
-                move.x = XrInput.vanillaGameplayActionSet.indexTrackpadRight.currentState;
-            }
-        }
 
         this.forwardImpulse = move.y();
         this.leftImpulse = -move.x();

@@ -27,7 +27,7 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${properties["fabric_version"].toString()}")
 
-    modImplementation("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
+    modCompileOnly("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
         exclude(group = "net.fabricmc.fabric-api")
     }
 

@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.core;
 
+import io.netty.buffer.ByteBufUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -10,6 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -83,7 +85,19 @@ public class MCXRCore implements ModInitializer {
                     pose2.read(buf);
                     pose3.read(buf);
                     var height = buf.readFloat();
-                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, height, 0));
+                    server.execute(() -> {
+                        setPlayerPoses(player, pose1, pose2, pose3, height, 0);
+                        for(ServerPlayer playerList : server.getPlayerList().getPlayers()) {
+                            if(playerList != player && playerList != null) {
+                                FriendlyByteBuf buf1 = PacketByteBufs.create();
+                                buf1.writeUUID(playerList.getUUID());
+                                pose1.write(buf1);
+                                pose2.write(buf1);
+                                pose3.write(buf1);
+                                ServerPlayNetworking.send(playerList, POSES, buf1);
+                            }
+                        }
+                    });
                 });
 
         ServerPlayNetworking.registerGlobalReceiver(TELEPORT,

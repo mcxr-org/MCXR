@@ -160,7 +160,7 @@ public final class XrInput {
             float delta = (time - lastPollTime) / 1_000_000_000f;
             double velo = gripPos.distanceTo(gripPosOld)/delta;
             //delay before attacking starts/stops by building up motion points
-            if(velo>1 || velo<-1){
+            if(velo>1 && motionPoints < 24){
                 motionPoints+=Math.abs(velo);
              }
             else if(motionPoints>0){motionPoints-=1;}
@@ -426,6 +426,7 @@ public final class XrInput {
                 if (actionSet.attack.currentState) {
                     mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
                             GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                    motionPoints=0;
                 }
             }
             if (!actionSet.attack.currentState) {
@@ -444,27 +445,24 @@ public final class XrInput {
                 var hitResult = Minecraft.getInstance().hitResult;
                 Pose handPoint = handsActionSet.aimPoses[MCXRPlayClient.getMainHand()].getMinecraftPose();
                 Vec3 handPos = convert(handPoint.getPos());
-                if(motionPoints>11){
+                if(motionPoints>11) {
                     if (hitResult != null) {
                         double dist = handPos.distanceTo(hitResult.getLocation());
-                        if(lastHit == null  || lastHit.equals(hitResult)) {
-                            if (hitResult.getType() == HitResult.Type.BLOCK && dist<0.2) {
-                                mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
-                                        GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
-                                lastHit = hitResult;
-                            } else if(hitResult.getType() == HitResult.Type.ENTITY && dist<4){
-                                mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
-                                        GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
-                                lastHit=hitResult;
-                            }
-                        } //else if (hitResult.getType() !=HitResult.Type.MISS && !lastHit.equals(hitResult)){//let go if hitting new block/entity
-                           // mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
-                                    //GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
-                            //lastHit=null;
-                            //motionPoints=0;
-                        //}
-                    }
-                }else if(motionPoints == 0) {//let go when no more motionPoints
+                        if (hitResult.getType() == HitResult.Type.BLOCK && dist < 0.4) {
+                            mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
+                                    GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                        } else if (hitResult.getType() == HitResult.Type.ENTITY && dist < 4) {
+                            mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
+                                    GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
+                            motionPoints = 0;
+                        }
+                    } //else if (hitResult.getType() !=HitResult.Type.MISS && !lastHit.equals(hitResult)){//let go if hitting new block/entity
+                    // mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
+                    //GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+                    //lastHit=null;
+                    //motionPoints=0;
+                    //}
+                } else if(motionPoints < 1) {//let go when no more motionPoints
                     if(!actionSet.attack.currentState) {//only if not pressing attack
                         mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
                                 GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);

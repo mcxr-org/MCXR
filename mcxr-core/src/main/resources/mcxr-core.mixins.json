@@ -11,11 +11,11 @@
     "hands.EntityMixin",
     "hands.LivingEntityMixin",
     "hands.ServerPlayerGameModeMixin",
-    "HumanoidModelMixin",
     "BowItemMixin"
   ],
   "client": [
-    "hands.client.MultiPlayerGameModeMixin"
+    "hands.client.MultiPlayerGameModeMixin",
+    "HumanoidModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

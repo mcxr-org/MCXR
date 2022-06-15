@@ -90,10 +90,11 @@ public class MCXRCore implements ModInitializer {
                         for(ServerPlayer playerList : server.getPlayerList().getPlayers()) {
                             if(playerList != player && playerList != null) {
                                 FriendlyByteBuf buf1 = PacketByteBufs.create();
-                                buf1.writeUUID(playerList.getUUID());
+                                buf1.writeUUID(player.getUUID());
                                 pose1.write(buf1);
                                 pose2.write(buf1);
                                 pose3.write(buf1);
+                                buf1.writeFloat(height);
                                 ServerPlayNetworking.send(playerList, POSES, buf1);
                             }
                         }

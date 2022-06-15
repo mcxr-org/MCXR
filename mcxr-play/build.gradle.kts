@@ -44,6 +44,8 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
+    modCompileOnly("maven.modrinth:simple-voice-chat:fabric-1.19-2.2.45")
+
     implementation("blank:lwjgl:3.2.3")
     implementation("blank:lwjgl-glfw:3.2.3")
 

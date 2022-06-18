@@ -2,7 +2,9 @@ package net.sorenon.mcxr.play.mixin.rendering;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
+import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,10 +24,17 @@ public class LevelRendererMixin {
         MCXRMainTarget.minecraftFramebufferHeight = minecraft.getMainRenderTarget().height;
     }
 
-//    @Inject(method = "setupRender", at = @At("HEAD"), cancellable = true)
-//    void cancelSetupRender(CallbackInfo ci) {
-//        if (MCXRPlayClient.RENDERER.renderPass != RenderPass.VANILLA && MCXRPlayClient.RENDERER.eye != 0) {
-//            ci.cancel();
-//        }
-//    }
+    @Inject(method = "setupRender", at = @At("HEAD"), cancellable = true)
+    void cancelSetupRender(CallbackInfo ci) {
+        if (MCXRPlayClient.MCXR_GAME_RENDERER.renderPass == RenderPass.VANILLA) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderLevel", at = @At("HEAD"), cancellable = true)
+    void cancelRender(CallbackInfo ci) {
+        if (MCXRPlayClient.MCXR_GAME_RENDERER.renderPass == RenderPass.VANILLA) {
+            ci.cancel();
+        }
+    }
 }

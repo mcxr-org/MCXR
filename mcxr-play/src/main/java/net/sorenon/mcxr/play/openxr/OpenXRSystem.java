@@ -46,7 +46,7 @@ public class OpenXRSystem {
 
         try (var stack = stackPush()) {
             XrGraphicsRequirementsOpenGLESKHR graphicsRequirements = XrGraphicsRequirementsOpenGLESKHR.calloc(stack).type(KHROpenglEsEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_ES_KHR);
-            instance.checkPanic(KHROpenglEsEnable.xrGetOpenGLESGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
+            instance.checkPanic(KHROpenglEsEnable.xrGetOpenGLESGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLESGraphicsRequirementsKHR");
 
             XrSystemProperties systemProperties = XrSystemProperties.calloc(stack).type(XR10.XR_TYPE_SYSTEM_PROPERTIES);
             instance.checkPanic(XR10.xrGetSystemProperties(instance.handle, handle, systemProperties), "xrGetSystemProperties");

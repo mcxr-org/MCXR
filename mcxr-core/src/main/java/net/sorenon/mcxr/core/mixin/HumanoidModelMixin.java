@@ -18,7 +18,6 @@ import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import org.joml.*;
-import org.joml.Math;
 import org.lwjgl.system.MathUtil;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,11 +42,18 @@ public class HumanoidModelMixin<T extends LivingEntity> extends AgeableListModel
 
                     Vector3f vec3 = new Vector3f();
                     Quaternionf quat = new Quaternionf(leftArm.orientation);
-                    quat.rotateY(Math.toRadians(180));
+                    quat.rotateX(-1.57079633f);
+                    quat.rotateY(3.14159265f);
                     quat.getEulerAnglesXYZ(vec3);
 
+                    this.leftArm.setPos(
+                            (acc.getHeadPose().pos.x - leftArm.pos.x) * 7 + 2,
+                            (acc.getHeadPose().pos.y - leftArm.pos.y) * 7,
+                            (acc.getHeadPose().pos.z - leftArm.pos.z) * 7
+                    );
+
                     this.leftArm.setRotation(
-                            vec3.x,
+                            -vec3.x,
                             vec3.y,
                             vec3.z
                     );
@@ -55,13 +61,21 @@ public class HumanoidModelMixin<T extends LivingEntity> extends AgeableListModel
 
                 if (acc.getRightHandPose() != null) {
                     Pose rightArm = acc.getRightHandPose();
+
                     Vector3f vec3 = new Vector3f();
                     Quaternionf quat = new Quaternionf(rightArm.orientation);
-                    quat.rotateY(Math.toRadians(180));
+                    quat.rotateX(-1.57079633f);
+                    quat.rotateY(3.14159265f);
                     quat.getEulerAnglesXYZ(vec3);
 
+                    this.leftArm.setPos(
+                            (acc.getHeadPose().pos.x - rightArm.pos.x) * 7 + 2,
+                            (acc.getHeadPose().pos.y - rightArm.pos.y) * 7,
+                            (acc.getHeadPose().pos.z - rightArm.pos.z) * 7
+                    );
+
                     this.rightArm.setRotation(
-                            vec3.x,
+                            -vec3.x,
                             vec3.y,
                             vec3.z
                     );

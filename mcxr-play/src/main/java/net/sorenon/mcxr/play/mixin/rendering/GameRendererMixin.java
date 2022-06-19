@@ -59,6 +59,13 @@ public abstract class GameRendererMixin {
         MCXRMainTarget.minecraftFramebufferHeight = j;
     }
 
+    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+    void cancelVanillaRendering(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
+        if(XR_RENDERER.renderPass == RenderPass.VANILLA) {
+            ci.cancel();
+        }
+    }
+
     /**
      * Cancels both vanilla and Iris hand rendering. Also cancels ScreenEffectRenderer call.
      */

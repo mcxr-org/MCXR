@@ -23,18 +23,4 @@ public class LevelRendererMixin {
         MCXRMainTarget.minecraftFramebufferWidth = minecraft.getMainRenderTarget().width;
         MCXRMainTarget.minecraftFramebufferHeight = minecraft.getMainRenderTarget().height;
     }
-
-    @Inject(method = "setupRender", at = @At("HEAD"), cancellable = true)
-    void cancelSetupRender(CallbackInfo ci) {
-        if (MCXRPlayClient.MCXR_GAME_RENDERER.renderPass == RenderPass.VANILLA) {
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "renderLevel", at = @At("HEAD"), cancellable = true)
-    void cancelRender(CallbackInfo ci) {
-        if (MCXRPlayClient.MCXR_GAME_RENDERER.renderPass == RenderPass.VANILLA) {
-            ci.cancel();
-        }
-    }
 }

@@ -5,6 +5,7 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -61,7 +62,7 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     void cancelVanillaRendering(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if(XR_RENDERER.renderPass == RenderPass.VANILLA) {
+        if(XR_RENDERER.renderPass == RenderPass.VANILLA && !(Minecraft.getInstance().screen instanceof TitleScreen)) {
             ci.cancel();
         }
     }

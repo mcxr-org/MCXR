@@ -50,5 +50,7 @@
 
   "mcxr.actionset.hands": "Hands",
   "mcxr.action.aim": "Aim Pose",
-  "mcxr.action.grip": "Grip Pose"
+  "mcxr.action.grip": "Grip Pose",
+
+  "mcxr.quickmenu": "QuickMenu"
 }

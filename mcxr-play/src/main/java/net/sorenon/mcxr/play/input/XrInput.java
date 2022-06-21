@@ -254,7 +254,7 @@ public final class XrInput {
             if (!actionSet.quickmenu.currentState) {
                 Minecraft client = Minecraft.getInstance();
                 if (client.screen == null) {
-                    client.setScreen(new QuickMenu(Component.translatable("QuickMenu")));
+                    client.setScreen(new QuickMenu(Component.translatable("mcxr.quickmenu")));
                 }
             }
         }

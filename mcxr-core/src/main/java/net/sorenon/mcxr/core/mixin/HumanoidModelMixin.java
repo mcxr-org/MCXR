@@ -2,6 +2,7 @@ package net.sorenon.mcxr.core.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Quaternion;
+import net.fabricmc.loader.impl.lib.sat4j.core.Vec;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.AgeableListModel;
 import net.minecraft.client.model.ArmedModel;
@@ -17,6 +18,7 @@ import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import org.joml.*;
+import org.joml.Math;
 import org.lwjgl.system.MathUtil;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,53 +29,45 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HumanoidModel.class)
 public class HumanoidModelMixin<T extends LivingEntity> extends AgeableListModel<T> implements ArmedModel, HeadedModel {
+    @Shadow @Final public ModelPart body;
     @Shadow @Final public ModelPart rightArm;
     @Shadow @Final public ModelPart leftArm;
 
     @Inject(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", at = @At(value = "TAIL"))
     public void setupAnimInject(T livingEntity, float f, float g, float h, float i, float j, CallbackInfo ci) {
-        /*
         if(livingEntity instanceof Player player) {
             PlayerExt acc = (PlayerExt) player;
             if(acc.isXR()) {
                 if (acc.getLeftHandPose() != null) {
                     Pose leftArm = acc.getLeftHandPose();
-                    this.leftArm.setPos(
-                            leftArm.pos.x,
-                            leftArm.pos.y,
-                            leftArm.pos.z
-                    );
 
                     Vector3f vec3 = new Vector3f();
-                    leftArm.orientation.getEulerAnglesXYZ(vec3);
+                    Quaternionf quat = new Quaternionf(leftArm.orientation);
+                    quat.rotateY(Math.toRadians(180));
+                    quat.getEulerAnglesXYZ(vec3);
 
                     this.leftArm.setRotation(
                             vec3.x,
-                            vec3.z,
-                            vec3.y
+                            vec3.y,
+                            vec3.z
                     );
                 }
 
                 if (acc.getRightHandPose() != null) {
                     Pose rightArm = acc.getRightHandPose();
-                    this.rightArm.setPos(
-                            rightArm.pos.x,
-                            rightArm.pos.y,
-                            rightArm.pos.z
-                    );
-
                     Vector3f vec3 = new Vector3f();
-                    rightArm.orientation.getEulerAnglesXYZ(vec3);
+                    Quaternionf quat = new Quaternionf(rightArm.orientation);
+                    quat.rotateY(Math.toRadians(180));
+                    quat.getEulerAnglesXYZ(vec3);
 
                     this.rightArm.setRotation(
                             vec3.x,
-                            vec3.z,
-                            vec3.y
+                            vec3.y,
+                            vec3.z
                     );
                 }
             }
         }
-         */
     }
 
     @Shadow

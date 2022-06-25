@@ -67,6 +67,13 @@ public abstract class GameRendererMixin {
         this.renderHand = XR_RENDERER.renderPass == RenderPass.VANILLA;
     }
 
+    @Inject(method = "renderConfusionOverlay", at = @At("HEAD"), cancellable = true)
+    void cancelRenderConfusion(float f, CallbackInfo ci) {
+        if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
     void cancelBobView(PoseStack matrixStack, float f, CallbackInfo ci) {
         if (XR_RENDERER.renderPass != RenderPass.VANILLA) {

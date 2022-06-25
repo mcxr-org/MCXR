@@ -498,13 +498,26 @@ public class MCXRGameRenderer {
         float heightNormalized = (float) framebuffer.height / (float) height;
         float v = (widthNormalized / heightNormalized) / 2;
 
+        //maintain screen's square aspect ratio
+        int xOff=0;
+        int yOff=0;
+        boolean uncroppedMirror=false;//if true, will show the full square camera with black bars. If false, will crop to fill screen.
+        if(width>height){
+            if(uncroppedMirror) xOff=(width-height)/2;
+            else yOff=-(width-height)/2;
+        }
+        else{
+            if(uncroppedMirror) yOff=(height-width)/2;
+            else xOff=-(height-width)/2;
+        }
+
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferBuilder.vertex(0.0, height, 0.0).uv(0.0F, 0.0f).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width, height, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width, 0.0, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, 1.0F).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(xOff, height-yOff, 0.0).uv(0.0F, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width-xOff, height-yOff, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width-xOff, yOff, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(xOff, yOff, 0.0).uv(0.0F, 1.0F).color(255, 255, 255, 255).endVertex();
         BufferUploader.draw(bufferBuilder.end());
         shader.clear();
         GlStateManager._depthMask(true);

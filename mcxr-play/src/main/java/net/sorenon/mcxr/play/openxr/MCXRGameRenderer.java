@@ -366,6 +366,11 @@ public class MCXRGameRenderer {
                 MCXRPlayClient.xrOrigin.y += MCXRPlayClient.heightAdjust;
             }
 
+            //sneaking camera shift
+            if (camEntity.isShiftKeyDown()) {
+                MCXRPlayClient.xrOrigin.y -= 0.25;
+            }
+
             MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);
             for (var poses : XrInput.handsActionSet.gripPoses) {
                 poses.updateGamePose(MCXRPlayClient.xrOrigin);

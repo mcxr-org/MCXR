@@ -26,19 +26,18 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
     public boolean[] isActive;
     public XrSpace[] spaces;
 
-    private final LongBuffer subactionPaths;
-
     public MultiPoseAction(String name, String[] subactionPathsStr) {
         super(name, XR10.XR_ACTION_TYPE_POSE_INPUT);
         this.subactionPathsStr = ImmutableList.copyOf(subactionPathsStr);
         this.amount = subactionPathsStr.length;
-        this.subactionPaths = memCallocLong(amount);
         this.isActive = new boolean[amount];
     }
 
     @Override
     public void createHandle(XrActionSet actionSet, OpenXRInstance instance) throws XrException {
         try (var stack = stackPush()) {
+
+            var subactionPaths = stack.callocLong(amount);
 
             for (int i = 0; i < amount; i++) {
                 var str = subactionPathsStr.get(i);
@@ -74,7 +73,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
                         XR10.XR_TYPE_ACTION_SPACE_CREATE_INFO,
                         NULL,
                         handle,
-                        subactionPaths.get(i),
+                        session.instance.getPath(subactionPathsStr.get(i)),
                         OpenXRState.POSE_IDENTITY
                 );
                 PointerBuffer pp = stackMallocPointer(1);
@@ -87,7 +86,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
     @Override
     public void sync(OpenXRSession session) {
         for (int i = 0; i < amount; i++) {
-            getInfo.subactionPath(subactionPaths.get(i));
+            getInfo.subactionPath(session.instance.getPath(subactionPathsStr.get(i)));
             getInfo.action(handle);
             session.instance.checkPanic(XR10.xrGetActionStatePose(session.handle, getInfo, state), "xrGetActionStatePose");
             isActive[i] = state.isActive();
@@ -101,11 +100,5 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
                 XR10.xrDestroySpace(space);
             }
         }
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        memFree(subactionPaths);
     }
 }

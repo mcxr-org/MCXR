@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
+import org.lwjgl.opengl.GL21;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 
@@ -26,6 +27,8 @@ public class OpenXRSwapchain implements AutoCloseable {
     public final XrRenderTarget[] leftFramebuffers;
     public final XrRenderTarget[] rightFramebuffers;
 
+    public final boolean SRGB;
+
     public TextureTarget renderTarget;
 
     //TODO make two swapchains path for GL4ES compat
@@ -37,6 +40,8 @@ public class OpenXRSwapchain implements AutoCloseable {
         this.format = format;
         this.width = width;
         this.height = height;
+
+        this.SRGB = format == GL21.GL_SRGB8_ALPHA8 || format == GL21.GL_SRGB8;
 
         try (MemoryStack stack = stackPush()) {
             IntBuffer intBuf = stackInts(0);

@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.openxr.*;
@@ -95,15 +96,17 @@ public class OpenXRSession implements AutoCloseable {
             LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
             instance.checkPanic(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
 
-            //TODO support SRGB formats
             long[] desiredSwapchainFormats = {
                     GL11.GL_RGB10_A2,
                     GL30.GL_RGBA16F,
                     GL30.GL_RGB16F,
+                    //SRGB formats
+                    GL21.GL_SRGB8_ALPHA8,
+                    GL21.GL_SRGB8,
                     // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
                     // depth, thus leading to banding.
                     GL11.GL_RGBA8,
-                    GL31.GL_RGBA8_SNORM
+                    GL31.GL_RGBA8_SNORM,
             };
 
             long chosenFormat = 0;

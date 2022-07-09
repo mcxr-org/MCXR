@@ -61,6 +61,7 @@ public class MCXRGameRenderer {
 
     public RenderPass renderPass = RenderPass.VANILLA;
     public ShaderInstance blitShader;
+    public ShaderInstance blitShaderSRGB;
     public ShaderInstance guiBlitShader;
 
     private boolean xrDisabled = false;
@@ -288,8 +289,15 @@ public class MCXRGameRenderer {
             clientExt.doRender(true, frameStartTime, worldRenderPass);
 
             swapchainFramebuffer.bindWrite(true);
-            this.blitShader.setSampler("DiffuseSampler", swapchain.renderTarget.getColorTextureId());
-            Uniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
+            ShaderInstance blitShader;
+            if (swapchain.SRGB) {
+                blitShader = this.blitShaderSRGB;
+            } else {
+                blitShader = this.blitShader;
+            }
+
+            blitShader.setSampler("DiffuseSampler", swapchain.renderTarget.getColorTextureId());
+            Uniform inverseScreenSize = blitShader.getUniform("InverseScreenSize");
             if (inverseScreenSize != null) {
                 inverseScreenSize.set(1f / swapchainFramebuffer.width, 1f / swapchainFramebuffer.height);
             }

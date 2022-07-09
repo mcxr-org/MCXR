@@ -1,6 +1,10 @@
 package net.sorenon.mcxr.play.compat.iris.mixin;
 
 import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.sorenon.mcxr.core.MCXRModInterop;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.input.ControllerPoses;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,9 +40,13 @@ public class MixinCameraUniforms {
             ControllerPoses left = new ControllerPoses();
             ControllerPoses right = new ControllerPoses();
 
-            left.updatePhysicalPose(views.get(0).pose(), MCXRPlayClient.stageTurn, MCXRPlayClient.getCameraScale());
+            Minecraft client = Minecraft.getInstance();
+            Entity cameraEntity = client.getCameraEntity() == null ? client.player : client.getCameraEntity();
+            Quaternion frameGravityRotation = MCXRModInterop.getGravityRotation(cameraEntity, client.getFrameTime());
+
+            left.updatePhysicalPose(views.get(0).pose(), MCXRPlayClient.stageTurn, MCXRPlayClient.getCameraScale(), frameGravityRotation);
             left.updateGamePose(MCXRPlayClient.xrOrigin);
-            right.updatePhysicalPose(views.get(1).pose(), MCXRPlayClient.stageTurn, MCXRPlayClient.getCameraScale());
+            right.updatePhysicalPose(views.get(1).pose(), MCXRPlayClient.stageTurn, MCXRPlayClient.getCameraScale(), frameGravityRotation);
             right.updateGamePose(MCXRPlayClient.xrOrigin);
             var leftPos = left.getMinecraftPose().getPos();
             var rightPos = right.getMinecraftPose().getPos();

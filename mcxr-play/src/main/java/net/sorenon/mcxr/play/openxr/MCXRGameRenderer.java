@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
+import com.fusionflux.gravity_api.RotationAnimation;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -7,21 +8,20 @@ import com.mojang.blaze3d.shaders.Uniform;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.sorenon.mcxr.core.JOMLUtil;
-import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.Pose;
-import net.sorenon.mcxr.core.Teleport;
+import net.sorenon.mcxr.core.*;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.mixin.LivingEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
@@ -35,6 +35,7 @@ import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
@@ -45,6 +46,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
 
 import java.nio.IntBuffer;
+import java.util.Optional;
 
 import static org.lwjgl.system.MemoryStack.stackCallocInt;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -125,6 +127,9 @@ public class MCXRGameRenderer {
                     var layer = renderBlankLayer(frameState.predictedDisplayTime(), stack);
                     layers.put(layer.address());
                 }
+            } else {
+                var layer = renderBlankLayer(frameState.predictedDisplayTime(), stack);
+                layers.put(layer.address());
             }
             layers.flip();
 
@@ -178,9 +183,11 @@ public class MCXRGameRenderer {
 
         //Ticks the game
         clientExt.preRender(true, () -> {
+            Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
+
             //Pre-tick
             //Update poses for tick
-            updatePoses(camera.getEntity(), false, predictedDisplayTime, 1.0f, MCXRPlayClient.getCameraScale());
+            updatePoses(camera.getEntity(), false, predictedDisplayTime, 1.0f, MCXRPlayClient.getCameraScale(), MCXRModInterop.getGravityRotation(cameraEntity, 1.0f));
 
             //Update the server-side player poses
             if (Minecraft.getInstance().player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
@@ -233,7 +240,8 @@ public class MCXRGameRenderer {
         }
 
         float frameUserScale = MCXRPlayClient.getCameraScale(client.getFrameTime());
-        updatePoses(cameraEntity, calculate, predictedDisplayTime, client.getFrameTime(), frameUserScale);
+        Quaternion frameGravityRotation = MCXRModInterop.getGravityRotation(cameraEntity, client.getFrameTime());
+        updatePoses(cameraEntity, calculate, predictedDisplayTime, client.getFrameTime(), frameUserScale, frameGravityRotation);
         camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getMinecraftPose());
 
         client.getWindow().setErrorSection("Render");
@@ -282,7 +290,7 @@ public class MCXRGameRenderer {
             mainRenderTarget.setXrFramebuffer(swapchain.renderTarget);
             RenderPass.XrWorld worldRenderPass = RenderPass.XrWorld.create();
             worldRenderPass.fov = session.viewBuffer.get(viewIndex).fov();
-            worldRenderPass.eyePoses.updatePhysicalPose(session.viewBuffer.get(viewIndex).pose(), MCXRPlayClient.stageTurn, frameUserScale);
+            worldRenderPass.eyePoses.updatePhysicalPose(session.viewBuffer.get(viewIndex).pose(), MCXRPlayClient.stageTurn, frameUserScale, frameGravityRotation);
             worldRenderPass.eyePoses.updateGamePose(MCXRPlayClient.xrOrigin);
             worldRenderPass.viewIndex = viewIndex;
             camera.setPose(worldRenderPass.eyePoses.getMinecraftPose());
@@ -325,20 +333,23 @@ public class MCXRGameRenderer {
 //        }
     }
 
-    private void updatePoses(Entity camEntity,
-                             boolean calculateHeightAdjust,
-                             long predictedDisplayTime,
-                             float delta,
-                             float scale) {
+    private void updatePoses(
+            Entity camEntity,
+            boolean calculateHeightAdjust,
+            long predictedDisplayTime,
+            float delta,
+            float scale,
+            @Nullable Quaternion gravityRotation
+    ) {
         if (session.state == XR10.XR_SESSION_STATE_FOCUSED) {
             for (int i = 0; i < 2; i++) {
                 if (!XrInput.handsActionSet.grip.isActive[i]) {
                     continue;
                 }
-                session.setPosesFromSpace(XrInput.handsActionSet.grip.spaces[i], predictedDisplayTime, XrInput.handsActionSet.gripPoses[i], scale);
-                session.setPosesFromSpace(XrInput.handsActionSet.aim.spaces[i], predictedDisplayTime, XrInput.handsActionSet.aimPoses[i], scale);
+                session.setPosesFromSpace(XrInput.handsActionSet.grip.spaces[i], predictedDisplayTime, XrInput.handsActionSet.gripPoses[i], scale, gravityRotation);
+                session.setPosesFromSpace(XrInput.handsActionSet.aim.spaces[i], predictedDisplayTime, XrInput.handsActionSet.aimPoses[i], scale, gravityRotation);
             }
-            session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, scale);
+            session.setPosesFromSpace(session.xrViewSpace, predictedDisplayTime, MCXRPlayClient.viewSpacePoses, scale, gravityRotation);
         }
 
         if (camEntity != null) { //TODO seriously need to tidy up poses

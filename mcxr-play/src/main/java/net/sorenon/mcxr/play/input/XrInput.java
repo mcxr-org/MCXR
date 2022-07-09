@@ -155,7 +155,9 @@ public final class XrInput {
 
                 MCXRPlayClient.stageTurn += Math.toRadians(PlayOptions.smoothTurnRate) * -Math.signum(actionSet.turn.currentState) * delta;
                 Vector3f newPos = new Quaternionf().rotateLocalY(MCXRPlayClient.stageTurn).transform(MCXRPlayClient.viewSpacePoses.getStagePose().getPos(), new Vector3f());
-                Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos());
+
+                //TODO debug why scale pisses this off
+                Vector3f wantedPos = new Vector3f(MCXRPlayClient.viewSpacePoses.getUnscaledPhysicalPose().getPos());
 
                 MCXRPlayClient.stagePosition = wantedPos.sub(newPos).mul(1, 0, 1);
             }

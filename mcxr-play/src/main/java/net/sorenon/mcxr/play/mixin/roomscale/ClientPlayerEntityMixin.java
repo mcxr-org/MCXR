@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.MCXRScale;
+import net.sorenon.mcxr.core.MCXRModInterop;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.gui.XrSignEditScreen;
 import org.jetbrains.annotations.Nullable;
@@ -80,7 +80,7 @@ public abstract class ClientPlayerEntityMixin extends Player {
             Vec3 wantedMovement = new Vec3(viewPos.x - playerPhysicalPosition.x, 0, viewPos.z - playerPhysicalPosition.z);
 
             //Counter out the mixin pehuki uses for scaling movement
-            float invScale = 1.0f / MCXRScale.getMotionScale(this);
+            float invScale = 1.0f / MCXRModInterop.getMotionScale(this);
 
             this.move(MoverType.SELF, wantedMovement.scale(invScale));
             this.input = input;

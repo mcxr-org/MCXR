@@ -43,6 +43,8 @@ public class MCXRCore implements ModInitializer {
             config.xrEnabled = true;
         }
 
+        MCXRModInterop.initialize();
+
         ServerLoginNetworking.registerGlobalReceiver(S2C_CONFIG, (server, handler, understood, buf, synchronizer, responseSender) -> {
             if (understood) {
                 boolean xr = buf.readBoolean();

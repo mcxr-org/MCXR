@@ -3,7 +3,6 @@ plugins {
     id("io.github.juuxel.loom-quiltflower") version "+"
     id("maven-publish")
     id("org.quiltmc.quilt-mappings-on-loom") version "4.0.0"
-    id("org.ajoberstar.grgit") version "5.0.0-rc.3"
 }
 
 base {
@@ -17,6 +16,14 @@ repositories {
     maven {
         name = "Jitpack"
         url = uri("https://jitpack.io")
+    }
+    maven {
+        name = "Modrinth"
+        url = uri("https://api.modrinth.com/maven")
+
+        content {
+            includeGroup("maven.modrinth")
+        }
     }
 }
 
@@ -34,9 +41,16 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
+    modCompileOnly(files("../mcxr-play/run/mods/gravity-api-0.7.13-1.19.jar"))
+
     include(implementation("org.joml:joml:${properties["joml_version"].toString()}")!!)
     include(implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")!!)
     include(implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")!!)
+
+    modRuntimeOnly("maven.modrinth:lazydfu:0.1.3") {
+        exclude(module = "fabric-loader")
+        isTransitive = false
+    }
 }
 
 tasks {
@@ -109,14 +123,5 @@ fun getVersionMetadata(): String {
         return "build.${buildId}"
     }
 
-    val grgit = extensions.getByName("grgit") as org.ajoberstar.grgit.Grgit;
-    val head = grgit.head()
-    var id = head.abbreviatedId
-
-    // Flag the build if the build tree is not clean
-    if (!grgit.status().isClean) {
-        id += "-dirty"
-    }
-
-    return "rev.${id}"
+    return "unstable"
 }

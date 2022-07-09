@@ -10,7 +10,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.sorenon.mcxr.core.MCXRCore;
-import net.sorenon.mcxr.core.MCXRScale;
+import net.sorenon.mcxr.core.MCXRModInterop;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import org.spongepowered.asm.mixin.Final;
@@ -71,7 +71,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
         EntityDimensions vanilla = POSES.getOrDefault(pose, STANDING_DIMENSIONS);
 
         if (this.isXR()) {
-            final float scale = MCXRScale.getScale(this);
+            final float scale = MCXRModInterop.getScale(this);
 
             float width = vanilla.width;
             if (thinnerBB) {

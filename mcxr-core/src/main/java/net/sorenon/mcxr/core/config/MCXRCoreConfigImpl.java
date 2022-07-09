@@ -11,17 +11,17 @@ public class MCXRCoreConfigImpl implements MCXRCoreConfig {
 
     @Override
     public boolean dynamicPlayerHeight() {
-        return xrEnabled;
+        return false;
     }
 
     @Override
     public boolean dynamicPlayerEyeHeight() {
-        return xrEnabled;
+        return false;
     }
 
     @Override
     public boolean thinnerPlayerBoundingBox() {
-        return xrEnabled;
+        return false;
     }
 
     @Override
@@ -31,6 +31,6 @@ public class MCXRCoreConfigImpl implements MCXRCoreConfig {
 
     @Override
     public boolean roomscaleMovement() {
-        return true;
+        return false;
     }
 }

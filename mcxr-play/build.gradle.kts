@@ -45,6 +45,8 @@ dependencies {
         exclude(group = "net.fabricmc.fabric-api")
     }
 
+    modCompileOnly(files("run/mods/gravity-api-0.7.13-1.19.jar"))
+
     include(implementation("org.lwjgl:lwjgl-openxr:3.3.1")!!)
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")

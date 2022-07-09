@@ -12,6 +12,7 @@ import net.sorenon.mcxr.play.PlayOptions;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Player.class)
@@ -27,14 +28,15 @@ public abstract class PlayerMixin extends Entity {
         super(entityType, level);
     }
 
-    @Redirect(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getLookAngle()Lnet/minecraft/world/phys/Vec3;"))
-    Vec3 changeSwimDirection(Player instance) {
+    @SuppressWarnings("InvalidInjectorMethodSignature")
+    @ModifyVariable(method = "travel", ordinal = 3, at = @At(value = "STORE", ordinal = 0))
+    double changeSwimDirection(double in) {
         if (isActive()) {
             Vec3 result = PlayOptions.swimDirection.getLookDirection();
             if (result != null) {
-                return result;
+                return result.y;
             }
         }
-        return this.getLookAngle();
+        return in;
     }
 }

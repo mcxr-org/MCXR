@@ -59,12 +59,26 @@ public enum MoveDirectionPose {
             case Head -> {
                 return null;
             }
-            case RightHand -> XrInput.handsActionSet.gripPoses[1].getMinecraftPose().getOrientation().get(orientation);
-            case LeftHand -> XrInput.handsActionSet.gripPoses[0].getMinecraftPose().getOrientation().get(orientation);
+            case RightHand -> XrInput.handsActionSet.gripPoses[1].getUnscaledPhysicalPose().getOrientation().get(orientation);
+            case LeftHand -> XrInput.handsActionSet.gripPoses[0].getUnscaledPhysicalPose().getOrientation().get(orientation);
         }
         orientation = orientation.rotateX(Math.toRadians(PlayOptions.handPitchAdjust));
         return JOMLUtil.convert(orientation.transform(new Vector3d(0, -1, 0)));
     }
+
+//    @Nullable
+//    public Vec3 getLookDirectionLocal() {
+//        Quaternionf orientation = new Quaternionf();
+//        switch (this) {
+//            case Head -> {
+//                return null;
+//            }
+//            case RightHand -> XrInput.handsActionSet.gripPoses[1].getPhysicalPose().getOrientation().get(orientation);
+//            case LeftHand -> XrInput.handsActionSet.gripPoses[0].getPhysicalPose().getOrientation().get(orientation);
+//        }
+//        orientation = orientation.rotateX(Math.toRadians(PlayOptions.handPitchAdjust));
+//        return JOMLUtil.convert(orientation.transform(new Vector3d(0, -1, 0)));
+//    }
 
     public Optional<Float> getMCYaw() {
         Quaternionf orientation = new Quaternionf();
@@ -72,8 +86,8 @@ public enum MoveDirectionPose {
             case Head -> {
                 return Optional.empty();
             }
-            case RightHand -> XrInput.handsActionSet.gripPoses[1].getMinecraftPose().getOrientation().get(orientation);
-            case LeftHand -> XrInput.handsActionSet.gripPoses[0].getMinecraftPose().getOrientation().get(orientation);
+            case RightHand -> XrInput.handsActionSet.gripPoses[1].getUnscaledPhysicalPose().getOrientation().get(orientation);
+            case LeftHand -> XrInput.handsActionSet.gripPoses[0].getUnscaledPhysicalPose().getOrientation().get(orientation);
         }
         orientation = orientation.rotateX(Math.toRadians(PlayOptions.handPitchAdjust));
         return Optional.of(Pose.getMCYaw(orientation, new Vector3f(0, -1, 0)));
@@ -85,8 +99,8 @@ public enum MoveDirectionPose {
             case Head -> {
                 return Optional.empty();
             }
-            case RightHand -> XrInput.handsActionSet.gripPoses[1].getMinecraftPose().getOrientation().get(orientation);
-            case LeftHand -> XrInput.handsActionSet.gripPoses[0].getMinecraftPose().getOrientation().get(orientation);
+            case RightHand -> XrInput.handsActionSet.gripPoses[1].getUnscaledPhysicalPose().getOrientation().get(orientation);
+            case LeftHand -> XrInput.handsActionSet.gripPoses[0].getUnscaledPhysicalPose().getOrientation().get(orientation);
         }
         orientation = orientation.rotateX(Math.toRadians(PlayOptions.handPitchAdjust));
         return Optional.of(Pose.getMCPitch(orientation, new Vector3f(0, -1, 0)));

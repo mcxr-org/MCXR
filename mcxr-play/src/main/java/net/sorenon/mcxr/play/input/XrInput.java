@@ -1,11 +1,15 @@
 package net.sorenon.mcxr.play.input;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.JOMLUtil;
@@ -29,10 +33,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.openxr.XR10;
-import org.lwjgl.openxr.XrActionSuggestedBinding;
-import org.lwjgl.openxr.XrInteractionProfileSuggestedBinding;
-import org.lwjgl.openxr.XrSessionActionSetsAttachInfo;
+import org.lwjgl.openxr.*;
 import oshi.util.tuples.Pair;
 
 import java.util.HashMap;
@@ -53,6 +54,8 @@ public final class XrInput {
     private static Vec3 gripPosOld = new Vec3(0,0,0);
 
     public static boolean teleport = false;
+
+    public static float lastHealth = 0;
 
     private static int motionPoints = 0;
     private static HitResult lastHit = null;
@@ -126,6 +129,12 @@ public final class XrInput {
      */
     public static void pollActions() {
         long time = System.nanoTime();
+        if(Minecraft.getInstance().player != null) {
+            lastHealth = Minecraft.getInstance().player.getHealth();
+            if(Minecraft.getInstance().options.keyRight.isDown() && Minecraft.getInstance().player.getMainHandItem().getItem() instanceof BlockItem) {
+                applyHaptics(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
+            }
+        }
         if (lastPollTime == 0) {
             lastPollTime = time;
         }
@@ -369,13 +378,21 @@ public final class XrInput {
     public static void postTick(long predictedDisplayTime) {
         MCXRGuiManager FGM = MCXRPlayClient.INSTANCE.MCXRGuiManager;
         MouseHandlerAcc mouseHandler = (MouseHandlerAcc) Minecraft.getInstance().mouseHandler;
+        if(Minecraft.getInstance().player != null) {
+            if (Minecraft.getInstance().player.getHealth() < lastHealth) {
+                applyHaptics(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
+            }
+            if(Minecraft.getInstance().player.isSprinting()) {
+                applyHaptics(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
+            }
+        }
         if (FGM.isScreenOpen()) {
             Pose pose = handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getUnscaledPhysicalPose();
             Vector3d pos = new Vector3d(pose.getPos());
             Vector3f dir = pose.getOrientation().rotateX((float) Math.toRadians(PlayOptions.handPitchAdjust), new Quaternionf()).transform(new Vector3f(0, -1, 0));
             Vector3d result = FGM.guiRaycast(pos, new Vector3d(dir));
             if (result != null) {
-                Vector3d vec = result.sub(JOMLUtil.convert(FGM.position));
+                Vector3d vec = result.sub(convert(FGM.position));
                 FGM.orientation.invert(new Quaterniond()).transform(vec);
                 vec.y *= ((double) FGM.guiFramebufferWidth / FGM.guiFramebufferHeight);
 
@@ -428,11 +445,17 @@ public final class XrInput {
                     mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
                             GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                     motionPoints=0;
+                    if(MCXRPlayClient.getMainHand() == 1) {
+                        applyHapticsRight(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                    } else {
+                        applyHapticLeft(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                    }
                 }
             }
             if (!actionSet.attack.currentState) {
                 mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
                         GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
+
             }
             if (actionSet.inventory.currentState) {
                 long heldTime = predictedDisplayTime - actionSet.inventory.lastChangeTime;
@@ -457,6 +480,12 @@ public final class XrInput {
                                     GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                             motionPoints = 0;
                         }
+
+                        if(MCXRPlayClient.getMainHand() == 1) {
+                            applyHapticsRight(300, 1f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                        } else {
+                            applyHapticLeft(300, 1f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                        }
                     } //else if (hitResult.getType() !=HitResult.Type.MISS && !lastHit.equals(hitResult)){//let go if hitting new block/entity
                     // mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
                     //GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_RELEASE, 0);
@@ -471,6 +500,47 @@ public final class XrInput {
                     }
                 }
             }
+        }
+    }
+
+    public static void applyHaptics(long duration, float amplitude, float frequency) {
+        applyHapticLeft(duration, amplitude, frequency);
+        applyHapticsRight(duration, amplitude, frequency);
+    }
+
+    public static void applyHapticsRight(long duration, float amplitude, float frequency) {
+        try(var stack = stackPush()) {
+            XrHapticVibration vibrationInfo = XrHapticVibration.calloc(stack).set(
+                    XR10.XR_TYPE_HAPTIC_VIBRATION,
+                    NULL,
+                    duration,
+                    frequency,
+                    amplitude
+            );
+
+            XrHapticActionInfo hapticActionInfo = XrHapticActionInfo.calloc();
+            hapticActionInfo.type(XR10.XR_TYPE_HAPTIC_ACTION_INFO);
+            hapticActionInfo.action(vanillaGameplayActionSet.rightHaptic.getHandle());
+
+            MCXRPlayClient.OPEN_XR_STATE.instance.checkPanic(XR10.xrApplyHapticFeedback(MCXRPlayClient.OPEN_XR_STATE.session.handle, hapticActionInfo, XrHapticBaseHeader.create(vibrationInfo.address())), "xrApplyHapticFeedback");
+        }
+    }
+
+    public static void applyHapticLeft(long duration, float amplitude, float frequency) {
+        try(var stack = stackPush()) {
+            XrHapticVibration vibrationInfo = XrHapticVibration.calloc(stack).set(
+                    XR10.XR_TYPE_HAPTIC_VIBRATION,
+                    NULL,
+                    duration,
+                    frequency,
+                    amplitude
+            );
+
+            XrHapticActionInfo hapticActionInfo = XrHapticActionInfo.calloc();
+            hapticActionInfo.type(XR10.XR_TYPE_HAPTIC_ACTION_INFO);
+            hapticActionInfo.action(vanillaGameplayActionSet.leftHaptic.getHandle());
+
+            MCXRPlayClient.OPEN_XR_STATE.instance.checkPanic(XR10.xrApplyHapticFeedback(MCXRPlayClient.OPEN_XR_STATE.session.handle, hapticActionInfo, XrHapticBaseHeader.create(vibrationInfo.address())), "xrApplyHapticFeedback");
         }
     }
 }

@@ -42,6 +42,8 @@ public class VanillaGameplayActionSet extends ActionSet {
     public final FloatAction sprintAnalog = new FloatAction("sprint_analog");
 
     public final BoolAction swapHands = new BoolAction("swap_hands");
+    public final HapticAction leftHaptic = new HapticAction("left_haptic");
+    public final HapticAction rightHaptic = new HapticAction("right_haptic");
 
 
     // public final MultiHapticAction haptics = new MultiHapticAction("haptics", new String[]{"/user/hand/left", "/user/hand/right"});
@@ -76,7 +78,9 @@ public class VanillaGameplayActionSet extends ActionSet {
             indexTrackpadLeft,
             swapHands,
             sneakAnalog,
-            sprintAnalog
+            sprintAnalog,
+            leftHaptic,
+            rightHaptic
     );
 
     public VanillaGameplayActionSet() {
@@ -119,7 +123,9 @@ public class VanillaGameplayActionSet extends ActionSet {
                         // new Pair<>(sneak, "/user/hand/right/input/thumbstick/click"),
                         new Pair<>(quickmenu, "/user/hand/right/input/b/click"),
                         new Pair<>(menu, "/user/hand/left/input/menu/click"),
-                        new Pair<>(teleport, "/user/hand/left/input/x/click")
+                        new Pair<>(teleport, "/user/hand/left/input/x/click"),
+                        new Pair<>(leftHaptic, "/user/hand/left/output/haptic"),
+                        new Pair<>(rightHaptic, "/user/hand/right/output/haptic")
                 ));
 
 

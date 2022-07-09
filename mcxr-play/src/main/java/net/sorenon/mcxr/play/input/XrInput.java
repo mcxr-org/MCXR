@@ -1,18 +1,13 @@
 package net.sorenon.mcxr.play.input;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -56,6 +51,7 @@ public final class XrInput {
     public static boolean teleport = false;
 
     public static float lastHealth = 0;
+    public static boolean wasPressed = false;
 
     private static int motionPoints = 0;
     private static HitResult lastHit = null;
@@ -132,6 +128,7 @@ public final class XrInput {
         if(Minecraft.getInstance().player != null) {
             lastHealth = Minecraft.getInstance().player.getHealth();
         }
+
         if (lastPollTime == 0) {
             lastPollTime = time;
         }
@@ -155,6 +152,7 @@ public final class XrInput {
         if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
             Minecraft.getInstance().pauseGame(false);
         }
+        wasPressed = Minecraft.getInstance().options.keyRight.isDown();
 
         if (actionSet.teleport.changedSinceLastSync && !actionSet.teleport.currentState) {
             XrInput.teleport = true;
@@ -376,13 +374,26 @@ public final class XrInput {
         MCXRGuiManager FGM = MCXRPlayClient.INSTANCE.MCXRGuiManager;
         MouseHandlerAcc mouseHandler = (MouseHandlerAcc) Minecraft.getInstance().mouseHandler;
         if(Minecraft.getInstance().player != null) {
-            if (Minecraft.getInstance().player.getHealth() < lastHealth) {
+            Player player = Minecraft.getInstance().player;
+            if (player.getHealth() < lastHealth) {
                 applyHaptics(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
             }
-            if(Minecraft.getInstance().player.isSprinting()) {
+            if(player.isSprinting()) {
                 applyHaptics(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
             }
+            if(player.getUseItemRemainingTicks() > 0) {
+                applyHaptics(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
+            }
         }
+
+        if(wasPressed != Minecraft.getInstance().options.keyRight.isDown() && Minecraft.getInstance().options.keyRight.isDown()) {
+            if (MCXRPlayClient.getMainHand() == 0) {
+                applyHapticsRight(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
+            } else {
+                applyHapticsLeft(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
+            }
+        }
+
         if (FGM.isScreenOpen()) {
             Pose pose = handsActionSet.gripPoses[MCXRPlayClient.getMainHand()].getUnscaledPhysicalPose();
             Vector3d pos = new Vector3d(pose.getPos());
@@ -445,7 +456,7 @@ public final class XrInput {
                     if(MCXRPlayClient.getMainHand() == 1) {
                         applyHapticsRight(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
                     } else {
-                        applyHapticLeft(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
+                        applyHapticsLeft(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
                     }
                 }
             }
@@ -481,7 +492,7 @@ public final class XrInput {
                         if(MCXRPlayClient.getMainHand() == 1) {
                             applyHapticsRight(300, 1f, XR10.XR_FREQUENCY_UNSPECIFIED);
                         } else {
-                            applyHapticLeft(300, 1f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                            applyHapticsLeft(300, 1f, XR10.XR_FREQUENCY_UNSPECIFIED);
                         }
                     } //else if (hitResult.getType() !=HitResult.Type.MISS && !lastHit.equals(hitResult)){//let go if hitting new block/entity
                     // mouseHandler.callOnPress(Minecraft.getInstance().getWindow().getWindow(),
@@ -501,7 +512,7 @@ public final class XrInput {
     }
 
     public static void applyHaptics(long duration, float amplitude, float frequency) {
-        applyHapticLeft(duration, amplitude, frequency);
+        applyHapticsLeft(duration, amplitude, frequency);
         applyHapticsRight(duration, amplitude, frequency);
     }
 
@@ -523,7 +534,7 @@ public final class XrInput {
         }
     }
 
-    public static void applyHapticLeft(long duration, float amplitude, float frequency) {
+    public static void applyHapticsLeft(long duration, float amplitude, float frequency) {
         try(var stack = stackPush()) {
             XrHapticVibration vibrationInfo = XrHapticVibration.calloc(stack).set(
                     XR10.XR_TYPE_HAPTIC_VIBRATION,

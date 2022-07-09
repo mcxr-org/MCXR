@@ -131,9 +131,6 @@ public final class XrInput {
         long time = System.nanoTime();
         if(Minecraft.getInstance().player != null) {
             lastHealth = Minecraft.getInstance().player.getHealth();
-            if(Minecraft.getInstance().options.keyRight.isDown() && Minecraft.getInstance().player.getMainHandItem().getItem() instanceof BlockItem) {
-                applyHaptics(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
-            }
         }
         if (lastPollTime == 0) {
             lastPollTime = time;
@@ -383,7 +380,7 @@ public final class XrInput {
                 applyHaptics(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
             }
             if(Minecraft.getInstance().player.isSprinting()) {
-                applyHaptics(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                applyHaptics(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
             }
         }
         if (FGM.isScreenOpen()) {
@@ -446,9 +443,9 @@ public final class XrInput {
                             GLFW.GLFW_MOUSE_BUTTON_LEFT, GLFW.GLFW_PRESS, 0);
                     motionPoints=0;
                     if(MCXRPlayClient.getMainHand() == 1) {
-                        applyHapticsRight(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                        applyHapticsRight(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
                     } else {
-                        applyHapticLeft(300, 0.5f, XR10.XR_FREQUENCY_UNSPECIFIED);
+                        applyHapticLeft(300, 1, XR10.XR_FREQUENCY_UNSPECIFIED);
                     }
                 }
             }

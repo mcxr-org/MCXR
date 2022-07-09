@@ -51,7 +51,6 @@ public final class XrInput {
     public static boolean teleport = false;
 
     public static float lastHealth = 0;
-    public static boolean wasPressed = false;
 
     private static int motionPoints = 0;
     private static HitResult lastHit = null;
@@ -152,7 +151,6 @@ public final class XrInput {
         if(actionSet.menu.currentState && actionSet.menu.changedSinceLastSync) {
             Minecraft.getInstance().pauseGame(false);
         }
-        wasPressed = Minecraft.getInstance().options.keyRight.isDown();
 
         if (actionSet.teleport.changedSinceLastSync && !actionSet.teleport.currentState) {
             XrInput.teleport = true;
@@ -383,14 +381,6 @@ public final class XrInput {
             }
             if(player.getUseItemRemainingTicks() > 0) {
                 applyHaptics(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
-            }
-        }
-
-        if(wasPressed != Minecraft.getInstance().options.keyRight.isDown() && Minecraft.getInstance().options.keyRight.isDown()) {
-            if (MCXRPlayClient.getMainHand() == 0) {
-                applyHapticsRight(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
-            } else {
-                applyHapticsLeft(300, 0.6f, XR10.XR_FREQUENCY_UNSPECIFIED);
             }
         }
 

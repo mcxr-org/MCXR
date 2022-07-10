@@ -163,7 +163,7 @@ public final class XrInput {
             float delta = (time - lastPollTime) / 1_000_000_000f;
             double velo = gripPos.distanceTo(gripPosOld)/delta;
             //delay before attacking starts/stops by building up motion points
-            if(velo>1 && motionPoints < 14){
+            if(velo>1 && motionPoints < 16){
                 motionPoints+=Math.abs(velo);
              }
             else if(motionPoints>0){motionPoints-=1;}

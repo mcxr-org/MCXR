@@ -8,7 +8,10 @@ import com.mojang.math.Vector3f;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.sorenon.mcxr.core.accessor.PlayerExt;
 import org.jetbrains.annotations.Nullable;
 import virtuoel.pehkui.api.ScaleTypes;
 import virtuoel.pehkui.util.ScaleUtils;
@@ -20,7 +23,7 @@ public class MCXRModInterop {
     private static boolean pehkui;
     private static boolean gravity;
 
-    public static void initialize(){
+    public static void initialize() {
         pehkui = FabricLoader.getInstance().isModLoaded("pehkui");
         gravity = FabricLoader.getInstance().isModLoaded("gravity_api");
     }
@@ -74,6 +77,36 @@ public class MCXRModInterop {
         } else {
             assert gravityDirection == Direction.DOWN;
             return aabb;
+        }
+    }
+
+    public static Vec3 vecRotateEntityToWorld(Vec3 vec, Direction gravityDirection) {
+        if (gravity) {
+            return RotationUtil.vecPlayerToWorld(vec, gravityDirection);
+        } else {
+            assert gravityDirection == Direction.DOWN;
+            return vec;
+        }
+    }
+
+    public static float getXrPlayerHeight(PlayerExt ext) {
+        var player = ((Player) ext);
+
+        if (gravity) {
+            Direction gravity = getGravityDirection(player);
+            float f = 0.f;
+            switch (gravity.getAxis()) {
+                case X -> f = ext.getHeadPose().pos.x - (float) player.position().x;
+                case Y -> f = ext.getHeadPose().pos.y - (float) player.position().y;
+                case Z -> f = ext.getHeadPose().pos.z - (float) player.position().z;
+            }
+            if (gravity.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
+                return -f;
+            } else {
+                return f;
+            }
+        } else {
+            return ext.getHeadPose().pos.y - (float) player.position().y;
         }
     }
 }

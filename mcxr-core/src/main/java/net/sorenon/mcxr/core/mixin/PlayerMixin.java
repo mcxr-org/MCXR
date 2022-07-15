@@ -28,7 +28,7 @@ import java.util.Map;
 import static net.minecraft.world.entity.player.Player.STANDING_DIMENSIONS;
 
 @Mixin(value = Player.class, priority = 10_000 /*Pehuki*/)
-public abstract class PlayerEntityMixin extends LivingEntity implements PlayerExt {
+public abstract class PlayerMixin extends LivingEntity implements PlayerExt {
 
     @Shadow @Final private static Map<net.minecraft.world.entity.Pose, EntityDimensions> POSES;
     @Unique
@@ -49,7 +49,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
     @Unique
     public ThreadLocal<HumanoidArm> overrideTransform = ThreadLocal.withInitial(() -> null);
 
-    protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
+    protected PlayerMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
 
@@ -81,7 +81,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
             if (dynamicHeight) {
                 final float minHeight = 0.5f * scale;
                 final float currentHeight = this.getBbHeight();
-                final float wantedHeight = (headPose.pos.y - (float) this.position().y + 0.125f * scale);
+                final float wantedHeight = MCXRModInterop.getXrPlayerHeight(this) + (0.125f * scale);
 //                final float wantedHeight = height + 0.125f * scale;
                 final float deltaHeight = wantedHeight - currentHeight;
 

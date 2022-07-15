@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.level.Level;
 import net.sorenon.mcxr.core.MCXRCore;
+import net.sorenon.mcxr.core.MCXRModInterop;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,8 +27,8 @@ public abstract class LivingEntityMixin extends Entity {
             return;
         }
 
-        if (this instanceof PlayerExt acc && acc.isXR()) {
-            cir.setReturnValue(acc.getHeadPose().pos.y - (float) this.position().y);
+        if (this instanceof PlayerExt ext && ext.isXR()) {
+            cir.setReturnValue(MCXRModInterop.getXrPlayerHeight(ext));
         }
     }
 }

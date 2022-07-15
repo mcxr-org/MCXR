@@ -6,7 +6,7 @@
   "mixins": [
     "LivingEntityAcc",
     "LivingEntityMixin",
-    "PlayerEntityMixin",
+    "PlayerMixin",
     "ServerLoginNetworkHandlerAcc",
     "hands.EntityMixin",
     "hands.LivingEntityMixin",

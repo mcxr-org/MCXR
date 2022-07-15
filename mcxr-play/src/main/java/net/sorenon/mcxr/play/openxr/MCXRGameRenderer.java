@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.play.openxr;
 
-import com.fusionflux.gravity_api.RotationAnimation;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -14,7 +13,6 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -28,7 +26,7 @@ import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
-import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
@@ -37,16 +35,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
-import net.sorenon.mcxr.play.input.XrInput;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
 
 import java.nio.IntBuffer;
-import java.util.Optional;
 
 import static org.lwjgl.system.MemoryStack.stackCallocInt;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -358,7 +355,7 @@ public class MCXRGameRenderer {
             }
 
             if (calculateHeightAdjust && MCXRPlayClient.heightAdjustStand && camEntity instanceof LivingEntity livingEntity) {
-                float userHeight = MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().y();
+                float userHeight = MCXRPlayClient.viewSpacePoses.getUnscaledPhysicalPose().getPos().y() * scale;
                 float playerEyeHeight = ((LivingEntityAcc) livingEntity).callGetStandingEyeHeight(livingEntity.getPose(), livingEntity.getDimensions(livingEntity.getPose()));
 
                 MCXRPlayClient.heightAdjust = playerEyeHeight - userHeight;
@@ -374,15 +371,24 @@ public class MCXRGameRenderer {
                         Mth.lerp(delta, camEntity.yo, camEntity.getY()),
                         Mth.lerp(delta, camEntity.zo, camEntity.getZ()));
             }
+
+            double xrOriginHeightAdjust = 0.f;
             if (vehicle != null) {
                 if (vehicle instanceof LivingEntity) {
-                    MCXRPlayClient.xrOrigin.y += 0.60;
+                    xrOriginHeightAdjust += 0.60;
                 } else {
-                    MCXRPlayClient.xrOrigin.y += 0.54 - vehicle.getPassengersRidingOffset();
+                    xrOriginHeightAdjust += 0.54 - vehicle.getPassengersRidingOffset();
                 }
             }
             if (MCXRPlayClient.heightAdjustStand) {
-                MCXRPlayClient.xrOrigin.y += MCXRPlayClient.heightAdjust;
+                xrOriginHeightAdjust += MCXRPlayClient.heightAdjust;
+            }
+
+            if (gravityRotation != null) {
+                Quaternionf gravity = JOMLUtil.convert(gravityRotation);
+                MCXRPlayClient.xrOrigin.add(gravity.conjugate().transform(new Vector3d(0, xrOriginHeightAdjust, 0)));
+            } else {
+                MCXRPlayClient.xrOrigin.y += xrOriginHeightAdjust;
             }
 
             MCXRPlayClient.viewSpacePoses.updateGamePose(MCXRPlayClient.xrOrigin);

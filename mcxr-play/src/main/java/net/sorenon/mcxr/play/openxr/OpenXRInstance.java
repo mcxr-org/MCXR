@@ -42,7 +42,7 @@ public class OpenXRInstance implements AutoCloseable {
 
     public OpenXRSystem getSystem(int formFactor) throws XrException {
         try (MemoryStack stack = stackPush()) {
-            XrSystemGetInfo systemInfo = XrSystemGetInfo.malloc(stack);
+            XrSystemGetInfo systemInfo = XrSystemGetInfo.calloc(stack);
             systemInfo.set(XR10.XR_TYPE_SYSTEM_GET_INFO, 0, formFactor);
 
             LongBuffer lBuf = stack.longs(0);
@@ -57,14 +57,14 @@ public class OpenXRInstance implements AutoCloseable {
 
     public OpenXRSession createSession(OpenXRSystem system) throws XrException {
         try (MemoryStack stack = stackPush()) {
-            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.malloc(stack).set(
+            XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.calloc(stack).set(
                     XR10.XR_TYPE_SESSION_CREATE_INFO,
                     system.createOpenGLBinding(stack).address(),
                     0,
                     system.handle
             );
 
-            PointerBuffer handlePointer = stack.mallocPointer(1);
+            PointerBuffer handlePointer = stack.callocPointer(1);
             check(XR10.xrCreateSession(handle, sessionCreateInfo, handlePointer), "xrCreateSession");
             return new OpenXRSession(new XrSession(handlePointer.get(0), handle), system);
         }
@@ -119,7 +119,7 @@ public class OpenXRInstance implements AutoCloseable {
     public long getPath(String pathString) {
         return paths.computeIfAbsent(pathString, s -> {
             try (MemoryStack ignored = stackPush()) {
-                LongBuffer buf = stackMallocLong(1);
+                LongBuffer buf = stackCallocLong(1);
                 int xrResult = XR10.xrStringToPath(handle, pathString, buf);
                 if (xrResult == XR10.XR_ERROR_PATH_FORMAT_INVALID) {
                     throw new XrRuntimeException(xrResult, "Invalid path:\"" + pathString + "\"");
@@ -134,7 +134,7 @@ public class OpenXRInstance implements AutoCloseable {
     public void check(int result, String method) throws XrException {
         if (result >= 0) return;
 
-        ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
+        ByteBuffer str = stackCalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
         if (XR10.xrResultToString(handle, result, str) >= 0) {
             throw new XrException(result, method + " returned " + memUTF8(memAddress(str)));
         }
@@ -143,7 +143,7 @@ public class OpenXRInstance implements AutoCloseable {
     public void checkPanic(int result, String method) {
         if (result >= 0) return;
 
-        ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
+        ByteBuffer str = stackCalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
         if (XR10.xrResultToString(handle, result, str) >= 0) {
             throw new XrRuntimeException(result, method + " returned:" + memUTF8(memAddress(str)));
         }

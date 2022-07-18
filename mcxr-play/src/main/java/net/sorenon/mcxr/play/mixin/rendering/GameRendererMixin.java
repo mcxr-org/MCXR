@@ -8,11 +8,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.accessor.Matrix4fExt;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
-import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.RenderPass;
-import net.sorenon.mcxr.play.accessor.Matrix4fExt;
 import org.joml.Quaternionf;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -49,14 +48,14 @@ public abstract class GameRendererMixin {
         return new MCXRCamera();
     }
 
-    /**
-     * Update the framebuffer dimensions in MCXRMainTarget so we know if framebuffers need resizing
-     */
     @Inject(method = "resize", at = @At("HEAD"))
     void onResized(int i, int j, CallbackInfo ci) {
-        MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) minecraft.getMainRenderTarget();
-        MCXRMainTarget.minecraftFramebufferWidth = i;
-        MCXRMainTarget.minecraftFramebufferHeight = j;
+        XR_RENDERER.resizingCount += 1;
+    }
+
+    @Inject(method = "resize", at = @At("RETURN"))
+    void afterResized(int i, int j, CallbackInfo ci) {
+        XR_RENDERER.resizingCount -= 1;
     }
 
     /**
@@ -64,7 +63,7 @@ public abstract class GameRendererMixin {
      */
     @Inject(method = "renderLevel", at = @At("HEAD"))
     void cancelRenderHand(CallbackInfo ci) {
-        this.renderHand = XR_RENDERER.renderPass == RenderPass.VANILLA;
+//        this.renderHand = XR_RENDERER.renderPass == RenderPass.VANILLA;
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)

@@ -72,7 +72,7 @@ public class OpenXRSystem {
         Window window = Minecraft.getInstance().getWindow();
         long windowHandle = window.getWindow();
         if (Platform.get() == Platform.WINDOWS) {
-            return XrGraphicsBindingOpenGLWin32KHR.malloc(stack).set(
+            return XrGraphicsBindingOpenGLWin32KHR.calloc(stack).set(
                     KHROpenGLEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
                     NULL,
                     User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),

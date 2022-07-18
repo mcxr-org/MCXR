@@ -29,8 +29,6 @@ public class OpenXRSwapchain implements AutoCloseable {
 
     public final boolean SRGB;
 
-    public TextureTarget renderTarget;
-
     //TODO make two swapchains path for GL4ES compat
 
     public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session, int format, int width, int height) {
@@ -66,10 +64,15 @@ public class OpenXRSwapchain implements AutoCloseable {
                 leftFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 0);
                 rightFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 1);
             }
-
-            renderTarget = new TextureTarget((int) (width * PlayOptions.SSAA), (int) (height * PlayOptions.SSAA), true, Minecraft.ON_OSX);
-            renderTarget.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
         }
+    }
+
+    public int getRenderWidth() {
+        return (int) (width * PlayOptions.SSAA);
+    }
+
+    public int getRenderHeight() {
+        return (int) (height * PlayOptions.SSAA);
     }
 
     int acquireImage() {
@@ -92,16 +95,5 @@ public class OpenXRSwapchain implements AutoCloseable {
     @Override
     public void close() {
         XR10.xrDestroySwapchain(handle);
-        if (renderTarget != null) {
-            RenderSystem.recordRenderCall(() -> {
-                for (var fb : rightFramebuffers) {
-                    fb.destroyBuffers();
-                }
-                for (var fb : leftFramebuffers) {
-                    fb.destroyBuffers();
-                }
-                renderTarget.destroyBuffers();
-            });
-        }
     }
 }

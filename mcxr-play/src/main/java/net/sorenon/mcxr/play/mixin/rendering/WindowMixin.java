@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
-import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
+import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,6 +20,10 @@ public class WindowMixin {
     @Unique
     private final MCXRGuiManager FGM = MCXRPlayClient.INSTANCE.MCXRGuiManager;
 
+    @Unique
+    private final MCXRGameRenderer mcxrGameRenderer = MCXRPlayClient.MCXR_GAME_RENDERER;
+
+
     @ModifyVariable(method = "updateVsync", ordinal = 0, at = @At("HEAD"))
     boolean overwriteVsync(boolean v) {
         GLFW.glfwSwapInterval(0);
@@ -29,16 +33,24 @@ public class WindowMixin {
     @Inject(method = "getScreenWidth", at = @At("HEAD"), cancellable = true)
     void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
-            MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) Minecraft.getInstance().getMainRenderTarget();
-            cir.setReturnValue(MCXRMainTarget.viewWidth);
+            if (mcxrGameRenderer.resizingCount > 0) {
+                var swapchain = MCXRPlayClient.OPEN_XR_STATE.session.swapchain;
+                cir.setReturnValue(swapchain.getRenderWidth());
+            }
+            var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+            cir.setReturnValue(mainTarget.viewWidth);
         }
     }
 
     @Inject(method = "getScreenHeight", at = @At("HEAD"), cancellable = true)
     void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
-            MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) Minecraft.getInstance().getMainRenderTarget();
-            cir.setReturnValue(MCXRMainTarget.viewHeight);
+            if (mcxrGameRenderer.resizingCount > 0) {
+                var swapchain = MCXRPlayClient.OPEN_XR_STATE.session.swapchain;
+                cir.setReturnValue(swapchain.getRenderHeight());
+            }
+            var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+            cir.setReturnValue(mainTarget.viewHeight);
         }
     }
 
@@ -81,7 +93,6 @@ public class WindowMixin {
 
     @Unique
     boolean isCustomFramebuffer() {
-        MCXRMainTarget MCXRMainTarget = (MCXRMainTarget) Minecraft.getInstance().getMainRenderTarget();
-        return MCXRMainTarget != null && MCXRMainTarget.isCustomFramebuffer();
+        return mcxrGameRenderer.overrideWindowSize;
     }
 }

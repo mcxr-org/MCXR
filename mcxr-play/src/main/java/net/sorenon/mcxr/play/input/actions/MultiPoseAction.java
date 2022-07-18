@@ -12,7 +12,7 @@ import org.lwjgl.openxr.*;
 
 import java.nio.LongBuffer;
 
-import static org.lwjgl.system.MemoryStack.stackMallocPointer;
+import static org.lwjgl.system.MemoryStack.stackCallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -49,7 +49,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
                 localizedName = I18n.get(localizedName);
             }
 
-            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.malloc(stack).set(
+            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.calloc(stack).set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
                     NULL,
                     memUTF8("mcxr." + this.name),
@@ -58,7 +58,7 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
                     subactionPaths,
                     memUTF8(localizedName)
             );
-            PointerBuffer pp = stackMallocPointer(1);
+            PointerBuffer pp = stackCallocPointer(1);
             instance.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp), "xrCreateAction");
             handle = new XrAction(pp.get(), actionSet);
         }
@@ -69,14 +69,14 @@ public class MultiPoseAction extends Action implements SessionAwareAction, Input
         try (var stack = stackPush()) {
             spaces = new XrSpace[amount];
             for (int i = 0; i < amount; i++) {
-                XrActionSpaceCreateInfo action_space_info = XrActionSpaceCreateInfo.malloc(stack).set(
+                XrActionSpaceCreateInfo action_space_info = XrActionSpaceCreateInfo.calloc(stack).set(
                         XR10.XR_TYPE_ACTION_SPACE_CREATE_INFO,
                         NULL,
                         handle,
                         session.instance.getPath(subactionPathsStr.get(i)),
                         OpenXRState.POSE_IDENTITY
                 );
-                PointerBuffer pp = stackMallocPointer(1);
+                PointerBuffer pp = stackCallocPointer(1);
                 session.instance.check(XR10.xrCreateActionSpace(MCXRPlayClient.OPEN_XR_STATE.session.handle, action_space_info, pp), "xrCreateActionSpace");
                 spaces[i] = new XrSpace(pp.get(0), session.handle);
             }

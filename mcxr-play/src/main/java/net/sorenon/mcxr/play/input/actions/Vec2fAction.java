@@ -7,7 +7,7 @@ import org.lwjgl.openxr.XrActionStateVector2f;
 
 public class Vec2fAction extends SingleInputAction<Vector2f> {
 
-    private static final XrActionStateVector2f state = XrActionStateVector2f.malloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
+    private static final XrActionStateVector2f state = XrActionStateVector2f.calloc().type(XR10.XR_TYPE_ACTION_STATE_VECTOR2F);
 
     public Vec2fAction(String name) {
         super(name, XR10.XR_ACTION_TYPE_VECTOR2F_INPUT);

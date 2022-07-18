@@ -1,8 +1,10 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -14,7 +16,6 @@ import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.joml.Quaternionf;
 import org.objectweb.asm.Opcodes;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -32,10 +33,6 @@ public abstract class GameRendererMixin {
 
     @Shadow
     public abstract float getRenderDistance();
-
-    @Shadow
-    @Final
-    private Minecraft minecraft;
 
     @Shadow
     private boolean renderHand;
@@ -58,12 +55,24 @@ public abstract class GameRendererMixin {
         XR_RENDERER.resizingCount -= 1;
     }
 
+    @Unique
+    private boolean renderHandOld;
+
     /**
      * Cancels both vanilla and Iris hand rendering
+     * Note: If immersive portals is installed this can interfear
      */
     @Inject(method = "renderLevel", at = @At("HEAD"))
     void cancelRenderHand(CallbackInfo ci) {
-//        this.renderHand = XR_RENDERER.renderPass == RenderPass.VANILLA;
+        this.renderHandOld = this.renderHand;
+        if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
+            this.renderHand = false;
+        }
+    }
+
+    @Inject(method = "renderLevel", at = @At("RETURN"))
+    void restoreRenderHand(CallbackInfo ci) {
+        this.renderHand = this.renderHandOld;
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)

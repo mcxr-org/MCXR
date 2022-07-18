@@ -14,8 +14,7 @@
     "BowItemMixin"
   ],
   "client": [
-    "hands.client.MultiPlayerGameModeMixin",
-    "HumanoidModelMixin"
+    "hands.client.MultiPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

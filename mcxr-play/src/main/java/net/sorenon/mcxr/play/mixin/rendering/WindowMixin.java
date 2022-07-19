@@ -38,6 +38,9 @@ public class WindowMixin {
                 cir.setReturnValue(swapchain.getRenderWidth());
             }
             var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+            if (mcxrGameRenderer.guiMode) {
+                mainTarget = FGM.guiRenderTarget;
+            }
             cir.setReturnValue(mainTarget.viewWidth);
         }
     }
@@ -50,6 +53,9 @@ public class WindowMixin {
                 cir.setReturnValue(swapchain.getRenderHeight());
             }
             var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+            if (mcxrGameRenderer.guiMode) {
+                mainTarget = FGM.guiRenderTarget;
+            }
             cir.setReturnValue(mainTarget.viewHeight);
         }
     }

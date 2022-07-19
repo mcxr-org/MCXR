@@ -44,7 +44,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
@@ -236,7 +235,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     }
 
     /**
-     * @see Minecraft#runTick(boolean) 
+     * @see Minecraft#runTick(boolean)
      * To help performance and make debugging easier, render has been split into these three functions
      * This could have some compatibility issues, but I have only found one mixin (computercraft) which this may affect
      * ASMR's more advanced transformers could help with this in the future
@@ -302,7 +301,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
             this.profiler.popPush("gameRenderer");
             this.gameRenderer.render(this.pause ? this.pausePartialTick : this.timer.partialTick, frameStartTime, tick);
             //cursor rendering
-            if(this.screen != null) {
+            if (this.screen != null) {
                 renderCursor(new PoseStack(), (Minecraft) (Object) this);
             }
             if (XR_RENDERER.renderPass == RenderPass.GUI || XR_RENDERER.renderPass == RenderPass.VANILLA) {
@@ -366,12 +365,17 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         this.profiler.pop();
     }
 
-    @Inject(method = "getMainRenderTarget", at = @At("HEAD"), cancellable = true)
-    void swapWithGUI(CallbackInfoReturnable<RenderTarget> cir){
-        if (XR_RENDERER.guiMode) {
-            cir.setReturnValue(MCXRPlayClient.INSTANCE.MCXRGuiManager.guiRenderTarget);
-        }
-    }
+    /*
+    Iris compares the result of getMainRenderTarget with the currently bound render target to deduce whether shaders should be disabled
+    We use this to disable shaders while rendering the GUI because Iris can screw up the depth alpha fix
+    If a mod decides to get clever with render targets when rendering the GUI we will probably need to change the method used
+     */
+//    @Inject(method = "getMainRenderTarget", at = @At("HEAD"))
+//    void swapWithGUI(CallbackInfoReturnable<RenderTarget> cir){
+//        if (XR_RENDERER.guiMode) {
+//            cir.setReturnValue(MCXRPlayClient.INSTANCE.MCXRGuiManager.guiRenderTarget);
+//        }
+//    }
 
     @Unique
     private static void renderCursor(PoseStack matrices, Minecraft client) {
@@ -381,7 +385,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
         RenderSystem.setShaderColor(1.f, 1.f, 1.f, 1.f);
         RenderSystem.setShaderTexture(0, GUI_ICONS_LOCATION);
-        GuiComponent.blit(matrices, mouseX-7, mouseY-7,
+        GuiComponent.blit(matrices, mouseX - 7, mouseY - 7,
                 0.f, 0.f,
                 15, 15, 256, 256);
         RenderSystem.enableDepthTest();

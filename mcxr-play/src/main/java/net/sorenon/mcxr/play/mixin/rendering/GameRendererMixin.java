@@ -135,4 +135,11 @@ public abstract class GameRendererMixin {
             ci.cancel();
         }
     }
+
+    @Redirect(at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;clear(IZ)V", ordinal = 1), method = "render")
+    public void cancelClearGuiDepth(int i, boolean bl) {
+        if (XR_RENDERER.renderPass != RenderPass.GUI) {
+            RenderSystem.clear(i, bl);
+        }
+    }
 }

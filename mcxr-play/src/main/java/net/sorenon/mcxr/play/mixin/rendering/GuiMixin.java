@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Gui.class)
-public class InGameHudMixin {
+public class GuiMixin {
 
     @Unique
     private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
@@ -32,9 +32,14 @@ public class InGameHudMixin {
     }
 
     @Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
-    void cancelRenderCrosshair(PoseStack matrices, CallbackInfo ci){
+    void cancelRenderCrosshair(PoseStack matrices, CallbackInfo ci) {
         if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
             ci.cancel();
         }
+    }
+
+    @Inject(method = "render", at = @At("HEAD"))
+    void irisGuiFix(CallbackInfo ci) {
+        RenderSystem.enableDepthTest();
     }
 }

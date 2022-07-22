@@ -28,8 +28,7 @@
     ]
   },
   "mixins": [
-    "mcxr-play.mixins.json",
-    "mcxr-play.compat.iris.mixins.json"
+    "mcxr-play.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.6",

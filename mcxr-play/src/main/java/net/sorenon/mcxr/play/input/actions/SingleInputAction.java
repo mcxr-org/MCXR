@@ -6,7 +6,7 @@ import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.openxr.*;
 
-import static org.lwjgl.system.MemoryStack.stackMallocPointer;
+import static org.lwjgl.system.MemoryStack.stackCallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memUTF8;
@@ -32,7 +32,7 @@ public abstract class SingleInputAction<T> extends Action implements InputAction
                 localizedName = I18n.get(localizedName);
             }
 
-            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.malloc(stack).set(
+            XrActionCreateInfo actionCreateInfo = XrActionCreateInfo.calloc(stack).set(
                     XR10.XR_TYPE_ACTION_CREATE_INFO,
                     NULL,
                     memUTF8("mcxr." + this.name),
@@ -41,7 +41,7 @@ public abstract class SingleInputAction<T> extends Action implements InputAction
                     null,
                     memUTF8(localizedName)
             );
-            PointerBuffer pp = stackMallocPointer(1);
+            PointerBuffer pp = stackCallocPointer(1);
             instance.check(XR10.xrCreateAction(actionSet, actionCreateInfo, pp), "xrCreateAction");
             handle = new XrAction(pp.get(), actionSet);
         }

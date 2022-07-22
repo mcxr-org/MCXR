@@ -4,12 +4,17 @@
   "package": "net.sorenon.mcxr.play.mixin",
   "compatibilityLevel": "JAVA_17",
   "client": [
+    "ChatScreenMixin",
+    "EditBoxMixin",
     "FramebufferMixin",
-    "GameRendererMixin",
+    "resources.GameRendererMixin",
     "KeyboardInputMixin",
+    "MultiPlayerScreenMixin",
     "PauseScreenMixin",
     "SystemDetailsMixin",
     "TitleScreenMixin",
+    "TutorialToastMixin",
+    "resources.ResourceManagerReloadListenerMixin",
     "accessor.CameraAcc",
     "accessor.MouseHandlerAcc",
     "accessor.RenderTargetAcc",
@@ -23,17 +28,12 @@
     "hands.PlayerMixin",
     "hands.ThrownItemRendererMixin",
     "rendering.GameRendererMixin",
-    "rendering.InGameHudMixin",
+    "rendering.GuiMixin",
     "rendering.LevelRendererMixin",
     "rendering.Matrix4fMixin",
     "rendering.MinecraftMixin",
-    "rendering.WindowFramebufferMixin",
     "rendering.WindowMixin",
-    "roomscale.ClientPlayerEntityMixin",
-    "ChatScreenMixin",
-    "EditBoxMixin",
-    "MultiPlayerScreenMixin",
-    "TutorialToastMixin"
+    "roomscale.ClientPlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,10 +1,10 @@
 package net.sorenon.mcxr.play.openxr;
 
-import com.mojang.blaze3d.pipeline.TextureTarget;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL21;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 
@@ -26,9 +26,8 @@ public class OpenXRSwapchain implements AutoCloseable {
     public final XrRenderTarget[] leftFramebuffers;
     public final XrRenderTarget[] rightFramebuffers;
 
-    public TextureTarget renderTarget;
-
-    //TODO make two swapchains path for GL4ES compat
+    public final boolean sRGB;
+    public final boolean hdr;
 
     public OpenXRSwapchain(XrSwapchain handle, OpenXRSession session, int format, int width, int height) {
         this.handle = handle;
@@ -37,6 +36,9 @@ public class OpenXRSwapchain implements AutoCloseable {
         this.format = format;
         this.width = width;
         this.height = height;
+
+        this.sRGB = format == GL21.GL_SRGB8_ALPHA8 || format == GL21.GL_SRGB8;
+        this.hdr = !sRGB && format != GL11.GL_RGBA8 && format != GL31.GL_RGBA8_SNORM;
 
         try (MemoryStack stack = stackPush()) {
             IntBuffer intBuf = stackInts(0);
@@ -61,10 +63,15 @@ public class OpenXRSwapchain implements AutoCloseable {
                 leftFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 0);
                 rightFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 1);
             }
-
-            renderTarget = new TextureTarget((int) (width * PlayOptions.SSAA), (int) (height * PlayOptions.SSAA), true, Minecraft.ON_OSX);
-            renderTarget.setClearColor(239 / 255f, 50 / 255f, 61 / 255f, 255 / 255f);
         }
+    }
+
+    public int getRenderWidth() {
+        return (int) (width * PlayOptions.SSAA);
+    }
+
+    public int getRenderHeight() {
+        return (int) (height * PlayOptions.SSAA);
     }
 
     int acquireImage() {
@@ -87,16 +94,5 @@ public class OpenXRSwapchain implements AutoCloseable {
     @Override
     public void close() {
         XR10.xrDestroySwapchain(handle);
-        if (renderTarget != null) {
-            RenderSystem.recordRenderCall(() -> {
-                for (var fb : rightFramebuffers) {
-                    fb.destroyBuffers();
-                }
-                for (var fb : leftFramebuffers) {
-                    fb.destroyBuffers();
-                }
-                renderTarget.destroyBuffers();
-            });
-        }
     }
 }

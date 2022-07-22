@@ -1,6 +1,5 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
-import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -9,7 +8,11 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.Util;
-import net.minecraft.client.*;
+import net.minecraft.client.CloudStatus;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.Timer;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.gui.screens.Overlay;
@@ -32,7 +35,6 @@ import net.sorenon.mcxr.play.mixin.accessor.WindowAcc;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
 import net.sorenon.mcxr.play.openxr.OpenXRState;
 import net.sorenon.mcxr.play.openxr.XrRuntimeException;
-import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -42,12 +44,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
-import net.minecraft.client.gui.GuiComponent;
 
 @Mixin(Minecraft.class)
 public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnable> implements MinecraftExt {
@@ -178,11 +180,6 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     @Unique
     private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
-    @Redirect(method = "<init>", at = @At(value = "NEW", target = "com/mojang/blaze3d/pipeline/MainTarget"))
-    MainTarget createFramebuffer(int width, int height) {
-        return new MCXRMainTarget(width, height);
-    }
-
     @Inject(method = "run", at = @At("HEAD"))
     void start(CallbackInfo ci) {
         MCXRPlayClient.INSTANCE.MCXRGuiManager.init();
@@ -284,12 +281,18 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     @Override
     public void doRender(boolean tick, long frameStartTime, RenderPass renderPass) {
         XR_RENDERER.renderPass = renderPass;
+
+        if (renderPass == RenderPass.GUI) {
+            MCXRPlayClient.INSTANCE.MCXRGuiManager.guiRenderTarget.bindWrite(true);
+        } else {
+            this.mainRenderTarget.bindWrite(true);
+        }
+
         this.profiler.push("render");
         PoseStack matrixStack = RenderSystem.getModelViewStack();
         matrixStack.pushPose();
         RenderSystem.applyModelViewMatrix();
         RenderSystem.clear(16640, ON_OSX);
-        this.mainRenderTarget.bindWrite(true);
         FogRenderer.setupNoFog();
         this.profiler.push("display");
         RenderSystem.enableTexture();
@@ -362,6 +365,22 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
         this.profiler.pop();
     }
+
+    @Inject(method = "getMainRenderTarget", at = @At("HEAD"), cancellable = true)
+    void swapWithGUI(CallbackInfoReturnable<RenderTarget> cir){
+        if (XR_RENDERER.guiMode) {
+            cir.setReturnValue(MCXRPlayClient.INSTANCE.MCXRGuiManager.guiRenderTarget);
+        }
+    }
+
+    @Inject(method = "resizeDisplay", at = @At("HEAD"), cancellable = true)
+    void cancelResize(CallbackInfo ci) {
+        if (XR_RENDERER.isXrMode()) {
+            ci.cancel();
+        }
+    }
+
+    @Unique
     private static void renderCursor(PoseStack matrices, Minecraft client) {
         int mouseX = (int) ((client.mouseHandler.xpos()) * (double) client.getWindow().getGuiScaledWidth() / (double) client.getWindow().getWidth());
         int mouseY = (int) ((client.mouseHandler.ypos()) * (double) client.getWindow().getGuiScaledHeight() / (double) client.getWindow().getHeight());

@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.play.openxr;
 
+import com.mojang.blaze3d.pipeline.MainTarget;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlConst;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -28,9 +29,8 @@ import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
-import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.rendering.MCXRCamera;
-import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
 import org.apache.logging.log4j.LogManager;
@@ -39,13 +39,13 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
-import net.sorenon.mcxr.play.input.XrInput;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
 
 import java.nio.IntBuffer;
 
+import static net.minecraft.client.Minecraft.ON_OSX;
 import static org.lwjgl.system.MemoryStack.stackCallocInt;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
@@ -53,7 +53,7 @@ public class MCXRGameRenderer {
     private static final Logger LOGGER = LogManager.getLogger();
     private Minecraft client;
     private MinecraftExt clientExt;
-    private MCXRMainTarget mainRenderTarget;
+    private MainTarget mainRenderTarget;
     private MCXRCamera camera;
 
     private OpenXRInstance instance;
@@ -61,15 +61,20 @@ public class MCXRGameRenderer {
 
     public RenderPass renderPass = RenderPass.VANILLA;
     public ShaderInstance blitShader;
+    public ShaderInstance blitShaderSRGB;
     public ShaderInstance guiBlitShader;
 
     private boolean xrDisabled = false;
     private boolean xrReady = true;
 
+    public boolean overrideWindowSize = false;
+    public int reloadingDepth = 0;
+    public boolean guiMode = false;
+
     public void initialize(Minecraft client) {
         this.client = client;
         this.clientExt = (MinecraftExt) client;
-        mainRenderTarget = (MCXRMainTarget) client.getMainRenderTarget();
+        mainRenderTarget = (MainTarget) client.getMainRenderTarget();
         camera = (MCXRCamera) client.gameRenderer.getMainCamera();
     }
 
@@ -145,6 +150,7 @@ public class MCXRGameRenderer {
 
     private Struct renderXrGame(long predictedDisplayTime, MemoryStack stack) {
 //        try (MemoryStack stack = stackPush()) {
+        this.overrideWindowSize = true;
 
         XrViewState viewState = XrViewState.calloc(stack).type(XR10.XR_TYPE_VIEW_STATE);
         IntBuffer intBuf = stackCallocInt(1);
@@ -241,13 +247,10 @@ public class MCXRGameRenderer {
         client.getProfiler().pop();
 
         //Render GUI
-        mainRenderTarget.setFramebuffer(FGM.guiRenderTarget);
-        //Need to do this once framebuffer is gui
+        this.guiMode = true;
         XrInput.postTick(predictedDisplayTime);
-
-        mainRenderTarget.clear(Minecraft.ON_OSX);
         clientExt.doRender(true, frameStartTime, RenderPass.GUI);
-        mainRenderTarget.resetFramebuffer();
+        this.guiMode = false;
 
         FGM.guiPostProcessRenderTarget.bindWrite(true);
         this.guiBlitShader.setSampler("DiffuseSampler", FGM.guiRenderTarget.getColorTextureId());
@@ -256,6 +259,12 @@ public class MCXRGameRenderer {
         FGM.guiPostProcessRenderTarget.unbindWrite();
 
         OpenXRSwapchain swapchain = session.swapchain;
+
+        if (swapchain.getRenderWidth() != mainRenderTarget.viewWidth || swapchain.getRenderHeight() != mainRenderTarget.viewHeight) {
+            mainRenderTarget.resize(swapchain.getRenderWidth(), swapchain.getRenderHeight(), ON_OSX);
+            client.gameRenderer.resize(swapchain.getRenderWidth(), swapchain.getRenderHeight());
+        }
+
         int swapchainImageIndex = swapchain.acquireImage();
 
         // Render view to the appropriate part of the swapchain image.
@@ -278,7 +287,6 @@ public class MCXRGameRenderer {
             } else {
                 swapchainFramebuffer = swapchain.rightFramebuffers[swapchainImageIndex];
             }
-            mainRenderTarget.setXrFramebuffer(swapchain.renderTarget);
             RenderPass.XrWorld worldRenderPass = RenderPass.XrWorld.create();
             worldRenderPass.fov = session.viewBuffer.get(viewIndex).fov();
             worldRenderPass.eyePoses.updatePhysicalPose(session.viewBuffer.get(viewIndex).pose(), MCXRPlayClient.stageTurn, frameUserScale);
@@ -288,17 +296,27 @@ public class MCXRGameRenderer {
             clientExt.doRender(true, frameStartTime, worldRenderPass);
 
             swapchainFramebuffer.bindWrite(true);
-            this.blitShader.setSampler("DiffuseSampler", swapchain.renderTarget.getColorTextureId());
-            Uniform inverseScreenSize = this.blitShader.getUniform("InverseScreenSize");
-            if (inverseScreenSize != null) {
-                inverseScreenSize.set(1f / swapchainFramebuffer.width, 1f / swapchainFramebuffer.height);
+            ShaderInstance blitShader;
+            if (swapchain.sRGB) {
+                blitShader = this.blitShaderSRGB;
+            } else {
+                blitShader = this.blitShader;
             }
-            swapchain.renderTarget.setFilterMode(GlConst.GL_LINEAR);
+
+            blitShader.setSampler("DiffuseSampler", mainRenderTarget.getColorTextureId());
+            Uniform inverseScreenSize = blitShader.getUniform("InverseScreenSize");
+            if (inverseScreenSize != null) {
+                inverseScreenSize.set(1f / mainRenderTarget.width, 1f / mainRenderTarget.height);
+            }
+
+            mainRenderTarget.setFilterMode(GlConst.GL_LINEAR);
             this.blit(swapchainFramebuffer, blitShader);
             swapchainFramebuffer.unbindWrite();
         }
 
-        blitToBackbuffer(swapchain.renderTarget);
+        this.overrideWindowSize = false;
+
+        blitToBackbuffer(mainRenderTarget);
 
         instance.checkPanic(XR10.xrReleaseSwapchainImage(
                 swapchain.handle,
@@ -306,7 +324,6 @@ public class MCXRGameRenderer {
                         .type(XR10.XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO)
         ), "xrReleaseSwapchainImage");
 
-        mainRenderTarget.resetFramebuffer();
         camera.setPose(MCXRPlayClient.viewSpacePoses.getMinecraftPose());
         clientExt.postRender();
 
@@ -409,7 +426,7 @@ public class MCXRGameRenderer {
             projectionLayerView.subImage().imageArrayIndex(0);
         }
 
-        session.swapchain.leftFramebuffers[swapchainImageIndex].clear(Minecraft.ON_OSX);
+        session.swapchain.leftFramebuffers[swapchainImageIndex].clear(ON_OSX);
 
         instance.checkPanic(XR10.xrReleaseSwapchainImage(
                 session.swapchain.handle,
@@ -474,8 +491,8 @@ public class MCXRGameRenderer {
         matrixStack.setIdentity();
         RenderSystem.applyModelViewMatrix();
 
-        int width = mainRenderTarget.minecraftMainRenderTarget.width;
-        int height = mainRenderTarget.minecraftMainRenderTarget.height;
+        int width = client.getWindow().getWidth();
+        int height = client.getWindow().getHeight();
 
         GlStateManager._colorMask(true, true, true, true);
         GlStateManager._disableDepthTest();

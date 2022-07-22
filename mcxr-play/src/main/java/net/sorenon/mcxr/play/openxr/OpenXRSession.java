@@ -38,7 +38,6 @@ public class OpenXRSession implements AutoCloseable {
 
     public XrView.Buffer viewBuffer;
     public OpenXRSwapchain swapchain;
-    public boolean hdr = true;
 
     public int state;
     public boolean running;

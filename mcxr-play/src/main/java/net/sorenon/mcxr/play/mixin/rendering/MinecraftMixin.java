@@ -373,6 +373,13 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         }
     }
 
+    @Inject(method = "resizeDisplay", at = @At("HEAD"), cancellable = true)
+    void cancelResize(CallbackInfo ci) {
+        if (XR_RENDERER.isXrMode()) {
+            ci.cancel();
+        }
+    }
+
     @Unique
     private static void renderCursor(PoseStack matrices, Minecraft client) {
         int mouseX = (int) ((client.mouseHandler.xpos()) * (double) client.getWindow().getGuiScaledWidth() / (double) client.getWindow().getWidth());

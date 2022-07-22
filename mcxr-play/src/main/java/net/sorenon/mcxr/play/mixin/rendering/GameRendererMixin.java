@@ -1,10 +1,8 @@
 package net.sorenon.mcxr.play.mixin.rendering;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -47,12 +45,12 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "resize", at = @At("HEAD"))
     void onResized(int i, int j, CallbackInfo ci) {
-        XR_RENDERER.resizingCount += 1;
+        XR_RENDERER.reloadingDepth += 1;
     }
 
     @Inject(method = "resize", at = @At("RETURN"))
     void afterResized(int i, int j, CallbackInfo ci) {
-        XR_RENDERER.resizingCount -= 1;
+        XR_RENDERER.reloadingDepth -= 1;
     }
 
     @Unique

@@ -15,7 +15,7 @@ public class FramebufferMixin {
 
     @ModifyConstant(method = "createBuffers", constant = @Constant(intValue = GL_RGBA8))
     int increaseColorDepth(int value) {
-        if (MCXRPlayClient.OPEN_XR_STATE.session != null && MCXRPlayClient.OPEN_XR_STATE.session.hdr) {
+        if (MCXRPlayClient.OPEN_XR_STATE.session != null && MCXRPlayClient.OPEN_XR_STATE.session.swapchain.hdr) {
             return GL_RGBA16;
         } else {
             return GL_RGBA8;

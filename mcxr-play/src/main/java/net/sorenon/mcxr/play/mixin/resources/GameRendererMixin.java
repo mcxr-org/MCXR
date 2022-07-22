@@ -1,4 +1,4 @@
-package net.sorenon.mcxr.play.mixin;
+package net.sorenon.mcxr.play.mixin.resources;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.datafixers.util.Pair;

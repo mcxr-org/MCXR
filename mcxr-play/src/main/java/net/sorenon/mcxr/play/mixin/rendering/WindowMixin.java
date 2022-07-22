@@ -33,24 +33,26 @@ public class WindowMixin {
     @Inject(method = "getScreenWidth", at = @At("HEAD"), cancellable = true)
     void getFramebufferWidth(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
-            if (mcxrGameRenderer.resizingCount > 0) {
+            if (mcxrGameRenderer.reloadingDepth > 0) {
                 var swapchain = MCXRPlayClient.OPEN_XR_STATE.session.swapchain;
                 cir.setReturnValue(swapchain.getRenderWidth());
+            } else {
+                var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+                cir.setReturnValue(mainTarget.viewWidth);
             }
-            var mainTarget = Minecraft.getInstance().getMainRenderTarget();
-            cir.setReturnValue(mainTarget.viewWidth);
         }
     }
 
     @Inject(method = "getScreenHeight", at = @At("HEAD"), cancellable = true)
     void getFramebufferHeight(CallbackInfoReturnable<Integer> cir) {
         if (isCustomFramebuffer()) {
-            if (mcxrGameRenderer.resizingCount > 0) {
+            if (mcxrGameRenderer.reloadingDepth > 0) {
                 var swapchain = MCXRPlayClient.OPEN_XR_STATE.session.swapchain;
                 cir.setReturnValue(swapchain.getRenderHeight());
+            } else {
+                var mainTarget = Minecraft.getInstance().getMainRenderTarget();
+                cir.setReturnValue(mainTarget.viewHeight);
             }
-            var mainTarget = Minecraft.getInstance().getMainRenderTarget();
-            cir.setReturnValue(mainTarget.viewHeight);
         }
     }
 
@@ -93,6 +95,6 @@ public class WindowMixin {
 
     @Unique
     boolean isCustomFramebuffer() {
-        return mcxrGameRenderer.overrideWindowSize;
+        return mcxrGameRenderer.overrideWindowSize || (mcxrGameRenderer.isXrMode() && mcxrGameRenderer.reloadingDepth > 0);
     }
 }

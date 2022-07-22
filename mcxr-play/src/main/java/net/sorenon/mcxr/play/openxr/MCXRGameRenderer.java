@@ -68,7 +68,7 @@ public class MCXRGameRenderer {
     private boolean xrReady = true;
 
     public boolean overrideWindowSize = false;
-    public int resizingCount = 0;
+    public int reloadingDepth = 0;
     public boolean guiMode = false;
 
     public void initialize(Minecraft client) {
@@ -297,7 +297,7 @@ public class MCXRGameRenderer {
 
             swapchainFramebuffer.bindWrite(true);
             ShaderInstance blitShader;
-            if (swapchain.SRGB) {
+            if (swapchain.sRGB) {
                 blitShader = this.blitShaderSRGB;
             } else {
                 blitShader = this.blitShader;

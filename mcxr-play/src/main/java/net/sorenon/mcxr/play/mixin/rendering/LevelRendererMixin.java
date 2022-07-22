@@ -17,11 +17,11 @@ public class LevelRendererMixin {
 
     @Inject(method = "graphicsChanged", at = @At("HEAD"))
     void ongraphicsChanged(CallbackInfo ci) {
-        mcxrGameRenderer.resizingCount += 1;
+        mcxrGameRenderer.reloadingDepth += 1;
     }
 
     @Inject(method = "graphicsChanged", at = @At("RETURN"))
     void aftergraphicsChanged(CallbackInfo ci) {
-        mcxrGameRenderer.resizingCount -= 1;
+        mcxrGameRenderer.reloadingDepth -= 1;
     }
 }

@@ -2,18 +2,15 @@ package net.sorenon.mcxr.core;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.config.MCXRCoreConfig;
 import net.sorenon.mcxr.core.config.MCXRCoreConfigImpl;
@@ -82,8 +79,14 @@ public class MCXRCore implements ModInitializer {
                     pose1.read(buf);
                     pose2.read(buf);
                     pose3.read(buf);
-                    var height = buf.readFloat();
-                    server.execute(() -> setPlayerPoses(player, pose1, pose2, pose3, height, 0));
+//                    var height = buf.readFloat();
+                    server.execute(() -> {
+                        PlayerExt acc = (PlayerExt) player;
+                        acc.getHeadPose().set(pose1);
+                        acc.getLeftHandPose().set(pose2);
+                        acc.getRightHandPose().set(pose3);
+//                        acc.setHeight(height);
+                    });
                 });
 
         ServerPlayNetworking.registerGlobalReceiver(TELEPORT,
@@ -108,32 +111,6 @@ public class MCXRCore implements ModInitializer {
                         }
                     });
                 });
-    }
-
-    public void setPlayerPoses(Player player,
-                               Pose headPose,
-                               Pose leftHandPose,
-                               Pose rightHandPose,
-                               float height,
-                               float stoopid) {
-        PlayerExt acc = (PlayerExt) player;
-        acc.getHeadPose().set(headPose);
-        acc.getLeftHandPose().set(leftHandPose);
-        acc.getRightHandPose().set(rightHandPose);
-        acc.setHeight(height);
-
-        if (stoopid != 0) {
-            acc.getLeftHandPose().orientation.rotateX(stoopid);
-            acc.getRightHandPose().orientation.rotateX(stoopid);
-
-            FriendlyByteBuf buf = PacketByteBufs.create();
-            acc.getHeadPose().write(buf);
-            acc.getLeftHandPose().write(buf);
-            acc.getRightHandPose().write(buf);
-            buf.writeFloat(height);
-
-            ClientPlayNetworking.send(POSES, buf);
-        }
     }
 
     public static MCXRCoreConfig getCoreConfig() {

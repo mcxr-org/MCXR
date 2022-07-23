@@ -33,4 +33,9 @@ public class MCXRCoreConfigImpl implements MCXRCoreConfig {
     public boolean roomscaleMovement() {
         return true;
     }
+
+    @Override
+    public boolean handBasedItemUsage() {
+        return xrEnabled;
+    }
 }

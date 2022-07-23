@@ -24,6 +24,7 @@ import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.Pose;
 import net.sorenon.mcxr.core.Teleport;
 import net.sorenon.mcxr.core.accessor.PlayerExt;
+import net.sorenon.mcxr.core.client.MCXRCoreClient;
 import net.sorenon.mcxr.core.mixin.LivingEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -197,12 +198,12 @@ public class MCXRGameRenderer {
                     ClientPlayNetworking.send(MCXRCore.IS_XR_PLAYER, buf);
                     acc.setIsXr(true);
                 }
-                MCXRCore.INSTANCE.setPlayerPoses(
+                MCXRCoreClient.INSTANCE.setPlayerPoses(
                         Minecraft.getInstance().player,
                         MCXRPlayClient.viewSpacePoses.getMinecraftPose(),
                         XrInput.handsActionSet.gripPoses[0].getMinecraftPose(),
                         XrInput.handsActionSet.gripPoses[1].getMinecraftPose(),
-                        MCXRPlayClient.viewSpacePoses.getPhysicalPose().getPos().y,
+//                        MCXRPlayClient.viewSpacePoses.getMinecraftPose().getPos().y - (float) player.position().y,
                         (float) Math.toRadians(PlayOptions.handPitchAdjust)
                 );
 

@@ -29,14 +29,14 @@ public class MapRenderer {
             matrices.mulPose(Vector3f.ZP.rotationDegrees(180.0f));
             matrices.scale(0.38f, 0.38f, 0.38f);
 
-            matrices.translate(-1.0, -1.8, 0.1);
+            matrices.translate(-0.9, -1.8, 0.1);
         } else {
             matrices.mulPose(Vector3f.XP.rotationDegrees(-20f));
             matrices.mulPose(Vector3f.YP.rotationDegrees(180.0f));
             matrices.mulPose(Vector3f.ZP.rotationDegrees(180.0f));
             matrices.scale(0.38f, 0.38f, 0.38f);
 
-            matrices.translate(-1.0, -1.8, 0.1);
+            matrices.translate(-0.9, -1.8, 0.1);
         }
         matrices.scale(0.0138125f, 0.0138125f, 0.0138125f);
 

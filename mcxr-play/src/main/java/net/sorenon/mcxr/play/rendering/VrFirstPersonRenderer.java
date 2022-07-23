@@ -23,6 +23,7 @@ import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
@@ -57,6 +58,7 @@ import java.util.function.Supplier;
 
 import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
 import static net.minecraft.client.renderer.block.model.ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
+import static net.minecraft.world.item.UseAnim.BLOCK;
 import static net.sorenon.mcxr.core.JOMLUtil.convert;
 
 //TODO third person renderer
@@ -181,10 +183,10 @@ public class VrFirstPersonRenderer {
 
                 PoseStack.Pose entry = matrices.last();
 
-                vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
-                vertexConsumer.vertex(entry.pose(), -0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
-                vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, 0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
-                vertexConsumer.vertex(entry.pose(), 0.5f + (0.5f / 16f), 0.005f, -0.5f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), -0.3f + (0.5f / 16f), 0.005f, -0.3f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), -0.3f + (0.5f / 16f), 0.005f, 0.3f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), 0.3f + (0.5f / 16f), 0.005f, 0.3f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0.0625f).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
+                vertexConsumer.vertex(entry.pose(), 0.3f + (0.5f / 16f), 0.005f, -0.3f + (0.5f / 16f)).color(1.0F, 1.0F, 1.0F, 1.0f).uv(0.0625f, 0).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(15728880).normal(0.0F, 0.0F, 1.0F).endVertex();
 
                 matrices.popPose();
             }
@@ -418,6 +420,11 @@ public class VrFirstPersonRenderer {
 
         matrices.translate(0, 1 / 16f, -1.5f / 16f);
         matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(PlayOptions.handPitchAdjust));
+
+        if (hand == MCXRPlayClient.getMainHand()) {
+            float swing = -0.1f * Mth.sin((float) (Math.sqrt(Minecraft.getInstance().player.getAttackAnim(tickDelta)) * Math.PI * 2));
+            matrices.translate(0,0, swing);
+        }
     }
 
     public void renderShadow(WorldRenderContext context, Entity camEntity) {
@@ -494,7 +501,7 @@ public class VrFirstPersonRenderer {
                     transformToHand(matrices, handIndex, deltaTick);
 
                     if (handIndex == MCXRPlayClient.getMainHand()) {
-                        float swing = -0.4f * Mth.sin((float) (Math.sqrt(player.getAttackAnim(deltaTick)) * Math.PI * 2));
+                        float swing = -0.6f * Mth.sin((float) (Math.sqrt(player.getAttackAnim(deltaTick)) * Math.PI * 2));
                         matrices.mulPose(com.mojang.math.Vector3f.XP.rotation(swing));
                     }
 
@@ -521,6 +528,17 @@ public class VrFirstPersonRenderer {
                         MapRenderer.renderFirstPersonMap(matrices, consumers, light, stack, false, handIndex== 0);
                     }
                     else {
+                        matrices.scale(1.5f,1.5f,1.5f);
+                        if (stack.getUseAnimation() == BLOCK) {//hacky shield pose fix
+                            InteractionHand curHand= handIndex == 0 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+                            if(player.getUsedItemHand()==curHand && player.getUseItemRemainingTicks() > 0) {
+                                matrices.translate((2*handIndex-1)*-0.2-0.0465,0.06*(1-handIndex), 0);
+                                matrices.mulPose(Quaternion.fromXYZ(0,0,Math.toRadians((2*handIndex-1)*-3)));
+                                matrices.mulPose(Quaternion.fromXYZ(0,Math.toRadians((2*handIndex-1)*45),0));
+                                matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(-50),0,0));
+                            }
+                        }
+
                         Minecraft.getInstance().getEntityRenderDispatcher().getItemInHandRenderer().renderItem(
                                 player,
                                 stack,

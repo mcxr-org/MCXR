@@ -39,7 +39,7 @@ import net.sorenon.mcxr.play.MCXRGuiManager;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
-import net.sorenon.mcxr.play.input.actionsets.VanillaGameplayActionSet;
+import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.rendering.MCXRCamera;
 import net.sorenon.mcxr.play.rendering.MCXRMainTarget;
 import net.sorenon.mcxr.play.rendering.RenderPass;
@@ -50,7 +50,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFW;
-import net.sorenon.mcxr.play.input.XrInput;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
@@ -306,11 +305,12 @@ public class MCXRGameRenderer {
             }
             swapchain.renderTarget.setFilterMode(GlConst.GL_LINEAR);
             this.blit(swapchainFramebuffer, blitShader);
+
             //          ==render to eyes here after eye swapchain.rendertarget is sampled and blit-ed to swapchainFramebuffer (displayed image per eye?)==
             LocalPlayer player = this.client.player;
-            if(player!=null) {
+            if (player != null) {
                 //vanilla vignette
-                renderVignette(swapchainFramebuffer,cameraEntity);
+                renderVignette(swapchainFramebuffer, cameraEntity);
                 //portal
                 float g = Mth.lerp(client.getDeltaFrameTime(), player.oPortalTime, player.portalTime);
                 if (g > 0.0F && !player.hasEffect(MobEffects.CONFUSION)) {
@@ -318,27 +318,27 @@ public class MCXRGameRenderer {
                 }
                 //hurt
                 int hurtTime = player.hurtTime;
-                if(hurtTime>0){
-                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/hurt_vr.png"),0.4f,0f,0f,hurtTime*0.06f);
+                if (hurtTime > 0) {
+                    renderOverlay(swapchainFramebuffer, MCXRPlayClient.id("textures/misc/hurt_vr.png"), 0.4f, 0f, 0f, hurtTime * 0.06f);
                 }
                 //drowning
-                float drownPoint =Mth.clamp(2.5f*(0.7f-(float)player.getAirSupply()/(float)player.getMaxAirSupply()),0f,1f);
-                if(drownPoint>0f){
-                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/vignette_vr.png"),0.0f,0.0f,0.25f,drownPoint*0.9f);
+                float drownPoint = Mth.clamp(2.5f * (0.7f - (float) player.getAirSupply() / (float) player.getMaxAirSupply()), 0f, 1f);
+                if (drownPoint > 0f) {
+                    renderOverlay(swapchainFramebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0.0f, 0.0f, 0.25f, drownPoint * 0.9f);
                 }
                 //on fire
-                if(player.isOnFire()){
-                    renderOverlay(swapchainFramebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),1f,0.7f,0.2f,0.9f);
+                if (player.isOnFire()) {
+                    renderOverlay(swapchainFramebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 1f, 0.7f, 0.2f, 0.9f);
                 }
                 //frozen
                 if (player.getTicksFrozen() > 0) {
-                    float freeze = player.getPercentFrozen()*0.9f;
-                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/vignette_vr.png"),0.85f,0.85f,1f,freeze);
+                    float freeze = player.getPercentFrozen() * 0.9f;
+                    renderOverlay(swapchainFramebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0.85f, 0.85f, 1f, freeze);
                 }
                 //death point
-                float deathPoint =Mth.clamp(2.5f*(0.7f-player.getHealth()/player.getMaxHealth()),0f,1f);
-                if(!player.isCreative() && deathPoint>0f){
-                    renderOverlay(swapchainFramebuffer,new ResourceLocation("textures/misc/vignette_vr.png"),0.4f,0f,0f,deathPoint*0.9f);
+                float deathPoint = Mth.clamp(2.5f * (0.7f - player.getHealth() / player.getMaxHealth()), 0f, 1f);
+                if (!player.isCreative() && deathPoint > 0f) {
+                    renderOverlay(swapchainFramebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0.4f, 0f, 0f, deathPoint * 0.9f);
                 }
             }
 
@@ -551,24 +551,23 @@ public class MCXRGameRenderer {
         float v = (widthNormalized / heightNormalized) / 2;
 
         //maintain screen's square aspect ratio
-        int xOff=0;
-        int yOff=0;
-        boolean uncroppedMirror=false;//if true, will show the full square camera with black bars. If false, will crop to fill screen.
-        if(width>height){
-            if(uncroppedMirror) xOff=(width-height)/2;
-            else yOff=-(width-height)/2;
-        }
-        else{
-            if(uncroppedMirror) yOff=(height-width)/2;
-            else xOff=-(height-width)/2;
+        int xOff = 0;
+        int yOff = 0;
+        boolean uncroppedMirror = false;//if true, will show the full square camera with black bars. If false, will crop to fill screen.
+        if (width > height) {
+            if (uncroppedMirror) xOff = (width - height) / 2;
+            else yOff = -(width - height) / 2;
+        } else {
+            if (uncroppedMirror) yOff = (height - width) / 2;
+            else xOff = -(height - width) / 2;
         }
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferBuilder.vertex(xOff, height-yOff, 0.0).uv(0.0F, 0.0f).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width-xOff, height-yOff, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width-xOff, yOff, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(xOff, height - yOff, 0.0).uv(0.0F, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width - xOff, height - yOff, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width - xOff, yOff, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
         bufferBuilder.vertex(xOff, yOff, 0.0).uv(0.0F, 1.0F).color(255, 255, 255, 255).endVertex();
         BufferUploader.draw(bufferBuilder.end());
         shader.clear();
@@ -578,7 +577,12 @@ public class MCXRGameRenderer {
         matrixStack.popPose();
     }
 
-    private void renderOverlay(RenderTarget framebuffer, ResourceLocation texture, float red, float green, float blue,float alpha) {
+    private void renderOverlay(RenderTarget framebuffer,
+                               ResourceLocation texture,
+                               float red,
+                               float green,
+                               float blue,
+                               float alpha) {
         ShaderInstance shader = this.blitShader;//to eye
 
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
@@ -628,25 +632,25 @@ public class MCXRGameRenderer {
         matrixStack.popPose();
     }
 
-    private void renderVignette(RenderTarget framebuffer,Entity entity) {
+    private void renderVignette(RenderTarget framebuffer, Entity entity) {
         WorldBorder worldBorder = this.client.level.getWorldBorder();
-        float f = (float)worldBorder.getDistanceToBorder(entity);
+        float f = (float) worldBorder.getDistanceToBorder(entity);
         double d = Math.min(
-                worldBorder.getLerpSpeed() * (double)worldBorder.getWarningTime() * 1000.0, Math.abs(worldBorder.getLerpTarget() - worldBorder.getSize())
+                worldBorder.getLerpSpeed() * (double) worldBorder.getWarningTime() * 1000.0, Math.abs(worldBorder.getLerpTarget() - worldBorder.getSize())
         );
-        double e = Math.max((double)worldBorder.getWarningBlocks(), d);
-        if ((double)f < e) {
-            f = 1.0F - (float)((double)f / e);
+        double e = Math.max(worldBorder.getWarningBlocks(), d);
+        if ((double) f < e) {
+            f = 1.0F - (float) ((double) f / e);
         } else {
             f = 0.0F;
         }
-         if (f > 0.0F) {
+        if (f > 0.0F) {
             f = Mth.clamp(f, 0.0F, 1.0F);
-            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,f);
+            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"), 0f, 0f, 0f, f);
         } else {
             float l = LightTexture.getBrightness(entity.level.dimensionType(), entity.level.getMaxLocalRawBrightness(new BlockPos(entity.getX(), entity.getEyeY(), entity.getZ())));
             float g = Mth.clamp(1.0F - l, 0.0F, 1.0F);
-            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"),0f,0f,0f,g);
+            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"), 0f, 0f, 0f, g);
         }
     }
 

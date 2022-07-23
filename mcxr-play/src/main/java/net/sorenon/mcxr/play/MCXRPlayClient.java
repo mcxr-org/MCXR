@@ -39,6 +39,7 @@ import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
 public class MCXRPlayClient implements ClientModInitializer {
 
     public static Logger LOGGER = LogManager.getLogger("MCXR");
+    public static final String MODID = "mcxr-play";
 
     public static final OpenXRState OPEN_XR_STATE = new OpenXRState();
     public static final MCXRGameRenderer MCXR_GAME_RENDERER = new MCXRGameRenderer();
@@ -164,7 +165,7 @@ public class MCXRPlayClient implements ClientModInitializer {
     }
 
     public static ResourceLocation id(String name) {
-        return new ResourceLocation("mcxr-play", name);
+        return new ResourceLocation(MODID, name);
     }
 
     public static void resetView() {

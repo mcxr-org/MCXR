@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: "Ba $GITHUB_REF"
       - name: checkout repository
         uses: actions/checkout@v3
       - name: setup JDK 17

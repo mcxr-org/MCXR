@@ -38,7 +38,7 @@ jobs:
 
 #          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-          files: mcxr-core/build/libs
+          files: mcxr-core/build/libs/!(*-@(dev|sources|all)).jar
 
           version-type: beta
 

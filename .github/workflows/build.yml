@@ -22,10 +22,14 @@ jobs:
             ~/.gradle/loom-cache
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: build artifacts
-        run: ./gradlew build
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: build
+        run: ./gradlew buildOrPublish
+
       - name: capture build artifacts
         uses: actions/upload-artifact@v2
         with:

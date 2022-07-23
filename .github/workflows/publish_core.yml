@@ -22,9 +22,12 @@ jobs:
             ~/.gradle/loom-cache
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: build artifacts
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: build
         run: ./gradlew build
 
       - name: Upload artifacts to Modrinth, Curseforge and GitHub

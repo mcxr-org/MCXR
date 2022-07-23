@@ -2,15 +2,16 @@
 ![](https://img.shields.io/github/v/release/Sorenon/MCXR) ![](https://img.shields.io/discord/829825443480993802?label=discord) ![](https://img.shields.io/modrinth/dt/hcEWWGik?label=mcxr-core%20downloads) ![](https://img.shields.io/modrinth/dt/9jVyqpHR?label=mcxr-play%20downloads) ![](https://img.shields.io/reddit/subreddit-subscribers/MinecraftXR)
 <br/>A virtual reality / augmented reality mod for Minecraft using OpenXR and Fabric.
 
-**Socials**
-> [Discord](https://discord.gg/a7PPU9tYDU)
-> <br/>[Reddit](https://www.reddit.com/r/MinecraftXR)
-> <br/>[Modrinth](https://modrinth.com/user/Sorenon)
+**Links**
+- [Discord](https://discord.gg/a7PPU9tYDU) for troubleshooting or talking about the mod
+- Support Development by donating to my [Ko-Fi page](https://ko-fi.com/sorenon)
+- Download MCXR from [Modrinth](https://modrinth.com/user/Sorenon) or [Curseforge](https://www.curseforge.com/members/sorenon/projects)
+- [Reddit](https://www.reddit.com/r/MinecraftXR)
 
 **Information**
-> [VR Installation](#installation-for-vr-players)
-> <br/>[Non-VR and Server Installation](#installation-for-non-vr-players-and-servers)
-> <br/>[Comparing Competition](#comparisons-to-competitors)
+- [VR Installation](#installation-for-vr-players)
+- [Non-VR and Server Installation](#installation-for-non-vr-players-and-servers)
+- [Comparing Competition](#comparisons-to-competitors)
 
 ---------
 ### Installation for VR Players
@@ -41,7 +42,7 @@ Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). 
 | Immersive UI                | ⛔                              | ⛔                           | 🚧                           |
 | Immersive Controls          | ⛔                              | ✅                           | 🚧                           |
 | Open Source                 | ⛔                              | ✅                           | ✅                           |
-| Versions                    | Latest                          | 1.7.10, 1.10 to 1.18          | 1.18, 1.19                         |
+| Versions                    | Latest                          | 1.7.10, 1.10 to 1.18 with paid only 1.19 access | 1.18, 1.19                         |
 | Standalone Quest Support    | ⛔                              | ⛔                           | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft)|
 | VR Playermodels             | ⛔                              | ✅                           | 🚧                           |
 | Spigot Plugin Support       | ⛔                              | ✅                           | ⛔                           |

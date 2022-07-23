@@ -10,7 +10,7 @@ base {
     archivesBaseName = "mcxr-core"
 }
 
-version = "${properties["core_version"].toString()}+${getVersionMetadata()}"
+version = "${properties["core_version"].toString()}+mc${properties["minecraft_version"].toString()}"
 group = properties["maven_group"].toString()
 
 repositories {
@@ -99,24 +99,4 @@ loom {
             ideConfigGenerated(true)
         }
     }
-}
-
-fun getVersionMetadata(): String {
-    val buildId = System.getenv("GITHUB_RUN_NUMBER")
-
-    // CI builds only
-    if (buildId != null) {
-        return "build.${buildId}"
-    }
-
-    val grgit = extensions.getByName("grgit") as org.ajoberstar.grgit.Grgit;
-    val head = grgit.head()
-    var id = head.abbreviatedId
-
-    // Flag the build if the build tree is not clean
-    if (!grgit.status().isClean) {
-        id += "-dirty"
-    }
-
-    return "rev.${id}"
 }

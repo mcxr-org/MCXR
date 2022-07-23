@@ -1,6 +1,9 @@
 name: gradle-ci
 
-on: [ push, pull_request ]
+on:
+  release:
+    types:
+      - published
 
 jobs:
   build:
@@ -30,16 +33,17 @@ jobs:
       - name: build
         run: ./gradlew build
 
-      - name: Upload artifacts to Modrinth, Curseforge and GitHub
+      - if: ${{ contains(github.ref, 'core') }}
+        name: Upload MCXR-Core artifacts to Modrinth, Curseforge and GitHub
         uses: Kir-Antipov/mc-publish@v2.0
         with:
-          modrinth-id: hcEWWGik
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+        #            modrinth-id: hcEWWGik
+        #            modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+        #
+        #            curseforge-id: 631772
+        #            curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 
-          curseforge-id: 631772
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
           files: mcxr-core/build/libs/!(*-@(dev|sources|all)).jar
 

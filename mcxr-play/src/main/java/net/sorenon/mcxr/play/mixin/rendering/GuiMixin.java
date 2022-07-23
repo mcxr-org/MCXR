@@ -52,6 +52,7 @@ public class GuiMixin {
         if (XR_RENDERER.renderPass != RenderPass.VANILLA) {
             ci.cancel();
         }
+    }
 
     @Inject(method = "render", at = @At("HEAD"))
     void irisGuiFix(CallbackInfo ci) {

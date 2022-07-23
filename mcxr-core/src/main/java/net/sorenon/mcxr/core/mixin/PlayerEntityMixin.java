@@ -1,5 +1,6 @@
 package net.sorenon.mcxr.core.mixin;
 
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
@@ -30,7 +31,13 @@ import static net.minecraft.world.entity.player.Player.STANDING_DIMENSIONS;
 @Mixin(value = Player.class, priority = 10_000 /*Pehuki*/)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerExt {
 
-    @Shadow @Final private static Map<net.minecraft.world.entity.Pose, EntityDimensions> POSES;
+    @Shadow
+    @Final
+    private static Map<net.minecraft.world.entity.Pose, EntityDimensions> POSES;
+
+    @Shadow
+    public abstract boolean hurt(DamageSource source, float amount);
+
     @Unique
     public boolean isXr = false;
 
@@ -81,8 +88,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
             if (dynamicHeight) {
                 final float minHeight = 0.5f * scale;
                 final float currentHeight = this.getBbHeight();
-                final float wantedHeight = (headPose.pos.y - (float) this.position().y + 0.125f * scale);
-//                final float wantedHeight = height + 0.125f * scale;
+//                final float wantedHeight = (headPose.pos.y - (float) this.position().y + 0.125f * scale);
+                final float wantedHeight = height + 0.125f * scale;
                 final float deltaHeight = wantedHeight - currentHeight;
 
                 if (deltaHeight <= 0) {
@@ -135,10 +142,5 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerEx
     @Override
     public ThreadLocal<HumanoidArm> getOverrideTransform() {
         return this.overrideTransform;
-    };
-
-    @Override
-    public void setHeight(float height) {
-        this.height = height;
     }
 }

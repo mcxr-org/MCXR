@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.openxr.*;
@@ -37,7 +38,6 @@ public class OpenXRSession implements AutoCloseable {
 
     public XrView.Buffer viewBuffer;
     public OpenXRSwapchain swapchain;
-    public boolean hdr = true;
 
     public int state;
     public boolean running;
@@ -51,20 +51,20 @@ public class OpenXRSession implements AutoCloseable {
 
     public void createXRReferenceSpaces() {
         try (MemoryStack stack = stackPush()) {
-            XrPosef identityPose = XrPosef.malloc(stack);
+            XrPosef identityPose = XrPosef.calloc(stack);
             identityPose.set(
-                    XrQuaternionf.malloc(stack).set(0, 0, 0, 1),
+                    XrQuaternionf.calloc(stack).set(0, 0, 0, 1),
                     XrVector3f.calloc(stack)
             );
 
-            XrReferenceSpaceCreateInfo referenceSpaceCreateInfo = XrReferenceSpaceCreateInfo.malloc(stack);
+            XrReferenceSpaceCreateInfo referenceSpaceCreateInfo = XrReferenceSpaceCreateInfo.calloc(stack);
             referenceSpaceCreateInfo.set(
                     XR10.XR_TYPE_REFERENCE_SPACE_CREATE_INFO,
                     NULL,
                     XR10.XR_REFERENCE_SPACE_TYPE_STAGE,
                     identityPose
             );
-            PointerBuffer pp = stack.mallocPointer(1);
+            PointerBuffer pp = stack.callocPointer(1);
             instance.checkPanic(XR10.xrCreateReferenceSpace(handle, referenceSpaceCreateInfo, pp), "xrCreateReferenceSpace");
             xrAppSpace = new XrSpace(pp.get(0), handle);
 
@@ -76,7 +76,7 @@ public class OpenXRSession implements AutoCloseable {
 
     public void createSwapchain() throws XrException {
         try (MemoryStack stack = stackPush()) {
-            IntBuffer intBuf = stack.mallocInt(1);
+            IntBuffer intBuf = stack.callocInt(1);
             instance.checkPanic(XR10.xrEnumerateViewConfigurationViews(instance.handle, system.handle, viewConfigurationType, intBuf, null), "xrEnumerateViewConfigurationViews");
             XrViewConfigurationView.Buffer viewConfigs = new XrViewConfigurationView.Buffer(
                     OpenXRState.bufferStack(intBuf.get(0), XrViewConfigurationView.SIZEOF, XR10.XR_TYPE_VIEW_CONFIGURATION_VIEW)
@@ -92,18 +92,20 @@ public class OpenXRSession implements AutoCloseable {
                 throw new IllegalStateException("Tried to create swapchain from " + viewCountNumber + " views");
             }
             instance.checkPanic(XR10.xrEnumerateSwapchainFormats(handle, intBuf, null), "xrEnumerateSwapchainFormats");
-            LongBuffer swapchainFormats = stack.mallocLong(intBuf.get(0));
+            LongBuffer swapchainFormats = stack.callocLong(intBuf.get(0));
             instance.checkPanic(XR10.xrEnumerateSwapchainFormats(handle, intBuf, swapchainFormats), "xrEnumerateSwapchainFormats");
 
-            //TODO support SRGB formats
             long[] desiredSwapchainFormats = {
                     GL11.GL_RGB10_A2,
                     GL30.GL_RGBA16F,
                     GL30.GL_RGB16F,
+                    //SRGB formats
+                    GL21.GL_SRGB8_ALPHA8,
+                    GL21.GL_SRGB8,
                     // The two below should only be used as a fallback, as they are linear color formats without enough bits for color
                     // depth, thus leading to banding.
                     GL11.GL_RGBA8,
-                    GL31.GL_RGBA8_SNORM
+                    GL31.GL_RGBA8_SNORM,
             };
 
             long chosenFormat = 0;
@@ -131,7 +133,7 @@ public class OpenXRSession implements AutoCloseable {
             }
 
             XrViewConfigurationView viewConfig = viewConfigs.get(0);
-            XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.malloc(stack);
+            XrSwapchainCreateInfo swapchainCreateInfo = XrSwapchainCreateInfo.calloc(stack);
 
             swapchainCreateInfo.set(
                     XR10.XR_TYPE_SWAPCHAIN_CREATE_INFO,
@@ -147,7 +149,7 @@ public class OpenXRSession implements AutoCloseable {
                     1
             );
 
-            PointerBuffer handlePointer = stack.mallocPointer(1);
+            PointerBuffer handlePointer = stack.callocPointer(1);
             instance.checkPanic(XR10.xrCreateSwapchain(handle, swapchainCreateInfo, handlePointer), "xrCreateSwapchain");
             swapchain = new OpenXRSwapchain(new XrSwapchain(handlePointer.get(0), handle), this, (int) chosenFormat, swapchainCreateInfo.width(), swapchainCreateInfo.height());
         }
@@ -167,7 +169,7 @@ public class OpenXRSession implements AutoCloseable {
         switch (state) {
             case XR10.XR_SESSION_STATE_READY: {
                 try (MemoryStack stack = stackPush()) {
-                    XrSessionBeginInfo sessionBeginInfo = XrSessionBeginInfo.malloc(stack);
+                    XrSessionBeginInfo sessionBeginInfo = XrSessionBeginInfo.calloc(stack);
                     sessionBeginInfo.set(XR10.XR_TYPE_SESSION_BEGIN_INFO, 0, viewConfigurationType);
                     instance.checkPanic(XR10.xrBeginSession(handle, sessionBeginInfo), "xrBeginSession");
                 }

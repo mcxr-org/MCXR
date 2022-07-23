@@ -1,0 +1,50 @@
+{
+  "mcxr.options.title": "MCXR Opzioni",
+  "mcxr.options.uninitialize": "Spegnimento MCXR",
+  "mcxr.options.initialize": "Inizializzare MCXR",
+  "mcxr.options.pause": "Pausa VR",
+  "mcxr.options.unpause": "Riattivare VR",
+  "mcxr.options.walk_direction": "Direzione del cammino: %s",
+  "mcxr.options.swim_direction": "Direzione del nuoto: %s",
+  "mcxr.options.fly_direction": "Direzione di volo: %s",
+  "mcxr.move_direction.head" : "Testa",
+  "mcxr.move_direction.right_hand" : "Mano Destra",
+  "mcxr.move_direction.left_hand" : "Mano Sinistra",
+  "mcxr.options.enable_snap_turning": "Attiva Snap Turn",
+  "mcxr.options.enable_smooth_turning": "Attiva Smooth Turn",
+  "mcxr.options.index_touchpad": "Index Touchpad: %s",
+  "mcxr.index_touchpad.off": "Spento",
+  "mcxr.index_touchpad.right_hand": "Destra",
+  "mcxr.index_touchpad.left_hand": "Sinistra",
+
+  "mcxr.menu.reload": "Ricaricare Headset",
+  "mcxr.menu.session_not_created": "Nessun Headset Trovato:",
+
+  "openxr.form_factor.1": "Display montato sulla testa",
+  "openxr.form_factor.2": "display tenuto sulla testa",
+
+  "mcxr.error.form_factor_unavailable": "Il dispositivo non è attualmente disponibile, ad es. non è collegato o spento",
+
+  "mcxr.actionset.vanilla_gameplay": "Vanilla Gameplay",
+  "mcxr.action.attack": "Attaccare",
+  "mcxr.action.use": "Utilizzare",
+  "mcxr.action.inventory": "Inventario (Tenere per mettere in pausa)",
+  "mcxr.action.jump": "Saltare",
+  "mcxr.action.move": "Spostare",
+  "mcxr.action.turn": "Girare",
+  "mcxr.action.hotbar": "Hotbar",
+  "mcxr.action.sneak": "Sgattaiolare",
+  "mcxr.action.sprint": "Sprint",
+  "mcxr.action.reset_pos": "Riavvio della posizione",
+
+  "mcxr.actionset.gui": "GUI",
+  "mcxr.action.close": "Chiudi",
+  "mcxr.action.pickup": "Raccogliere / Lasciare",
+  "mcxr.action.split": "Dividere",
+  "mcxr.action.quick_move": "Muovi Tutto",
+  "mcxr.action.scroll": "Scorrere",
+
+  "mcxr.actionset.hands": "Mani",
+  "mcxr.action.aim": "Posizione di Mirare",
+  "mcxr.action.grip": "Posizione di Presa"
+}

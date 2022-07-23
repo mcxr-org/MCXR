@@ -27,7 +27,7 @@ public abstract class LivingEntityMixin extends Entity {
         }
 
         if (this instanceof PlayerExt acc && acc.isXR()) {
-            cir.setReturnValue(acc.getHeadPose().pos.y - (float) this.position().y);
+            cir.setReturnValue(acc.getHeadPose().pos.y);
         }
     }
 }

@@ -15,7 +15,7 @@ import oshi.util.tuples.Pair;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.lwjgl.system.MemoryStack.stackMallocPointer;
+import static org.lwjgl.system.MemoryStack.stackCallocPointer;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -53,13 +53,13 @@ public abstract class ActionSet implements AutoCloseable {
                 localizedName = I18n.get(localizedName);
             }
 
-            XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.malloc(stack).set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
+            XrActionSetCreateInfo actionSetCreateInfo = XrActionSetCreateInfo.calloc(stack).set(XR10.XR_TYPE_ACTION_SET_CREATE_INFO,
                     NULL,
                     memUTF8("mcxr." + this.name),
                     memUTF8(I18n.get(localizedName)),
                     priority
             );
-            PointerBuffer pp = stackMallocPointer(1);
+            PointerBuffer pp = stackCallocPointer(1);
             instance.check(XR10.xrCreateActionSet(instance.handle, actionSetCreateInfo, pp), "xrCreateActionSet");
             handle = new XrActionSet(pp.get(0), instance.handle);
 

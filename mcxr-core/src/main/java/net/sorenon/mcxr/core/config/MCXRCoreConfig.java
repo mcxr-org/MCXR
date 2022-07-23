@@ -13,5 +13,5 @@ public interface MCXRCoreConfig {
 
     boolean roomscaleMovement();
 
-    //TODO independent look direction
+    boolean handBasedItemUsage();
 }

@@ -1,10 +1,7 @@
 package net.sorenon.mcxr.play.rendering;
 
 import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Matrix3f;
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
@@ -74,6 +71,8 @@ public class VrFirstPersonRenderer {
     private final ModelPart[] slimArmModel = new ModelPart[2];
     private final ModelPart[] armModel = new ModelPart[2];
 
+    private final MultiBufferSource.BufferSource customBufferSource = MultiBufferSource.immediate(new BufferBuilder(1000));
+
     //private Item filledMap = Registry.ITEM.get(new ResourceLocation("minecraft", "filled_map"));
 
     public VrFirstPersonRenderer(MCXRGuiManager MCXRGuiManager) {
@@ -115,7 +114,7 @@ public class VrFirstPersonRenderer {
     public void renderLast(WorldRenderContext context) {
         Camera camera = context.camera();
         Entity camEntity = camera.getEntity();
-        MultiBufferSource.BufferSource consumers = (MultiBufferSource.BufferSource) context.consumers();
+        MultiBufferSource.BufferSource consumers = customBufferSource;
         PoseStack matrices = context.matrixStack();
         ClientLevel world = context.world();
         assert consumers != null;

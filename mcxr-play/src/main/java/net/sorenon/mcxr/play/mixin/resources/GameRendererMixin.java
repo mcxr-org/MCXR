@@ -1,4 +1,4 @@
-package net.sorenon.mcxr.play.mixin;
+package net.sorenon.mcxr.play.mixin.resources;
 
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.datafixers.util.Pair;
@@ -28,6 +28,7 @@ public class GameRendererMixin {
         ArrayList<Pair<ShaderInstance, Consumer<ShaderInstance>>> loadingShaders = new ArrayList<>();
         try {
             loadingShaders.add(Pair.of(new ShaderInstance(manager, "blit_screen_mcxr", DefaultVertexFormat.BLIT_SCREEN), (shader) -> MCXRPlayClient.MCXR_GAME_RENDERER.blitShader = shader));
+            loadingShaders.add(Pair.of(new ShaderInstance(manager, "blit_screen_mcxr_srgb", DefaultVertexFormat.BLIT_SCREEN), (shader) -> MCXRPlayClient.MCXR_GAME_RENDERER.blitShaderSRGB = shader));
             loadingShaders.add(Pair.of(new ShaderInstance(manager, "gui_blit_screen_mcxr", DefaultVertexFormat.BLIT_SCREEN), (shader) -> MCXRPlayClient.MCXR_GAME_RENDERER.guiBlitShader = shader));
         } catch (IOException e) {
             throw new RuntimeException("[MCXR] Could not load custom shaders", e);

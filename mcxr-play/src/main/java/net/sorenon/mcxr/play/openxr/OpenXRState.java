@@ -26,8 +26,8 @@ public class OpenXRState {
 
     public static Logger LOGGER = LogManager.getLogger("MCXR");
 
-    public static final XrPosef POSE_IDENTITY = XrPosef.malloc().set(
-            XrQuaternionf.malloc().set(0, 0, 0, 1),
+    public static final XrPosef POSE_IDENTITY = XrPosef.calloc().set(
+            XrQuaternionf.calloc().set(0, 0, 0, 1),
             XrVector3f.calloc()
     );
 
@@ -93,7 +93,7 @@ public class OpenXRState {
 
     public OpenXRInstance createOpenXRInstance() throws XrException {
         try (MemoryStack stack = stackPush()) {
-            IntBuffer numExtensions = stack.mallocInt(1);
+            IntBuffer numExtensions = stack.callocInt(1);
             checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
 
             XrExtensionProperties.Buffer properties = new XrExtensionProperties.Buffer(
@@ -123,12 +123,12 @@ public class OpenXRState {
                 throw new XrException(0, "OpenXR runtime does not support OpenGL, try using SteamVR instead");
             }
 
-            XrApplicationInfo applicationInfo = XrApplicationInfo.malloc(stack);
+            XrApplicationInfo applicationInfo = XrApplicationInfo.calloc(stack);
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);
             applicationInfo.applicationName(stack.UTF8("[MCXR] Minecraft VR"));
             applicationInfo.applicationVersion(1);
 
-            XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.malloc(stack);
+            XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.calloc(stack);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
                     0,
@@ -138,7 +138,7 @@ public class OpenXRState {
                     extensions.flip()
             );
 
-            PointerBuffer instancePtr = stack.mallocPointer(1);
+            PointerBuffer instancePtr = stack.callocPointer(1);
 
             int xrResult = XR10.xrCreateInstance(createInfo, instancePtr);
             if (xrResult == XR10.XR_ERROR_RUNTIME_FAILURE) {
@@ -186,7 +186,7 @@ public class OpenXRState {
         if (result >= 0) return;
 
         if (instance != null) {
-            ByteBuffer str = stackMalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
+            ByteBuffer str = stackCalloc(XR10.XR_MAX_RESULT_STRING_SIZE);
             if (XR10.xrResultToString(instance.handle, result, str) >= 0) {
                 throw new XrRuntimeException(result, memUTF8Safe(str));
             }

@@ -41,7 +41,7 @@ Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). 
 | Immersive UI                | ⛔                              | ⛔                           | 🚧                           |
 | Immersive Controls          | ⛔                              | ✅                           | 🚧                           |
 | Open Source                 | ⛔                              | ✅                           | ✅                           |
-| Versions                    | Latest                          | 1.7.10, 1.10 to 1.18          | 1.18                         |
+| Versions                    | Latest                          | 1.7.10, 1.10 to 1.18          | 1.18, 1.19                         |
 | Standalone Quest Support    | ⛔                              | ⛔                           | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft)|
 | VR Playermodels             | ⛔                              | ✅                           | 🚧                           |
 | Spigot Plugin Support       | ⛔                              | ✅                           | ⛔                           |

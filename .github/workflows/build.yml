@@ -3,10 +3,11 @@ name: gradle-ci
 on: [ push, pull_request ]
 
 jobs:
-  build:
+  i-am-confused:
     runs-on: ubuntu-latest
-  - name: a
-    run: echo '${{ github.ref }}'
+    steps:
+    - name: why god
+      run: echo '${{ github.ref }}'
 #
 #    steps:
 #      - name: checkout repository

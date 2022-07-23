@@ -1,0 +1,74 @@
+name: gradle-ci
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v3
+      - name: setup JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+          distribution: adopt
+      - name: update cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/loom-cache
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: build
+        run: ./gradlew build
+
+      - if: ${{ contains(github.ref, 'core') }}
+        name: Upload MCXR-Core artifacts to Modrinth, Curseforge and GitHub
+        uses: Kir-Antipov/mc-publish@v2.0
+        with:
+          modrinth-id: hcEWWGik
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: 631772
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          files: mcxr-core/build/libs/!(*-@(dev|sources|all)).jar
+
+          version-type: beta
+
+          loaders: fabric
+
+          version-resolver: latest
+
+      - if: ${{ contains(github.ref, 'play') }}
+        name: Upload MCXR-Play artifacts to Modrinth, Curseforge and GitHub
+        uses: Kir-Antipov/mc-publish@v2.0
+        with:
+          modrinth-id: hcEWWGik
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: 9jVyqpHR
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          files: mcxr-play/build/libs/!(*-@(dev|sources|all)).jar
+
+          version-type: beta
+
+          loaders: fabric
+
+          version-resolver: latest

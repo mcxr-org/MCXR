@@ -37,11 +37,11 @@ jobs:
         name: Upload MCXR-Core artifacts to Modrinth, Curseforge and GitHub
         uses: Kir-Antipov/mc-publish@v2.0
         with:
-        #            modrinth-id: hcEWWGik
-        #            modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-        #
-        #            curseforge-id: 631772
-        #            curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          modrinth-id: hcEWWGik
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: 631772
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
 
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -51,4 +51,24 @@ jobs:
 
           loaders: fabric
 
-          version-resolver: latest # Defaults to selecting the latest compatible version of Minecraft, using the tag from the fabric.mod.json
+          version-resolver: latest
+
+      - if: ${{ contains(github.ref, 'play') }}
+        name: Upload MCXR-Play artifacts to Modrinth, Curseforge and GitHub
+        uses: Kir-Antipov/mc-publish@v2.0
+        with:
+          modrinth-id: hcEWWGik
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: 9jVyqpHR
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          files: mcxr-play/build/libs/!(*-@(dev|sources|all)).jar
+
+          version-type: beta
+
+          loaders: fabric
+
+          version-resolver: latest

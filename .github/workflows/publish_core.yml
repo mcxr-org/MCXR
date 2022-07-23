@@ -26,10 +26,22 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: build artifacts
         run: ./gradlew build
-      - name: capture build artifacts
-        uses: actions/upload-artifact@v2
+
+      - name: Upload artifacts to Modrinth, Curseforge and GitHub
+        uses: Kir-Antipov/mc-publish@v2.0
         with:
-          name: Artifacts
-          path: |
-            mcxr-core/build/libs
-            mcxr-play/build/libs
+          modrinth-id: hcEWWGik
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+
+          curseforge-id: 631772
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          files: mcxr-core/build/libs
+
+          version-type: beta
+
+          loaders: fabric
+
+          version-resolver: latest # Defaults to selecting the latest compatible version of Minecraft, using the tag from the fabric.mod.json

@@ -49,8 +49,10 @@ dependencies {
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")
     implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")
-    //Rendering API when pls
-    include(modImplementation("com.github.Sorenon:fart:8ded02d6af")!!)
+}
+
+loom {
+    accessWidenerPath.set(file("src/main/resources/mcxr-play.accesswidener"))
 }
 
 sourceSets {

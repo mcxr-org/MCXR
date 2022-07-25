@@ -36,5 +36,6 @@
     "minecraft": "1.19.x",
     "mcxr-core": ">=${core_version}",
     "java": ">=17"
-  }
+  },
+  "accessWidener": "mcxr-play.accesswidener"
 }

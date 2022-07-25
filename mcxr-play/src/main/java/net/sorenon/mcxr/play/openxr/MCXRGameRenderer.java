@@ -665,11 +665,11 @@ public class MCXRGameRenderer {
         }
         if (f > 0.0F) {
             f = Mth.clamp(f, 0.0F, 1.0F);
-            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"), 0f, 0f, 0f, f);
+            renderOverlay(framebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0f, 0f, 0f, f);
         } else {
             float l = LightTexture.getBrightness(entity.level.dimensionType(), entity.level.getMaxLocalRawBrightness(new BlockPos(entity.getX(), entity.getEyeY(), entity.getZ())));
             float g = Mth.clamp(1.0F - l, 0.0F, 1.0F);
-            renderOverlay(framebuffer, new ResourceLocation("textures/misc/vignette_vr.png"), 0f, 0f, 0f, g);
+            renderOverlay(framebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0f, 0f, 0f, g);
         }
     }
 

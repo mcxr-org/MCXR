@@ -1,5 +1,7 @@
 package net.sorenon.mcxr.play;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.ClientModInitializer;
@@ -17,7 +19,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.HumanoidArm;
-import net.sorenon.fart.FartRenderEvents;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
@@ -115,7 +116,7 @@ public class MCXRPlayClient implements ClientModInitializer {
 
                     var hitResult = Minecraft.getInstance().hitResult;
                     if (hitResult != null && !this.MCXRGuiManager.isScreenOpen()) {
-                        Vec3 camPos = camera.getPosition();
+                        Vec3 camPos = context.camera().getPosition();
                         matrices.pushPose();
 
                         double x = hitResult.getLocation().x();
@@ -131,8 +132,8 @@ public class MCXRPlayClient implements ClientModInitializer {
                         }
 
                         matrices.scale(0.5f, 1, 0.5f);
-                        RenderType cursorLayer = RenderType.entityCutoutNoCull(GUI_ICONS_LOCATION);
-                        VertexConsumer vertexConsumer = context.consumers().getBuffer(cursorLayer);
+                        RenderType SHADOW_LAYER = RenderType.entityCutoutNoCull(GUI_ICONS_LOCATION);
+                        VertexConsumer vertexConsumer = context.consumers().getBuffer(SHADOW_LAYER);
 
                         PoseStack.Pose entry = matrices.last();
 
@@ -157,9 +158,18 @@ public class MCXRPlayClient implements ClientModInitializer {
             }
         });
 
-        FartRenderEvents.LAST.register(context -> {
+        WorldRenderEvents.LAST.register(context -> {
             if (MCXR_GAME_RENDERER.renderPass instanceof RenderPass.XrWorld) {
+                var poseStack = RenderSystem.getModelViewStack();
+                poseStack.pushPose();
+                poseStack.setIdentity();
+                RenderSystem.applyModelViewMatrix();
+                GlStateManager._disableDepthTest();
+
                 vrFirstPersonRenderer.renderLast(context);
+
+                poseStack.popPose();
+                RenderSystem.applyModelViewMatrix();
             }
         });
     }

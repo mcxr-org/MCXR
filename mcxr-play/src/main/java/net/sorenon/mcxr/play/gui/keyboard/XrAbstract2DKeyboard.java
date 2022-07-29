@@ -39,7 +39,7 @@ public abstract class XrAbstract2DKeyboard {
         _shiftCharset = new char[][] {
                 new char[] {'~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '\b'},
                 new char[] {'\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '|'},
-                new char[] {'\f', 'A', 'S', 'D', 'F', 'G', 'G', 'J', 'K', 'L', ':', '\"', '\r'},
+                new char[] {'\f', 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '\"', '\r'},
                 new char[] {'■','\n','■', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?'},
                 new char[] {' '}
         };

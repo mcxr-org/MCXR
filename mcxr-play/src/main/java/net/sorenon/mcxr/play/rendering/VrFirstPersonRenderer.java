@@ -527,13 +527,25 @@ public class VrFirstPersonRenderer {
                     }
                     else {
                         matrices.scale(1.5f,1.5f,1.5f);
-                        if (stack.getUseAnimation() == BLOCK) {//hacky shield pose fix
-                            InteractionHand curHand= handIndex == 0 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-                            if(player.getUsedItemHand()==curHand && player.getUseItemRemainingTicks() > 0) {
-                                matrices.translate((2*handIndex-1)*-0.2-0.0465,0.06*(1-handIndex), 0);
-                                matrices.mulPose(Quaternion.fromXYZ(0,0,Math.toRadians((2*handIndex-1)*-3)));
-                                matrices.mulPose(Quaternion.fromXYZ(0,Math.toRadians((2*handIndex-1)*45),0));
-                                matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(-50),0,0));
+                        //held item animations
+                        InteractionHand curHand= handIndex == 0 ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+                        if(player.getUsedItemHand()==curHand && player.getUseItemRemainingTicks() > 0 && player.isUsingItem()) {
+                            switch (stack.getUseAnimation()) {
+                                case EAT:
+                                case DRINK:
+                                    float f = (float)player.getUseItemRemainingTicks() - deltaTick + 1.0F;
+                                    float g = f / (float)stack.getUseDuration();
+                                    if (g < 0.8F) {
+                                        float h = Mth.abs(Mth.cos(f / 4.0F * 3.1415927F) * -0.07F);
+                                        matrices.translate(0.0, (double)h, 0.0);
+                                    }
+                                    matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(20), 0, 0));
+                                    break;
+                                case BLOCK: //hacky shield pose fix
+                                    matrices.translate((2 * handIndex - 1) * -0.2 - 0.0465, 0.06 * (1 - handIndex), 0);
+                                    matrices.mulPose(Quaternion.fromXYZ(0, 0, Math.toRadians((2 * handIndex - 1) * -3)));
+                                    matrices.mulPose(Quaternion.fromXYZ(0, Math.toRadians((2 * handIndex - 1) * 45), 0));
+                                    matrices.mulPose(Quaternion.fromXYZ(Math.toRadians(-50), 0, 0));
                             }
                         }
 

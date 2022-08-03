@@ -10,6 +10,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
@@ -21,6 +22,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -43,6 +45,7 @@ import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
 import net.sorenon.mcxr.play.openxr.MCXRGameRenderer;
+import net.tr7zw.MapRenderer;
 import org.joml.Math;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -125,11 +128,11 @@ public class VrFirstPersonRenderer {
             matrices.mulPose(new Quaternion((float) FGM.orientation.x, (float) FGM.orientation.y, (float) FGM.orientation.z, (float) FGM.orientation.w));
             renderGuiQuad(matrices.last(), consumers);
             matrices.popPose();
-            consumers.endLastBatch();
+//            consumers.endLastBatch();
         }
 
         if (camEntity != null) {
-            renderShadow(context, camEntity);
+            renderShadow(context, consumers, camEntity);
 
             //Render vanilla crosshair ray if controller raytracing is disabled
             if (!FGM.isScreenOpen() && !MCXRCore.getCoreConfig().controllerRaytracing()) {
@@ -267,7 +270,7 @@ public class VrFirstPersonRenderer {
                 matrices.translate(finalPos.x, finalPos.y, finalPos.z);
                 PoseStack.Pose entry = matrices.last();
 
-                VertexConsumer vertexConsumer = context.consumers().getBuffer(RenderType.entityTranslucent(new ResourceLocation("textures/misc/shadow.png")));
+                VertexConsumer vertexConsumer = consumers.getBuffer(RenderType.entityTranslucent(new ResourceLocation("textures/misc/shadow.png")));
 
                 float alpha = 0.6f;
                 float radius = camEntity.getBbWidth() / 2;
@@ -317,7 +320,7 @@ public class VrFirstPersonRenderer {
 
                     consumer = consumers.getBuffer(LINE_CUSTOM.apply(4.0, false));
                     consumer.vertex(model, 0, 0, 0).color(1f, 1f, 1f, 1f).normal(normal, 0, -1, 0).endVertex();
-                    consumer.vertex(model, 0, -1, 0).color(1f, 1f, 1f, 1f).normal(normal, 0, -1, 0).endVertex();
+                    consumer.vertex(model, 0, -0.6f, 0).color(1f, 1f, 1f, 1f).normal(normal, 0, -1, 0).endVertex();
                 }
             }
 
@@ -340,8 +343,6 @@ public class VrFirstPersonRenderer {
             matrices.popPose(); //1
         }
 
-        consumers.endBatch();
-
         //Render HUD
         if (!FGM.isScreenOpen() && XrInput.handsActionSet.grip.isActive[0]) {
             matrices.pushPose();
@@ -357,11 +358,51 @@ public class VrFirstPersonRenderer {
             matrices.translate(2 / 16f, 9 / 16f, -1 / 16f);
             matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(-75f));
             renderGuiQuad(matrices.last(), consumers);
-            consumers.endLastBatch();
+//            consumers.endLastBatch();
             matrices.popPose();
 
             matrices.popPose();
         }
+
+        //TODO
+        if (FGM.isScreenOpen() && FGM.position.distanceTo(JOMLUtil.convert(MCXRPlayClient.viewSpacePoses.getUnscaledPhysicalPose().pos)) > 1 || true) {
+            matrices.pushPose();
+
+            transformToHand(matrices, 1 - MCXRPlayClient.getMainHand(), context.tickDelta());
+
+            matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(-90.0F));
+            matrices.mulPose(com.mojang.math.Vector3f.YP.rotationDegrees(180.0F));
+
+            matrices.translate(-2 / 16f, -12 / 16f, 0);
+
+            matrices.pushPose();
+            matrices.translate(2 / 16f, 12 / 16f, -1 / 16f);
+            matrices.mulPose(com.mojang.math.Vector3f.XP.rotationDegrees(-75f));
+
+            matrices.scale(-0.005f, -0.005f, -0.005f);
+//            renderGuiQuad(matrices.last(), consumers);
+//            consumers.endLastBatch();
+
+            var text = Component.literal("Click thumbstick to reset GUI");
+            int i = "deadmau5".equals(text.getString()) ? -10 : 0;
+            boolean bl = true;
+
+            Matrix4f matrix4f = matrices.last().pose();
+            float g = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+            int j = (int)(g * 255.0F) << 24;
+            Font font = Minecraft.getInstance().font;
+            float h = (float)(-font.width(text) / 2);
+            font.drawInBatch(text, h, (float)i, 553648127, false, matrix4f, consumers, bl, j, LightTexture.FULL_BRIGHT);
+            if (bl) {
+                font.drawInBatch(text, h, (float)i, -1, false, matrix4f, consumers, false, 0, LightTexture.FULL_BRIGHT);
+            }
+
+            matrices.popPose();
+
+            matrices.popPose();
+        }
+
+        consumers.endBatch();
     }
 
     private static void stringVertex(float x,
@@ -421,11 +462,11 @@ public class VrFirstPersonRenderer {
 
         if (hand == MCXRPlayClient.getMainHand()) {
             float swing = -0.1f * Mth.sin((float) (Math.sqrt(Minecraft.getInstance().player.getAttackAnim(tickDelta)) * Math.PI * 2));
-            matrices.translate(0,0, swing);
+            matrices.translate(0, 0, swing);
         }
     }
 
-    public void renderShadow(WorldRenderContext context, Entity camEntity) {
+    public void renderShadow(WorldRenderContext context, MultiBufferSource consumers, Entity camEntity) {
         PoseStack matrices = context.matrixStack();
         Vec3 camPos = context.camera().getPosition();
         matrices.pushPose();
@@ -436,7 +477,7 @@ public class VrFirstPersonRenderer {
         PoseStack.Pose entry = matrices.last();
 
         RenderType SHADOW_LAYER = RenderType.entityShadow(new ResourceLocation("textures/misc/shadow.png"));
-        VertexConsumer vertexConsumer = context.consumers().getBuffer(SHADOW_LAYER);
+        VertexConsumer vertexConsumer = consumers.getBuffer(SHADOW_LAYER);
 
         float alpha = Mth.clamp((float) Math.sqrt(camPos.distanceToSqr(x, y, z)) / 2f - 0.5f, 0.25f, 1);
         float radius = camEntity.getBbWidth() / 2;
@@ -592,13 +633,22 @@ public class VrFirstPersonRenderer {
         }
     }
 
-    public static void renderCrosshair(MultiBufferSource consumerProvider, PoseStack poseStack, float size, boolean depthTest) {
+    public static void renderCrosshair(MultiBufferSource consumerProvider,
+                                       PoseStack poseStack,
+                                       float size,
+                                       boolean depthTest) {
         renderCrosshair(consumerProvider, poseStack, size, depthTest, true, true, true);
     }
 
-    public static void renderCrosshair(MultiBufferSource consumerProvider, PoseStack poseStack, float size, boolean depthTest, boolean drawX, boolean drawY, boolean drawZ) {
+    public static void renderCrosshair(MultiBufferSource consumerProvider,
+                                       PoseStack poseStack,
+                                       float size,
+                                       boolean depthTest,
+                                       boolean drawX,
+                                       boolean drawY,
+                                       boolean drawZ) {
         Matrix4f model = poseStack.last().pose();
-        Matrix3f normal = poseStack.last().normal() ;
+        Matrix3f normal = poseStack.last().normal();
 
         VertexConsumer consumer = consumerProvider.getBuffer(LINE_COLOR_ONLY.apply(4d, depthTest));
         if (drawX) {

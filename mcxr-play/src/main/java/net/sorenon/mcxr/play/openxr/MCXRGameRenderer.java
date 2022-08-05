@@ -38,6 +38,7 @@ import net.sorenon.mcxr.core.accessor.PlayerExt;
 import net.sorenon.mcxr.core.client.MCXRCoreClient;
 import net.sorenon.mcxr.core.mixin.LivingEntityAcc;
 import net.sorenon.mcxr.play.MCXRGuiManager;
+import net.sorenon.mcxr.play.MCXRPlatform;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.accessor.MinecraftExt;
@@ -321,10 +322,11 @@ public class MCXRGameRenderer {
 
             blitShader.setSampler("DiffuseSampler", mainRenderTarget.getColorTextureId());
 
-            //TODO QC remove uniform if on quest
-            Uniform inverseScreenSize = blitShader.getUniform("InverseScreenSize");
-            if (inverseScreenSize != null) {
-                inverseScreenSize.set(1f / mainRenderTarget.width, 1f / mainRenderTarget.height);
+            if(MCXRPlayClient.PLATFORM.getPlatform() != MCXRPlatform.PlatformType.Quest) {
+                Uniform inverseScreenSize = blitShader.getUniform("InverseScreenSize");
+                if (inverseScreenSize != null) {
+                    inverseScreenSize.set(1f / mainRenderTarget.width, 1f / mainRenderTarget.height);
+                }
             }
 
             mainRenderTarget.setFilterMode(GlConst.GL_LINEAR);

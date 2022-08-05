@@ -10,7 +10,7 @@ base {
     archivesBaseName = "mcxr-desktop"
 }
 
-version = "0.1.1+mc${properties["minecraft_version"].toString()}"
+version = "${properties["desktop_version"].toString()}+mc${properties["minecraft_version"].toString()}"
 group = properties["maven_group"].toString()
 
 repositories {
@@ -56,13 +56,11 @@ sourceSets {
 
 tasks {
     processResources {
-        val playVersion = project.properties["play_version"].toString();
-        val coreVersion = project.properties["core_version"].toString();
-        inputs.property("play_version", playVersion)
-        inputs.property("core_version", coreVersion)
+        val desktopVersion = project.properties["desktop_version"].toString();
+        inputs.property("desktop_version", desktopVersion)
 
         filesMatching("fabric.mod.json") {
-//            expand("play_version" to playVersion, "core_version" to coreVersion)
+            expand("desktop_version" to desktopVersion)
         }
     }
 

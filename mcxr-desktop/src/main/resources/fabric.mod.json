@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "mcxr-desktop",
-  "version": "0.1.1",
+  "version": "${desktop_version}",
   "name": "[MCXR] Desktop",
   "description": "VR!",
   "authors": [

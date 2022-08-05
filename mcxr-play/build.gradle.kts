@@ -10,7 +10,7 @@ base {
     archivesBaseName = "mcxr-play"
 }
 
-version = "${properties["play_version"].toString()}+mc${properties["minecraft_version"].toString()}"
+version = "0.0.0+mc${properties["minecraft_version"].toString()}"
 group = properties["maven_group"].toString()
 
 repositories {

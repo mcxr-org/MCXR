@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "mcxr-play",
-  "version": "${play_version}",
+  "version": "0.0.0",
   "name": "[MCXR] Play",
   "description": "VR!",
   "authors": [

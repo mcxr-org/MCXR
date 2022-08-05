@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
 import net.sorenon.mcxr.play.MCXRPlatform;
-import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWNativeGLX;
@@ -19,12 +19,14 @@ import org.lwjgl.system.Struct;
 import org.lwjgl.system.linux.X11;
 import org.lwjgl.system.windows.User32;
 
+import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Objects;
 
 import static net.sorenon.mcxr.play.MCXRPlayClient.PLATFORM;
 import static org.lwjgl.opengl.GLX13.*;
 import static org.lwjgl.system.MemoryStack.stackInts;
+import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
@@ -97,5 +99,33 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
     @Override
     public PlatformType getPlatform() {
         return PlatformType.Desktop;
+    }
+
+    @Override
+    public long xrInstanceCreateInfoNext() {
+        return 0;
+    }
+
+    @Override
+    public int[] enumerateSwapchainImages(OpenXRInstance instance, XrSwapchain handle) {
+        try (MemoryStack stack = stackPush()) {
+            IntBuffer intBuf = stackInts(0);
+
+            instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
+
+            int imageCount = intBuf.get(0);
+            XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.calloc(imageCount, stack);
+            for (XrSwapchainImageOpenGLKHR image : swapchainImageBuffer) {
+                image.type(KHROpenGLEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
+            }
+
+            instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
+
+            var arr = new int[imageCount];
+            for (int i = 0; i < imageCount; i++) {
+                arr[i] = swapchainImageBuffer.get(i).image();
+            }
+            return arr;
+        }
     }
 }

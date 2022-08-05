@@ -1,7 +1,9 @@
 package net.sorenon.mcxr.play;
 
+import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.openxr.XrExtensionProperties;
+import org.lwjgl.openxr.XrSwapchain;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
 
@@ -17,9 +19,9 @@ public interface MCXRPlatform {
 
     PlatformType getPlatform();
 
-    default long xrInstanceCreateInfoNext() {
-        return 0;
-    }
+    long xrInstanceCreateInfoNext();
+
+    int[] enumerateSwapchainImages(OpenXRInstance instance, XrSwapchain swapchain);
 
     enum PlatformType {
         Desktop,

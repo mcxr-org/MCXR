@@ -1,17 +1,21 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.rendering.XrRenderTarget;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL31;
-import org.lwjgl.openxr.*;
+import org.lwjgl.openxr.XR10;
+import org.lwjgl.openxr.XrSwapchain;
+import org.lwjgl.openxr.XrSwapchainImageAcquireInfo;
+import org.lwjgl.openxr.XrSwapchainImageWaitInfo;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL11.glGenTextures;
-import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryStack.stackCallocInt;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class OpenXRSwapchain implements AutoCloseable {
     public final XrSwapchain handle;
@@ -40,29 +44,13 @@ public class OpenXRSwapchain implements AutoCloseable {
         this.sRGB = format == GL21.GL_SRGB8_ALPHA8 || format == GL21.GL_SRGB8;
         this.hdr = !sRGB && format != GL11.GL_RGBA8 && format != GL31.GL_RGBA8_SNORM;
 
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer intBuf = stackInts(0);
+        this.arrayImages = MCXRPlayClient.PLATFORM.enumerateSwapchainImages(instance, handle);
+        this.leftFramebuffers = new XrRenderTarget[this.arrayImages.length];
+        this.rightFramebuffers = new XrRenderTarget[this.arrayImages.length];
 
-            instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, null), "xrEnumerateSwapchainImages");
-
-            int imageCount = intBuf.get(0);
-            XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.calloc(imageCount, stack);
-            for (XrSwapchainImageOpenGLKHR image : swapchainImageBuffer) {
-                image.type(KHROpenGLEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
-            }
-
-            instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
-
-            this.arrayImages = new int[imageCount];
-            this.leftFramebuffers = new XrRenderTarget[imageCount];
-            this.rightFramebuffers = new XrRenderTarget[imageCount];
-
-            for (int i = 0; i < imageCount; i++) {
-                var openxrImage = swapchainImageBuffer.get(i);
-                arrayImages[i] = openxrImage.image();
-                leftFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 0);
-                rightFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 1);
-            }
+        for (int i = 0; i < this.arrayImages.length; i++) {
+            leftFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 0);
+            rightFramebuffers[i] = new XrRenderTarget(width, height, arrayImages[i], 1);
         }
     }
 

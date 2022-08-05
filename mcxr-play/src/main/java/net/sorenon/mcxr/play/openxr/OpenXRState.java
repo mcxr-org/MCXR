@@ -61,11 +61,11 @@ public class OpenXRState {
         if (PlayOptions.xrUninitialized) {
             return;
         }
-        try {
-            XR.getFunctionProvider();
-        } catch(IllegalStateException exception) {
-            XR.create("openxr_loader");
-        }
+//        try {
+//            XR.getFunctionProvider();
+//        } catch (IllegalStateException exception) {
+//            MCXRPlayClient.PLATFORM.loadNatives();
+//        }
 
         if (session != null) session.close();
         session = null;
@@ -96,31 +96,30 @@ public class OpenXRState {
             IntBuffer numExtensions = stack.callocInt(1);
             checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, null));
 
-            XrExtensionProperties.Buffer properties = new XrExtensionProperties.Buffer(
+            XrExtensionProperties.Buffer availableExtensions = new XrExtensionProperties.Buffer(
                     bufferStack(numExtensions.get(0), XrExtensionProperties.SIZEOF, XR10.XR_TYPE_EXTENSION_PROPERTIES)
             );
 
-            checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, properties));
+            checkPanic(XR10.xrEnumerateInstanceExtensionProperties((ByteBuffer) null, numExtensions, availableExtensions));
 
-            boolean missingOpenGL = true;
-            PointerBuffer extensions = stackCallocPointer(3);
-            while (properties.hasRemaining()) {
-                XrExtensionProperties prop = properties.get();
-                String extensionName = prop.extensionNameString();
-                if (extensionName.equals(KHROpenGLEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
-                    missingOpenGL = false;
-                    extensions.put(memAddress(stackUTF8(KHROpenGLEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)));
-                }
-                if (extensionName.equals(EXTHPMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(EXTHPMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
-                }
-                if (extensionName.equals(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)) {
-                    extensions.put(memAddress(stackUTF8(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)));
-                }
+            var platformExtensions = MCXRPlayClient.PLATFORM.tryEnableExtensions(availableExtensions);
+            PointerBuffer enabledExtensions = stackCallocPointer(platformExtensions.size() + 2);
+
+            for (var ext : platformExtensions) {
+                enabledExtensions.put(memAddress(stackUTF8(ext)));
             }
 
-            if (missingOpenGL) {
-                throw new XrException(0, "OpenXR runtime does not support OpenGL, try using SteamVR instead");
+            availableExtensions.rewind();
+
+            while (availableExtensions.hasRemaining()) {
+                XrExtensionProperties prop = availableExtensions.get();
+                String extensionName = prop.extensionNameString();
+                if (extensionName.equals(EXTHPMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
+                    enabledExtensions.put(memAddress(stackUTF8(EXTHPMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
+                }
+                if (extensionName.equals(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)) {
+                    enabledExtensions.put(memAddress(stackUTF8(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)));
+                }
             }
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.calloc(stack);
@@ -131,11 +130,11 @@ public class OpenXRState {
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.calloc(stack);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    0,
+                    MCXRPlayClient.PLATFORM.xrInstanceCreateInfoNext(),
                     0,
                     applicationInfo,
                     null,
-                    extensions.flip()
+                    enabledExtensions.flip()
             );
 
             PointerBuffer instancePtr = stack.callocPointer(1);

@@ -59,7 +59,7 @@ public class OpenXRInstance implements AutoCloseable {
         try (MemoryStack stack = stackPush()) {
             XrSessionCreateInfo sessionCreateInfo = XrSessionCreateInfo.calloc(stack).set(
                     XR10.XR_TYPE_SESSION_CREATE_INFO,
-                    system.createOpenGLBinding(stack).address(),
+                    MCXRPlayClient.PLATFORM.createGraphicsBinding(stack).address(),
                     0,
                     system.handle
             );

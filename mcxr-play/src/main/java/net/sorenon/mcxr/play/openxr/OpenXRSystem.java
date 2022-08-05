@@ -1,27 +1,12 @@
 package net.sorenon.mcxr.play.openxr;
 
-import com.mojang.blaze3d.platform.Window;
-import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFWNativeGLX;
-import org.lwjgl.glfw.GLFWNativeWGL;
-import org.lwjgl.glfw.GLFWNativeWin32;
-import org.lwjgl.glfw.GLFWNativeX11;
 import org.lwjgl.openxr.*;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.Platform;
-import org.lwjgl.system.Struct;
-import org.lwjgl.system.linux.X11;
-import org.lwjgl.system.windows.User32;
 
-import java.util.Objects;
-
-import static org.lwjgl.opengl.GLX13.*;
-import static org.lwjgl.system.MemoryStack.stackInts;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
+import static org.lwjgl.system.MemoryUtil.memUTF8;
 
 public class OpenXRSystem {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -64,45 +49,6 @@ public class OpenXRSystem {
             LOGGER.info(String.format("Headset Name:%s Vendor:%d ", systemName, vendor));
             LOGGER.info(String.format("Headset Orientation Tracking:%b Position Tracking:%b ", orientationTracking, positionTracking));
             LOGGER.info(String.format("Headset Max Width:%d Max Height:%d Max Layer Count:%d ", maxWidth, maxHeight, maxLayerCount));
-        }
-    }
-
-    public Struct createOpenGLBinding(MemoryStack stack) {
-        //Bind the OpenGL context to the OpenXR instance and create the session
-        Window window = Minecraft.getInstance().getWindow();
-        long windowHandle = window.getWindow();
-        if (Platform.get() == Platform.WINDOWS) {
-            return XrGraphicsBindingOpenGLWin32KHR.calloc(stack).set(
-                    KHROpenGLEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
-                    NULL,
-                    User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),
-                    GLFWNativeWGL.glfwGetWGLContext(windowHandle)
-            );
-        } else if (Platform.get() == Platform.LINUX) {
-            //Possible TODO Wayland + XCB (look at https://github.com/Admicos/minecraft-wayland)
-            long xDisplay = GLFWNativeX11.glfwGetX11Display();
-
-            long glXContext = GLFWNativeGLX.glfwGetGLXContext(windowHandle);
-            long glXWindowHandle = GLFWNativeGLX.glfwGetGLXWindow(windowHandle);
-
-            int fbXID = glXQueryDrawable(xDisplay, glXWindowHandle, GLX_FBCONFIG_ID);
-            PointerBuffer fbConfigBuf = glXChooseFBConfig(xDisplay, X11.XDefaultScreen(xDisplay), stackInts(GLX_FBCONFIG_ID, fbXID, 0));
-            if(fbConfigBuf == null) {
-                throw new IllegalStateException("Your framebuffer config was null, make a github issue");
-            }
-            long fbConfig = fbConfigBuf.get();
-
-            return XrGraphicsBindingOpenGLXlibKHR.calloc(stack).set(
-                    KHROpenGLEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
-                    NULL,
-                    xDisplay,
-                    (int) Objects.requireNonNull(glXGetVisualFromFBConfig(xDisplay, fbConfig)).visualid(),
-                    fbConfig,
-                    glXWindowHandle,
-                    glXContext
-            );
-        } else {
-            throw new IllegalStateException("Macos not supported");
         }
     }
 }

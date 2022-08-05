@@ -41,6 +41,7 @@ public class MCXRPlayClient implements ClientModInitializer {
     public static Logger LOGGER = LogManager.getLogger("MCXR");
     public static final String MODID = "mcxr-play";
 
+    public static MCXRPlatform PLATFORM;
     public static final OpenXRState OPEN_XR_STATE = new OpenXRState();
     public static final MCXRGameRenderer MCXR_GAME_RENDERER = new MCXRGameRenderer();
 
@@ -94,7 +95,6 @@ public class MCXRPlayClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        Configuration.OPENXR_EXPLICIT_INIT.set(true);
         PlayOptions.init();
         PlayOptions.load();
         PlayOptions.save();

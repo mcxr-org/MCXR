@@ -1,4 +1,4 @@
-package net.sorenon.mcxr.quest;
+package net.sorenon.mcxr.play;
 
 public class MCXRNativeLoad {
     static {

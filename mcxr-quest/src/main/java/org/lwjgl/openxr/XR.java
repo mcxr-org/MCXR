@@ -4,7 +4,7 @@
  */
 package org.lwjgl.openxr;
 
-import net.sorenon.mcxr.quest.MCXRNativeLoad;
+import net.sorenon.mcxr.play.MCXRNativeLoad;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;

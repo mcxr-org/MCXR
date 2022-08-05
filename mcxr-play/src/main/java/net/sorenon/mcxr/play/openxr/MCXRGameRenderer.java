@@ -61,6 +61,8 @@ import static net.minecraft.client.Minecraft.ON_OSX;
 import static org.lwjgl.system.MemoryStack.stackCallocInt;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
+//import com.mojang.math.Vector3f;
+
 public class MCXRGameRenderer {
     private static final Logger LOGGER = LogManager.getLogger();
     private Minecraft client;
@@ -241,16 +243,16 @@ public class MCXRGameRenderer {
         });
 
         Entity cameraEntity = this.client.getCameraEntity() == null ? this.client.player : this.client.getCameraEntity();
-        boolean calculate = false;
-        if (XrInput.vanillaGameplayActionSet.stand.changedSinceLastSync && XrInput.vanillaGameplayActionSet.stand.currentState) {
-            MCXRPlayClient.heightAdjustStand = !MCXRPlayClient.heightAdjustStand;
-            if (MCXRPlayClient.heightAdjustStand) {
-                calculate = true;
-            }
-        }
+//   TODO MCXR     boolean calculate = false;
+//        if (XrInput.vanillaGameplayActionSet.stand.changedSinceLastSync && XrInput.vanillaGameplayActionSet.stand.currentState) {
+//            MCXRPlayClient.heightAdjustStand = !MCXRPlayClient.heightAdjustStand;
+//            if (MCXRPlayClient.heightAdjustStand) {
+//                calculate = true;
+//            }
+//        }
 
         float frameUserScale = MCXRPlayClient.getCameraScale(client.getFrameTime());
-        updatePoses(cameraEntity, calculate, predictedDisplayTime, client.getFrameTime(), frameUserScale);
+        updatePoses(cameraEntity, MCXRPlayClient.heightAdjustStand, predictedDisplayTime, client.getFrameTime(), frameUserScale);
         camera.updateXR(this.client.level, cameraEntity, MCXRPlayClient.viewSpacePoses.getMinecraftPose());
 
         client.getWindow().setErrorSection("Render");
@@ -269,6 +271,8 @@ public class MCXRGameRenderer {
         this.guiBlitShader.setSampler("DepthSampler", FGM.guiRenderTarget.getDepthTextureId());
         this.blit(FGM.guiPostProcessRenderTarget, guiBlitShader);
         FGM.guiPostProcessRenderTarget.unbindWrite();
+
+        //pre-render overlays
 
         OpenXRSwapchain swapchain = session.swapchain;
 
@@ -316,6 +320,8 @@ public class MCXRGameRenderer {
             }
 
             blitShader.setSampler("DiffuseSampler", mainRenderTarget.getColorTextureId());
+
+            //TODO QC remove uniform if on quest
             Uniform inverseScreenSize = blitShader.getUniform("InverseScreenSize");
             if (inverseScreenSize != null) {
                 inverseScreenSize.set(1f / mainRenderTarget.width, 1f / mainRenderTarget.height);
@@ -570,23 +576,24 @@ public class MCXRGameRenderer {
         float v = (widthNormalized / heightNormalized) / 2;
 
         //maintain screen's square aspect ratio
-        int xOff = 0;
-        int yOff = 0;
-        boolean uncroppedMirror = false;//if true, will show the full square camera with black bars. If false, will crop to fill screen.
-        if (width > height) {
-            if (uncroppedMirror) xOff = (width - height) / 2;
-            else yOff = -(width - height) / 2;
-        } else {
-            if (uncroppedMirror) yOff = (height - width) / 2;
-            else xOff = -(height - width) / 2;
+        int xOff=0;
+        int yOff=0;
+        boolean fullImage=PlayOptions.fullMirror;
+        if(width>height){
+            if(fullImage) xOff=(width-height)/2;
+            else yOff=-(width-height)/2;
+        }
+        else{
+            if(fullImage) yOff=(height-width)/2;
+            else xOff=-(height-width)/2;
         }
 
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuilder();
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-        bufferBuilder.vertex(xOff, height - yOff, 0.0).uv(0.0F, 0.0f).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width - xOff, height - yOff, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
-        bufferBuilder.vertex(width - xOff, yOff, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(xOff, height-yOff, 0.0).uv(0.0F, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width-xOff, height-yOff, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
+        bufferBuilder.vertex(width-xOff, yOff, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
         bufferBuilder.vertex(xOff, yOff, 0.0).uv(0.0F, 1.0F).color(255, 255, 255, 255).endVertex();
         BufferUploader.draw(bufferBuilder.end());
         shader.clear();
@@ -596,12 +603,8 @@ public class MCXRGameRenderer {
         matrixStack.popPose();
     }
 
-    private void renderOverlay(RenderTarget framebuffer,
-                               ResourceLocation texture,
-                               float red,
-                               float green,
-                               float blue,
-                               float alpha) {
+    private void renderOverlay(RenderTarget framebuffer, ResourceLocation texture, float red, float green, float blue,float alpha) {
+        //ShaderInstance shader = Minecraft.getInstance().gameRenderer.blitShader;//to screen
         ShaderInstance shader = this.blitShader;//to eye
 
         TextureManager textureManager = Minecraft.getInstance().getTextureManager();
@@ -651,18 +654,23 @@ public class MCXRGameRenderer {
         matrixStack.popPose();
     }
 
-    private void renderVignette(RenderTarget framebuffer, Entity entity) {
+    private void renderVignette(RenderTarget framebuffer,Entity entity) {
         WorldBorder worldBorder = this.client.level.getWorldBorder();
-        float f = (float) worldBorder.getDistanceToBorder(entity);
+        float f = (float)worldBorder.getDistanceToBorder(entity);
         double d = Math.min(
-                worldBorder.getLerpSpeed() * (double) worldBorder.getWarningTime() * 1000.0, Math.abs(worldBorder.getLerpTarget() - worldBorder.getSize())
+                worldBorder.getLerpSpeed() * (double)worldBorder.getWarningTime() * 1000.0, Math.abs(worldBorder.getLerpTarget() - worldBorder.getSize())
         );
-        double e = Math.max(worldBorder.getWarningBlocks(), d);
-        if ((double) f < e) {
-            f = 1.0F - (float) ((double) f / e);
+        double e = Math.max((double)worldBorder.getWarningBlocks(), d);
+        if ((double)f < e) {
+            f = 1.0F - (float)((double)f / e);
         } else {
             f = 0.0F;
         }
+        //RenderSystem.blendFuncSeparate(
+        //        GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
+        //);
+        //breaks sky rendering in second viewindex, just use a pre-formatter png
+        //GlStateManager._blendFuncSeparate(GlStateManager.SourceFactor.ZERO.value, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR.value, GlStateManager.SourceFactor.ONE.value, GlStateManager.DestFactor.ZERO.value);
         if (f > 0.0F) {
             f = Mth.clamp(f, 0.0F, 1.0F);
             renderOverlay(framebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0f, 0f, 0f, f);

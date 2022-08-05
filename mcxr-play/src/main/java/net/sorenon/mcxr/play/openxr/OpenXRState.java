@@ -1,5 +1,7 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.minecraft.client.Minecraft;
+import net.sorenon.mcxr.play.MCXRPlatform;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.input.XrInput;
@@ -130,7 +132,7 @@ public class OpenXRState {
             XrInstanceCreateInfo createInfo = XrInstanceCreateInfo.calloc(stack);
             createInfo.set(
                     XR10.XR_TYPE_INSTANCE_CREATE_INFO,
-                    MCXRPlayClient.PLATFORM.xrInstanceCreateInfoNext(),
+                    MCXRPlayClient.PLATFORM.xrInstanceCreateInfoNext(stack),
                     0,
                     applicationInfo,
                     null,
@@ -162,6 +164,9 @@ public class OpenXRState {
             MCXRPlayClient.MCXR_GAME_RENDERER.setSession(null);
             if (instance != null) instance.close();
             instance = null;
+            if (MCXRPlayClient.PLATFORM.getPlatform() == MCXRPlatform.PlatformType.Quest) {
+                Minecraft.getInstance().close();
+            }
         }
 
         if (session == null) {

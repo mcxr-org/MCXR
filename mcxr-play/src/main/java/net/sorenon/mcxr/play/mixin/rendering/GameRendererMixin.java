@@ -56,6 +56,13 @@ public abstract class GameRendererMixin {
     @Unique
     private boolean renderHandOld;
 
+//TODO QC    @Inject(method = "render", at = @At("HEAD"), cancellable = true)
+//    void cancelVanillaRendering(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
+//        if(XR_RENDERER.renderPass == RenderPass.VANILLA && !(Minecraft.getInstance().screen instanceof TitleScreen)) {
+//            ci.cancel();
+//        }
+//    }
+
     /**
      * Cancels both vanilla and Iris hand rendering
      * Note: If immersive portals is installed this can interfear

@@ -1,6 +1,6 @@
-name: gradle-ci
 
-on: [ push, pull_request ]
+name: build
+on: [pull_request, push, workflow_dispatch]
 
 jobs:
   build:
@@ -36,4 +36,5 @@ jobs:
           name: Artifacts
           path: |
             mcxr-core/build/libs
-            mcxr-play/build/libs
+            mcxr-desktop/build/libs
+            mcxr-quest/build/libs

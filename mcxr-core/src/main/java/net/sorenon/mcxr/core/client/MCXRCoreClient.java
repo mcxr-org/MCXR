@@ -44,6 +44,28 @@ public class MCXRCoreClient implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
                 ((MCXRCoreConfigImpl) MCXRCore.getCoreConfig()).xrEnabled = false
         );
+
+        ClientPlayNetworking.registerGlobalReceiver(MCXRCore.POSES, (client, handler, buf, listenerAdder)  -> {
+            if(client.level != null) {
+                Player player  = client.level.getPlayerByUUID(buf.readUUID());
+                if(player != null) {
+                    PlayerExt acc = (PlayerExt) player;
+                    if(acc.getHeadPose() != null) {
+                        acc.setIsXr(true);
+                    }
+                    var pose1 = new Pose();
+                    var pose2 = new Pose();
+                    var pose3 = new Pose();
+                    pose1.read(buf);
+                    acc.getHeadPose().set(pose1);
+                    pose2.read(buf);
+                    acc.getLeftHandPose().set(pose2);
+                    pose3.read(buf);
+                    acc.getRightHandPose().set(pose3);
+//                    acc.setHeight(buf.readFloat());
+                }
+            }
+        });
     }
 
     public void setPlayerPoses(

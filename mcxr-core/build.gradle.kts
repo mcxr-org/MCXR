@@ -14,10 +14,7 @@ version = "${properties["core_version"].toString()}+mc${properties["minecraft_ve
 group = properties["maven_group"].toString()
 
 repositories {
-    maven {
-        name = "Jitpack"
-        url = uri("https://jitpack.io")
-    }
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {

@@ -10,7 +10,7 @@ pluginManagement {
         }
         maven {
             name = "Quilt"
-            url = uri("https://maven.quiltmc.org/repository/release")
+            url = uri("https://maven.quiltmc.org/repository/release/")
         }
         mavenCentral()
         gradlePluginPortal()
@@ -22,3 +22,4 @@ rootProject.name = "mcxr"
 include("mcxr-core")
 include("mcxr-play")
 include("mcxr-desktop")
+include("mcxr-quest")

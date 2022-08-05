@@ -1,8 +1,12 @@
 package net.sorenon.mcxr.play.openxr;
 
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.openxr.*;
+import org.lwjgl.openxr.XR10;
+import org.lwjgl.openxr.XrSystemGraphicsProperties;
+import org.lwjgl.openxr.XrSystemProperties;
+import org.lwjgl.openxr.XrSystemTrackingProperties;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memAddress;
@@ -28,10 +32,9 @@ public class OpenXRSystem {
         this.formFactor = formFactor;
         this.handle = handle;
 
-        try (var stack = stackPush()) {
-            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.calloc(stack).type(KHROpenGLEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
-            instance.checkPanic(KHROpenGLEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, handle, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
+        MCXRPlayClient.PLATFORM.checkGraphicsRequirements(instance, handle);
 
+        try (var stack = stackPush()) {
             XrSystemProperties systemProperties = XrSystemProperties.calloc(stack).type(XR10.XR_TYPE_SYSTEM_PROPERTIES);
             instance.checkPanic(XR10.xrGetSystemProperties(instance.handle, handle, systemProperties), "xrGetSystemProperties");
             XrSystemTrackingProperties trackingProperties = systemProperties.trackingProperties();

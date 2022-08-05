@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFWNativeGLX;
 import org.lwjgl.glfw.GLFWNativeWGL;
 import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.glfw.GLFWNativeX11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.openxr.*;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static net.sorenon.mcxr.play.MCXRPlayClient.PLATFORM;
+import static org.lwjgl.opengl.GL30.GL_COLOR_ATTACHMENT0;
+import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER;
 import static org.lwjgl.opengl.GLX13.*;
 import static org.lwjgl.system.MemoryStack.stackInts;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -102,7 +105,7 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
     }
 
     @Override
-    public long xrInstanceCreateInfoNext() {
+    public long xrInstanceCreateInfoNext(MemoryStack stack) {
         return 0;
     }
 
@@ -126,6 +129,19 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
                 arr[i] = swapchainImageBuffer.get(i).image();
             }
             return arr;
+        }
+    }
+
+    @Override
+    public void framebufferTextureLayer(int color, int index) {
+        GL30.glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, color, 0, index);
+    }
+
+    @Override
+    public void checkGraphicsRequirements(OpenXRInstance instance, long system) {
+        try (var stack = stackPush()) {
+            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.calloc(stack).type(KHROpenGLEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
+            instance.checkPanic(KHROpenGLEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, system, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
         }
     }
 }

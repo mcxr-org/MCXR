@@ -193,10 +193,12 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
         //TODO build a more rusty error system to handle this
         try {
             if (openXRState.loop()) {
+                //TODO check after merge
                 if (!renderedNormallyLastFrame) {
                     MCXRPlayClient.LOGGER.info("Resizing framebuffers due to XR -> Pancake transition");
                     this.resizeDisplay();
                 }
+                //END
                 if (this.player != null && MCXRCore.getCoreConfig().supportsMCXR()) {
                     PlayerExt acc = (PlayerExt) this.player;
                     if (acc.isXR()) {
@@ -210,6 +212,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
                 //Just render normally
                 runTick(tick);
                 renderedNormallyLastFrame = true;
+                //TODO check after merge
             } else {
                 if (renderedNormallyLastFrame) {
                     if (this.screen != null) {
@@ -221,6 +224,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
                 }
                 renderedNormallyLastFrame = false;
             }
+            //end
         } catch (XrRuntimeException runtimeException) {
             openXRState.session.close();
             openXRState.session = null;

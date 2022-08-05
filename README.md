@@ -2,7 +2,7 @@
 ![](https://img.shields.io/github/v/release/Sorenon/MCXR) ![](https://img.shields.io/discord/829825443480993802?label=discord) ![](https://img.shields.io/modrinth/dt/hcEWWGik?label=mcxr-core%20downloads) ![](https://img.shields.io/modrinth/dt/9jVyqpHR?label=mcxr-play%20downloads) ![](https://img.shields.io/reddit/subreddit-subscribers/MinecraftXR)
 <br/>A virtual reality / augmented reality mod for Minecraft using OpenXR and Fabric.
 
-**Links**
+**MCXR Links (TODO add QuestCraft links)**
 - [Discord](https://discord.gg/a7PPU9tYDU) for troubleshooting or talking about the mod
 - Support Development by donating to my [Ko-Fi page](https://ko-fi.com/sorenon)
 - Download MCXR from [Modrinth](https://modrinth.com/user/Sorenon) or [Curseforge](https://www.curseforge.com/members/sorenon/projects)
@@ -17,7 +17,14 @@
 ### Installation for VR Players
 Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core) & [MCXR Play](https://modrinth.com/mod/mcxr-play). Then, install the mods by placing them into the /mods folder.
 <br/>
-In order to access the title screen within Minecraft XR, use [Titleworlds](https://modrinth.com/mod/titleworlds).
+For an in game title screen also install and set up a compatible version of https://github.com/Sorenon/TitleWorlds
+## For Servers and Non-VR Players
+MCXR is compatible with Vanilla servers and players but for the full experience install MCXR Core from https://modrinth.com/mod/mcxr-core
+
+# *Known Issues*
+Vive Pro controllers are not yet supported <br/>
+No way to rebind controls without SteamVR</br>
+SteamVR on Linux crashes due to poor OpenXR implementation, this can be mitigated with an [OpenXR Layer](https://github.com/Sorenon/sorenon_openxr_layer)
 
 ### Installation for Non-VR Players and Servers
 Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). Then, install the mod by placing it into the /mods folder.

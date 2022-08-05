@@ -39,7 +39,7 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${properties["fabric_version"].toString()}")
 
-    // modImplementation("maven.modrinth:simple-voice-chat:fabric-1.18.2-2.2.26")
+    modCompileOnly("maven.modrinth:simple-voice-chat:fabric-1.19-2.2.45")
 
     modCompileOnly("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
         exclude(group = "net.fabricmc.fabric-api")

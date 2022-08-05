@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play.mixin;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
+import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -10,7 +11,10 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.sorenon.mcxr.play.MCXROptionsScreen;
+import net.sorenon.mcxr.play.MCXRPlatform;
 import net.sorenon.mcxr.play.MCXRPlayClient;
+import net.sorenon.mcxr.play.openxr.OpenXRState;
+import net.sorenon.mcxr.play.openxr.OpenXRSystem;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -47,6 +51,38 @@ public abstract class TitleScreenMixin extends Screen {
                 20,
                 Component.translatable("mcxr.options.title"),
                 button -> this.minecraft.setScreen(new MCXROptionsScreen(this))));
+
+        if (MCXRPlayClient.PLATFORM.getPlatform() == MCXRPlatform.PlatformType.Desktop) {
+            return;
+        }
+
+        this.addRenderableWidget(
+                new Button(this.width / 2 + 127, this.height / 4 + 48 + 73 + 12, 45, 20, Component.translatable("Reset"), (button -> {
+                    assert this.minecraft != null;
+                    // First we fetch the name of the system from OpenXR
+                    OpenXRState OPEN_XR = MCXRPlayClient.OPEN_XR_STATE;
+                    OpenXRSystem system = OPEN_XR.session.system;
+                    String sys = system.systemName;
+
+                    // Since we can assume users are on a quest 1 or 2, we will set our video settings based on those two options.
+                    if (sys.equalsIgnoreCase("oculus quest2")) {
+
+                        // quest 2 gets 6 render distance 8 sim distance.
+                        this.minecraft.options.renderDistance().set(8);
+                        this.minecraft.options.simulationDistance().set(8);
+
+                    } else if (sys.equalsIgnoreCase("oculus quest")) {
+
+                        // quest 1 gets 2 render distance and 4 sim distance
+                        this.minecraft.options.renderDistance().set(4);
+                        this.minecraft.options.simulationDistance().set(4);
+
+                    }
+
+                    // Common options for both platforms.
+                    this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
+                }))
+        );
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", ordinal = 0, target = "Lnet/minecraft/client/gui/screens/TitleScreen;drawString(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/gui/Font;Ljava/lang/String;III)V"))
@@ -67,7 +103,7 @@ public abstract class TitleScreenMixin extends Screen {
             y += 12;
         }
 
-        if (!FabricLoader.getInstance().isModLoaded("sodium")) {
+        if (!FabricLoader.getInstance().isModLoaded("sodium") && MCXRPlayClient.PLATFORM.getPlatform() == MCXRPlatform.PlatformType.Desktop) {
             GuiComponent.drawString(matrices, font, "Sodium Missing!", x + 1, y + 12, 16733525 | l);
             y += 12;
         }

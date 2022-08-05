@@ -7,7 +7,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerLoginNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
@@ -86,6 +88,18 @@ public class MCXRCore implements ModInitializer {
                         acc.getLeftHandPose().set(pose2);
                         acc.getRightHandPose().set(pose3);
 //                        acc.setHeight(height);
+
+                        for(ServerPlayer playerList : server.getPlayerList().getPlayers()) {
+                            if(playerList != player && playerList != null) {
+                                FriendlyByteBuf buf1 = PacketByteBufs.create();
+                                buf1.writeUUID(player.getUUID());
+                                pose1.write(buf1);
+                                pose2.write(buf1);
+                                pose3.write(buf1);
+//                                buf1.writeFloat(height);
+                                ServerPlayNetworking.send(playerList, POSES, buf1);
+                            }
+                        }
                     });
                 });
 

@@ -5,7 +5,11 @@
   "name": "[MCXR] Core",
   "description": "Lightweight XR friendly framework. Allows VR-players to use all vr features.\nThis mod does NOT let you play on vr by itself [MCXR] Play is needed too.",
   "authors": [
-    "Sorenon"
+    "Sorenon",
+    "TheJudge",
+    "CADIndie",
+    "IzzyDotExe",
+    "Flamgop"
   ],
   "contact": {
     "homepage": "https://github.com/Sorenon/MCXR",

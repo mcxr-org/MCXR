@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.sorenon.mcxr.quest.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

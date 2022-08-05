@@ -17,11 +17,15 @@ public interface MCXRPlatform {
 
     List<String> tryEnableExtensions(XrExtensionProperties.Buffer availableExtensions) throws XrException;
 
+    void checkGraphicsRequirements(OpenXRInstance instance, long system);
+
     PlatformType getPlatform();
 
-    long xrInstanceCreateInfoNext();
+    long xrInstanceCreateInfoNext(MemoryStack stack);
 
     int[] enumerateSwapchainImages(OpenXRInstance instance, XrSwapchain swapchain);
+
+    void framebufferTextureLayer(int color, int index);
 
     enum PlatformType {
         Desktop,

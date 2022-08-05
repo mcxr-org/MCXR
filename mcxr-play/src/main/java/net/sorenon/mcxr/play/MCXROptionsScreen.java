@@ -37,6 +37,7 @@ public class MCXROptionsScreen extends Screen {
     @Override
     protected void init() {
         PlayOptions.load();
+        //TODO merge
         this.reloadButton = this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
                 this.height / 6 - 12 - 4 + 24,
@@ -75,6 +76,7 @@ public class MCXROptionsScreen extends Screen {
                     PlayOptions.save();
                     button.setMessage(PlayOptions.xrPaused ? Component.translatable("mcxr.options.unpause") : Component.translatable("mcxr.options.pause"));
                 }));
+        //TODO merge end
 
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
@@ -98,6 +100,7 @@ public class MCXROptionsScreen extends Screen {
                     PlayOptions.save();
                     button.setMessage(Component.translatable("mcxr.options.swim_direction", PlayOptions.swimDirection.toComponent()));
                 }));
+
         this.addRenderableWidget(new Button(
                 this.width / 2 - 155,
                 this.height / 6 + 54 + 24 * 2 + 12,
@@ -108,6 +111,17 @@ public class MCXROptionsScreen extends Screen {
                     PlayOptions.flyDirection = PlayOptions.flyDirection.iterate();
                     PlayOptions.save();
                     button.setMessage(Component.translatable("mcxr.options.fly_direction", PlayOptions.flyDirection.toComponent()));
+                }));
+
+        this.addRenderableWidget(new Button(
+                this.width / 2 - 155,
+                this.height / 6 + 54 + 24 * 3 + 12,
+                150,
+                20,
+                MCXRPlayClient.heightAdjustStand ? Component.translatable("mcxr.options.unlock_playerheight") : Component.translatable("mcxr.options.lock_playerheight"),
+                button -> {
+                    MCXRPlayClient.heightAdjustStand = !MCXRPlayClient.heightAdjustStand;
+                    button.setMessage(MCXRPlayClient.heightAdjustStand ? Component.translatable("mcxr.options.unlock_playerheight") : Component.translatable("mcxr.options.lock_playerheight"));
                 }));
 
         assert this.minecraft != null;
@@ -125,34 +139,33 @@ public class MCXROptionsScreen extends Screen {
                     button.setMessage(PlayOptions.smoothTurning ? Component.translatable("mcxr.options.enable_snap_turning") : Component.translatable("mcxr.options.enable_smooth_turning"));
                 }));
 
-
         this.addRenderableWidget(new Button(
-                this.width / 2 - 155 + 160,
-                this.height / 6 + 54 + 24 + 12,
-                150,
-                20,
-                PlayOptions.smoothTurning ? Component.translatable("mcxr.options.enable_snap_turning") : Component.translatable("mcxr.options.enable_smooth_turning"),
-                button -> {
-                    PlayOptions.smoothTurning = !PlayOptions.smoothTurning;
-                    PlayOptions.save();
-                    button.setMessage(PlayOptions.smoothTurning ? Component.translatable("mcxr.options.enable_snap_turning") : Component.translatable("mcxr.options.enable_smooth_turning"));
-                }));
-
-        if (true ||
-                MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode() &&
-                (XrInput.vanillaGameplayActionSet.indexTrackpadRight.isActive || XrInput.vanillaGameplayActionSet.indexTrackpadLeft.isActive)) {
-            this.addRenderableWidget(new Button(
                     this.width / 2 - 155 + 160,
                     this.height / 6 + 54 + 24 * 2 + 12,
                     150,
                     20,
-                    Component.translatable("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()),
+                    PlayOptions.immersiveControls ? Component.translatable("mcxr.options_disable_immersive_controls") : Component.translatable("mcxr.options_enable_immersive_controls"),
                     button -> {
-                        PlayOptions.indexTouchpadState = PlayOptions.indexTouchpadState.iterate();
+                        PlayOptions.immersiveControls = !PlayOptions.immersiveControls;
                         PlayOptions.save();
-                        button.setMessage(Component.translatable("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()));
+                        button.setMessage(PlayOptions.immersiveControls ? Component.translatable("mcxr.options_disable_immersive_controls") : Component.translatable("mcxr.options_enable_immersive_controls"));
                     }));
-        }
+
+//TODO MCXR        if (true ||
+//                MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode() &&
+//                        (XrInput.vanillaGameplayActionSet.indexTrackpadRight.isActive || XrInput.vanillaGameplayActionSet.indexTrackpadLeft.isActive)) {
+//            this.addRenderableWidget(new Button(
+//                    this.width / 2 - 155 + 160,
+//                    this.height / 6 + 54 + 24 * 2 + 12,
+//                    150,
+//                    20,
+//                    Component.translatable("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()),
+//                    button -> {
+//                        PlayOptions.indexTouchpadState = PlayOptions.indexTouchpadState.iterate();
+//                        PlayOptions.save();
+//                        button.setMessage(Component.translatable("mcxr.options.index_touchpad", PlayOptions.indexTouchpadState.toComponent()));
+//                    }));
+//        }
 
         this.addRenderableWidget(new Button(this.width / 2 - 100, this.height / 6 + 168, 200, 20, CommonComponents.GUI_DONE, button -> this.minecraft.setScreen(this.previous)));
     }

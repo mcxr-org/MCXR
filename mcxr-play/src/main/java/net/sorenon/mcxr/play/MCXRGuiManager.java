@@ -18,10 +18,11 @@ public class MCXRGuiManager {
     public final int guiFramebufferHeight = 1080;
 
     public final ResourceLocation guiRenderTexture = new ResourceLocation("mcxr", "net/sorenon/mcxr/play/gui");
+    public final ResourceLocation overlayRenderTexture = new ResourceLocation("mcxr_over", "net/sorenon/mcxr/play/gui");
 
     public RenderTarget guiRenderTarget;
     public RenderTarget guiPostProcessRenderTarget;
-
+    public RenderTarget overlayRenderTarget;
     public double guiScale;
 
     public int scaledWidth;
@@ -50,6 +51,9 @@ public class MCXRGuiManager {
         guiRenderTarget.setClearColor(0, 0, 0, 0);
         guiPostProcessRenderTarget = new TextureTarget(guiFramebufferWidth, guiFramebufferHeight, false, Minecraft.ON_OSX);
         Minecraft.getInstance().getTextureManager().register(guiRenderTexture, new UnownedTexture(guiPostProcessRenderTarget.getColorTextureId()));
+        overlayRenderTarget = new TextureTarget(2000, 2000, false, Minecraft.ON_OSX);
+        Minecraft.getInstance().getTextureManager().register(overlayRenderTexture, new UnownedTexture(overlayRenderTarget.getColorTextureId()));
+        overlayRenderTarget.setClearColor(0, 0, 0, 0);
     }
 
     @SuppressWarnings("ConditionCoveredByFurtherCondition")

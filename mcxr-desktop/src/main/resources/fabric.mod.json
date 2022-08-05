@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "mcxr-desktop",
+  "version": "0.1.1",
+  "name": "[MCXR] Desktop",
+  "description": "VR!",
+  "authors": [
+    "Sorenon"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Sorenon/MCXR",
+    "sources": "https://github.com/Sorenon/MCXR",
+    "issues": "https://github.com/Sorenon/MCXR/issues"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/CqEZbJwWx4"
+      }
+    }
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.sorenon.mcxr.desktop.MCXRDesktop"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.6",
+    "fabric": "*",
+    "minecraft": "1.19.x",
+    "java": ">=17"
+  },
+  "icon": "assets/mcxr-play/icon.png"
+}

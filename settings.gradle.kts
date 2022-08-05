@@ -21,3 +21,4 @@ rootProject.name = "mcxr"
 
 include("mcxr-core")
 include("mcxr-play")
+include("mcxr-desktop")

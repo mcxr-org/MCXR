@@ -7,10 +7,10 @@ plugins {
 }
 
 base {
-    archivesBaseName = "mcxr-play"
+    archivesBaseName = "mcxr-desktop"
 }
 
-version = "${properties["play_version"].toString()}+mc${properties["minecraft_version"].toString()}"
+version = "0.1.1+mc${properties["minecraft_version"].toString()}"
 group = properties["maven_group"].toString()
 
 repositories {
@@ -28,7 +28,8 @@ repositories {
 }
 
 dependencies {
-    implementation(project(path = ":mcxr-core", configuration = "namedElements"))
+    include(implementation(project(path = ":mcxr-core", configuration = "namedElements"))!!)
+    include(implementation(project(path = ":mcxr-play", configuration = "namedElements"))!!)
 
     minecraft("com.mojang:minecraft:${properties["minecraft_version"].toString()}")
     mappings(loom.layered {
@@ -39,21 +40,18 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${properties["fabric_version"].toString()}")
 
-    // modImplementation("maven.modrinth:simple-voice-chat:fabric-1.18.2-2.2.26")
-
-    modCompileOnly("com.github.Virtuoel:Pehkui:${properties["pehkui_version"].toString()}") {
-        exclude(group = "net.fabricmc.fabric-api")
-    }
-
-    compileOnly("org.lwjgl:lwjgl-openxr:3.3.1")
-
+    include(implementation("org.lwjgl:lwjgl-openxr:3.3.1")!!)
     implementation("org.joml:joml:${properties["joml_version"].toString()}")
     implementation("com.electronwill.night-config:core:${properties["night_config_version"].toString()}")
     implementation("com.electronwill.night-config:toml:${properties["night_config_version"].toString()}")
 }
 
-loom {
-    accessWidenerPath.set(file("src/main/resources/mcxr-play.accesswidener"))
+sourceSets {
+    main {
+        resources {
+            srcDir("loader")
+        }
+    }
 }
 
 tasks {
@@ -64,7 +62,7 @@ tasks {
         inputs.property("core_version", coreVersion)
 
         filesMatching("fabric.mod.json") {
-            expand("play_version" to playVersion, "core_version" to coreVersion)
+//            expand("play_version" to playVersion, "core_version" to coreVersion)
         }
     }
 
@@ -99,5 +97,15 @@ publishing {
         // Notice: This block does NOT have the same function as the block in the top level.
         // The repositories here will be used for publishing your artifact, not for
         // retrieving dependencies.
+    }
+}
+
+loom {
+    runs {
+        create("mcxrDesktop") {
+            client()
+            configName = "MCXR Desktop"
+            ideConfigGenerated(true)
+        }
     }
 }

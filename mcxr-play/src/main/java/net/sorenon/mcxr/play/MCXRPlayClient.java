@@ -15,10 +15,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.entity.HumanoidArm;
 import net.sorenon.mcxr.core.MCXRCore;
 import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.input.ControllerPoses;
@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
-import org.lwjgl.openxr.XR;
 import org.lwjgl.system.Configuration;
 import virtuoel.pehkui.util.ScaleUtils;
 
@@ -101,9 +100,6 @@ public class MCXRPlayClient implements ClientModInitializer {
         PlayOptions.save();
 
         INSTANCE = this;
-        if (!PlayOptions.xrUninitialized) {
-            XR.create("openxr_loader");
-        }
 
         ClientLifecycleEvents.CLIENT_STARTED.register(MCXR_GAME_RENDERER::initialize);
 

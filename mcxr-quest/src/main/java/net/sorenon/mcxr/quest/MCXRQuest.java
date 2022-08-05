@@ -1,6 +1,7 @@
 package net.sorenon.mcxr.quest;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPlatform;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import org.lwjgl.openxr.*;

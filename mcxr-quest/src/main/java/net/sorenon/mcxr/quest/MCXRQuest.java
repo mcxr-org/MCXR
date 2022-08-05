@@ -57,12 +57,12 @@ public class MCXRQuest implements ClientModInitializer, MCXRPlatform {
 
     @Override
     public List<String> tryEnableExtensions(XrExtensionProperties.Buffer availableExtensions) {
-        return List.of(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME, KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
+        return List.of(KHROpenglEsEnable.XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME, KHRAndroidCreateInstance.XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
     }
 
     @Override
     public PlatformType getPlatform() {
-        return PlatformType.Desktop;
+        return PlatformType.Quest;
     }
 
     @Override

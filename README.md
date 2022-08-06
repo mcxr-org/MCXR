@@ -10,7 +10,7 @@
 
 **Questcraft Links (Standalone Quest)**
 - [Discord](https://discord.gg/questcraft) for getting news, support, getting update announcements, or talking about the app.
-- [Download QCXR from](https://github.com/QuestCraftPlusPlus/QuestCraft/releases)
+- [Download QCXR](https://github.com/QuestCraftPlusPlus/QuestCraft/releases)
 - [Reddit](https://www.reddit.com/r/QuestCraft/)
 - Support QCXR's Development by joining the [Patreon](https://patreon.com/questcraftxr)
 

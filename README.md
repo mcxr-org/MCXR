@@ -1,5 +1,5 @@
 ![](https://user-images.githubusercontent.com/90802279/172026916-a617134b-a829-4d67-b8ec-ef10ea4be266.png)
-![](https://img.shields.io/github/v/release/Sorenon/MCXR) ![](https://img.shields.io/discord/829825443480993802?label=discord) ![](https://img.shields.io/modrinth/dt/hcEWWGik?label=mcxr-core%20downloads) ![](https://img.shields.io/modrinth/dt/9jVyqpHR?label=mcxr-play%20downloads) ![](https://img.shields.io/reddit/subreddit-subscribers/MinecraftXR) ![](https://badgen.net/discord/online-members/questcraft)
+![](https://img.shields.io/github/v/release/Sorenon/MCXR) ![](https://img.shields.io/discord/829825443480993802?label=MCXRDiscord) ![](https://img.shields.io/modrinth/dt/hcEWWGik?label=mcxr-core%20downloads) ![](https://img.shields.io/modrinth/dt/9jVyqpHR?label=mcxr-play%20downloads) ![](https://img.shields.io/reddit/subreddit-subscribers/MinecraftXR) ![](https://badgen.net/discord/online-members/questcraft)
 <br/>A virtual reality / augmented reality mod for Minecraft using OpenXR and Fabric.
 
 **MCXR Links**

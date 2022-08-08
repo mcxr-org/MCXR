@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.sorenon.mcxr.play.MCXROptionsScreen;
 import net.sorenon.mcxr.play.MCXRPlatform;
 import net.sorenon.mcxr.play.MCXRPlayClient;
@@ -31,7 +32,7 @@ public class PauseScreenMixin extends Screen {
                 y,
                 90,
                 20,
-                Component.translatable("mcxr.options.title"),
+                new TranslatableComponent("mcxr.options.title"),
                 button -> this.minecraft.setScreen(new MCXROptionsScreen(this))));
 
         if (MCXRPlayClient.PLATFORM.getPlatform() == MCXRPlatform.PlatformType.Desktop) {
@@ -39,7 +40,7 @@ public class PauseScreenMixin extends Screen {
         }
 
         this.addRenderableWidget(
-                new Button(this.width/2 + 127, this.height / 4 + 48 + 72 + 12, 45, 20, Component.translatable("Reset"), (button -> {
+                new Button(this.width/2 + 127, this.height / 4 + 48 + 72 + 12, 45, 20, new TranslatableComponent("Reset"), (button -> {
                     assert this.minecraft != null;
                     // First we fetch the name of the system from OpenXR
                     OpenXRState OPEN_XR = MCXRPlayClient.OPEN_XR_STATE;
@@ -50,7 +51,7 @@ public class PauseScreenMixin extends Screen {
                     if (sys.equalsIgnoreCase("oculus quest2")) {
 
                         // quest 2 gets 6 render distance 8 sim distance.
-                        this.minecraft.options.renderDistance().set(6);
+                        this.minecraft.options.renderDistance();
                         this.minecraft.options.simulationDistance().set(8);
 
                     } else if (sys.equalsIgnoreCase("oculus quest")) {

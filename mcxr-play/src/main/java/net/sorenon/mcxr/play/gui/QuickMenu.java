@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.sorenon.mcxr.play.compat.svc.SimpleVoiceChatCompat;
 
 import java.util.ArrayList;
@@ -20,14 +21,14 @@ public class QuickMenu extends Screen {
 
         ArrayList<Button> QuickMenuButtons = new ArrayList<>();
 
-        QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, Component.translatable("QuickChat"), (button ) -> {
-            Minecraft.getInstance().setScreen(new net.sorenon.mcxr.play.gui.QuickChat("QuickChat"));
+        QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, new TranslatableComponent("QuickChat"), (button ) -> {
+            Minecraft.getInstance().setScreen(new QuickChat("QuickChat"));
         }));
         if (FabricLoader.getInstance().isModLoaded("voicechat")) {
             SimpleVoiceChatCompat.createButton(QuickMenuButtons, this.width, this.height);
         }
 
-        QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, Component.translatable("Chat"), (button ) -> {
+        QuickMenuButtons.add(new Button((this.width/2) - 25, this.height/2, 70, 20, new TranslatableComponent("Chat"), (button ) -> {
             Minecraft.getInstance().setScreen(new XrChatScreen(""));
         }));
 

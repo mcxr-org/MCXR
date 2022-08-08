@@ -9,6 +9,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.Mth;
 import net.sorenon.mcxr.play.MCXROptionsScreen;
 import net.sorenon.mcxr.play.MCXRPlatform;
@@ -49,7 +50,7 @@ public abstract class TitleScreenMixin extends Screen {
                 y,
                 90,
                 20,
-                Component.translatable("mcxr.options.title"),
+                new TranslatableComponent("mcxr.options.title"),
                 button -> this.minecraft.setScreen(new MCXROptionsScreen(this))));
 
         if (MCXRPlayClient.PLATFORM.getPlatform() == MCXRPlatform.PlatformType.Desktop) {
@@ -57,7 +58,7 @@ public abstract class TitleScreenMixin extends Screen {
         }
 
         this.addRenderableWidget(
-                new Button(this.width / 2 + 127, this.height / 4 + 48 + 73 + 12, 45, 20, Component.translatable("Reset"), (button -> {
+                new Button(this.width / 2 + 127, this.height / 4 + 48 + 73 + 12, 45, 20, new TranslatableComponent("Reset"), (button -> {
                     assert this.minecraft != null;
                     // First we fetch the name of the system from OpenXR
                     OpenXRState OPEN_XR = MCXRPlayClient.OPEN_XR_STATE;

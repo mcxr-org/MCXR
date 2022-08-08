@@ -8,10 +8,10 @@ import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -20,7 +20,6 @@ import net.sorenon.mcxr.core.MCXRScale;
 import net.sorenon.mcxr.play.MCXRPlayClient;
 import net.sorenon.mcxr.play.PlayOptions;
 import net.sorenon.mcxr.play.gui.XrSignEditScreen;
-import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,8 +34,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(LocalPlayer.class)
 public abstract class ClientPlayerEntityMixin extends Player {
 
-    public ClientPlayerEntityMixin(Level level, BlockPos blockPos, float f, GameProfile gameProfile, @Nullable ProfilePublicKey profilePublicKey) {
-        super(level, blockPos, f, gameProfile, profilePublicKey);
+    public ClientPlayerEntityMixin(Level level, BlockPos blockPos, float f, GameProfile gameProfile) {
+        super(level, blockPos, f, gameProfile);
     }
 
     @Shadow
@@ -113,7 +112,7 @@ public abstract class ClientPlayerEntityMixin extends Player {
     @Redirect(method="openTextEdit", at=@At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V"))
     public void openSignScreen(Minecraft instance, Screen screen, SignBlockEntity sign) {
         if (!PlayOptions.xrUninitialized)
-            instance.setScreen(new XrSignEditScreen(Component.translatable("Sign"), sign));
+            instance.setScreen(new XrSignEditScreen(new TranslatableComponent("Sign"), sign));
         else
             instance.setScreen(new SignEditScreen(sign, instance.isTextFilteringEnabled()));
     }

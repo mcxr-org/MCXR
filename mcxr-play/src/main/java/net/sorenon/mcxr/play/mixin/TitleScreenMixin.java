@@ -69,19 +69,19 @@ public abstract class TitleScreenMixin extends Screen {
                     if (sys.equalsIgnoreCase("oculus quest2")) {
 
                         // quest 2 gets 6 render distance 8 sim distance.
-                        this.minecraft.options.renderDistance().set(8);
-                        this.minecraft.options.simulationDistance().set(8);
+                        this.minecraft.options.renderDistance = 8;
+                        this.minecraft.options.simulationDistance = 8;
 
                     } else if (sys.equalsIgnoreCase("oculus quest")) {
 
                         // quest 1 gets 2 render distance and 4 sim distance
-                        this.minecraft.options.renderDistance().set(4);
-                        this.minecraft.options.simulationDistance().set(4);
+                        this.minecraft.options.renderDistance = 4;
+                        this.minecraft.options.simulationDistance = 4;
 
                     }
 
                     // Common options for both platforms.
-                    this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
+                    this.minecraft.options.graphicsMode = GraphicsStatus.FANCY;
                 }))
         );
     }

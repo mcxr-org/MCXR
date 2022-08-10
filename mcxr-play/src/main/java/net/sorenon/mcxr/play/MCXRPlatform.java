@@ -5,11 +5,14 @@ import net.sorenon.mcxr.play.openxr.XrException;
 import org.lwjgl.openxr.XrExtensionProperties;
 import org.lwjgl.openxr.XrSwapchain;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.SharedLibrary;
 import org.lwjgl.system.Struct;
 
 import java.util.List;
 
 public interface MCXRPlatform {
+
+    SharedLibrary getOpenXRLib();
 
     void loadNatives();
 

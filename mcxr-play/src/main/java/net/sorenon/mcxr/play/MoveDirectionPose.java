@@ -3,6 +3,7 @@ package net.sorenon.mcxr.play;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.phys.Vec3;
 import net.sorenon.mcxr.core.JOMLUtil;
 import net.sorenon.mcxr.core.Pose;
@@ -24,13 +25,13 @@ public enum MoveDirectionPose {
     public Component toComponent() {
         switch (this) {
             case Head -> {
-                return Component.translatable("mcxr.move_direction.head");
+                return new TranslatableComponent("mcxr.move_direction.head");
             }
             case RightHand -> {
-                return Component.translatable("mcxr.move_direction.right_hand");
+                return new TranslatableComponent("mcxr.move_direction.right_hand");
             }
             case LeftHand -> {
-                return Component.translatable("mcxr.move_direction.left_hand");
+                return new TranslatableComponent("mcxr.move_direction.left_hand");
             }
             default -> throw new IllegalStateException("Unexpected value: " + this);
         }

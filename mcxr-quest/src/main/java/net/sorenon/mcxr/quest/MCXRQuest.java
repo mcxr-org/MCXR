@@ -5,7 +5,9 @@ import net.sorenon.mcxr.play.MCXRNativeLoad;
 import net.sorenon.mcxr.play.MCXRPlatform;
 import net.sorenon.mcxr.play.openxr.OpenXRInstance;
 import org.lwjgl.openxr.*;
+import org.lwjgl.system.Library;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.SharedLibrary;
 import org.lwjgl.system.Struct;
 
 import java.lang.reflect.Method;
@@ -25,6 +27,12 @@ public class MCXRQuest implements ClientModInitializer, MCXRPlatform {
 //        Configuration.OPENXR_EXPLICIT_INIT.set(true);
         PLATFORM = this;
         PLATFORM.loadNatives();
+    }
+
+    @Override
+    public SharedLibrary getOpenXRLib() {
+       return Library.loadNative(XR.class, "org.lwjgl.openxr" ,"openxr_loader", false);
+
     }
 
     @Override

@@ -13,10 +13,7 @@ import org.lwjgl.glfw.GLFWNativeWin32;
 import org.lwjgl.glfw.GLFWNativeX11;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.openxr.*;
-import org.lwjgl.system.Configuration;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.Platform;
-import org.lwjgl.system.Struct;
+import org.lwjgl.system.*;
 import org.lwjgl.system.linux.X11;
 import org.lwjgl.system.windows.User32;
 
@@ -36,9 +33,15 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
 
     @Override
     public void onInitializeClient() {
-        Configuration.OPENXR_EXPLICIT_INIT.set(true);
+
         PLATFORM = this;
         PLATFORM.loadNatives();
+    }
+
+    @Override
+    public SharedLibrary getOpenXRLib() {
+        return Library.loadNative(XR.class, "openxr_loader", false);
+
     }
 
     @Override
@@ -53,7 +56,7 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
         long windowHandle = window.getWindow();
         if (Platform.get() == Platform.WINDOWS) {
             return XrGraphicsBindingOpenGLWin32KHR.calloc(stack).set(
-                    KHROpenGLEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
+                    KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_WIN32_KHR,
                     NULL,
                     User32.GetDC(GLFWNativeWin32.glfwGetWin32Window(windowHandle)),
                     GLFWNativeWGL.glfwGetWGLContext(windowHandle)
@@ -73,7 +76,7 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
             long fbConfig = fbConfigBuf.get();
 
             return XrGraphicsBindingOpenGLXlibKHR.calloc(stack).set(
-                    KHROpenGLEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
+                    KHROpenglEnable.XR_TYPE_GRAPHICS_BINDING_OPENGL_XLIB_KHR,
                     NULL,
                     xDisplay,
                     (int) Objects.requireNonNull(glXGetVisualFromFBConfig(xDisplay, fbConfig)).visualid(),
@@ -91,8 +94,8 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
         while (availableExtensions.hasRemaining()) {
             XrExtensionProperties prop = availableExtensions.get();
             String extensionName = prop.extensionNameString();
-            if (extensionName.equals(KHROpenGLEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
-                return List.of(KHROpenGLEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
+            if (extensionName.equals(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME)) {
+                return List.of(KHROpenglEnable.XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
             }
         }
 
@@ -119,7 +122,7 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
             int imageCount = intBuf.get(0);
             XrSwapchainImageOpenGLKHR.Buffer swapchainImageBuffer = XrSwapchainImageOpenGLKHR.calloc(imageCount, stack);
             for (XrSwapchainImageOpenGLKHR image : swapchainImageBuffer) {
-                image.type(KHROpenGLEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
+                image.type(KHROpenglEnable.XR_TYPE_SWAPCHAIN_IMAGE_OPENGL_KHR);
             }
 
             instance.checkPanic(XR10.xrEnumerateSwapchainImages(handle, intBuf, XrSwapchainImageBaseHeader.create(swapchainImageBuffer.address(), swapchainImageBuffer.capacity())), "xrEnumerateSwapchainImages");
@@ -140,8 +143,8 @@ public class MCXRDesktop implements ClientModInitializer, MCXRPlatform {
     @Override
     public void checkGraphicsRequirements(OpenXRInstance instance, long system) {
         try (var stack = stackPush()) {
-            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.calloc(stack).type(KHROpenGLEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
-            instance.checkPanic(KHROpenGLEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, system, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
+            XrGraphicsRequirementsOpenGLKHR graphicsRequirements = XrGraphicsRequirementsOpenGLKHR.calloc(stack).type(KHROpenglEnable.XR_TYPE_GRAPHICS_REQUIREMENTS_OPENGL_KHR);
+            instance.checkPanic(KHROpenglEnable.xrGetOpenGLGraphicsRequirementsKHR(instance.handle, system, graphicsRequirements), "xrGetOpenGLGraphicsRequirementsKHR");
         }
     }
 }

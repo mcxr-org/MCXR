@@ -16,11 +16,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class KeyboardInputMixin extends Input {
 
     @Inject(method = "tick", at = @At("RETURN"))
-    void overwriteMovement(boolean slowDown, float f, CallbackInfo ci) {
+    void overwriteMovement(boolean slowDown, CallbackInfo ci) {
         if (!MCXRPlayClient.MCXR_GAME_RENDERER.isXrMode()) return;
         if (MCXRPlayClient.INSTANCE.MCXRGuiManager.isScreenOpen()) return;
 
         var move = XrInput.vanillaGameplayActionSet.move.currentState;
+        if (PlayOptions.indexTouchpadState != PlayOptions.IndexTouchpad.Off && (XrInput.vanillaGameplayActionSet.indexTrackpadRight.isActive || XrInput.vanillaGameplayActionSet.indexTrackpadLeft.isActive)) {
+            if (PlayOptions.indexTouchpadState == PlayOptions.IndexTouchpad.RightForward) {
+                move.y = XrInput.vanillaGameplayActionSet.indexTrackpadRight.currentState;
+                move.x = XrInput.vanillaGameplayActionSet.indexTrackpadLeft.currentState;
+            } else {
+                move.y = XrInput.vanillaGameplayActionSet.indexTrackpadLeft.currentState;
+                move.x = XrInput.vanillaGameplayActionSet.indexTrackpadRight.currentState;
+            }
+        }
 
         this.forwardImpulse = move.y();
         this.leftImpulse = -move.x();
@@ -39,9 +48,8 @@ public class KeyboardInputMixin extends Input {
 
         this.jumping |= XrInput.vanillaGameplayActionSet.jump.currentState;
 
-        if(slowDown) {
-            this.forwardImpulse *= f;
-            this.leftImpulse *= f;
+//        if(slowDown) {
+//            this.forwardImpulse *= f;
+//            this.leftImpulse *= f;
         }
     }
-}

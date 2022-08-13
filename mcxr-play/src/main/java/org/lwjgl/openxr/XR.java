@@ -5,6 +5,8 @@
 package org.lwjgl.openxr;
 
 import net.sorenon.mcxr.play.MCXRNativeLoad;
+import net.sorenon.mcxr.play.MCXRPlatform;
+import net.sorenon.mcxr.play.MCXRPlayClient;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.*;
@@ -17,7 +19,6 @@ import static org.lwjgl.system.JNI.callPI;
 import static org.lwjgl.system.JNI.callPPPI;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.*;
-import static org.lwjgl.system.MemoryUtil.memGetAddress;
 
 public class XR {
 
@@ -46,7 +47,7 @@ public class XR {
      * @see #create(FunctionProvider)
      */
     public static void create(String libName) {
-        SharedLibrary defaultOpenXRLoader = Library.loadNative(XR.class, "org.lwjgl.openxr", libName, false);
+        SharedLibrary defaultOpenXRLoader = MCXRPlayClient.PLATFORM.getOpenXRLib();
         XR.create(defaultOpenXRLoader);
     }
 
@@ -90,22 +91,25 @@ public class XR {
                 throw new IllegalArgumentException("A critical function is missing. Make sure that OpenXR is available.");
             }
 
-            xrInitializeLoaderKHR = getFunctionAddress("xrInitializeLoaderKHR");
+            xrInitializeLoaderKHR = library.getFunctionAddress("xrInitializeLoaderKHR");
             if (xrInitializeLoaderKHR != NULL) {
-                try (MemoryStack stack = stackPush()) {
-                    long context = memGetAddress(MCXRNativeLoad.getApplicationActivityPtr());
-                    long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
+                if (MCXRPlayClient.PLATFORM.getPlatform() == MCXRPlatform.PlatformType.Quest) {
+                    try (MemoryStack stack = stackPush()) {
+                        long context = memGetAddress(MCXRNativeLoad.getApplicationActivityPtr());
+                        long jvm = memGetAddress(MCXRNativeLoad.getJVMPtr());
 
-                    var createInfo = XrLoaderInitInfoAndroidKHR
-                            .calloc(stack)
-                            .type$Default()
-                            .next(NULL)
-                            .applicationVM(jvm)
-                            .applicationContext(context);
+                        var createInfo = XrLoaderInitInfoAndroidKHR
+                                .calloc(stack)
+                                .type$Default()
+                                .next(NULL)
+                                .applicationVM(jvm)
+                                .applicationContext(context);
 
-                    System.out.println("XrResult:" + callPI(createInfo.address(), xrInitializeLoaderKHR));
+                        System.out.println("XrResult:" + callPI(createInfo.address(), xrInitializeLoaderKHR));
+                    }
                 }
             }
+
             xrCreateInstance = library.getFunctionAddress("xrCreateInstance");
             xrEnumerateInstanceExtensionProperties = getFunctionAddress("xrEnumerateInstanceExtensionProperties");
             xrEnumerateApiLayerProperties = getFunctionAddress("xrEnumerateApiLayerProperties");

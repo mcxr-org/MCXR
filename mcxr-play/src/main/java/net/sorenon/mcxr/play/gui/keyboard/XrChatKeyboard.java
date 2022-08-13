@@ -53,13 +53,8 @@ public class XrChatKeyboard extends XrAbstract2DKeyboard {
         if (_chatBox.getValue().equals("")) {
             _chatScreen.onClose();
         } else {
-            if(_chatBox.getValue().startsWith("/")) {
-                Minecraft.getInstance().player.command(_chatBox.getValue().substring(1));
-                _chatScreen.onClose();
-            } else {
                 Minecraft.getInstance().player.chat(_chatBox.getValue());
                 _chatScreen.onClose();
-            }
         }
     }
 

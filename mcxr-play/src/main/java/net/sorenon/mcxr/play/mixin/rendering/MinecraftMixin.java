@@ -177,6 +177,8 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
     @Shadow
     public abstract void prepareForMultiplayer();
 
+    @Shadow protected abstract int getFramerateLimit();
+
     @Unique
     private static final MCXRGameRenderer XR_RENDERER = MCXRPlayClient.MCXR_GAME_RENDERER;
 
@@ -362,7 +364,7 @@ public abstract class MinecraftMixin extends ReentrantBlockableEventLoop<Runnabl
 
         while (Util.getMillis() >= this.lastTime + 1000L) {
             fps = this.frames;
-            this.fpsString = String.format("T: %s%s%s%s B: %d", (double) this.options.framerateLimit().get(), this.options.enableVsync().get() ? " vsync" : "", this.options.graphicsMode().toString(), this.options.cloudStatus().get() == CloudStatus.OFF ? "" : (this.options.cloudStatus().get() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius().get());
+            this.fpsString = String.format("T: %s%s%s%s B: %d", (double) this.getFramerateLimit(), this.options.enableVsync ? " vsync" : "", this.options.graphicsMode.toString(), this.options.getCloudsType() == CloudStatus.OFF ? "" : (this.options.getCloudsType() == CloudStatus.FAST ? " fast-clouds" : " fancy-clouds"), this.options.biomeBlendRadius);
             this.lastTime += 1000L;
             this.frames = 0;
         }

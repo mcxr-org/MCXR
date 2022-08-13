@@ -56,6 +56,7 @@ import org.lwjgl.openxr.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Struct;
 
+import java.nio.Buffer;
 import java.nio.IntBuffer;
 
 import static net.minecraft.client.Minecraft.ON_OSX;
@@ -535,7 +536,8 @@ public class MCXRGameRenderer {
         bufferBuilder.vertex(0.0, height * 2, 0.0).uv(0.0F, 1 - v * 2).color(255, 255, 255, 255).endVertex();
         bufferBuilder.vertex(width * 2, 0.0, 0.0).uv(u * 2, 1).color(255, 255, 255, 255).endVertex();
         bufferBuilder.vertex(0.0, 0.0, 0.0).uv(0.0F, 1).color(255, 255, 255, 255).endVertex();
-        BufferUploader.draw(bufferBuilder.end());
+        bufferBuilder.end();
+        BufferUploader._endInternal(bufferBuilder);
         shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);
@@ -597,7 +599,8 @@ public class MCXRGameRenderer {
         bufferBuilder.vertex(width-xOff, height-yOff, 0.0).uv(1, 0.0f).color(255, 255, 255, 255).endVertex();
         bufferBuilder.vertex(width-xOff, yOff, 0.0).uv(1, 1.0f).color(255, 255, 255, 255).endVertex();
         bufferBuilder.vertex(xOff, yOff, 0.0).uv(0.0F, 1.0F).color(255, 255, 255, 255).endVertex();
-        BufferUploader.draw(bufferBuilder.end());
+        bufferBuilder.end();
+        BufferUploader._endInternal(bufferBuilder);
         shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);
@@ -648,7 +651,8 @@ public class MCXRGameRenderer {
         bufferBuilder.vertex(width, 0.0, -90.0).uv(1f, 1f).color(red, green, blue, alpha).endVertex();
         bufferBuilder.vertex(0.0, 0.0, -90.0).uv(0f, 1f).color(red, green, blue, alpha).endVertex();
 
-        BufferUploader.draw(bufferBuilder.end());
+        bufferBuilder.end();
+        BufferUploader._endInternal(bufferBuilder);
         shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);
@@ -677,7 +681,7 @@ public class MCXRGameRenderer {
             f = Mth.clamp(f, 0.0F, 1.0F);
             renderOverlay(framebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0f, 0f, 0f, f);
         } else {
-            float l = LightTexture.getBrightness(entity.level.dimensionType(), entity.level.getMaxLocalRawBrightness(new BlockPos(entity.getX(), entity.getEyeY(), entity.getZ())));
+            float l = entity.getBrightness();
             float g = Mth.clamp(1.0F - l, 0.0F, 1.0F);
             renderOverlay(framebuffer, MCXRPlayClient.id("textures/misc/vignette_vr.png"), 0f, 0f, 0f, g);
         }
@@ -734,7 +738,8 @@ public class MCXRGameRenderer {
         bufferBuilder.vertex(width, 0.0, -90.0).uv(h, g).color(1f, 1f, 1f, nauseaStrength).endVertex();
         bufferBuilder.vertex(0.0, 0.0, -90.0).uv(f, g).color(1f, 1f, 1f, nauseaStrength).endVertex();
 
-        BufferUploader.draw(bufferBuilder.end());
+        bufferBuilder.end();
+        BufferUploader._endInternal(bufferBuilder);
         shader.clear();
         GlStateManager._depthMask(true);
         GlStateManager._colorMask(true, true, true, true);

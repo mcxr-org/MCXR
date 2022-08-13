@@ -111,18 +111,18 @@ public class OpenXRState {
                 enabledExtensions.put(memAddress(stackUTF8(ext)));
             }
 
-//            availableExtensions.rewind();
-//
-//            while (availableExtensions.hasRemaining()) {
-//                XrExtensionProperties prop = availableExtensions.get();
-//                String extensionName = prop.extensionNameString();
-//                if (extensionName.equals(EXTHPMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
-//                   enabledExtensions.put(memAddress(stackUTF8(EXTHPMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
-//                }
-//                if (extensionName.equals(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)) {
-//                    enabledExtensions.put(memAddress(stackUTF8(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)));
-//                }
-//            }
+            availableExtensions.rewind();
+
+            while (availableExtensions.hasRemaining()) {
+                XrExtensionProperties prop = availableExtensions.get();
+                String extensionName = prop.extensionNameString();
+                if (extensionName.equals(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)) {
+                   enabledExtensions.put(memAddress(stackUTF8(EXTHpMixedRealityController.XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME)));
+                }
+                if (extensionName.equals(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)) {
+                    enabledExtensions.put(memAddress(stackUTF8(HTCViveCosmosControllerInteraction.XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME)));
+                }
+            }
 
             XrApplicationInfo applicationInfo = XrApplicationInfo.calloc(stack);
             applicationInfo.apiVersion(XR10.XR_CURRENT_API_VERSION);

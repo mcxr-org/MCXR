@@ -78,9 +78,9 @@ public class QuickChat extends ChatScreen {
             this.addRenderableWidget(
                     new Button(buttonX, buttonY, buttonWidth, buttonHeight, Component.translatable(word), (button -> {
                         if (word.startsWith("/")) {
-                            Minecraft.getInstance().player.command(word.substring(1));
+                            Minecraft.getInstance().player.commandSigned(word.substring(1), null);
                         } else {
-                            Minecraft.getInstance().player.chat(word);
+                            Minecraft.getInstance().player.chatSigned(word, null);
                         }
 //                        Minecraft.getInstance().gui.getChat().clearMessages(true);
                     }))

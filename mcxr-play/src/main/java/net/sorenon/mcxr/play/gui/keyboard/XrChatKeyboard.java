@@ -1,8 +1,11 @@
 package net.sorenon.mcxr.play.gui.keyboard;
 
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.chat.ClientChatPreview;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
 import net.sorenon.mcxr.play.gui.XrChatScreen;
 
 public class XrChatKeyboard extends XrAbstract2DKeyboard {
@@ -53,11 +56,12 @@ public class XrChatKeyboard extends XrAbstract2DKeyboard {
         if (_chatBox.getValue().equals("")) {
             _chatScreen.onClose();
         } else {
+            Component component = Util.mapNullable(this._chatScreen.getChatPreview().pull(_chatBox.getValue()), ClientChatPreview.Preview::response);
             if(_chatBox.getValue().startsWith("/")) {
-                Minecraft.getInstance().player.command(_chatBox.getValue().substring(1));
+                Minecraft.getInstance().player.commandSigned(_chatBox.getValue().substring(1),component);
                 _chatScreen.onClose();
             } else {
-                Minecraft.getInstance().player.chat(_chatBox.getValue());
+                Minecraft.getInstance().player.chatSigned(_chatBox.getValue(),component);
                 _chatScreen.onClose();
             }
         }

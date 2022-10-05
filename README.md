@@ -1,3 +1,12 @@
+# ⚠️ MCXR Development has been paused until further notice ⚠️
+The details behind this are messy but MCXR Desktop will not recive any updates or fixes for the forseeable future. 
+
+Until then I recommend using the [Vivecraft Port](https://github.com/ferriarnus/VivecraftMod) which has Quilt, Forge and Fabric support.
+
+---
+
+
+
 ![](https://user-images.githubusercontent.com/90802279/172026916-a617134b-a829-4d67-b8ec-ef10ea4be266.png)
 ![](https://img.shields.io/github/v/release/Sorenon/MCXR) ![](https://img.shields.io/discord/829825443480993802?label=discord) ![](https://img.shields.io/modrinth/dt/hcEWWGik?label=mcxr-core%20downloads) ![](https://img.shields.io/modrinth/dt/9jVyqpHR?label=mcxr-play%20downloads) ![](https://img.shields.io/reddit/subreddit-subscribers/MinecraftXR)
 <br/>A virtual reality / augmented reality mod for Minecraft using OpenXR and Fabric.

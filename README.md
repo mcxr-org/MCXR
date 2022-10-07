@@ -41,7 +41,7 @@ Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). 
 | State                       | Released                        | Released                      | Beta                         |
 | Release Year                | 2016                            | 2013 / 2016                   | 2021 (Beta)                  |
 | Platform                    | Bedrock                         | Java                          | Java                         |
-| Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric, Quilt                |
+| Mod Support                 | Bedrock Add-Ons                 | Forge, Fabric, Quilt          | Fabric, Quilt                |
 | Performance                 | 🥇                              | 🥉                           | 🥈 (with Sodium)             |
 | Supported Devices           | 🟡 Oculus and WMR Headsets      | ✅ OpenVR-supported Devices   | ✅ OpenXR-supported Devices |
 | Shaders Support             | ⛔                              | ✅ Optifine                   | ✅ Iris                     |

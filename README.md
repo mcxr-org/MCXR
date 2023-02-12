@@ -41,18 +41,18 @@ Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). 
 | State                       | Released                        | Released                      | Beta                         |
 | Release Year                | 2016                            | 2013 / 2016                   | 2021 (Beta)                  |
 | Platform                    | Bedrock                         | Java                          | Java                         |
-| Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric, Quilt                |
+| Mod Support                 | Bedrock Add-Ons                 | Forge,Fabric                  | Fabric, Quilt                |
 | Performance                 | 🥇                              | 🥉                           | 🥈 (with Sodium)             |
-| Supported Devices           | 🟡 Oculus and WMR Headsets      | ✅ OpenVR-supported Devices   | ✅ OpenXR-supported Devices |
-| Shaders Support             | ⛔                              | ✅ Optifine                   | ✅ Iris                     |
+| Supported Devices           | 🟡 Oculus and WMR Headsets      | ✅ OpenVR-supported Devices  | ✅ OpenXR-supported Devices |
+| Shaders Support             | ⛔                              | ✅ Optifine, Iris            | ✅ Iris                     |
 | Vanilla Server Compatibility| ✅                              | ✅                           | ✅                           |
 | VR Addon Support            | ⛔                              | 🚧                           | 🚧                           |
 | 3rd party Mod Intergration  | ⛔                              | ⛔                           | 🚧                           |
 | Immersive UI                | ⛔                              | ⛔                           | 🚧                           |
 | Immersive Controls          | ⛔                              | ✅                           | 🚧                           |
 | Open Source                 | ⛔                              | ✅                           | ✅                           |
-| Versions                    | Latest                          | 1.7.10, 1.10 to 1.18 with paid only 1.19 access | 1.18, 1.19                         |
-| Standalone Quest Support    | ⛔                              | ⛔                           | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft)|
+| Versions                    | Latest                          | 1.7.10, 1.10, 1.18, 1.19     | 1.18, 1.19                         |
+| Standalone Quest Support    | ⛔                              | ✅ [Questcraft]              | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft)|
 | VR Playermodels             | ⛔                              | ✅                           | 🚧                           |
 | Spigot Plugin Support       | ⛔                              | ✅                           | ⛔                           |
 | Mod Method                  | Built-in                        | Jar mod                       | Mixins                       |

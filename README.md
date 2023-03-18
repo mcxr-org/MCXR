@@ -1,7 +1,5 @@
-# ⚠️ MCXR Development has been paused until further notice ⚠️
-The details behind this are messy but MCXR Desktop will not recive any updates or fixes for the forseeable future. 
-
-Until then I recommend using the [Vivecraft Port](https://github.com/ferriarnus/VivecraftMod) which has Quilt, Forge and Fabric support.
+# MCXR development has been halted until further notice
+Instead I recommend using the [Vivecraft Mixin Port](https://modrinth.com/mod/vivecraft) which has Quilt, Forge and Fabric support.
 
 ---
 
@@ -36,26 +34,27 @@ Download the latest version of [MCXR Core](https://modrinth.com/mod/mcxr-core). 
 > <br/>⛔ *NO*
 > <br/>🚧 *IN DEVELOPMENT*
 
-| Comparisons                 | [Bedrock VR](https://www.minecraft.net/en-us/vr)| [Vivecraft](http://www.vivecraft.org/)| [Minecraft XR](https://github.com/Sorenon/MCXR) |
-| --------------------------- | ------------------------------- | ----------------------------- | ---------------------------- |
-| State                       | Released                        | Released                      | Beta                         |
-| Release Year                | 2016                            | 2013 / 2016                   | 2021 (Beta)                  |
-| Platform                    | Bedrock                         | Java                          | Java                         |
-| Mod Support                 | Bedrock Add-Ons                 | Forge                         | Fabric, Quilt                |
-| Performance                 | 🥇                              | 🥉                           | 🥈 (with Sodium)             |
-| Supported Devices           | 🟡 Oculus and WMR Headsets      | ✅ OpenVR-supported Devices   | ✅ OpenXR-supported Devices |
-| Shaders Support             | ⛔                              | ✅ Optifine                   | ✅ Iris                     |
-| Vanilla Server Compatibility| ✅                              | ✅                           | ✅                           |
-| VR Addon Support            | ⛔                              | 🚧                           | 🚧                           |
-| 3rd party Mod Intergration  | ⛔                              | ⛔                           | 🚧                           |
-| Immersive UI                | ⛔                              | ⛔                           | 🚧                           |
-| Immersive Controls          | ⛔                              | ✅                           | 🚧                           |
-| Open Source                 | ⛔                              | ✅                           | ✅                           |
-| Versions                    | Latest                          | 1.7.10, 1.10 to 1.18 with paid only 1.19 access | 1.18, 1.19                         |
-| Standalone Quest Support    | ⛔                              | ⛔                           | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft)|
-| VR Playermodels             | ⛔                              | ✅                           | 🚧                           |
-| Spigot Plugin Support       | ⛔                              | ✅                           | ⛔                           |
-| Mod Method                  | Built-in                        | Jar mod                       | Mixins                       |
-| Sponsored by Facebook       | Yes                              | No                           | No                           |
-| Linux Support               | ⛔                              | ✅                           | ✅                           |
-| Mac Support                 | ⛔                              | ⛔                           | ⛔                           |
+| Comparisons                  | [Bedrock VR](https://www.minecraft.net/en-us/vr) | [Vivecraft](http://www.vivecraft.org/)          | [Minecraft XR](https://github.com/Sorenon/MCXR) | [Vivecraft Mixin](https://modrinth.com/mod/vivecraft)                 |
+| ---------------------------- | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------ |
+| State                        | Released                                         | Released                                        | Archived                                        | Released                                                        |
+| Release Year                 | 2016                                             | 2013 / 2016                                     | 2021                                            | 2022                                                         |
+| Platform                     | Bedrock                                          | Java                                            | Java                                            | Java                                                         |
+| Mod Support                  | Bedrock Add-Ons                                  | Forge                                           | Fabric, Quilt                                   | Fabric, Quilt, Forge                                         |
+| Performance                  | 🥇                                               | 🥉                                              | 🥈 (with Sodium)                                | 🥈 (with Sodium)                                             |
+| Supported Devices            | 🟡 Oculus and WMR Headsets                       | ✅ OpenVR-supported Devices                     | ✅ OpenXR-supported Devices                     | ✅ OpenVR-supported Devices                                  |
+| Shaders Support              | ⛔                                               | ✅ Optifine                                     | ✅ Iris                                         | ✅ Iris  / Oculus                                            |
+| Vanilla Server Compatibility | ✅                                               | ✅                                              | ✅                                              | ✅                                                           |
+| VR Addon Support             | ⛔                                               | 🚧                                              | 🚧                                              | 🚧                                                           |
+| 3rd party Mod Intergration   | ⛔                                               | ⛔                                              | 🚧                                              | ✅                                                           |
+| Immersive UI                 | ⛔                                               | ⛔                                              | 🚧                                              | ⛔                                                           |
+| Immersive Controls           | ⛔                                               | ✅                                              | 🚧                                              | ✅                                                           |
+| Open Source                  | ⛔                                               | ✅                                              | ✅                                              | ✅                                                           |
+| Versions                     | Latest                                           | 1.7.10, 1.10 to 1.19.x  | 1.18, 1.19                                      | 1.18.x, 1.19.x                                               |
+| Standalone Quest Support     | ⛔                                               | ⛔                                              | ⛔                                              | ✅ [Questcraft](https://sidequestvr.com/app/7150/questcraft) |
+| VR Playermodels              | ⛔                                               | ✅                                              | 🚧                                              | ✅                                                           |
+| Spigot Plugin Support        | ⛔                                               | ✅                                              | ⛔                                              | ✅                                                           |
+| Mod Method                   | Built-in                                         | Jar mod                                         | Mixins                                          | Mixins                                                       |
+| Sponsored by Facebook        | Yes                                              | No                                              | No                                              | No                                                           |
+| Linux Support                | ⛔                                               | ✅                                              | ✅                                              | ✅                                                           |
+| Mac Support                  | ⛔                                               | ⛔                                              | ⛔                                              | ⛔                                                           | 
+

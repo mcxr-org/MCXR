@@ -33,7 +33,7 @@ import org.joml.Vector3d;
 import org.joml.Vector3f;
 import org.lwjgl.openxr.XR;
 import org.lwjgl.system.Configuration;
-import virtuoel.pehkui.util.ScaleUtils;
+import virtuoel.pehkui.util.ScaleRenderUtils;
 
 import static net.minecraft.client.gui.GuiComponent.GUI_ICONS_LOCATION;
 
@@ -205,7 +205,7 @@ public class MCXRPlayClient implements ClientModInitializer {
 
     public static float modifyProjectionMatrixDepth(float depth, Entity entity, float tickDelta) {
         if (FabricLoader.getInstance().isModLoaded("pehkui")) {
-            return ScaleUtils.modifyProjectionMatrixDepth(MCXRPlayClient.getCameraScale(tickDelta), depth, entity, tickDelta);
+            return ScaleRenderUtils.modifyProjectionMatrixDepth(MCXRPlayClient.getCameraScale(tickDelta), depth, entity, tickDelta);
         }
         return depth;
     }
